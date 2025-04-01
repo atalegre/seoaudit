@@ -1,5 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
+import UserManagement from '@/components/dashboard/UserManagement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -173,6 +175,7 @@ const SettingsPage = () => {
           <TabsList>
             <TabsTrigger value="general">Geral</TabsTrigger>
             <TabsTrigger value="profile">Perfil da Empresa</TabsTrigger>
+            <TabsTrigger value="users">Usuários</TabsTrigger>
             <TabsTrigger value="notifications">Notificações</TabsTrigger>
             <TabsTrigger value="integrations">Integrações API</TabsTrigger>
             <TabsTrigger value="api">API</TabsTrigger>
@@ -326,6 +329,11 @@ const SettingsPage = () => {
                 </Form>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* User Management */}
+          <TabsContent value="users">
+            <UserManagement />
           </TabsContent>
           
           {/* Notification Settings */}
@@ -588,7 +596,7 @@ const SettingsPage = () => {
                     </div>
                   </div>
                   <Separator />
-                  <div className="flex justify-between">
+                  <div className="flex justify-end">
                     <Button 
                       variant="outline" 
                       onClick={() => {
@@ -600,12 +608,17 @@ const SettingsPage = () => {
                     >
                       Regenerar chave
                     </Button>
-                    <Button onClick={() => {
-                      toast({
-                        title: "Permissões salvas",
-                        description: "As permissões de API foram atualizadas com sucesso.",
-                      });
-                    }}>Salvar permissões</Button>
+                    <Button 
+                      className="ml-2" 
+                      onClick={() => {
+                        toast({
+                          title: "Permissões salvas",
+                          description: "As permissões de API foram atualizadas com sucesso.",
+                        });
+                      }}
+                    >
+                      Salvar permissões
+                    </Button>
                   </div>
                 </div>
               </CardContent>

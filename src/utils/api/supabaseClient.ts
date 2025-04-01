@@ -1,46 +1,14 @@
+
 import { createClient } from '@supabase/supabase-js';
 import { Client, AnalysisResult } from './types';
 import { supabase as supabaseInstance } from '@/integrations/supabase/client';
 
-// Check if Supabase environment variables are available
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-// Create a fallback client if the environment variables aren't available
-let supabase;
-
-if (supabaseUrl && supabaseAnonKey) {
-  // Create the Supabase client with the environment variables
-  supabase = createClient(supabaseUrl, supabaseAnonKey);
-} else {
-  console.warn('Supabase environment variables are missing. Using Supabase instance or localStorage fallback.');
-  // Tentar usar a instância do Supabase da integração ou criar um fallback
-  supabase = supabaseInstance || {
-    from: () => ({
-      select: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
-      insert: () => Promise.resolve({ error: new Error('Supabase not configured') }),
-      update: () => Promise.resolve({ error: new Error('Supabase not configured') }),
-      upsert: () => Promise.resolve({ error: new Error('Supabase not configured') }),
-      eq: () => ({
-        single: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') })
-      }),
-      order: () => ({
-        select: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') })
-      }),
-      single: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
-    })
-  };
-}
+// Usar a instância do Supabase da integração
+const supabase = supabaseInstance;
 
 // Função para obter todos os clientes do Supabase
 export async function getClientsFromDatabase(): Promise<Client[]> {
   try {
-    // Check if Supabase is configured
-    if (!supabaseUrl || !supabaseAnonKey) {
-      // Fallback to localStorage if Supabase is not configured
-      return JSON.parse(localStorage.getItem('clients') || '[]');
-    }
-    
     const { data, error } = await supabase
       .from('clients')
       .select('*');
@@ -63,24 +31,6 @@ export async function getClientsFromDatabase(): Promise<Client[]> {
 export async function saveClientsToDatabase(clients: Client[]): Promise<{success: boolean, data: any}> {
   try {
     console.log('Attempting to save clients to database:', clients);
-    
-    // Check if Supabase is configured
-    if (!supabase) {
-      console.warn('Supabase instance not available, falling back to localStorage');
-      const existingClients = JSON.parse(localStorage.getItem('clients') || '[]');
-      const mergedClients = [...existingClients];
-      
-      clients.forEach(newClient => {
-        if (!mergedClients.some(c => c.id === newClient.id)) {
-          mergedClients.push(newClient);
-        }
-      });
-      
-      localStorage.setItem('clients', JSON.stringify(mergedClients));
-      return { success: true, data: mergedClients };
-    }
-    
-    console.log('Using Supabase to save clients');
     
     // Insere os novos clientes, ignorando duplicados baseado no id
     const { data, error } = await supabase
@@ -119,17 +69,6 @@ export async function saveClientsToDatabase(clients: Client[]): Promise<{success
 // Função para atualizar um cliente específico
 export async function updateClientInDatabase(client: Client): Promise<void> {
   try {
-    // Check if Supabase is configured
-    if (!supabaseUrl || !supabaseAnonKey) {
-      // Fallback to localStorage if Supabase is not configured
-      const clients = JSON.parse(localStorage.getItem('clients') || '[]');
-      const updatedClients = clients.map((c: Client) => 
-        c.id === client.id ? client : c
-      );
-      localStorage.setItem('clients', JSON.stringify(updatedClients));
-      return;
-    }
-    
     const { error } = await supabase
       .from('clients')
       .update(client)
@@ -155,24 +94,6 @@ export async function updateClientInDatabase(client: Client): Promise<void> {
 // Função para salvar resultados de análise no Supabase
 export async function saveAnalysisResult(clientId: number, result: AnalysisResult): Promise<void> {
   try {
-    // Check if Supabase is configured
-    if (!supabaseUrl || !supabaseAnonKey) {
-      // Add to localStorage if Supabase is not configured
-      const analysisResults = JSON.parse(localStorage.getItem('analysis_results') || '[]');
-      analysisResults.push({
-        client_id: clientId,
-        url: result.url,
-        timestamp: result.timestamp,
-        seo_score: result.seo.score,
-        aio_score: result.aio.score,
-        seo_data: result.seo,
-        aio_data: result.aio,
-        overall_status: result.overallStatus
-      });
-      localStorage.setItem('analysis_results', JSON.stringify(analysisResults));
-      return;
-    }
-    
     const analysisData = {
       client_id: clientId,
       url: result.url,
@@ -214,21 +135,6 @@ export async function saveAnalysisResult(clientId: number, result: AnalysisResul
 // Função para buscar histórico de análises de um cliente
 export async function getClientAnalysisHistory(clientId: number): Promise<AnalysisResult[]> {
   try {
-    // Check if Supabase is configured
-    if (!supabaseUrl || !supabaseAnonKey) {
-      // Fallback to localStorage if Supabase is not configured
-      const analysisResults = JSON.parse(localStorage.getItem('analysis_results') || '[]');
-      const clientResults = analysisResults.filter((item: any) => item.client_id === clientId);
-      
-      return clientResults.map((item: any) => ({
-        url: item.url,
-        timestamp: item.timestamp,
-        seo: item.seo_data,
-        aio: item.aio_data,
-        overallStatus: item.overall_status
-      }));
-    }
-    
     const { data, error } = await supabase
       .from('analysis_results')
       .select('*')
@@ -270,16 +176,7 @@ export async function storeApiKey(keyType: 'googlePageInsightsKey' | 'chatGptApi
     // Always store in localStorage for easier access
     localStorage.setItem(keyType, value);
     
-    // Check if Supabase is configured
-    if (!supabaseUrl || !supabaseAnonKey) {
-      console.warn('Supabase not configured, API key was only stored in localStorage');
-      return;
-    }
-    
-    // Verificar se estamos usando a instância padrão ou a nova instância da integração
-    const client = supabaseInstance || supabase;
-    
-    const { error } = await client
+    const { error } = await supabase
       .from('api_keys')
       .upsert({ 
         key_type: keyType, 
@@ -295,7 +192,6 @@ export async function storeApiKey(keyType: 'googlePageInsightsKey' | 'chatGptApi
     console.log(`Chave de API ${keyType} armazenada com sucesso no Supabase`);
   } catch (error) {
     console.error('Erro ao armazenar chave de API no Supabase:', error);
-    
     // Fallback para localStorage já feito no início da função
   }
 }
@@ -303,16 +199,7 @@ export async function storeApiKey(keyType: 'googlePageInsightsKey' | 'chatGptApi
 // Função para obter chaves de API do Supabase
 export async function getApiKey(keyType: 'googlePageInsightsKey' | 'chatGptApiKey'): Promise<string | null> {
   try {
-    // Check if Supabase is configured
-    if (!supabaseUrl || !supabaseAnonKey) {
-      console.warn('Supabase not configured, returning API key from localStorage');
-      return localStorage.getItem(keyType);
-    }
-    
-    // Verificar se estamos usando a instância padrão ou a nova instância da integração
-    const client = supabaseInstance || supabase;
-    
-    const { data, error } = await client
+    const { data, error } = await supabase
       .from('api_keys')
       .select('key_value')
       .eq('key_type', keyType)
@@ -342,5 +229,84 @@ export async function getApiKey(keyType: 'googlePageInsightsKey' | 'chatGptApiKe
     
     // Fallback para localStorage
     return localStorage.getItem(keyType);
+  }
+}
+
+// Funções para gerenciar usuários
+
+export async function getAllUsers() {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Erro ao buscar usuários:', error);
+    return [];
+  }
+}
+
+export async function getUserById(userId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Erro ao buscar detalhes do usuário:', error);
+    return null;
+  }
+}
+
+export async function createUser(userData: { name: string, email: string, role: 'admin' | 'editor' | 'user' }) {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .insert([userData])
+      .select();
+    
+    if (error) throw error;
+    return data?.[0] || null;
+  } catch (error) {
+    console.error('Erro ao criar usuário:', error);
+    throw error;
+  }
+}
+
+export async function updateUser(userId: string, userData: { name?: string, email?: string, role?: 'admin' | 'editor' | 'user' }) {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .update(userData)
+      .eq('id', userId)
+      .select();
+    
+    if (error) throw error;
+    return data?.[0] || null;
+  } catch (error) {
+    console.error('Erro ao atualizar usuário:', error);
+    throw error;
+  }
+}
+
+export async function deleteUser(userId: string) {
+  try {
+    const { error } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', userId);
+    
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('Erro ao excluir usuário:', error);
+    throw error;
   }
 }

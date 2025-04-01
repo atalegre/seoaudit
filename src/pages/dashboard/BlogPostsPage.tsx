@@ -13,8 +13,8 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { BlogPost } from '@/types/blog';
-import { getBlogPosts, deleteBlogPost, deleteAllBlogPosts } from '@/utils/supabaseBlogClient';
-import { AlertTriangle, Trash2 } from 'lucide-react';
+import { getBlogPosts, deleteBlogPost } from '@/utils/supabaseBlogClient';
+import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const BlogPostsPage = () => {
@@ -24,7 +24,6 @@ const BlogPostsPage = () => {
   const [currentPost, setCurrentPost] = useState<BlogPost | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
 
   const fetchPosts = async () => {
@@ -103,32 +102,6 @@ const BlogPostsPage = () => {
     }
   };
 
-  const handleDeleteAllPosts = async () => {
-    if (isDeleting) return;
-    
-    try {
-      setIsDeleting(true);
-      console.log('Deleting all blog posts...');
-      await deleteAllBlogPosts();
-      
-      toast({
-        title: 'Posts excluídos',
-        description: 'Todos os posts foram excluídos com sucesso',
-      });
-      
-      setPosts([]);
-    } catch (error) {
-      console.error('Error deleting all posts:', error);
-      toast({
-        title: 'Erro',
-        description: 'Não foi possível excluir todos os posts',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
   const handleFormClose = () => {
     setIsFormOpen(false);
     console.log('Form closed, fetching updated posts...');
@@ -147,16 +120,6 @@ const BlogPostsPage = () => {
           <CardHeader>
             <div className="flex flex-col sm:flex-row justify-between items-start">
               <CardTitle>Todos os Posts</CardTitle>
-              <Button 
-                variant="destructive" 
-                size="sm"
-                className="mt-2 sm:mt-0 flex items-center gap-2"
-                onClick={handleDeleteAllPosts}
-                disabled={isDeleting || posts.length === 0}
-              >
-                <Trash2 className="h-4 w-4" />
-                {isDeleting ? 'Excluindo...' : 'Excluir todos os posts'}
-              </Button>
             </div>
             <BlogPostsSearch 
               searchTerm={searchTerm}
