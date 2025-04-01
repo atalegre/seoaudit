@@ -1,4 +1,3 @@
-
 import React from 'react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -45,6 +44,14 @@ const notificationsFormSchema = z.object({
 
 type NotificationsFormValues = z.infer<typeof notificationsFormSchema>;
 
+// API Integration schema
+const apiIntegrationsFormSchema = z.object({
+  googlePageInsightsKey: z.string().min(1, "A chave da API é obrigatória"),
+  chatGptApiKey: z.string().min(1, "A chave da API é obrigatória"),
+});
+
+type ApiIntegrationsFormValues = z.infer<typeof apiIntegrationsFormSchema>;
+
 // Default company data
 const defaultCompanyData = {
   name: "SEO+AIO",
@@ -80,6 +87,15 @@ const SettingsPage = () => {
     },
   });
 
+  // API Integrations form
+  const apiIntegrationsForm = useForm<ApiIntegrationsFormValues>({
+    resolver: zodResolver(apiIntegrationsFormSchema),
+    defaultValues: {
+      googlePageInsightsKey: "",
+      chatGptApiKey: "",
+    },
+  });
+
   // Handle profile form submit
   function onProfileSubmit(data: ProfileFormValues) {
     toast({
@@ -93,6 +109,19 @@ const SettingsPage = () => {
     toast({
       title: "Preferências atualizadas",
       description: "As preferências de notificações foram atualizadas com sucesso.",
+    });
+  }
+
+  // Handle API Integrations form submit
+  function onApiIntegrationsSubmit(data: ApiIntegrationsFormValues) {
+    // In a real app, we would save these API keys securely
+    console.log("API Keys saved:", data);
+    localStorage.setItem("googlePageInsightsKey", data.googlePageInsightsKey);
+    localStorage.setItem("chatGptApiKey", data.chatGptApiKey);
+    
+    toast({
+      title: "APIs configuradas",
+      description: "As chaves de API foram salvas com sucesso.",
     });
   }
 
@@ -111,6 +140,7 @@ const SettingsPage = () => {
             <TabsTrigger value="general">Geral</TabsTrigger>
             <TabsTrigger value="profile">Perfil da Empresa</TabsTrigger>
             <TabsTrigger value="notifications">Notificações</TabsTrigger>
+            <TabsTrigger value="integrations">Integrações API</TabsTrigger>
             <TabsTrigger value="api">API</TabsTrigger>
           </TabsList>
           
@@ -357,6 +387,87 @@ const SettingsPage = () => {
                       )}
                     />
                     <Button type="submit">Salvar preferências</Button>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* API Integrations Settings */}
+          <TabsContent value="integrations">
+            <Card>
+              <CardHeader>
+                <CardTitle>Integrações de API</CardTitle>
+                <CardDescription>
+                  Configure as APIs necessárias para a análise SEO e AIO
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...apiIntegrationsForm}>
+                  <form onSubmit={apiIntegrationsForm.handleSubmit(onApiIntegrationsSubmit)} className="space-y-8">
+                    <FormField
+                      control={apiIntegrationsForm.control}
+                      name="googlePageInsightsKey"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Google Page Insights API Key</FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              type="password" 
+                              placeholder="Insira a chave da API do Google Page Insights"
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Esta API é usada para obter dados de SEO dos sites dos clientes.
+                            <a 
+                              href="https://developers.google.com/speed/docs/insights/v5/get-started" 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-primary ml-1 hover:underline"
+                            >
+                              Obter chave
+                            </a>
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={apiIntegrationsForm.control}
+                      name="chatGptApiKey"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>OpenAI (ChatGPT) API Key</FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              type="password" 
+                              placeholder="Insira a chave da API da OpenAI"
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Esta API é usada para análise de AIO dos conteúdos dos sites.
+                            <a 
+                              href="https://platform.openai.com/api-keys" 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-primary ml-1 hover:underline"
+                            >
+                              Obter chave
+                            </a>
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="terms" />
+                      <Label htmlFor="terms" className="text-sm">
+                        Eu entendo que estas chaves são sensíveis e serão salvas localmente no navegador
+                      </Label>
+                    </div>
+                    <Button type="submit">Salvar chaves de API</Button>
                   </form>
                 </Form>
               </CardContent>
