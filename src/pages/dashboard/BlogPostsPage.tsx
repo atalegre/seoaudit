@@ -5,7 +5,6 @@ import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import BlogForm from '@/components/dashboard/BlogForm';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import {
   Dialog,
   DialogContent,
@@ -34,6 +33,7 @@ import { AlertDialog, AlertDialogContent, AlertDialogAction, AlertDialogCancel,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { BlogPost } from '@/types/blog';
+import { getBlogPosts, deleteBlogPost } from '@/utils/supabaseBlogClient';
 
 const BlogPostsPage = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -48,13 +48,7 @@ const BlogPostsPage = () => {
     setLoading(true);
     try {
       console.log('Fetching blog posts from Supabase...');
-      const { data, error } = await supabase
-        .from('blog_posts')
-        .select('*')
-        .order('date', { ascending: false });
-      
-      if (error) throw error;
-      
+      const data = await getBlogPosts();
       console.log('Blog posts fetched:', data);
       setPosts(data || []);
     } catch (error) {
@@ -85,12 +79,7 @@ const BlogPostsPage = () => {
 
   const handleDeletePost = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('blog_posts')
-        .delete()
-        .eq('id', id);
-      
-      if (error) throw error;
+      await deleteBlogPost(id);
       
       toast({
         title: 'Post excluído',
@@ -222,7 +211,7 @@ const BlogPostsPage = () => {
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancelar</AlertDialogCancel>
                               <AlertDialogAction 
-                                onClick={() => handleDeletePost(post.id!)}
+                                onClick={() => post.id && handleDeletePost(post.id)}
                                 className="bg-destructive text-destructive-foreground"
                               >
                                 Excluir

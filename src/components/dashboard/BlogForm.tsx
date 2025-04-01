@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,9 +23,9 @@ import {
 } from '@/components/ui/select';
 import { categories } from '@/data/blog-data';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { UploadCloud, X, Image } from 'lucide-react';
 import { BlogPost } from '@/types/blog';
+import { UploadCloud, X } from 'lucide-react';
+import { createBlogPost, updateBlogPost, uploadBlogImage } from '@/utils/supabaseBlogClient';
 
 // Define the schema for our form validation
 const blogPostSchema = z.object({
@@ -43,7 +44,7 @@ const blogPostSchema = z.object({
 type BlogFormValues = z.infer<typeof blogPostSchema>;
 
 interface BlogFormProps {
-  initialData?: BlogPost;
+  initialData?: BlogPost | null;
   onSuccess?: () => void;
 }
 
@@ -177,31 +178,6 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onSuccess }) => {
     form.setValue('imageSrc', '');
   };
 
-  const uploadImageToStorage = async (file: File): Promise<string> => {
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `blog-images/${fileName}`;
-      
-      // Upload the file
-      const { error: uploadError, data } = await supabase.storage
-        .from('blog-images')
-        .upload(filePath, file);
-        
-      if (uploadError) throw uploadError;
-      
-      // Get the public URL
-      const { data: publicUrlData } = supabase.storage
-        .from('blog-images')
-        .getPublicUrl(filePath);
-        
-      return publicUrlData.publicUrl;
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      throw error;
-    }
-  };
-
   const onSubmit = async (data: BlogFormValues) => {
     setIsSubmitting(true);
     try {
@@ -209,7 +185,7 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onSuccess }) => {
       
       // If we have a new image file, upload it
       if (imageFile) {
-        imageSrc = await uploadImageToStorage(imageFile);
+        imageSrc = await uploadBlogImage(imageFile);
       }
       
       // Convert tags from comma-separated string to array
@@ -229,22 +205,13 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onSuccess }) => {
         date: initialData?.date || new Date().toISOString().split('T')[0], // Use current date if new
       };
 
-      // Save to Supabase
-      let result;
       if (isEditing && initialData?.id) {
         // Update existing post
-        result = await supabase
-          .from('blog_posts')
-          .update(blogPostData)
-          .eq('id', initialData.id);
+        await updateBlogPost(initialData.id, blogPostData);
       } else {
         // Create new post
-        result = await supabase
-          .from('blog_posts')
-          .insert([blogPostData]);
+        await createBlogPost(blogPostData);
       }
-
-      if (result.error) throw result.error;
       
       toast({
         title: isEditing ? "Post atualizado" : "Post criado",
