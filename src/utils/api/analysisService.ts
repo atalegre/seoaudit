@@ -1,12 +1,12 @@
 
-import { analyzeSite } from '../analyzerUtils';
+import { analyzeSite, AnalysisResult as AnalyzerResult } from '../analyzerUtils';
 import { getPageInsightsData } from './pageInsightsService';
 import { getChatGptAnalysis } from './chatGptService';
 import { getClientsFromDatabase, updateClientInDatabase, saveAnalysisResult } from './supabaseClient';
-import { Client, AnalysisResult } from './types';
+import { Client, AnalysisResult as ApiAnalysisResult } from './types';
 
 // Função combinada para obter análise completa de SEO e AIO
-export async function getFullAnalysis(url: string): Promise<AnalysisResult> {
+export async function getFullAnalysis(url: string): Promise<ApiAnalysisResult> {
   try {
     // Para fins de demonstração, usaremos conteúdo simulado
     // Em uma aplicação real, buscaríamos o conteúdo real da URL
@@ -18,7 +18,8 @@ export async function getFullAnalysis(url: string): Promise<AnalysisResult> {
     
     if (!googleApiKey || !openaiApiKey) {
       console.log('Using mock data for analysis as API keys are missing');
-      return analyzeSite(url);
+      const result = analyzeSite(url);
+      return result;
     }
     
     // Em uma implementação real:
@@ -28,7 +29,8 @@ export async function getFullAnalysis(url: string): Promise<AnalysisResult> {
     // 4. Combinaríamos os resultados
     
     // Por enquanto, retornaremos os dados simulados de analyzeSite
-    return analyzeSite(url);
+    const result = analyzeSite(url);
+    return result;
   } catch (error) {
     console.error('Error performing full analysis:', error);
     return analyzeSite(url);

@@ -16,19 +16,22 @@ export interface Client {
   lastAnalysis?: Date;
 }
 
+// Changed these interfaces to match the ones in analyzerUtils.ts
 export interface SeoAnalysisResult {
   score: number;
-  technicalIssues: {
+  loadTimeDesktop: number;
+  loadTimeMobile: number;
+  mobileFriendly: boolean;
+  imageOptimization: number;
+  headingsStructure: number;
+  metaTags: number;
+  security: boolean;
+  issues: {
     title: string;
     description: string;
     severity: 'high' | 'medium' | 'low';
   }[];
-  contentIssues: {
-    title: string;
-    description: string;
-    severity: 'high' | 'medium' | 'low';
-  }[];
-  status: StatusClassification;
+  status?: StatusClassification;
 }
 
 export interface AioAnalysisResult {
@@ -38,7 +41,7 @@ export interface AioAnalysisResult {
   naturalLanguage: number;
   topicsDetected: string[];
   confusingParts: string[];
-  status: StatusClassification;
+  status?: StatusClassification;
 }
 
 export interface AnalysisResult {
@@ -46,5 +49,12 @@ export interface AnalysisResult {
   timestamp: string;
   seo: SeoAnalysisResult;
   aio: AioAnalysisResult;
+  recommendations?: Array<{
+    suggestion: string;
+    seoImpact: 'Alto' | 'Médio' | 'Baixo' | 'Nenhum';
+    aioImpact: 'Alto' | 'Médio' | 'Baixo' | 'Nenhum';
+    priority: number;
+  }>;
+  status?: StatusClassification;
   overallStatus: StatusClassification;
 }
