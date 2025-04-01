@@ -35,11 +35,22 @@ export type StatusClassification = 'Crítico' | 'A melhorar' | 'Saudável';
 
 export interface AnalysisResult {
   url: string;
+  timestamp: string; // Added this property
   seo: SeoAnalysis;
   aio: AioAnalysis;
   recommendations: CombinedRecommendation[];
   status: StatusClassification;
+  overallStatus: StatusClassification; // Added this property
 }
+
+// Helper function to determine the overall status based on SEO and AIO scores
+export const getOverallStatus = (seoScore: number, aioScore: number): StatusClassification => {
+  const averageScore = (seoScore + aioScore) / 2;
+  
+  if (averageScore < 50) return 'Crítico';
+  if (averageScore < 75) return 'A melhorar';
+  return 'Saudável';
+};
 
 // Helper function to generate a random score between min and max
 const randomScore = (min: number, max: number): number => {
@@ -162,9 +173,11 @@ export const analyzeSite = (url: string): AnalysisResult => {
   
   return {
     url,
+    timestamp: new Date().toISOString(),
     seo: seoAnalysis,
     aio: aioAnalysis,
     recommendations,
-    status
+    status,
+    overallStatus: status
   };
 };
