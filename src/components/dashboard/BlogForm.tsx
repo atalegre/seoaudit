@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,6 +24,7 @@ import { categories } from '@/data/blog-data';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { UploadCloud, X, Image } from 'lucide-react';
+import { BlogPost } from '@/types/blog';
 
 // Define the schema for our form validation
 const blogPostSchema = z.object({
@@ -43,7 +43,7 @@ const blogPostSchema = z.object({
 type BlogFormValues = z.infer<typeof blogPostSchema>;
 
 interface BlogFormProps {
-  initialData?: any;
+  initialData?: BlogPost;
   onSuccess?: () => void;
 }
 
@@ -183,31 +183,19 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onSuccess }) => {
       const fileName = `${Date.now()}.${fileExt}`;
       const filePath = `blog-images/${fileName}`;
       
-      // Create a storage bucket if it doesn't exist
-      const { data: bucketExists } = await supabase.storage.getBucket('blog-images');
-      if (!bucketExists) {
-        const { error } = await supabase.storage.createBucket('blog-images', {
-          public: true,
-          fileSizeLimit: 5242880, // 5MB
-          allowedMimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp']
-        });
-        
-        if (error) throw error;
-      }
-      
       // Upload the file
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError, data } = await supabase.storage
         .from('blog-images')
         .upload(filePath, file);
         
       if (uploadError) throw uploadError;
       
       // Get the public URL
-      const { data } = supabase.storage
+      const { data: publicUrlData } = supabase.storage
         .from('blog-images')
         .getPublicUrl(filePath);
         
-      return data.publicUrl;
+      return publicUrlData.publicUrl;
     } catch (error) {
       console.error('Error uploading image:', error);
       throw error;
@@ -228,7 +216,7 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onSuccess }) => {
       const tagsArray = data.tags.split(',').map(tag => tag.trim());
       
       // Prepare data for submission
-      const blogPostData = {
+      const blogPostData: BlogPost = {
         ...data,
         imageSrc,
         tags: tagsArray,
@@ -238,7 +226,7 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onSuccess }) => {
 
       // Save to Supabase
       let result;
-      if (isEditing) {
+      if (isEditing && initialData?.id) {
         // Update existing post
         result = await supabase
           .from('blog_posts')
@@ -248,7 +236,7 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onSuccess }) => {
         // Create new post
         result = await supabase
           .from('blog_posts')
-          .insert([blogPostData]);
+          .insert([blogPostData] as any);
       }
 
       if (result.error) throw result.error;

@@ -33,12 +33,13 @@ import { Edit, Plus, Trash2, Eye } from 'lucide-react';
 import { AlertDialog, AlertDialogContent, AlertDialogAction, AlertDialogCancel, 
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
+import { BlogPost } from '@/types/blog';
 
 const BlogPostsPage = () => {
-  const [posts, setPosts] = useState<any[]>([]);
+  const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [currentPost, setCurrentPost] = useState<any>(null);
+  const [currentPost, setCurrentPost] = useState<BlogPost | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -50,7 +51,7 @@ const BlogPostsPage = () => {
       const { data, error } = await supabase
         .from('blog_posts')
         .select('*')
-        .order('date', { ascending: false });
+        .order('date', { ascending: false }) as { data: BlogPost[] | null, error: any };
       
       if (error) throw error;
       
@@ -77,7 +78,7 @@ const BlogPostsPage = () => {
     setIsFormOpen(true);
   };
 
-  const handleEditPost = (post: any) => {
+  const handleEditPost = (post: BlogPost) => {
     setCurrentPost(post);
     setIsFormOpen(true);
   };
@@ -87,7 +88,7 @@ const BlogPostsPage = () => {
       const { error } = await supabase
         .from('blog_posts')
         .delete()
-        .eq('id', id);
+        .eq('id', id) as { error: any };
       
       if (error) throw error;
       
@@ -179,7 +180,7 @@ const BlogPostsPage = () => {
                         <Badge variant="outline">{post.category}</Badge>
                       </TableCell>
                       <TableCell>
-                        {new Date(post.date).toLocaleDateString('pt-PT')}
+                        {new Date(post.date || '').toLocaleDateString('pt-PT')}
                       </TableCell>
                       <TableCell className="text-right space-x-2">
                         <Button
@@ -221,7 +222,7 @@ const BlogPostsPage = () => {
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancelar</AlertDialogCancel>
                               <AlertDialogAction 
-                                onClick={() => handleDeletePost(post.id)}
+                                onClick={() => handleDeletePost(post.id!)}
                                 className="bg-destructive text-destructive-foreground"
                               >
                                 Excluir
