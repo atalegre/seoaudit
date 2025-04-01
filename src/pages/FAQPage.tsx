@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
@@ -64,9 +63,7 @@ const FAQPage = () => {
     }
   ];
 
-  // Add structured data for FAQ page when component mounts
   useEffect(() => {
-    // Create structured data script for FAQs
     const script = document.createElement('script');
     script.type = 'application/ld+json';
     
@@ -86,7 +83,6 @@ const FAQPage = () => {
     script.textContent = JSON.stringify(faqStructuredData);
     document.head.appendChild(script);
     
-    // Clean up when component unmounts
     return () => {
       document.head.removeChild(script);
     };
@@ -106,7 +102,6 @@ const FAQPage = () => {
       <main className="flex-1 container py-12 px-4">
         <div className="max-w-3xl mx-auto">
           <div className="mb-8">
-            {/* Replace simple breadcrumb with shadcn/ui breadcrumb component */}
             <Breadcrumb className="mb-6">
               <BreadcrumbList>
                 <BreadcrumbItem>
@@ -125,7 +120,6 @@ const FAQPage = () => {
             <p className="text-lg text-muted-foreground">Encontre respostas para as dúvidas mais comuns sobre o SEO AI Checker e otimização para motores de busca e IA.</p>
           </div>
           
-          {/* TL;DR Summary Section for AIO */}
           <div className="mb-8 p-4 border rounded-lg bg-secondary/20">
             <h2 className="text-lg font-semibold mb-2">Resumo Rápido</h2>
             <ul className="list-disc list-inside space-y-1 text-muted-foreground">
