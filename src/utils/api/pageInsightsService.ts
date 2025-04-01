@@ -1,3 +1,4 @@
+
 import { analyzeSite } from '../analyzerUtils';
 import { getApiKey } from './supabaseClient';
 import { toast } from 'sonner';
@@ -51,6 +52,7 @@ export async function getPageInsightsData(url: string): Promise<any> {
     }
     
     const data = await response.json();
+    console.log('Google Page Insights API response:', JSON.stringify(data).substring(0, 500) + '...');
     return processPageInsightsData(data, url);
   } catch (error) {
     console.error('Error fetching Page Insights data:', error);
@@ -88,9 +90,25 @@ function processPageInsightsData(data: any, url: string): any {
     // Extrair informações de práticas recomendadas
     const bestPracticesScore = Math.round(data.lighthouseResult?.categories?.['best-practices']?.score * 100) || 75;
     
+    // Extrair Core Web Vitals
+    const lcpValue = data.lighthouseResult?.audits?.['largest-contentful-paint']?.numericValue;
+    const lcp = lcpValue ? Math.round(lcpValue / 10) / 100 : 3.5; // Converter para segundos e arredondar
+    
+    const fidValue = data.lighthouseResult?.audits?.['max-potential-fid']?.numericValue;
+    const fid = fidValue ? Math.round(fidValue) : 120; // Arredondar para ms
+    
+    const clsValue = data.lighthouseResult?.audits?.['cumulative-layout-shift']?.numericValue;
+    const cls = clsValue ? Math.round(clsValue * 100) / 100 : 0.15; // Arredondar para duas casas decimais
+    
     // Extrair tempos de carregamento
     const loadTimeDesktop = data.loadingExperience?.metrics?.FIRST_CONTENTFUL_PAINT_MS?.percentile / 1000 || 3.5;
     const loadTimeMobile = data.loadingExperience?.metrics?.FIRST_CONTENTFUL_PAINT_MS?.percentile / 1000 || 5.2;
+    
+    // Extrair informações de usabilidade móvel
+    const mobileFriendly = data.lighthouseResult?.audits?.['viewport']?.score === 1;
+    const tapTargetsAudit = data.lighthouseResult?.audits?.['tap-targets'];
+    const tapTargetsScore = tapTargetsAudit?.score || 0;
+    const tapTargetsDetails = tapTargetsAudit?.details?.items || [];
     
     // Extrair auditorias para recomendações
     const audits = data.lighthouseResult?.audits || {};
@@ -114,11 +132,18 @@ function processPageInsightsData(data: any, url: string): any {
       url: url,
       loadTimeDesktop: loadTimeDesktop,
       loadTimeMobile: loadTimeMobile,
-      mobileFriendly: data.loadingExperience?.metrics?.CUMULATIVE_LAYOUT_SHIFT_SCORE?.category === 'FAST',
+      mobileFriendly: mobileFriendly,
       security: audits['is-on-https']?.score === 1,
       imageOptimization: Math.round((audits['uses-optimized-images']?.score || 0.6) * 100),
       headingsStructure: Math.round((audits['document-title']?.score || 0.7) * 100),
       metaTags: Math.round((audits['meta-description']?.score || 0.5) * 100),
+      // Core Web Vitals
+      lcp: lcp,
+      fid: fid,
+      cls: cls,
+      // Mobile usability details
+      tapTargetsScore: tapTargetsScore * 100,
+      tapTargetsIssues: tapTargetsDetails.length,
       recommendations: auditItems.map(item => ({
         id: item.id,
         title: item.title,
@@ -140,7 +165,10 @@ function getAuditImportance(auditId: string): number {
     'document-title', 
     'meta-description', 
     'link-text', 
-    'crawlable-anchors'
+    'crawlable-anchors',
+    'largest-contentful-paint',
+    'cumulative-layout-shift',
+    'total-blocking-time'
   ];
   
   const mediumImportanceAudits = [
@@ -148,7 +176,9 @@ function getAuditImportance(auditId: string): number {
     'tap-targets',
     'structured-data',
     'hreflang',
-    'plugins'
+    'plugins',
+    'first-contentful-paint',
+    'interactive'
   ];
   
   if (highImportanceAudits.includes(auditId)) return 3;

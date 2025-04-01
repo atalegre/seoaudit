@@ -3,7 +3,19 @@ import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { AlertTriangle, Clock, Smartphone, Image, FileText, Shield, CheckCircle2, XCircle } from 'lucide-react';
+import { 
+  AlertTriangle, 
+  Clock, 
+  Smartphone, 
+  Image, 
+  FileText, 
+  Shield, 
+  CheckCircle2, 
+  XCircle, 
+  Zap,
+  Layout,
+  Loader2
+} from 'lucide-react';
 import { SeoAnalysisResult, AioAnalysisResult } from '@/utils/api/types';
 
 interface AnalysisTabsProps {
@@ -21,12 +33,13 @@ interface AnalysisTabsProps {
 const AnalysisTabs: React.FC<AnalysisTabsProps> = ({ 
   seoData, 
   aioData, 
-  recommendations = [] // Provide a default empty array if recommendations is undefined
+  recommendations = []
 }) => {
   return (
     <Tabs defaultValue="seo" className="w-full animate-fade-in" style={{ animationDelay: '300ms' }}>
-      <TabsList className="grid grid-cols-3 mb-6">
+      <TabsList className="grid grid-cols-4 mb-6">
         <TabsTrigger value="seo" className="text-seo">Análise SEO</TabsTrigger>
+        <TabsTrigger value="coreweb" className="text-seo">Core Web Vitals</TabsTrigger>
         <TabsTrigger value="aio" className="text-aio">Análise AIO</TabsTrigger>
         <TabsTrigger value="combined">Recomendações</TabsTrigger>
       </TabsList>
@@ -240,6 +253,191 @@ const AnalysisTabs: React.FC<AnalysisTabsProps> = ({
             ) : (
               <p className="text-center text-muted-foreground">Nenhum problema identificado.</p>
             )}
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="coreweb" className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-seo" /> Core Web Vitals
+            </CardTitle>
+            <CardDescription>
+              Métricas essenciais para a experiência do usuário medidas pelo Google
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {seoData?.performanceScore !== undefined ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="flex flex-col items-center">
+                  <div className="flex justify-center mb-2">
+                    <div className="w-24 h-24 relative flex items-center justify-center">
+                      <svg className="w-full h-full" viewBox="0 0 100 100">
+                        <circle
+                          cx="50"
+                          cy="50"
+                          r="45"
+                          fill="transparent"
+                          stroke="#e2e8f0"
+                          strokeWidth="8"
+                        />
+                        <circle
+                          cx="50"
+                          cy="50"
+                          r="45"
+                          fill="transparent"
+                          stroke={(seoData?.performanceScore || 0) > 89 ? '#22c55e' : (seoData?.performanceScore || 0) > 49 ? '#f59e0b' : '#ef4444'}
+                          strokeWidth="8"
+                          strokeDasharray={`${(seoData?.performanceScore || 0) * 2.83} ${283 - (seoData?.performanceScore || 0) * 2.83}`}
+                          strokeLinecap="round"
+                          transform="rotate(-90 50 50)"
+                        />
+                      </svg>
+                      <span className="absolute text-xl font-semibold">{seoData?.performanceScore || 0}</span>
+                    </div>
+                  </div>
+                  <h3 className="text-center font-medium mt-2">Performance</h3>
+                  <p className="text-xs text-center text-muted-foreground mt-1">Velocidade e responsividade</p>
+                </div>
+
+                <div className="flex flex-col items-center">
+                  <div className="w-24 h-24 relative flex items-center justify-center">
+                    <svg className="w-full h-full" viewBox="0 0 100 100">
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="45"
+                        fill="transparent"
+                        stroke="#e2e8f0"
+                        strokeWidth="8"
+                      />
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="45"
+                        fill="transparent"
+                        stroke={(seoData?.bestPracticesScore || 0) > 89 ? '#22c55e' : (seoData?.bestPracticesScore || 0) > 49 ? '#f59e0b' : '#ef4444'}
+                        strokeWidth="8"
+                        strokeDasharray={`${(seoData?.bestPracticesScore || 0) * 2.83} ${283 - (seoData?.bestPracticesScore || 0) * 2.83}`}
+                        strokeLinecap="round"
+                        transform="rotate(-90 50 50)"
+                      />
+                    </svg>
+                    <span className="absolute text-xl font-semibold">{seoData?.bestPracticesScore || 0}</span>
+                  </div>
+                  <h3 className="text-center font-medium mt-2">Boas Práticas</h3>
+                  <p className="text-xs text-center text-muted-foreground mt-1">Conformidade com padrões web</p>
+                </div>
+
+                <div className="flex flex-col items-center">
+                  <div className="w-24 h-24 relative flex items-center justify-center">
+                    <svg className="w-full h-full" viewBox="0 0 100 100">
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="45"
+                        fill="transparent"
+                        stroke="#e2e8f0"
+                        strokeWidth="8"
+                      />
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="45"
+                        fill="transparent"
+                        stroke={(seoData?.score || 0) > 89 ? '#22c55e' : (seoData?.score || 0) > 49 ? '#f59e0b' : '#ef4444'}
+                        strokeWidth="8"
+                        strokeDasharray={`${(seoData?.score || 0) * 2.83} ${283 - (seoData?.score || 0) * 2.83}`}
+                        strokeLinecap="round"
+                        transform="rotate(-90 50 50)"
+                      />
+                    </svg>
+                    <span className="absolute text-xl font-semibold">{seoData?.score || 0}</span>
+                  </div>
+                  <h3 className="text-center font-medium mt-2">SEO</h3>
+                  <p className="text-xs text-center text-muted-foreground mt-1">Otimização para buscadores</p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center py-8">
+                <div className="flex flex-col items-center gap-2">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  <p className="text-muted-foreground">Dados não disponíveis</p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Smartphone className="h-5 w-5 text-seo" /> Mobile Usability
+            </CardTitle>
+            <CardDescription>
+              Avaliação da experiência do site em dispositivos móveis
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {seoData?.mobileFriendly !== undefined ? (
+                <>
+                  <div className="flex items-center justify-center">
+                    {seoData?.mobileFriendly ? (
+                      <div className="flex flex-col items-center">
+                        <CheckCircle2 className="h-16 w-16 text-green-500 mb-2" />
+                        <p className="text-center font-medium">Site otimizado para dispositivos móveis</p>
+                        <p className="text-sm text-muted-foreground text-center mt-1">
+                          Seu site está adaptado para experiência em dispositivos móveis
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center">
+                        <XCircle className="h-16 w-16 text-red-500 mb-2" />
+                        <p className="text-center font-medium">Problemas de usabilidade mobile</p>
+                        <p className="text-sm text-muted-foreground text-center mt-1">
+                          Seu site precisa de melhorias para dispositivos móveis
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                    <div className="border rounded-lg p-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <Layout className="h-5 w-5 text-seo" />
+                        <h3 className="font-medium">Viewport</h3>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {seoData?.mobileFriendly 
+                          ? "A viewport está configurada corretamente para dispositivos móveis."
+                          : "Configuração de viewport ausente ou incorreta."}
+                      </p>
+                    </div>
+
+                    <div className="border rounded-lg p-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <Smartphone className="h-5 w-5 text-seo" />
+                        <h3 className="font-medium">Tamanho dos elementos clicáveis</h3>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {seoData?.mobileFriendly 
+                          ? "Os elementos interativos têm o tamanho adequado para toque em dispositivos móveis."
+                          : "Alguns elementos clicáveis podem ser muito pequenos para interfaces touch."}
+                      </p>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center justify-center py-8">
+                  <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                    <p className="text-muted-foreground">Dados não disponíveis</p>
+                  </div>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       </TabsContent>

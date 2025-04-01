@@ -38,6 +38,7 @@ serve(async (req) => {
     const systemPrompt = `
 Você é um analisador especializado em websites. 
 Analise o site com base no URL e conteúdo fornecido.
+Avalie também como o site se comporta para algoritmos de IA.
 VOCÊ DEVE RESPONDER NO SEGUINTE FORMATO JSON:
 
 {
@@ -102,7 +103,7 @@ Não inclua mais nada além do JSON acima. Não forneça introduções, conclus�
     }
     
     const analysisText = data.choices[0]?.message?.content || '';
-    console.log(`[${requestId}] Resposta completa da API OpenAI:`, analysisText);
+    console.log(`[${requestId}] Resposta da API OpenAI:`, analysisText.substring(0, 300) + '...');
     
     try {
       // Tentar fazer parse do JSON da resposta
@@ -114,6 +115,7 @@ Não inclua mais nada além do JSON acima. Não forneça introduções, conclus�
         ...jsonResult,
         apiUsed: true,
         requestId: requestId,
+        timestamp: new Date().toISOString(),
         rawAnalysis: analysisText
       };
       
@@ -126,11 +128,11 @@ Não inclua mais nada além do JSON acima. Não forneça introduções, conclus�
       console.error(`[${requestId}] Erro ao analisar o JSON da resposta:`, parseError);
       console.log(`[${requestId}] Tentando extrair dados da resposta em texto:`, analysisText);
       
-      // Extrair dados da resposta do OpenAI como fallback
-      const scoreMatch = analysisText.match(/pontuação geral.*?(\d+)/i) || analysisText.match(/overall score.*?(\d+)/i) || analysisText.match(/"score":\s*(\d+)/i);
-      const clarityMatch = analysisText.match(/clareza de conteúdo.*?(\d+)/i) || analysisText.match(/content clarity.*?(\d+)/i) || analysisText.match(/"contentClarity":\s*(\d+)/i);
-      const structureMatch = analysisText.match(/estrutura lógica.*?(\d+)/i) || analysisText.match(/logical structure.*?(\d+)/i) || analysisText.match(/"logicalStructure":\s*(\d+)/i);
-      const languageMatch = analysisText.match(/linguagem natural.*?(\d+)/i) || analysisText.match(/natural language.*?(\d+)/i) || analysisText.match(/"naturalLanguage":\s*(\d+)/i);
+      // Extrair dados da resposta do OpenAI como fallback usando regex
+      const scoreMatch = analysisText.match(/"score":\s*(\d+)/i) || analysisText.match(/pontuação geral.*?(\d+)/i) || analysisText.match(/overall score.*?(\d+)/i);
+      const clarityMatch = analysisText.match(/"contentClarity":\s*(\d+)/i) || analysisText.match(/clareza de conteúdo.*?(\d+)/i) || analysisText.match(/content clarity.*?(\d+)/i);
+      const structureMatch = analysisText.match(/"logicalStructure":\s*(\d+)/i) || analysisText.match(/estrutura lógica.*?(\d+)/i) || analysisText.match(/logical structure.*?(\d+)/i);
+      const languageMatch = analysisText.match(/"naturalLanguage":\s*(\d+)/i) || analysisText.match(/linguagem natural.*?(\d+)/i) || analysisText.match(/natural language.*?(\d+)/i);
       
       console.log(`[${requestId}] Matches encontrados:`, {
         score: scoreMatch?.[1],
@@ -139,17 +141,20 @@ Não inclua mais nada além do JSON acima. Não forneça introduções, conclus�
         language: languageMatch?.[1]
       });
       
-      // Extrair tópicos (abordagem simplificada)
-      const topicsMatch = analysisText.match(/tópicos principais:.*?\n([\s\S]*?)\n\n/i) || analysisText.match(/key topics:.*?\n([\s\S]*?)\n\n/i);
-      const confusingMatch = analysisText.match(/partes confusas:.*?\n([\s\S]*?)(\n\n|$)/i) || analysisText.match(/confusing parts:.*?\n([\s\S]*?)(\n\n|$)/i);
-      
+      // Extrair tópicos usando regex
+      const topicsMatch = analysisText.match(/"topicsDetected":\s*\[(.*?)\]/i);
       const topics = topicsMatch ? 
-        topicsMatch[1].split('\n').map(t => t.replace(/^-\s*/, '').trim()).filter(Boolean) :
+        topicsMatch[1].split(',').map(t => t.trim().replace(/"/g, '').trim()).filter(Boolean) : 
         ['Marketing Digital', 'SEO', 'Presença Online'];
-        
+      
+      // Extrair partes confusas usando regex
+      const confusingMatch = analysisText.match(/"confusingParts":\s*\[(.*?)\]/i);
       const confusingParts = confusingMatch ?
-        confusingMatch[1].split('\n').map(t => t.replace(/^-\s*/, '').trim()).filter(Boolean) :
+        confusingMatch[1].split(',').map(t => t.trim().replace(/"/g, '').trim()).filter(Boolean) :
         ['Parágrafos muito longos', 'Informação técnica sem explicação'];
+      
+      const analysisMatch = analysisText.match(/"analysis":\s*"(.*?)"/i);
+      const analysis = analysisMatch ? analysisMatch[1] : '';
       
       const result = {
         score: parseInt(scoreMatch?.[1] || '70'),
@@ -158,9 +163,11 @@ Não inclua mais nada além do JSON acima. Não forneça introduções, conclus�
         naturalLanguage: parseInt(languageMatch?.[1] || '80'),
         topicsDetected: topics,
         confusingParts: confusingParts,
+        analysis: analysis,
         rawAnalysis: analysisText,
         apiUsed: true,
-        requestId: requestId
+        requestId: requestId,
+        timestamp: new Date().toISOString()
       };
 
       console.log(`[${requestId}] Análise extraída com sucesso:`, JSON.stringify(result).substring(0, 300) + "...");
