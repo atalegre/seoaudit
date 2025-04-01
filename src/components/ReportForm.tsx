@@ -52,8 +52,11 @@ const ReportForm: React.FC<ReportFormProps> = ({ url, seoScore, aioScore }) => {
       });
       
       if (authError && authError.message !== 'User already registered') {
+        console.error('Authentication error:', authError);
         throw authError;
       }
+      
+      console.log('Auth data:', authData);
       
       // Criar cliente no sistema
       const newClient: Client = {
@@ -64,12 +67,14 @@ const ReportForm: React.FC<ReportFormProps> = ({ url, seoScore, aioScore }) => {
         website: url,
         status: 'active',
         account: 'Sistema',
-        seoScore: seoScore,
-        aioScore: aioScore,
+        seoScore: seoScore ?? 0,
+        aioScore: aioScore ?? 0,
         lastAnalysis: new Date(),
       };
       
-      await saveClientsToDatabase([newClient]);
+      console.log('Creating client in database:', newClient);
+      const savedClientResult = await saveClientsToDatabase([newClient]);
+      console.log('Save client result:', savedClientResult);
       
       // Simulação de envio de email
       if (sendByEmail) {
@@ -82,6 +87,7 @@ const ReportForm: React.FC<ReportFormProps> = ({ url, seoScore, aioScore }) => {
       
       // Autenticar o usuário
       if (!authData?.user) {
+        console.log('Attempting to sign in user with email:', email);
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password: `${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`, // Isto não funcionará, mas tentamos o login para usuários existentes
@@ -89,6 +95,7 @@ const ReportForm: React.FC<ReportFormProps> = ({ url, seoScore, aioScore }) => {
         
         // Se não conseguir autenticar, apenas redireciona para a página de login
         if (signInError) {
+          console.log('Sign in error:', signInError);
           setTimeout(() => {
             navigate('/signin', { state: { email, returnTo: '/dashboard/client' } });
           }, 2000);
@@ -96,6 +103,7 @@ const ReportForm: React.FC<ReportFormProps> = ({ url, seoScore, aioScore }) => {
         }
       }
       
+      console.log('Auth successful, redirecting to dashboard');
       // Redirecionar para o dashboard após 2 segundos
       setTimeout(() => {
         navigate('/dashboard/client');

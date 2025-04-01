@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { 
@@ -21,83 +21,42 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Search, PlusCircle, Eye, Edit, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Search, PlusCircle, Eye, Edit, Trash2, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
-// Mock data for clients
-const clients = [
-  {
-    id: 1,
-    name: 'Tech Solutions',
-    website: 'techsolutions.pt',
-    contactEmail: 'joao@techsolutions.pt',
-    contactName: 'João Pereira',
-    account: 'João Silva',
-    status: 'active',
-    lastReport: '2023-10-15',
-    seoScore: 87,
-    aioScore: 72,
-  },
-  {
-    id: 2,
-    name: 'Design Masters',
-    website: 'designmasters.pt',
-    contactEmail: 'ana@designmasters.pt',
-    contactName: 'Ana Santos',
-    account: 'Maria Oliveira',
-    status: 'active',
-    lastReport: '2023-10-10',
-    seoScore: 92,
-    aioScore: 85,
-  },
-  {
-    id: 3,
-    name: 'Café Lisboa',
-    website: 'cafelisboa.pt',
-    contactEmail: 'pedro@cafelisboa.pt',
-    contactName: 'Pedro Costa',
-    account: 'João Silva',
-    status: 'inactive',
-    lastReport: '2023-09-20',
-    seoScore: 65,
-    aioScore: 58,
-  },
-  {
-    id: 4,
-    name: 'Auto Parts',
-    website: 'autoparts.pt',
-    contactEmail: 'carlos@autoparts.pt',
-    contactName: 'Carlos Mendes',
-    account: 'Maria Oliveira',
-    status: 'pending',
-    lastReport: '2023-10-01',
-    seoScore: 73,
-    aioScore: 67,
-  },
-  {
-    id: 5,
-    name: 'Escola de Música',
-    website: 'escolamusica.pt',
-    contactEmail: 'sofia@escolamusica.pt',
-    contactName: 'Sofia Almeida',
-    account: 'João Silva',
-    status: 'active',
-    lastReport: '2023-10-12',
-    seoScore: 81,
-    aioScore: 75,
-  },
-];
+import { Client } from '@/utils/api/types';
+import { getClientsFromDatabase } from '@/utils/api/supabaseClient';
+import { toast } from 'sonner';
 
 const ClientsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [clients, setClients] = useState<Client[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { toast: uiToast } = useToast();
+  
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        setIsLoading(true);
+        const clientsData = await getClientsFromDatabase();
+        console.log('Fetched clients:', clientsData);
+        setClients(clientsData);
+      } catch (error) {
+        console.error('Error fetching clients:', error);
+        toast.error('Erro ao buscar clientes');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchClients();
+  }, []);
   
   // Filter clients based on search query
   const filteredClients = clients.filter(client => 
-    client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    client.website.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    client.contactName.toLowerCase().includes(searchQuery.toLowerCase())
+    client.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    client.website?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    client.contactName?.toLowerCase().includes(searchQuery.toLowerCase())
   );
   
   // Handle client view
@@ -107,7 +66,7 @@ const ClientsPage = () => {
   
   // Handle client edit
   const handleEditClient = (clientId: number) => {
-    toast({
+    uiToast({
       title: "Funcionalidade em desenvolvimento",
       description: "A edição de clientes será implementada em breve.",
     });
@@ -115,7 +74,7 @@ const ClientsPage = () => {
   
   // Handle client delete
   const handleDeleteClient = (clientId: number) => {
-    toast({
+    uiToast({
       title: "Funcionalidade em desenvolvimento",
       description: "A exclusão de clientes será implementada em breve.",
     });
@@ -145,7 +104,7 @@ const ClientsPage = () => {
           </div>
           
           <Button onClick={() => {
-            toast({
+            uiToast({
               title: "Funcionalidade em desenvolvimento",
               description: "A adição de clientes será implementada em breve.",
             });
@@ -180,12 +139,21 @@ const ClientsPage = () => {
                 <TableHead>Status</TableHead>
                 <TableHead>Score SEO</TableHead>
                 <TableHead>Score AIO</TableHead>
-                <TableHead>Último Relatório</TableHead>
+                <TableHead>Última Análise</TableHead>
                 <TableHead className="w-[80px]">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredClients.length === 0 ? (
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={9} className="h-24 text-center">
+                    <div className="flex justify-center items-center">
+                      <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                      <span>Carregando clientes...</span>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : filteredClients.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={9} className="h-24 text-center">
                     Nenhum cliente encontrado.
@@ -203,10 +171,10 @@ const ClientsPage = () => {
                       </div>
                     </TableCell>
                     <TableCell>{client.account}</TableCell>
-                    <TableCell>{getStatusBadge(client.status)}</TableCell>
+                    <TableCell>{getStatusBadge(client.status || 'active')}</TableCell>
                     <TableCell>{client.seoScore}</TableCell>
                     <TableCell>{client.aioScore}</TableCell>
-                    <TableCell>{client.lastReport}</TableCell>
+                    <TableCell>{client.lastAnalysis ? new Date(client.lastAnalysis).toLocaleDateString() : 'N/A'}</TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -218,16 +186,16 @@ const ClientsPage = () => {
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Ações</DropdownMenuLabel>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => handleViewClient(client.id)}>
+                          <DropdownMenuItem onClick={() => handleViewClient(client.id as number)}>
                             <Eye className="mr-2 h-4 w-4" />
                             Ver detalhes
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEditClient(client.id)}>
+                          <DropdownMenuItem onClick={() => handleEditClient(client.id as number)}>
                             <Edit className="mr-2 h-4 w-4" />
                             Editar
                           </DropdownMenuItem>
                           <DropdownMenuItem 
-                            onClick={() => handleDeleteClient(client.id)}
+                            onClick={() => handleDeleteClient(client.id as number)}
                             className="text-red-600 focus:text-red-600"
                           >
                             <Trash2 className="mr-2 h-4 w-4" />

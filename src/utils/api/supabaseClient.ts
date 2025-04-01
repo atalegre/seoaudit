@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 import { Client, AnalysisResult } from './types';
 import { supabase as supabaseInstance } from '@/integrations/supabase/client';
@@ -61,11 +60,13 @@ export async function getClientsFromDatabase(): Promise<Client[]> {
 }
 
 // Função para salvar novos clientes no Supabase
-export async function saveClientsToDatabase(clients: Client[]): Promise<void> {
+export async function saveClientsToDatabase(clients: Client[]): Promise<{success: boolean, data: any}> {
   try {
+    console.log('Attempting to save clients to database:', clients);
+    
     // Check if Supabase is configured
-    if (!supabaseUrl || !supabaseAnonKey) {
-      // Fallback to localStorage if Supabase is not configured
+    if (!supabase) {
+      console.warn('Supabase instance not available, falling back to localStorage');
       const existingClients = JSON.parse(localStorage.getItem('clients') || '[]');
       const mergedClients = [...existingClients];
       
@@ -76,19 +77,26 @@ export async function saveClientsToDatabase(clients: Client[]): Promise<void> {
       });
       
       localStorage.setItem('clients', JSON.stringify(mergedClients));
-      return;
+      return { success: true, data: mergedClients };
     }
     
+    console.log('Using Supabase to save clients');
+    
     // Insere os novos clientes, ignorando duplicados baseado no id
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('clients')
-      .upsert(clients, { onConflict: 'id' });
+      .upsert(clients, { 
+        onConflict: 'contactEmail',
+        ignoreDuplicates: false 
+      });
     
     if (error) {
+      console.error('Error saving clients to Supabase:', error);
       throw error;
     }
     
-    console.log('Clientes salvos no Supabase com sucesso');
+    console.log('Clientes salvos no Supabase com sucesso:', data);
+    return { success: true, data };
   } catch (error) {
     console.error('Erro ao salvar clientes no Supabase:', error);
     
@@ -98,12 +106,13 @@ export async function saveClientsToDatabase(clients: Client[]): Promise<void> {
     
     // Adiciona apenas clientes que ainda não existem no array
     clients.forEach(newClient => {
-      if (!mergedClients.some(c => c.id === newClient.id)) {
+      if (!mergedClients.some(c => c.id === newClient.id || c.contactEmail === newClient.contactEmail)) {
         mergedClients.push(newClient);
       }
     });
     
     localStorage.setItem('clients', JSON.stringify(mergedClients));
+    return { success: false, data: mergedClients };
   }
 }
 
@@ -335,4 +344,3 @@ export async function getApiKey(keyType: 'googlePageInsightsKey' | 'chatGptApiKe
     return localStorage.getItem(keyType);
   }
 }
-
