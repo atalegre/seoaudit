@@ -31,14 +31,17 @@ serve(async (req) => {
       throw new Error('URL é obrigatória');
     }
 
-    console.log(`Analisando URL: ${url} - Timestamp: ${timestamp || 'not provided'}`);
+    console.log(`Analisando URL: ${url} - Timestamp: ${timestamp || 'não fornecido'}`);
 
-    // Para análise real, utilizamos o conteúdo. 
-    // Se não for fornecido, usamos apenas a URL para análise simplificada
-    const prompt = content 
-      ? `Analise este site: ${url}\n\nConteúdo: ${content}\n\nFaça uma análise detalhada de SEO e como modelos de IA interpretam este conteúdo.`
-      : `Analise este site: ${url}\n\nFaça uma análise detalhada de SEO e como modelos de IA interpretam este URL.`;
+    // Criar prompts mais específicos para melhorar a análise
+    const systemPrompt = "Você é um analisador especializado em websites que avalia claramente o conteúdo. IMPORTANTE: Forneça pontuações NUMÉRICAS DE 0 A 100 para clareza de conteúdo, estrutura lógica e linguagem natural, além de uma pontuação geral. Identifique explicitamente os tópicos principais e partes confusas.";
+    
+    const userPrompt = content 
+      ? `Analise este site: ${url}\n\nConteúdo: ${content}\n\nFaça uma análise detalhada e forneça PONTUAÇÕES NUMÉRICAS de 0 a 100 para cada critério.`
+      : `Analise este site: ${url}\n\nFaça uma análise detalhada e forneça PONTUAÇÕES NUMÉRICAS de 0 a 100 para cada critério.`;
 
+    console.log('System prompt:', systemPrompt);
+    console.log('User prompt:', userPrompt);
     console.log('Enviando requisição para API OpenAI com modelo gpt-4o-mini');
     
     const startTime = Date.now();
@@ -53,11 +56,11 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: "Você é um analisador de websites especializado em SEO e otimização para IA. Forneça pontuações de 0-100 para clareza de conteúdo, estrutura lógica e linguagem natural, além de uma pontuação geral. Identifique tópicos principais e partes confusas."
+            content: systemPrompt
           },
           {
             role: "user",
-            content: prompt
+            content: userPrompt
           }
         ],
         max_tokens: 1000
@@ -82,7 +85,7 @@ serve(async (req) => {
     }
     
     const analysisText = data.choices[0]?.message?.content || '';
-    console.log("Resposta da API OpenAI:", analysisText.substring(0, 100) + "...");
+    console.log("Resposta completa da API OpenAI:", analysisText);
     
     try {
       // Extrair dados da resposta do OpenAI
@@ -90,6 +93,13 @@ serve(async (req) => {
       const clarityMatch = analysisText.match(/clareza de conteúdo.*?(\d+)/i) || analysisText.match(/content clarity.*?(\d+)/i);
       const structureMatch = analysisText.match(/estrutura lógica.*?(\d+)/i) || analysisText.match(/logical structure.*?(\d+)/i);
       const languageMatch = analysisText.match(/linguagem natural.*?(\d+)/i) || analysisText.match(/natural language.*?(\d+)/i);
+      
+      console.log('Matches encontrados:', {
+        score: scoreMatch?.[1],
+        clarity: clarityMatch?.[1],
+        structure: structureMatch?.[1],
+        language: languageMatch?.[1]
+      });
       
       // Extrair tópicos (abordagem simplificada)
       const topicsMatch = analysisText.match(/tópicos principais:.*?\n([\s\S]*?)\n\n/i) || analysisText.match(/key topics:.*?\n([\s\S]*?)\n\n/i);
@@ -114,7 +124,7 @@ serve(async (req) => {
         apiUsed: true // Flag to confirm API was used
       };
 
-      console.log('Análise extraída com sucesso:', JSON.stringify(result).substring(0, 100) + "...");
+      console.log('Análise extraída com sucesso:', JSON.stringify(result).substring(0, 300) + "...");
 
       return new Response(JSON.stringify(result), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

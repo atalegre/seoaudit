@@ -26,25 +26,37 @@ export async function getChatGptAnalysis(url: string, content: string = ''): Pro
       try {
         // Chamar a função Edge do Supabase
         console.log('Chamando função Edge do Supabase para análise do site');
+        
+        // Adicionar um timestamp para ajudar a identificar a solicitação nos logs
+        const requestTimestamp = new Date().toISOString();
+        console.log(`[${requestTimestamp}] Enviando solicitação para Edge function com URL: ${url}`);
+        
         const { data, error } = await supabase.functions.invoke('analyze-website', {
           body: { 
             url, 
             content,
-            timestamp: new Date().toISOString() // Add timestamp to help with debugging
+            timestamp: requestTimestamp
           }
         });
         
         if (error) {
-          console.error('Erro na função Edge:', error);
+          console.error(`[${requestTimestamp}] Erro na função Edge:`, error);
           throw error;
         }
 
-        console.log('Resposta da função Edge recebida:', data);
+        console.log(`[${requestTimestamp}] Resposta da função Edge recebida:`, data);
         
         // Verificar se a resposta contém os dados esperados
         if (!data || (!data.score && data.score !== 0)) {
-          console.warn('Resposta da Edge function não contém score:', data);
+          console.warn(`[${requestTimestamp}] Resposta da Edge function não contém score:`, data);
           throw new Error('Resposta da função Edge não contém os dados esperados');
+        }
+        
+        // Se chegou até aqui, a API foi usada com sucesso
+        if (data.apiUsed) {
+          toast.success('Análise realizada com API OpenAI', {
+            description: 'A API do OpenAI foi utilizada para análise'
+          });
         }
         
         return data;
@@ -60,6 +72,17 @@ export async function getChatGptAnalysis(url: string, content: string = ''): Pro
 
     // Usando API key direta fornecida pelo usuário
     console.log('Chamando API do OpenAI diretamente com API key');
+    
+    // Criando o prompt para análise
+    const systemPrompt = "Você é um analisador de conteúdo de websites que avalia clareza, estrutura e qualidade da linguagem natural. Forneça pontuações numéricas exatas de 0-100 para clareza de conteúdo, estrutura lógica e linguagem natural, além de uma pontuação geral. Identifique tópicos principais e partes confusas.";
+    
+    const userPrompt = content 
+      ? `Analise este conteúdo de website da URL ${url}: ${content}`
+      : `Analise este website: ${url}. Por favor, analise a estrutura e qualidade do conteúdo com base na URL. Forneça pontuações numéricas claras.`;
+    
+    console.log('System prompt:', systemPrompt);
+    console.log('User prompt:', userPrompt);
+    
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -71,11 +94,11 @@ export async function getChatGptAnalysis(url: string, content: string = ''): Pro
         messages: [
           {
             role: "system",
-            content: "Você é um analisador de conteúdo de websites que avalia clareza, estrutura e qualidade da linguagem natural. Forneça pontuações de 0-100 para clareza de conteúdo, estrutura lógica e linguagem natural, além de uma pontuação geral. Identifique tópicos principais e partes confusas."
+            content: systemPrompt
           },
           {
             role: "user",
-            content: `Analise este conteúdo de website da URL ${url}: ${content || 'Por favor, analise a estrutura e qualidade do conteúdo com base na URL.'}`
+            content: userPrompt
           }
         ],
         max_tokens: 1000
@@ -91,7 +114,12 @@ export async function getChatGptAnalysis(url: string, content: string = ''): Pro
     console.log('Resposta da API OpenAI recebida');
     const data = await response.json();
     const analysisText = data.choices[0]?.message?.content || '';
-    console.log('Texto de análise da API OpenAI:', analysisText.substring(0, 100) + '...');
+    console.log('Texto completo de análise da API OpenAI:', analysisText);
+    
+    // Notificar usuário que a API foi usada
+    toast.success('Análise realizada com API OpenAI', {
+      description: 'A API do OpenAI foi utilizada diretamente para análise'
+    });
     
     try {
       // Extrair dados da resposta do ChatGPT
@@ -100,6 +128,13 @@ export async function getChatGptAnalysis(url: string, content: string = ''): Pro
       const clarityMatch = analysisText.match(/clareza de conteúdo.*?(\d+)/i) || analysisText.match(/content clarity.*?(\d+)/i);
       const structureMatch = analysisText.match(/estrutura lógica.*?(\d+)/i) || analysisText.match(/logical structure.*?(\d+)/i);
       const languageMatch = analysisText.match(/linguagem natural.*?(\d+)/i) || analysisText.match(/natural language.*?(\d+)/i);
+      
+      console.log('Matches encontrados:', {
+        score: scoreMatch?.[1],
+        clarity: clarityMatch?.[1],
+        structure: structureMatch?.[1],
+        language: languageMatch?.[1]
+      });
       
       // Extrair tópicos (abordagem simplificada)
       const topicsMatch = analysisText.match(/tópicos principais:.*?\n([\s\S]*?)\n\n/i) || analysisText.match(/key topics:.*?\n([\s\S]*?)\n\n/i);
@@ -120,7 +155,8 @@ export async function getChatGptAnalysis(url: string, content: string = ''): Pro
         naturalLanguage: parseInt(languageMatch?.[1] || '80'),
         topicsDetected: topics,
         confusingParts: confusingParts,
-        rawAnalysis: analysisText // Include the raw response for debugging
+        rawAnalysis: analysisText, // Include the raw response for debugging
+        apiUsed: true // Confirmar que a API foi usada
       };
       
       console.log('Análise extraída com sucesso:', result);

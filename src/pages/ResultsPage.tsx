@@ -41,6 +41,11 @@ const ResultsPage = () => {
           console.log('URL normalizada para:', normalizedUrl);
         }
         
+        toast('Análise em andamento...', {
+          description: 'Aguarde enquanto analisamos o site.',
+          duration: 3000
+        });
+        
         // Attempt to scrape content
         let pageContent = '';
         try {
@@ -52,6 +57,7 @@ const ResultsPage = () => {
         }
         
         // Parallel requests for better performance
+        console.log('Iniciando requisições paralelas para SEO e AIO');
         const [seoDataPromise, aioDataPromise] = await Promise.allSettled([
           // Get SEO data from Google Page Insights
           (async () => {
@@ -88,6 +94,14 @@ const ResultsPage = () => {
               // Pass content if available, otherwise just pass URL
               const data = await getChatGptAnalysis(normalizedUrl, pageContent);
               console.log('Dados AIO recebidos:', data);
+              
+              // Check if API was used
+              if (data && data.apiUsed) {
+                console.log('API OpenAI foi utilizada com sucesso para análise');
+              } else {
+                console.log('API OpenAI não foi utilizada, usando analisador local');
+              }
+              
               return data;
             } catch (error) {
               console.error('Error fetching AIO data:', error);
