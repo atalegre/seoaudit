@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
@@ -110,7 +109,6 @@ const BlogPostsPage = () => {
       )
     : posts;
 
-  
   return (
     <DashboardLayout>
       <div className="space-y-6">
