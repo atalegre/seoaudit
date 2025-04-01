@@ -25,8 +25,6 @@ export async function getChatGptAnalysis(url: string, content: string = ''): Pro
         });
         
         if (error) throw error;
-        
-        console.log('Resposta da análise de IA:', data);
         return data;
       } catch (edgeFunctionError) {
         console.error('Erro ao usar função Edge para análise:', edgeFunctionError);
@@ -61,16 +59,15 @@ export async function getChatGptAnalysis(url: string, content: string = ''): Pro
     
     const data = await response.json();
     const analysisText = data.choices[0]?.message?.content || '';
-    console.log("ChatGPT API response:", analysisText);
     
     try {
-      // Try to extract data from the ChatGPT response
+      // Extrair dados da resposta do ChatGPT
       const scoreMatch = analysisText.match(/overall score.*?(\d+)/i);
       const clarityMatch = analysisText.match(/content clarity.*?(\d+)/i);
       const structureMatch = analysisText.match(/logical structure.*?(\d+)/i);
       const languageMatch = analysisText.match(/natural language.*?(\d+)/i);
       
-      // Extract topics (this is a simplified approach)
+      // Extrair tópicos (abordagem simplificada)
       const topicsMatch = analysisText.match(/key topics:.*?\n([\s\S]*?)\n\n/i);
       const confusingMatch = analysisText.match(/confusing parts:.*?\n([\s\S]*?)(\n\n|$)/i);
       
@@ -96,7 +93,6 @@ export async function getChatGptAnalysis(url: string, content: string = ''): Pro
     }
   } catch (error) {
     console.error('Error fetching ChatGPT analysis:', error);
-    // Fallback para dados simulados
     return analyzeSite(url).aio;
   }
 }

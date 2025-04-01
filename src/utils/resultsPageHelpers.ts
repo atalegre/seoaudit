@@ -19,6 +19,7 @@ export function formatUrl(url: string): string {
 export function generateRecommendations(seo: any, aio: any) {
   const recommendations = [];
 
+  // SEO recommendations
   if (seo.loadTimeDesktop > 3) {
     recommendations.push({
       suggestion: 'Otimize o tempo de carregamento da página para desktop',
@@ -82,6 +83,7 @@ export function generateRecommendations(seo: any, aio: any) {
     });
   }
 
+  // AIO recommendations
   if (aio.contentClarity < 60) {
     recommendations.push({
       suggestion: 'Melhore a clareza do conteúdo do site',
