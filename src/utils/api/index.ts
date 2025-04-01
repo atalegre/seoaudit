@@ -19,4 +19,4 @@ export {
 export { getPageInsightsData } from './pageInsightsService';
 export { getChatGptAnalysis } from './chatGptService';
 export { processBulkImport } from './bulkImportService';
-
+export { getFullAnalysis, analyzeBulkClients } from './analysisService';
