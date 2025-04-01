@@ -47,7 +47,7 @@ export async function getChatGptAnalysis(url: string, content: string = ''): Pro
         console.log(`[${requestTimestamp}] Resposta da função Edge recebida:`, data);
         
         // Verificar se a resposta contém os dados esperados
-        if (!data || (!data.score && data.score !== 0)) {
+        if (!data || (data.score === undefined && data.score !== 0)) {
           console.warn(`[${requestTimestamp}] Resposta da Edge function não contém score:`, data);
           throw new Error('Resposta da função Edge não contém os dados esperados');
         }
@@ -73,12 +73,27 @@ export async function getChatGptAnalysis(url: string, content: string = ''): Pro
     // Usando API key direta fornecida pelo usuário
     console.log('Chamando API do OpenAI diretamente com API key');
     
-    // Criando o prompt para análise
-    const systemPrompt = "Você é um analisador de conteúdo de websites que avalia clareza, estrutura e qualidade da linguagem natural. Forneça pontuações numéricas exatas de 0-100 para clareza de conteúdo, estrutura lógica e linguagem natural, além de uma pontuação geral. Identifique tópicos principais e partes confusas.";
+    // Criando o prompt para análise com formato JSON
+    const systemPrompt = `
+Você é um analisador especializado em websites. 
+Analise o site com base no URL e conteúdo fornecido.
+VOCÊ DEVE RESPONDER NO SEGUINTE FORMATO JSON:
+
+{
+  "score": [0-100],
+  "contentClarity": [0-100],
+  "logicalStructure": [0-100],
+  "naturalLanguage": [0-100],
+  "topicsDetected": ["tópico1", "tópico2", "tópico3"],
+  "confusingParts": ["parte confusa 1", "parte confusa 2"],
+  "analysis": "Sua análise textual detalhada aqui"
+}
+
+Não inclua mais nada além do JSON acima. Não forneça introduções, conclusões ou qualquer outro texto.`;
     
     const userPrompt = content 
-      ? `Analise este conteúdo de website da URL ${url}: ${content}`
-      : `Analise este website: ${url}. Por favor, analise a estrutura e qualidade do conteúdo com base na URL. Forneça pontuações numéricas claras.`;
+      ? `Analise este conteúdo de website da URL ${url}: ${content}\n\nForneça sua análise no formato JSON especificado.`
+      : `Analise este website: ${url}. Forneça sua análise no formato JSON especificado.`;
     
     console.log('System prompt:', systemPrompt);
     console.log('User prompt:', userPrompt);
@@ -101,6 +116,7 @@ export async function getChatGptAnalysis(url: string, content: string = ''): Pro
             content: userPrompt
           }
         ],
+        response_format: { type: "json_object" },
         max_tokens: 1000
       })
     });
@@ -122,19 +138,26 @@ export async function getChatGptAnalysis(url: string, content: string = ''): Pro
     });
     
     try {
-      // Extrair dados da resposta do ChatGPT
-      console.log('Extraindo métricas da resposta da API');
-      const scoreMatch = analysisText.match(/pontuação geral.*?(\d+)/i) || analysisText.match(/overall score.*?(\d+)/i);
-      const clarityMatch = analysisText.match(/clareza de conteúdo.*?(\d+)/i) || analysisText.match(/content clarity.*?(\d+)/i);
-      const structureMatch = analysisText.match(/estrutura lógica.*?(\d+)/i) || analysisText.match(/logical structure.*?(\d+)/i);
-      const languageMatch = analysisText.match(/linguagem natural.*?(\d+)/i) || analysisText.match(/natural language.*?(\d+)/i);
+      // Tentar fazer parse do JSON direto
+      const jsonResult = JSON.parse(analysisText);
+      console.log('JSON extraído com sucesso:', jsonResult);
       
-      console.log('Matches encontrados:', {
-        score: scoreMatch?.[1],
-        clarity: clarityMatch?.[1],
-        structure: structureMatch?.[1],
-        language: languageMatch?.[1]
-      });
+      // Adicionar flag para confirmar que API foi usada
+      return {
+        ...jsonResult,
+        apiUsed: true,
+        rawAnalysis: analysisText
+      };
+      
+    } catch (parseError) {
+      console.error('Erro ao analisar JSON da resposta do ChatGPT:', parseError);
+      console.log('Texto completo da resposta:', analysisText);
+      
+      // Fallback para extração de texto se o JSON falhar
+      const scoreMatch = analysisText.match(/pontuação geral.*?(\d+)/i) || analysisText.match(/overall score.*?(\d+)/i) || analysisText.match(/"score":\s*(\d+)/i);
+      const clarityMatch = analysisText.match(/clareza de conteúdo.*?(\d+)/i) || analysisText.match(/content clarity.*?(\d+)/i) || analysisText.match(/"contentClarity":\s*(\d+)/i);
+      const structureMatch = analysisText.match(/estrutura lógica.*?(\d+)/i) || analysisText.match(/logical structure.*?(\d+)/i) || analysisText.match(/"logicalStructure":\s*(\d+)/i);
+      const languageMatch = analysisText.match(/linguagem natural.*?(\d+)/i) || analysisText.match(/natural language.*?(\d+)/i) || analysisText.match(/"naturalLanguage":\s*(\d+)/i);
       
       // Extrair tópicos (abordagem simplificada)
       const topicsMatch = analysisText.match(/tópicos principais:.*?\n([\s\S]*?)\n\n/i) || analysisText.match(/key topics:.*?\n([\s\S]*?)\n\n/i);
@@ -155,17 +178,12 @@ export async function getChatGptAnalysis(url: string, content: string = ''): Pro
         naturalLanguage: parseInt(languageMatch?.[1] || '80'),
         topicsDetected: topics,
         confusingParts: confusingParts,
-        rawAnalysis: analysisText, // Include the raw response for debugging
-        apiUsed: true // Confirmar que a API foi usada
+        rawAnalysis: analysisText,
+        apiUsed: true
       };
       
-      console.log('Análise extraída com sucesso:', result);
+      console.log('Análise extraída com sucesso via regex:', result);
       return result;
-    } catch (parseError) {
-      console.error('Erro ao analisar resposta do ChatGPT:', parseError);
-      console.log('Texto completo da resposta:', analysisText);
-      console.log('Usando análise local como fallback devido a erro no parsing');
-      return analyzeSite(url).aio;
     }
   } catch (error) {
     console.error('Erro ao buscar análise do ChatGPT:', error);

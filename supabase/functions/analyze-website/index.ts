@@ -34,12 +34,27 @@ serve(async (req) => {
     const requestId = crypto.randomUUID();
     console.log(`[${requestId}] Analisando URL: ${url} - Timestamp: ${timestamp || 'não fornecido'}`);
 
-    // Criar prompts mais específicos para melhorar a análise
-    const systemPrompt = "Você é um analisador especializado em websites que avalia claramente o conteúdo. IMPORTANTE: Forneça pontuações NUMÉRICAS DE 0 A 100 para clareza de conteúdo, estrutura lógica e linguagem natural, além de uma pontuação geral. Identifique explicitamente os tópicos principais e partes confusas.";
+    // Criar prompts mais específicos com formato JSON para melhorar a análise
+    const systemPrompt = `
+Você é um analisador especializado em websites. 
+Analise o site com base no URL e conteúdo fornecido.
+VOCÊ DEVE RESPONDER NO SEGUINTE FORMATO JSON:
+
+{
+  "score": [0-100],
+  "contentClarity": [0-100],
+  "logicalStructure": [0-100],
+  "naturalLanguage": [0-100],
+  "topicsDetected": ["tópico1", "tópico2", "tópico3"],
+  "confusingParts": ["parte confusa 1", "parte confusa 2"],
+  "analysis": "Sua análise textual detalhada aqui"
+}
+
+Não inclua mais nada além do JSON acima. Não forneça introduções, conclusões ou qualquer outro texto.`;
     
     const userPrompt = content 
-      ? `Analise este site: ${url}\n\nConteúdo: ${content}\n\nFaça uma análise detalhada e forneça PONTUAÇÕES NUMÉRICAS de 0 a 100 para cada critério.`
-      : `Analise este site: ${url}\n\nFaça uma análise detalhada e forneça PONTUAÇÕES NUMÉRICAS de 0 a 100 para cada critério.`;
+      ? `Analise este site: ${url}\n\nConteúdo: ${content}\n\nForneça sua análise no formato JSON especificado.`
+      : `Analise este site: ${url}\n\nForneça sua análise no formato JSON especificado.`;
 
     console.log(`[${requestId}] System prompt:`, systemPrompt);
     console.log(`[${requestId}] User prompt:`, userPrompt);
@@ -64,6 +79,7 @@ serve(async (req) => {
             content: userPrompt
           }
         ],
+        response_format: { type: "json_object" },
         max_tokens: 1000
       })
     });
@@ -89,11 +105,32 @@ serve(async (req) => {
     console.log(`[${requestId}] Resposta completa da API OpenAI:`, analysisText);
     
     try {
-      // Extrair dados da resposta do OpenAI
-      const scoreMatch = analysisText.match(/pontuação geral.*?(\d+)/i) || analysisText.match(/overall score.*?(\d+)/i);
-      const clarityMatch = analysisText.match(/clareza de conteúdo.*?(\d+)/i) || analysisText.match(/content clarity.*?(\d+)/i);
-      const structureMatch = analysisText.match(/estrutura lógica.*?(\d+)/i) || analysisText.match(/logical structure.*?(\d+)/i);
-      const languageMatch = analysisText.match(/linguagem natural.*?(\d+)/i) || analysisText.match(/natural language.*?(\d+)/i);
+      // Tentar fazer parse do JSON da resposta
+      const jsonResult = JSON.parse(analysisText);
+      console.log(`[${requestId}] JSON extraído com sucesso:`, jsonResult);
+      
+      // Adicionar informações de identificação e tracking
+      const result = {
+        ...jsonResult,
+        apiUsed: true,
+        requestId: requestId,
+        rawAnalysis: analysisText
+      };
+      
+      return new Response(JSON.stringify(result), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200
+      });
+      
+    } catch (parseError) {
+      console.error(`[${requestId}] Erro ao analisar o JSON da resposta:`, parseError);
+      console.log(`[${requestId}] Tentando extrair dados da resposta em texto:`, analysisText);
+      
+      // Extrair dados da resposta do OpenAI como fallback
+      const scoreMatch = analysisText.match(/pontuação geral.*?(\d+)/i) || analysisText.match(/overall score.*?(\d+)/i) || analysisText.match(/"score":\s*(\d+)/i);
+      const clarityMatch = analysisText.match(/clareza de conteúdo.*?(\d+)/i) || analysisText.match(/content clarity.*?(\d+)/i) || analysisText.match(/"contentClarity":\s*(\d+)/i);
+      const structureMatch = analysisText.match(/estrutura lógica.*?(\d+)/i) || analysisText.match(/logical structure.*?(\d+)/i) || analysisText.match(/"logicalStructure":\s*(\d+)/i);
+      const languageMatch = analysisText.match(/linguagem natural.*?(\d+)/i) || analysisText.match(/natural language.*?(\d+)/i) || analysisText.match(/"naturalLanguage":\s*(\d+)/i);
       
       console.log(`[${requestId}] Matches encontrados:`, {
         score: scoreMatch?.[1],
@@ -122,32 +159,13 @@ serve(async (req) => {
         topicsDetected: topics,
         confusingParts: confusingParts,
         rawAnalysis: analysisText,
-        apiUsed: true, // Flag para confirmar que a API foi usada
-        requestId: requestId // Adicionando ID de requisição para rastreamento
+        apiUsed: true,
+        requestId: requestId
       };
 
       console.log(`[${requestId}] Análise extraída com sucesso:`, JSON.stringify(result).substring(0, 300) + "...");
 
       return new Response(JSON.stringify(result), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200
-      });
-    } catch (parseError) {
-      console.error(`[${requestId}] Erro ao analisar a resposta do OpenAI:`, parseError);
-      
-      // Retornar os dados brutos se não conseguir analisar
-      return new Response(JSON.stringify({
-        score: 70,
-        contentClarity: 65,
-        logicalStructure: 75,
-        naturalLanguage: 80,
-        topicsDetected: ['Marketing Digital', 'SEO', 'Presença Online'],
-        confusingParts: ['Parágrafos muito longos', 'Informação técnica sem explicação'],
-        rawAnalysis: analysisText,
-        apiUsed: true, // Flag para confirmar que a API foi usada
-        error: 'Erro ao analisar resposta',
-        requestId: requestId
-      }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200
       });
