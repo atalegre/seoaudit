@@ -16,9 +16,10 @@ interface ReportFormProps {
   url: string;
   seoScore?: number;
   aioScore?: number;
+  compact?: boolean; // Add compact property as optional
 }
 
-const ReportForm: React.FC<ReportFormProps> = ({ url, seoScore, aioScore }) => {
+const ReportForm: React.FC<ReportFormProps> = ({ url, seoScore, aioScore, compact = false }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -117,10 +118,11 @@ const ReportForm: React.FC<ReportFormProps> = ({ url, seoScore, aioScore }) => {
     }
   };
   
+  // Modified UI based on compact prop
   if (isSubmitted) {
     return (
-      <Card className="w-full animate-scale-in">
-        <CardHeader>
+      <Card className={`w-full animate-scale-in ${compact ? 'p-2' : ''}`}>
+        <CardHeader className={compact ? 'p-3' : ''}>
           <CardTitle className="flex items-center gap-2">
             <Check className="h-5 w-5 text-green-500" />
             Relatório Processado
@@ -129,8 +131,8 @@ const ReportForm: React.FC<ReportFormProps> = ({ url, seoScore, aioScore }) => {
             A sua análise foi processada com sucesso
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center justify-center py-6 space-y-4">
+        <CardContent className={compact ? 'p-3' : ''}>
+          <div className="flex flex-col items-center justify-center py-4 space-y-4">
             <div className="p-3 bg-green-100 rounded-full">
               <Check className="h-8 w-8 text-green-500" />
             </div>
@@ -142,11 +144,12 @@ const ReportForm: React.FC<ReportFormProps> = ({ url, seoScore, aioScore }) => {
             </p>
           </div>
         </CardContent>
-        <CardFooter className="flex justify-center">
+        <CardFooter className={`flex justify-center ${compact ? 'p-3' : ''}`}>
           <Button 
             variant="default" 
             onClick={() => navigate('/dashboard/client')}
             className="flex items-center gap-2"
+            size={compact ? "sm" : "default"}
           >
             Ir para o Dashboard <ArrowRight className="h-4 w-4" />
           </Button>
@@ -156,8 +159,8 @@ const ReportForm: React.FC<ReportFormProps> = ({ url, seoScore, aioScore }) => {
   }
   
   return (
-    <Card className="w-full animate-scale-in">
-      <CardHeader>
+    <Card className={`w-full animate-scale-in ${compact ? 'p-2' : ''}`}>
+      <CardHeader className={compact ? 'p-3' : ''}>
         <CardTitle className="flex items-center gap-2">
           <Download className="h-5 w-5 text-primary" />
           Acesso ao relatório completo
@@ -167,7 +170,7 @@ const ReportForm: React.FC<ReportFormProps> = ({ url, seoScore, aioScore }) => {
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
+        <CardContent className={`space-y-4 ${compact ? 'p-3' : ''}`}>
           <div className="space-y-2">
             <Label htmlFor="name">Nome *</Label>
             <Input
@@ -176,6 +179,7 @@ const ReportForm: React.FC<ReportFormProps> = ({ url, seoScore, aioScore }) => {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
+              className={compact ? "h-8 text-sm" : ""}
             />
           </div>
           
@@ -188,6 +192,7 @@ const ReportForm: React.FC<ReportFormProps> = ({ url, seoScore, aioScore }) => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              className={compact ? "h-8 text-sm" : ""}
             />
           </div>
           
@@ -199,6 +204,7 @@ const ReportForm: React.FC<ReportFormProps> = ({ url, seoScore, aioScore }) => {
               placeholder="912 345 678"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
+              className={compact ? "h-8 text-sm" : ""}
             />
           </div>
           
@@ -215,16 +221,17 @@ const ReportForm: React.FC<ReportFormProps> = ({ url, seoScore, aioScore }) => {
             </Label>
           </div>
           
-          <p className="text-xs text-muted-foreground mt-4">
+          <p className={`text-xs text-muted-foreground mt-4 ${compact ? 'hidden sm:block' : ''}`}>
             * Campos obrigatórios. Ao submeter este formulário, concorda com os nossos Termos e Condições e Política de Privacidade.
           </p>
         </CardContent>
         
-        <CardFooter>
+        <CardFooter className={compact ? 'p-3' : ''}>
           <Button 
             type="submit" 
             className="w-full"
             disabled={isSubmitting}
+            size={compact ? "sm" : "default"}
           >
             {isSubmitting ? 'A processar...' : 'Aceder ao Dashboard'}
           </Button>
