@@ -67,11 +67,40 @@ export async function getChatGptAnalysis(url: string, content: string): Promise<
     const data = await response.json();
     // Process the ChatGPT response into our expected format
     const analysisText = data.choices[0]?.message?.content || '';
+    console.log("ChatGPT API response:", analysisText);
     
-    // Extract scores and topics from the analysis text
-    // In a real implementation, this would need more sophisticated parsing
-    // For now we'll return mock data
-    return analyzeSite(url).aio;
+    try {
+      // Try to extract data from the ChatGPT response
+      // This is a basic example - you would need more sophisticated parsing in production
+      const scoreMatch = analysisText.match(/overall score.*?(\d+)/i);
+      const clarityMatch = analysisText.match(/content clarity.*?(\d+)/i);
+      const structureMatch = analysisText.match(/logical structure.*?(\d+)/i);
+      const languageMatch = analysisText.match(/natural language.*?(\d+)/i);
+      
+      // Extract topics (this is a simplified approach)
+      const topicsMatch = analysisText.match(/key topics:.*?\n([\s\S]*?)\n\n/i);
+      const confusingMatch = analysisText.match(/confusing parts:.*?\n([\s\S]*?)(\n\n|$)/i);
+      
+      const topics = topicsMatch ? 
+        topicsMatch[1].split('\n').map(t => t.replace(/^-\s*/, '').trim()).filter(Boolean) :
+        ['Marketing Digital', 'SEO', 'Presença Online'];
+        
+      const confusingParts = confusingMatch ?
+        confusingMatch[1].split('\n').map(t => t.replace(/^-\s*/, '').trim()).filter(Boolean) :
+        ['Parágrafos muito longos', 'Informação técnica sem explicação'];
+      
+      return {
+        score: parseInt(scoreMatch?.[1] || '70'),
+        contentClarity: parseInt(clarityMatch?.[1] || '65'),
+        logicalStructure: parseInt(structureMatch?.[1] || '75'),
+        naturalLanguage: parseInt(languageMatch?.[1] || '80'),
+        topicsDetected: topics,
+        confusingParts: confusingParts
+      };
+    } catch (parseError) {
+      console.error('Error parsing ChatGPT response:', parseError);
+      return analyzeSite(url).aio;
+    }
   } catch (error) {
     console.error('Error fetching ChatGPT analysis:', error);
     // Fallback to mock data
@@ -82,6 +111,12 @@ export async function getChatGptAnalysis(url: string, content: string): Promise<
 // Combined function to get both SEO and AIO analysis
 export async function getFullAnalysis(url: string): Promise<AnalysisResult> {
   try {
+    // Store the API key provided by the user
+    const chatGptApiKey = localStorage.getItem('chatGptApiKey');
+    if (chatGptApiKey) {
+      console.log('Using ChatGPT API key for analysis');
+    }
+    
     // For demonstration purposes, we'll use mock content
     // In a real app, we would fetch the actual content from the URL
     const mockContent = "This is sample content from the website that would be analyzed";
@@ -197,8 +232,8 @@ export async function analyzeBulkClients(clientIds: number[]): Promise<void> {
       
       // Update client with analysis results
       client.lastReport = new Date().toISOString().split('T')[0];
-      client.seoScore = result.seo.overallScore;
-      client.aioScore = result.aio.overallScore;
+      client.seoScore = result.seo.score; // Updated property name
+      client.aioScore = result.aio.score; // Updated property name
       client.lastAnalysis = new Date();
       client.status = 'active';
       
