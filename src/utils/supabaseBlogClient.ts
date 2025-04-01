@@ -2,31 +2,31 @@
 import { createClient } from '@supabase/supabase-js';
 import { BlogPost } from '@/types/blog';
 
-const SUPABASE_URL = "https://vwtracpgzdqrowvjmizi.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dHJhY3BnemRxcm93dmptaXppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM1MDA4ODIsImV4cCI6MjA1OTA3Njg4Mn0.WC6DrG_ftze64gQVajR-n1vjfjMqA_ADP_hyTShQckA";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://vwtracpgzdqrowvjmizi.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dHJhY3BnemRxcm93dmptaXppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM1MDA4ODIsImV4cCI6MjA1OTA3Njg4Mn0.WC6DrG_ftze64gQVajR-n1vjfjMqA_ADP_hyTShQckA";
 
-// Create a custom typed client for blog operations
-export const blogClient = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    storageKey: 'blog-storage-key', // Use a different storage key to avoid conflicts
-  }
-});
+// Create a Supabase client for blog operations
+export const blogClient = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 // Blog posts table operations
 export const getBlogPosts = async (): Promise<BlogPost[]> => {
-  const { data, error } = await blogClient
-    .from('blog_posts')
-    .select('*')
-    .order('date', { ascending: false });
-  
-  if (error) {
-    console.error('Error fetching blog posts:', error);
+  console.log('Fetching blog posts from Supabase...');
+  try {
+    const { data, error } = await blogClient
+      .from('blog_posts')
+      .select('*')
+      .order('date', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching blog posts:', error);
+      throw error;
+    }
+    
+    return data as BlogPost[] || [];
+  } catch (error) {
+    console.error('Exception in getBlogPosts:', error);
     throw error;
   }
-  
-  return data as BlogPost[] || [];
 };
 
 export const getBlogPostBySlug = async (slug: string): Promise<BlogPost | null> => {
@@ -83,7 +83,7 @@ export const uploadBlogImage = async (file: File): Promise<string> => {
   try {
     const fileExt = file.name.split('.').pop();
     const fileName = `${Date.now()}.${fileExt}`;
-    const filePath = `blog-images/${fileName}`;
+    const filePath = `${fileName}`;
     
     // Upload the file
     const { error: uploadError } = await blogClient.storage
