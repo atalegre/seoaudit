@@ -248,6 +248,7 @@ const ResultsPage = () => {
               <AnalysisTabs
                 seoData={analysisData?.seo}
                 aioData={analysisData?.aio}
+                url={analysisData?.url || ''}
                 recommendations={analysisData?.recommendations || []}
               />
             </div>

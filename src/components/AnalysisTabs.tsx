@@ -22,6 +22,7 @@ import LLMPresenceAudit from './LLMPresenceAudit';
 interface AnalysisTabsProps {
   seoData: SeoAnalysisResult;
   aioData: AioAnalysisResult;
+  url?: string;
   recommendations?: Array<{
     suggestion: string;
     seoImpact: 'Alto' | 'Médio' | 'Baixo' | 'Nenhum';
@@ -33,7 +34,8 @@ interface AnalysisTabsProps {
 
 const AnalysisTabs: React.FC<AnalysisTabsProps> = ({ 
   seoData, 
-  aioData, 
+  aioData,
+  url = "",
   recommendations = []
 }) => {
   return (
@@ -592,7 +594,7 @@ const AnalysisTabs: React.FC<AnalysisTabsProps> = ({
       </TabsContent>
 
       <TabsContent value="llm" className="space-y-4">
-        <LLMPresenceAudit />
+        <LLMPresenceAudit url={url} autoStart={true} />
       </TabsContent>
 
       <TabsContent value="combined" className="space-y-4">
