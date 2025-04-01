@@ -11,13 +11,14 @@ export const getBlogPosts = async (): Promise<BlogPost[]> => {
       console.error('Supabase client is not initialized');
       throw new Error('Database connection error');
     }
-
-    console.log('Supabase URL being used:', supabase.supabaseUrl);
+    
+    console.log('Supabase client initialized, attempting to fetch posts');
     
     // Test connection with a simple query first
     const { data: testData, error: testError } = await supabase
       .from('blog_posts')
-      .select('count(*)');
+      .select('count')
+      .single();
     
     if (testError) {
       console.error('Test connection failed:', testError);
