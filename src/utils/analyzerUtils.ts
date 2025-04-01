@@ -1,4 +1,3 @@
-
 import { StatusClassification } from './api/types';
 
 export interface SeoAnalysis {
@@ -29,7 +28,6 @@ export interface AioAnalysis {
 export interface CombinedRecommendation {
   suggestion: string;
   seoImpact: 'Alto' | 'Médio' | 'Baixo' | 'Nenhum';
-  aioImpact: 'Alto' | 'Médio' | 'Baixo' | 'Nenhum';
   priority: number; // 1-10 (10 being highest)
   status?: 'pending' | 'in_progress' | 'done' | 'ignored';
 }

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { CircleCheck, CircleAlert, AlertCircle } from 'lucide-react';
-import { StatusClassification } from '@/utils/analyzerUtils';
+import { StatusClassification } from '@/utils/api/types';
 import { cn } from '@/lib/utils';
 
 interface ScoreCircleProps {
