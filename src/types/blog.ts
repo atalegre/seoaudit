@@ -12,4 +12,9 @@ export interface BlogPost {
   popularity?: number;
   date?: string;
   created_at?: string;
+  headings?: {
+    id: string;
+    text: string;
+    level: number;
+  }[];
 }

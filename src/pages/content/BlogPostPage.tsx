@@ -1,36 +1,78 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import ContentLayout from '@/components/content/ContentLayout';
-import { blogPosts } from '@/data/blog-data';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, Share2, Bookmark } from 'lucide-react';
+import { ArrowLeft, Calendar, Share2, Bookmark, Loader2 } from 'lucide-react';
 import BlogSidebar from '@/components/content/BlogSidebar';
 import TableOfContents from '@/components/content/TableOfContents';
 import { cn } from '@/lib/utils';
+import { BlogPost } from '@/types/blog';
+import { getBlogPostBySlug } from '@/utils/supabaseBlogClient';
 
 const BlogPostPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const post = blogPosts.find(post => post.slug === slug);
+  const [post, setPost] = useState<BlogPost | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Scroll to top when page loads
-    window.scrollTo(0, 0);
-    
-    // If post doesn't exist, redirect to blog
-    if (!post && slug) {
-      navigate('/blog');
-    }
-  }, [post, slug, navigate]);
+    const fetchPost = async () => {
+      if (!slug) {
+        navigate('/blog');
+        return;
+      }
+      
+      setLoading(true);
+      try {
+        const postData = await getBlogPostBySlug(slug);
+        if (!postData) {
+          setError('Post não encontrado');
+          navigate('/blog');
+          return;
+        }
+        setPost(postData);
+        // Scroll to top when post loads
+        window.scrollTo(0, 0);
+      } catch (err) {
+        console.error('Error fetching post:', err);
+        setError('Erro ao carregar o post');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  if (!post) {
-    return null;
+    fetchPost();
+  }, [slug, navigate]);
+
+  if (loading) {
+    return (
+      <ContentLayout className="bg-secondary/30">
+        <div className="flex items-center justify-center h-[50vh]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="ml-2">Carregando post...</span>
+        </div>
+      </ContentLayout>
+    );
   }
 
-  const getCategoryColor = (category: string) => {
+  if (error || !post) {
+    return (
+      <ContentLayout className="bg-secondary/30">
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-bold mb-4">Post não encontrado</h2>
+          <Button asChild>
+            <Link to="/blog">Voltar ao Blog</Link>
+          </Button>
+        </div>
+      </ContentLayout>
+    );
+  }
+
+  const getCategoryColor = (category: string = '') => {
     switch (category) {
       case 'SEO': return 'bg-seo text-primary-foreground';
       case 'AIO': return 'bg-aio text-primary-foreground';
@@ -41,11 +83,18 @@ const BlogPostPage = () => {
     }
   };
 
+  // Create dummy headings for TableOfContents if post doesn't have them
+  const headings = post.headings || [
+    { id: 'introduction', text: 'Introdução', level: 2 },
+    { id: 'content', text: 'Conteúdo', level: 2 },
+    { id: 'conclusion', text: 'Conclusão', level: 2 }
+  ];
+
   return (
     <ContentLayout
       sidebar={
         <div className="sticky top-20 space-y-6">
-          <TableOfContents headings={post.headings} />
+          <TableOfContents headings={headings} />
           <BlogSidebar />
         </div>
       }
@@ -62,7 +111,7 @@ const BlogPostPage = () => {
         
         <article className="prose prose-slate max-w-none">
           <Badge className={cn("mb-4 font-normal", getCategoryColor(post.category))}>
-            {post.category}
+            {post.category || 'Sem categoria'}
           </Badge>
 
           <h1 className="text-4xl font-bold mb-4 not-prose">{post.title}</h1>
@@ -70,7 +119,7 @@ const BlogPostPage = () => {
           <div className="flex items-center text-muted-foreground gap-4 mb-8">
             <div className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
-              {new Date(post.date).toLocaleDateString('pt-PT', {
+              {new Date(post.date || new Date()).toLocaleDateString('pt-PT', {
                 day: 'numeric',
                 month: 'long', 
                 year: 'numeric'
@@ -87,30 +136,42 @@ const BlogPostPage = () => {
             </div>
           </div>
 
-          <div className="aspect-video overflow-hidden rounded-lg mb-8">
-            <img 
-              src={post.imageSrc} 
-              alt={post.title}
-              className="h-full w-full object-cover"
-            />
-          </div>
-
-          <div className="content" dangerouslySetInnerHTML={{ __html: post.content }} />
-          
-          <Card className="my-8 p-6 bg-muted/50 border-l-4 border-l-primary not-prose">
-            <h3 className="text-xl font-semibold mb-3">Aprendizado chave</h3>
-            <div dangerouslySetInnerHTML={{ __html: post.keyLearning }} />
-          </Card>
-          
-          <div className="border-t pt-6 mt-8">
-            <div className="flex flex-wrap gap-2">
-              {post.tags.map(tag => (
-                <Badge key={tag} variant="secondary">
-                  {tag}
-                </Badge>
-              ))}
+          {post.imageSrc && (
+            <div className="aspect-video overflow-hidden rounded-lg mb-8">
+              <img 
+                src={post.imageSrc} 
+                alt={post.title}
+                className="h-full w-full object-cover"
+              />
             </div>
-          </div>
+          )}
+
+          <div className="content" dangerouslySetInnerHTML={{ __html: post.content || '' }} />
+          
+          {post.keyLearning && (
+            <Card className="my-8 p-6 bg-muted/50 border-l-4 border-l-primary not-prose">
+              <h3 className="text-xl font-semibold mb-3">Aprendizado chave</h3>
+              <div dangerouslySetInnerHTML={{ __html: post.keyLearning }} />
+            </Card>
+          )}
+          
+          {post.tags && post.tags.length > 0 && (
+            <div className="border-t pt-6 mt-8">
+              <div className="flex flex-wrap gap-2">
+                {Array.isArray(post.tags) ? (
+                  post.tags.map((tag) => (
+                    <Badge key={tag} variant="secondary">
+                      {tag}
+                    </Badge>
+                  ))
+                ) : (
+                  <Badge variant="secondary">
+                    {post.tags}
+                  </Badge>
+                )}
+              </div>
+            </div>
+          )}
         </article>
       </div>
     </ContentLayout>
