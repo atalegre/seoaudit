@@ -1,6 +1,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { Client, AnalysisResult } from './types';
+import { supabase as supabaseInstance } from '@/integrations/supabase/client';
 
 // Check if Supabase environment variables are available
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -13,16 +14,20 @@ if (supabaseUrl && supabaseAnonKey) {
   // Create the Supabase client with the environment variables
   supabase = createClient(supabaseUrl, supabaseAnonKey);
 } else {
-  console.warn('Supabase environment variables are missing. Using localStorage fallback.');
-  // Create a dummy client for fallback
-  supabase = {
+  console.warn('Supabase environment variables are missing. Using Supabase instance or localStorage fallback.');
+  // Tentar usar a instância do Supabase da integração ou criar um fallback
+  supabase = supabaseInstance || {
     from: () => ({
       select: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
       insert: () => Promise.resolve({ error: new Error('Supabase not configured') }),
       update: () => Promise.resolve({ error: new Error('Supabase not configured') }),
       upsert: () => Promise.resolve({ error: new Error('Supabase not configured') }),
-      eq: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
-      order: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
+      eq: () => ({
+        single: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') })
+      }),
+      order: () => ({
+        select: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') })
+      }),
       single: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
     })
   };
@@ -258,11 +263,14 @@ export async function storeApiKey(keyType: 'googlePageInsightsKey' | 'chatGptApi
     
     // Check if Supabase is configured
     if (!supabaseUrl || !supabaseAnonKey) {
-      // Fallback to localStorage only if Supabase is not configured
+      console.warn('Supabase not configured, API key was only stored in localStorage');
       return;
     }
     
-    const { error } = await supabase
+    // Verificar se estamos usando a instância padrão ou a nova instância da integração
+    const client = supabaseInstance || supabase;
+    
+    const { error } = await client
       .from('api_keys')
       .upsert({ 
         key_type: keyType, 
@@ -271,12 +279,13 @@ export async function storeApiKey(keyType: 'googlePageInsightsKey' | 'chatGptApi
       }, { onConflict: 'key_type' });
     
     if (error) {
+      console.error('Error storing API key in Supabase:', error);
       throw error;
     }
     
-    console.log(`Chave de API ${keyType} armazenada com sucesso`);
+    console.log(`Chave de API ${keyType} armazenada com sucesso no Supabase`);
   } catch (error) {
-    console.error('Erro ao armazenar chave de API:', error);
+    console.error('Erro ao armazenar chave de API no Supabase:', error);
     
     // Fallback para localStorage já feito no início da função
   }
@@ -287,26 +296,38 @@ export async function getApiKey(keyType: 'googlePageInsightsKey' | 'chatGptApiKe
   try {
     // Check if Supabase is configured
     if (!supabaseUrl || !supabaseAnonKey) {
-      // Fallback to localStorage if Supabase is not configured
+      console.warn('Supabase not configured, returning API key from localStorage');
       return localStorage.getItem(keyType);
     }
     
-    const { data, error } = await supabase
+    // Verificar se estamos usando a instância padrão ou a nova instância da integração
+    const client = supabaseInstance || supabase;
+    
+    const { data, error } = await client
       .from('api_keys')
       .select('key_value')
       .eq('key_type', keyType)
       .single();
     
     if (error) {
-      throw error;
+      if (error.code === 'PGRST116') {
+        // Registro não encontrado
+        console.log(`API key ${keyType} not found in Supabase, checking localStorage`);
+      } else {
+        console.error(`Erro ao buscar chave de API ${keyType} do Supabase:`, error);
+      }
+      // Em caso de erro, tenta buscar do localStorage
+      return localStorage.getItem(keyType);
     }
     
     // If found in Supabase, also update localStorage for easier access
     if (data?.key_value) {
       localStorage.setItem(keyType, data.key_value);
+      return data.key_value;
     }
     
-    return data?.key_value || localStorage.getItem(keyType);
+    // Fallback para localStorage
+    return localStorage.getItem(keyType);
   } catch (error) {
     console.error(`Erro ao buscar chave de API ${keyType}:`, error);
     
@@ -314,3 +335,4 @@ export async function getApiKey(keyType: 'googlePageInsightsKey' | 'chatGptApiKe
     return localStorage.getItem(keyType);
   }
 }
+

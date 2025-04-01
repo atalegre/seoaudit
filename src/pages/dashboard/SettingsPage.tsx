@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,6 +21,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { storeApiKey, getApiKey } from '@/utils/api';
 
 // Profile form schema
 const profileFormSchema = z.object({
@@ -96,6 +97,29 @@ const SettingsPage = () => {
     },
   });
 
+  // Carregar as chaves da API do Supabase quando o componente montar
+  useEffect(() => {
+    const loadApiKeys = async () => {
+      try {
+        const googleKey = await getApiKey('googlePageInsightsKey');
+        const chatGptKey = await getApiKey('chatGptApiKey');
+        
+        // Atualizar o formulário com as chaves obtidas
+        apiIntegrationsForm.setValue('googlePageInsightsKey', googleKey || '');
+        apiIntegrationsForm.setValue('chatGptApiKey', chatGptKey || '');
+      } catch (error) {
+        console.error('Erro ao carregar as chaves de API:', error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar as chaves de API existentes.",
+          variant: "destructive"
+        });
+      }
+    };
+    
+    loadApiKeys();
+  }, [apiIntegrationsForm, toast]);
+
   // Handle profile form submit
   function onProfileSubmit(data: ProfileFormValues) {
     toast({
@@ -113,16 +137,26 @@ const SettingsPage = () => {
   }
 
   // Handle API Integrations form submit
-  function onApiIntegrationsSubmit(data: ApiIntegrationsFormValues) {
-    // In a real app, we would save these API keys securely
-    console.log("API Keys saved:", data);
-    localStorage.setItem("googlePageInsightsKey", data.googlePageInsightsKey);
-    localStorage.setItem("chatGptApiKey", data.chatGptApiKey);
-    
-    toast({
-      title: "APIs configuradas",
-      description: "As chaves de API foram salvas com sucesso.",
-    });
+  async function onApiIntegrationsSubmit(data: ApiIntegrationsFormValues) {
+    try {
+      console.log("API Keys saved:", data);
+      
+      // Salvar as chaves de API no Supabase
+      await storeApiKey('googlePageInsightsKey', data.googlePageInsightsKey);
+      await storeApiKey('chatGptApiKey', data.chatGptApiKey);
+      
+      toast({
+        title: "APIs configuradas",
+        description: "As chaves de API foram salvas com sucesso no Supabase.",
+      });
+    } catch (error) {
+      console.error("Erro ao salvar as chaves de API:", error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao salvar as chaves de API.",
+        variant: "destructive"
+      });
+    }
   }
 
   return (
