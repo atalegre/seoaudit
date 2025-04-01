@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -38,7 +39,8 @@ const ResultsPage = () => {
         // Tentar buscar análise de AIO ou usar dados simulados
         let aioData;
         try {
-          aioData = await getChatGptAnalysis(urlParam);
+          // Pass an empty string as content (or fetch the content if you have a way to do so)
+          aioData = await getChatGptAnalysis(urlParam, '');
         } catch (error) {
           console.error('Error fetching AIO data:', error);
           toast('Usando dados simulados para análise de AIO', {
@@ -51,10 +53,12 @@ const ResultsPage = () => {
         // Combinar resultados
         const results: AnalysisResult = {
           url: urlParam,
+          timestamp: new Date().toISOString(), // Add timestamp
           status: determineStatus(seoData.score, aioData.score),
           seo: seoData,
           aio: aioData,
-          recommendations: generateRecommendations(seoData, aioData)
+          recommendations: generateRecommendations(seoData, aioData),
+          overallStatus: determineStatus(seoData.score, aioData.score) // Add overallStatus
         };
         
         setAnalysisData(results);

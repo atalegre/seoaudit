@@ -1,9 +1,10 @@
+
 import { analyzeSite } from '../analyzerUtils';
 import { getApiKey } from './supabaseClient';
 import { supabase } from '@/integrations/supabase/client';
 
 // Função para obter a análise do ChatGPT
-export async function getChatGptAnalysis(url: string, content: string): Promise<any> {
+export async function getChatGptAnalysis(url: string, content: string = ''): Promise<any> {
   try {
     // Primeiro tenta obter a chave da API do Supabase
     let apiKey = await getApiKey('chatGptApiKey');
@@ -52,7 +53,7 @@ export async function getChatGptAnalysis(url: string, content: string): Promise<
             },
             {
               role: "user",
-              content: `Analyze this website content from ${url}: ${content}`
+              content: `Analyze this website content from ${url}: ${content || 'Please analyze the structure and content quality based on the URL.'}`
             }
           ]
         })
