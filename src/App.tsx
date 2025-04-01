@@ -12,6 +12,7 @@ import HowItWorksPage from "./pages/HowItWorksPage";
 import FAQPage from "./pages/FAQPage";
 import ContactPage from "./pages/ContactPage";
 import DashboardPage from "./pages/dashboard/DashboardPage";
+import ClientDashboardPage from "./pages/dashboard/ClientDashboardPage";
 import ClientPage from "./pages/dashboard/ClientPage";
 import SignInPage from "./pages/SignInPage";
 import SignUpPage from "./pages/SignUpPage";
@@ -36,6 +37,7 @@ const App = () => {
               <Route path="/signin" element={<SignInPage />} />
               <Route path="/signup" element={<SignUpPage />} />
               <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/dashboard/client" element={<ClientDashboardPage />} />
               <Route path="/dashboard/client/:id" element={<ClientPage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFoundPage />} />

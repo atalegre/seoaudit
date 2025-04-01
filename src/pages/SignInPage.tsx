@@ -32,10 +32,16 @@ const formSchema = z.object({
     .min(6, { message: 'Password deve ter pelo menos 6 caracteres' }),
 });
 
+// Mock admin users - in a real app, this would come from a database
+const ADMIN_USERS = [
+  { email: 'admin@exemplo.com', password: 'admin123' }
+];
+
 const SignInPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = React.useState(false);
+  const [isLoggingIn, setIsLoggingIn] = React.useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -46,14 +52,32 @@ const SignInPage = () => {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // Mock authentication - replace with actual auth later
-    console.log(values);
-    toast({
-      title: "Login bem-sucedido",
-      description: "Bem-vindo de volta!",
-    });
-    // Redirect to dashboard
-    navigate('/dashboard');
+    setIsLoggingIn(true);
+    
+    // Check if the user is an admin
+    const isAdmin = ADMIN_USERS.some(
+      admin => admin.email === values.email && admin.password === values.password
+    );
+    
+    setTimeout(() => {
+      if (isAdmin) {
+        toast({
+          title: "Login admin bem-sucedido",
+          description: "Bem-vindo ao painel de administração!",
+        });
+        navigate('/dashboard');
+      } else {
+        // For demonstration purposes, treat all other logins as client logins
+        toast({
+          title: "Login cliente bem-sucedido",
+          description: "Bem-vindo de volta!",
+        });
+        // In a real application, you'd validate credentials against a database
+        // For now, we'll just redirect to a hypothetical client dashboard
+        navigate('/dashboard/client');
+      }
+      setIsLoggingIn(false);
+    }, 1000); // Simulate network request
   }
 
   return (
@@ -123,8 +147,24 @@ const SignInPage = () => {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full" size="lg">
-                  <LogIn className="mr-2 h-4 w-4" /> Entrar
+                <div className="text-sm text-muted-foreground">
+                  <p>Para entrar como admin, use:</p>
+                  <p>Email: admin@exemplo.com</p>
+                  <p>Password: admin123</p>
+                </div>
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  size="lg"
+                  disabled={isLoggingIn}
+                >
+                  {isLoggingIn ? (
+                    <>Entrando...</>
+                  ) : (
+                    <>
+                      <LogIn className="mr-2 h-4 w-4" /> Entrar
+                    </>
+                  )}
                 </Button>
               </form>
             </Form>
