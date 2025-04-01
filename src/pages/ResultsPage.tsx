@@ -11,6 +11,7 @@ import { getPageInsightsData } from '@/utils/api/pageInsightsService';
 import { getChatGptAnalysis } from '@/utils/api/chatGptService';
 import { toast } from 'sonner';
 import { formatUrl, createAnalysisResult } from '@/utils/resultsPageHelpers';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const ANALYSIS_STORAGE_KEY = 'web_analysis_results';
 const ANALYSIS_URL_KEY = 'web_analysis_url';
@@ -20,6 +21,7 @@ const ResultsPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [analysisData, setAnalysisData] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const isMobile = useIsMobile();
   
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -220,14 +222,14 @@ const ResultsPage = () => {
     <div className="flex flex-col min-h-screen">
       <Header />
       
-      <main className="flex-1 container py-8 px-4">
+      <main className="flex-1 container py-6 px-4 md:py-8 md:px-4">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-2xl md:text-3xl font-bold mb-8 animate-fade-in">
+          <h1 className="text-xl md:text-3xl font-bold mb-4 md:mb-8 animate-fade-in">
             Resultados da análise
           </h1>
           
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+            <div className="lg:col-span-2 space-y-4 md:space-y-6">
               <ScoreDisplay
                 seoScore={analysisData?.seo?.score || 0}
                 aioScore={analysisData?.aio?.score || 0}
@@ -253,14 +255,27 @@ const ResultsPage = () => {
               />
             </div>
             
-            <div className="lg:col-span-1">
+            {!isMobile && (
+              <div className="lg:col-span-1">
+                <ReportForm 
+                  url={analysisData?.url || ''} 
+                  seoScore={analysisData?.seo?.score || 0}
+                  aioScore={analysisData?.aio?.score || 0}
+                />
+              </div>
+            )}
+          </div>
+          
+          {isMobile && (
+            <div className="mt-6">
               <ReportForm 
                 url={analysisData?.url || ''} 
                 seoScore={analysisData?.seo?.score || 0}
                 aioScore={analysisData?.aio?.score || 0}
+                compact={true}
               />
             </div>
-          </div>
+          )}
         </div>
       </main>
       

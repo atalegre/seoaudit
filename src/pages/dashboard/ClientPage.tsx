@@ -45,6 +45,7 @@ import {
   Legend, 
   Tooltip 
 } from 'recharts';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { 
   getClientAnalysisHistory,
   getClientsFromDatabase,
@@ -61,6 +62,7 @@ const ClientPage = () => {
   const [historicalData, setHistoricalData] = useState<any[]>([]);
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const [tasks, setTasks] = useState<any[]>([]);
+  const isMobile = useIsMobile();
   
   useEffect(() => {
     async function fetchClientData() {
@@ -262,71 +264,71 @@ const ClientPage = () => {
   
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="space-y-4 md:space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
           <div>
             <div className="flex items-center gap-2">
               <span className="text-muted-foreground">Cliente</span>
               <ChevronRight className="w-4 h-4 text-muted-foreground" />
-              <h1 className="text-3xl font-bold">{client.name}</h1>
+              <h1 className="text-xl md:text-3xl font-bold truncate">{client.name}</h1>
             </div>
-            <p className="text-muted-foreground mt-1">{client.website}</p>
+            <p className="text-muted-foreground mt-1 text-sm md:text-base truncate">{client.website}</p>
           </div>
           
-          <div className="flex flex-wrap gap-3">
-            <Button onClick={handleGenerateReport}>
+          <div className="flex flex-wrap gap-2 md:gap-3">
+            <Button onClick={handleGenerateReport} size={isMobile ? "sm" : "default"}>
               <RefreshCw className="mr-2 h-4 w-4" />
-              Gerar novo relatório
+              {isMobile ? "Novo relatório" : "Gerar novo relatório"}
             </Button>
-            <Button variant="outline" onClick={handleSendUpdate}>
+            <Button variant="outline" onClick={handleSendUpdate} size={isMobile ? "sm" : "default"}>
               <Mail className="mr-2 h-4 w-4" />
-              Enviar atualização
+              {isMobile ? "Atualizar" : "Enviar atualização"}
             </Button>
           </div>
         </div>
         
         <Card>
-          <CardHeader>
+          <CardHeader className={isMobile ? "px-4 py-3" : ""}>
             <CardTitle>Dados do Cliente</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
+          <CardContent className={isMobile ? "px-4 py-2" : ""}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+              <div className="space-y-3 md:space-y-4">
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground">Nome de Contato</h3>
-                  <p>{client.contactName || 'Não definido'}</p>
+                  <h3 className="text-xs md:text-sm font-medium text-muted-foreground">Nome de Contato</h3>
+                  <p className="text-sm md:text-base">{client.contactName || 'Não definido'}</p>
                 </div>
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground">Email</h3>
-                  <p>{client.contactEmail || 'Não definido'}</p>
+                  <h3 className="text-xs md:text-sm font-medium text-muted-foreground">Email</h3>
+                  <p className="text-sm md:text-base break-all">{client.contactEmail || 'Não definido'}</p>
                 </div>
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground">Telefone</h3>
-                  <p>{'Não definido'}</p>
+                  <h3 className="text-xs md:text-sm font-medium text-muted-foreground">Telefone</h3>
+                  <p className="text-sm md:text-base">{'Não definido'}</p>
                 </div>
               </div>
-              <div className="space-y-4">
+              <div className="space-y-3 md:space-y-4">
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground">Account Manager</h3>
-                  <p>{client.account || 'Não definido'}</p>
+                  <h3 className="text-xs md:text-sm font-medium text-muted-foreground">Account Manager</h3>
+                  <p className="text-sm md:text-base">{client.account || 'Não definido'}</p>
                 </div>
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground">Cliente desde</h3>
-                  <p>{client.lastAnalysis ? new Date(client.lastAnalysis).toISOString().split('T')[0] : 'Não definido'}</p>
+                  <h3 className="text-xs md:text-sm font-medium text-muted-foreground">Cliente desde</h3>
+                  <p className="text-sm md:text-base">{client.lastAnalysis ? new Date(client.lastAnalysis).toISOString().split('T')[0] : 'Não definido'}</p>
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle>SEO Score</CardTitle>
+            <CardHeader className={isMobile ? "px-4 py-3 pb-1" : "pb-2"}>
+              <CardTitle className={isMobile ? "text-base" : ""}>SEO Score</CardTitle>
             </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent className={isMobile ? "px-4 pt-0" : "pt-0"}>
               <div className="flex items-end gap-2">
-                <div className="text-4xl font-bold">
+                <div className={`${isMobile ? "text-3xl" : "text-4xl"} font-bold`}>
                   {currentSEOScore}
                 </div>
                 {seoDiff !== 0 && (
@@ -344,12 +346,12 @@ const ClientPage = () => {
           </Card>
           
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle>AIO Score</CardTitle>
+            <CardHeader className={isMobile ? "px-4 py-3 pb-1" : "pb-2"}>
+              <CardTitle className={isMobile ? "text-base" : ""}>AIO Score</CardTitle>
             </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent className={isMobile ? "px-4 pt-0" : "pt-0"}>
               <div className="flex items-end gap-2">
-                <div className="text-4xl font-bold">
+                <div className={`${isMobile ? "text-3xl" : "text-4xl"} font-bold`}>
                   {currentAIOScore}
                 </div>
                 {aioDiff !== 0 && (
@@ -368,38 +370,40 @@ const ClientPage = () => {
         </div>
         
         <Card>
-          <CardHeader>
+          <CardHeader className={isMobile ? "px-4 py-3" : ""}>
             <CardTitle>Evolução Histórica</CardTitle>
             <CardDescription>
               Progresso dos scores SEO e AIO ao longo do tempo
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className={isMobile ? "px-2 py-2" : ""}>
             {historicalData.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
+              <div className="text-center py-8 md:py-12 text-muted-foreground">
                 <p>Ainda não há dados históricos disponíveis.</p>
                 <p className="mt-2">Gere um novo relatório para começar a acompanhar o progresso.</p>
               </div>
             ) : (
-              <div className="h-80">
+              <div className="h-64 md:h-80">
                 <ChartContainer config={{
                   seo: { label: "SEO Score", theme: { light: "#0EA5E9", dark: "#3b82f6" } },
                   aio: { label: "AIO Score", theme: { light: "#9333ea", dark: "#a855f7" } },
                 }}>
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={historicalData}>
+                    <LineChart data={historicalData} margin={isMobile ? { top: 5, right: 5, left: -20, bottom: 5 } : {}}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis
                         dataKey="date"
                         tickLine={false}
                         axisLine={false}
                         dy={10}
+                        tick={isMobile ? {fontSize: 10} : undefined}
                       />
                       <YAxis
                         axisLine={false}
                         tickLine={false}
-                        tickMargin={10}
+                        tickMargin={8}
                         domain={[0, 100]}
+                        tick={isMobile ? {fontSize: 10} : undefined}
                       />
                       <Tooltip content={<CustomTooltip />} />
                       <Legend />
@@ -408,18 +412,18 @@ const ClientPage = () => {
                         dataKey="seoScore"
                         name="SEO Score"
                         stroke="var(--color-seo)"
-                        strokeWidth={2.5}
-                        dot={{ r: 5 }}
-                        activeDot={{ r: 8 }}
+                        strokeWidth={2}
+                        dot={{ r: isMobile ? 3 : 5 }}
+                        activeDot={{ r: isMobile ? 6 : 8 }}
                       />
                       <Line
                         type="monotone"
                         dataKey="aioScore"
                         name="AIO Score"
                         stroke="var(--color-aio)"
-                        strokeWidth={2.5}
-                        dot={{ r: 5 }}
-                        activeDot={{ r: 8 }}
+                        strokeWidth={2}
+                        dot={{ r: isMobile ? 3 : 5 }}
+                        activeDot={{ r: isMobile ? 6 : 8 }}
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -437,57 +441,61 @@ const ClientPage = () => {
           
           <TabsContent value="recommendations" className="mt-4">
             <Card>
-              <CardHeader>
+              <CardHeader className={isMobile ? "px-4 py-3" : ""}>
                 <CardTitle>Recomendações específicas</CardTitle>
                 <CardDescription>
                   Lista de melhorias recomendadas para o site
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className={isMobile ? "px-2 py-2" : ""}>
                 {recommendations.length === 0 ? (
-                  <div className="text-center py-12 text-muted-foreground">
+                  <div className="text-center py-8 md:py-12 text-muted-foreground">
                     <p>Ainda não há recomendações disponíveis.</p>
                     <p className="mt-2">Gere um novo relatório para receber recomendações de melhoria.</p>
                   </div>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-[400px]">Descrição</TableHead>
-                        <TableHead>Impacto SEO</TableHead>
-                        <TableHead>Impacto AIO</TableHead>
-                        <TableHead>Estado</TableHead>
-                        <TableHead className="text-right">Marcar</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {recommendations.map((item) => (
-                        <TableRow key={item.id}>
-                          <TableCell className="font-medium">{item.suggestion || item.description}</TableCell>
-                          <TableCell>{getImpactBadge(item.seoImpact)}</TableCell>
-                          <TableCell>{getImpactBadge(item.aioImpact)}</TableCell>
-                          <TableCell>
-                            {item.status === 'done' ? (
-                              <Badge className="bg-green-500">Concluída</Badge>
-                            ) : (
-                              <Badge variant="outline">Pendente</Badge>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {item.status !== 'done' && (
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => handleRecommendationStatusChange(item.id)}
-                              >
-                                <FileCheck className="w-4 h-4" />
-                              </Button>
-                            )}
-                          </TableCell>
+                  <div className={`overflow-x-auto ${isMobile ? "-mx-2" : ""}`}>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className={`${isMobile ? "w-[250px]" : "w-[400px]"}`}>Descrição</TableHead>
+                          <TableHead>Impacto SEO</TableHead>
+                          <TableHead>Impacto AIO</TableHead>
+                          <TableHead>Estado</TableHead>
+                          <TableHead className="text-right">Marcar</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {recommendations.map((item) => (
+                          <TableRow key={item.id}>
+                            <TableCell className={`font-medium ${isMobile ? "text-sm" : ""}`}>
+                              {item.suggestion || item.description}
+                            </TableCell>
+                            <TableCell>{getImpactBadge(item.seoImpact)}</TableCell>
+                            <TableCell>{getImpactBadge(item.aioImpact)}</TableCell>
+                            <TableCell>
+                              {item.status === 'done' ? (
+                                <Badge className="bg-green-500">Concluída</Badge>
+                              ) : (
+                                <Badge variant="outline">Pendente</Badge>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {item.status !== 'done' && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => handleRecommendationStatusChange(item.id)}
+                                >
+                                  <FileCheck className="w-4 h-4" />
+                                </Button>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -495,24 +503,24 @@ const ClientPage = () => {
           
           <TabsContent value="tasks" className="mt-4">
             <Card>
-              <CardHeader>
+              <CardHeader className={isMobile ? "px-4 py-3" : ""}>
                 <CardTitle>Tarefas</CardTitle>
                 <CardDescription>
                   Tarefas geradas automaticamente para o account
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className={isMobile ? "px-4 py-2" : ""}>
                 {tasks.length === 0 ? (
-                  <div className="text-center py-12 text-muted-foreground">
+                  <div className="text-center py-8 md:py-12 text-muted-foreground">
                     <p>Ainda não há tarefas definidas.</p>
                     <p className="mt-2">As tarefas serão geradas com base nas recomendações.</p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-3 md:space-y-4">
                     {tasks.map((task) => (
                       <div 
                         key={task.id} 
-                        className="flex items-center justify-between p-4 border rounded-lg"
+                        className="flex items-center justify-between p-3 md:p-4 border rounded-lg"
                       >
                         <div className="flex items-center gap-3">
                           <Checkbox 
@@ -523,11 +531,11 @@ const ClientPage = () => {
                           <div>
                             <label 
                               htmlFor={`task-${task.id}`}
-                              className="font-medium cursor-pointer"
+                              className={`font-medium cursor-pointer ${isMobile ? "text-sm" : ""}`}
                             >
                               {task.description}
                             </label>
-                            <p className="text-sm text-muted-foreground">
+                            <p className={`${isMobile ? "text-xs" : "text-sm"} text-muted-foreground`}>
                               Data limite: {task.dueDate}
                             </p>
                           </div>
@@ -552,18 +560,20 @@ const ClientPage = () => {
 };
 
 const CustomTooltip = ({ active, payload, label }: any) => {
+  const isMobile = useIsMobile();
+  
   if (active && payload && payload.length) {
     return (
       <ChartTooltipContent>
-        <div className="text-sm font-medium">{label}</div>
+        <div className={`${isMobile ? "text-xs" : "text-sm"} font-medium`}>{label}</div>
         <div className="grid grid-cols-2 gap-2 mt-2">
           <div>
-            <div className="text-xs text-muted-foreground">SEO Score</div>
-            <div className="text-sm font-medium">{payload[0].value}</div>
+            <div className={`${isMobile ? "text-xs" : "text-sm"} text-muted-foreground`}>SEO Score</div>
+            <div className={`${isMobile ? "text-xs" : "text-sm"} font-medium`}>{payload[0].value}</div>
           </div>
           <div>
-            <div className="text-xs text-muted-foreground">AIO Score</div>
-            <div className="text-sm font-medium">{payload[1].value}</div>
+            <div className={`${isMobile ? "text-xs" : "text-sm"} text-muted-foreground`}>AIO Score</div>
+            <div className={`${isMobile ? "text-xs" : "text-sm"} font-medium`}>{payload[1].value}</div>
           </div>
         </div>
       </ChartTooltipContent>
