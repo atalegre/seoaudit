@@ -1,6 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
+import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import {
@@ -9,6 +10,14 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { ArrowRight } from 'lucide-react';
 
 const FAQPage = () => {
@@ -97,13 +106,20 @@ const FAQPage = () => {
       <main className="flex-1 container py-12 px-4">
         <div className="max-w-3xl mx-auto">
           <div className="mb-8">
-            <nav aria-label="Breadcrumb" className="text-sm mb-6">
-              <ol className="flex items-center space-x-2">
-                <li><a href="/" className="text-muted-foreground hover:text-primary">Início</a></li>
-                <li className="text-muted-foreground">/</li>
-                <li className="font-medium">Perguntas Frequentes</li>
-              </ol>
-            </nav>
+            {/* Replace simple breadcrumb with shadcn/ui breadcrumb component */}
+            <Breadcrumb className="mb-6">
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild>
+                    <Link to="/">Início</Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Perguntas Frequentes</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
             
             <h1 className="text-3xl md:text-4xl font-bold mb-4">Perguntas Frequentes</h1>
             <p className="text-lg text-muted-foreground">Encontre respostas para as dúvidas mais comuns sobre o SEO AI Checker e otimização para motores de busca e IA.</p>
