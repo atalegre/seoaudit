@@ -13,6 +13,8 @@ import FAQPage from "./pages/FAQPage";
 import ContactPage from "./pages/ContactPage";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import ClientPage from "./pages/dashboard/ClientPage";
+import SignInPage from "./pages/SignInPage";
+import SignUpPage from "./pages/SignUpPage";
 
 // Create a new QueryClient instance
 const queryClient = new QueryClient();
@@ -31,6 +33,8 @@ const App = () => {
               <Route path="/como-funciona" element={<HowItWorksPage />} />
               <Route path="/faq" element={<FAQPage />} />
               <Route path="/contacto" element={<ContactPage />} />
+              <Route path="/signin" element={<SignInPage />} />
+              <Route path="/signup" element={<SignUpPage />} />
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/dashboard/client/:id" element={<ClientPage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
