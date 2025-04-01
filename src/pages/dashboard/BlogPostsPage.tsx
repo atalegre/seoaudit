@@ -46,24 +46,39 @@ const BlogPostsPage = () => {
 
   const fetchPosts = async () => {
     setLoading(true);
+    console.log('Starting to fetch blog posts...');
     try {
-      console.log('Fetching blog posts from Supabase...');
+      console.log('Calling getBlogPosts function...');
       const data = await getBlogPosts();
-      console.log('Blog posts fetched:', data);
+      console.log('Response from getBlogPosts:', data);
       setPosts(data || []);
+      if (data && data.length > 0) {
+        toast({
+          title: 'Posts carregados',
+          description: `${data.length} posts foram carregados com sucesso.`,
+        });
+      } else {
+        toast({
+          title: 'Nenhum post encontrado',
+          description: 'Não foram encontrados posts no banco de dados.',
+          variant: 'destructive',
+        });
+      }
     } catch (error) {
-      console.error('Error fetching posts:', error);
+      console.error('Error fetching posts in BlogPostsPage:', error);
       toast({
         title: 'Erro',
-        description: 'Não foi possível carregar os posts do blog',
+        description: 'Não foi possível carregar os posts do blog. Verifique o console para mais detalhes.',
         variant: 'destructive',
       });
     } finally {
       setLoading(false);
+      console.log('Fetch posts completed. Loading state set to false.');
     }
   };
 
   useEffect(() => {
+    console.log('BlogPostsPage: useEffect triggered, fetching posts...');
     fetchPosts();
   }, []);
 
@@ -73,12 +88,14 @@ const BlogPostsPage = () => {
   };
 
   const handleEditPost = (post: BlogPost) => {
+    console.log('Editing post:', post);
     setCurrentPost(post);
     setIsFormOpen(true);
   };
 
   const handleDeletePost = async (id: string) => {
     try {
+      console.log(`Deleting post with id: ${id}`);
       await deleteBlogPost(id);
       
       toast({
@@ -99,8 +116,12 @@ const BlogPostsPage = () => {
 
   const handleFormClose = () => {
     setIsFormOpen(false);
+    console.log('Form closed, fetching updated posts...');
     fetchPosts();
   };
+
+  console.log('Current posts state:', posts);
+  console.log('Current loading state:', loading);
 
   const filteredPosts = searchTerm
     ? posts.filter(post => 
@@ -109,6 +130,8 @@ const BlogPostsPage = () => {
         post.category?.toLowerCase().includes(searchTerm.toLowerCase())
       )
     : posts;
+
+  console.log('Filtered posts:', filteredPosts);
 
   return (
     <DashboardLayout>
