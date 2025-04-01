@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -8,6 +7,9 @@ import AnalysisTabs from '@/components/AnalysisTabs';
 import ReportForm from '@/components/ReportForm';
 import { analyzeSite, AnalysisResult } from '@/utils/analyzerUtils';
 import { Loader2 } from 'lucide-react';
+import { getPageInsightsData } from '@/utils/api/pageInsightsService';
+import { getChatGptAnalysis } from '@/utils/api/chatGptService';
+import { toast } from 'sonner';
 
 const ResultsPage = () => {
   const location = useLocation();
@@ -21,27 +23,167 @@ const ResultsPage = () => {
     
     if (!urlParam) {
       // Handle missing URL parameter
+      setIsLoading(false);
       return;
     }
     
-    // Set up loading state and simulate API request
+    // Set up loading state
     setIsLoading(true);
     
-    // Simulate delay for analysis process
-    const timer = setTimeout(() => {
-      // Call the analyzeSite function to get simulated results
-      const results = analyzeSite(urlParam);
-      setAnalysisData(results);
-      setIsLoading(false);
-    }, 2000);
+    const performAnalysis = async () => {
+      try {
+        // Buscar dados do Google Page Insights para SEO
+        const seoData = await getPageInsightsData(urlParam);
+        
+        // Tentar buscar análise de AIO ou usar dados simulados
+        let aioData;
+        try {
+          aioData = await getChatGptAnalysis(urlParam);
+        } catch (error) {
+          console.error('Error fetching AIO data:', error);
+          toast('Usando dados simulados para análise de AIO', {
+            description: 'Não foi possível conectar à API de IA.',
+          });
+          // Usar dados simulados para AIO
+          aioData = analyzeSite(urlParam).aio;
+        }
+        
+        // Combinar resultados
+        const results: AnalysisResult = {
+          url: urlParam,
+          status: determineStatus(seoData.score, aioData.score),
+          seo: seoData,
+          aio: aioData,
+          recommendations: generateRecommendations(seoData, aioData)
+        };
+        
+        setAnalysisData(results);
+      } catch (error) {
+        console.error('Error performing analysis:', error);
+        toast('Erro ao analisar site', {
+          description: 'Usando dados simulados como fallback.',
+        });
+        // Fallback para dados simulados
+        const results = analyzeSite(urlParam);
+        setAnalysisData(results);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     
-    return () => clearTimeout(timer);
+    performAnalysis();
   }, [location.search]);
   
   const formatUrl = (url: string) => {
     // Format URL for display (remove http://, https://)
     return url.replace(/^https?:\/\//, '');
   };
+  
+  // Helper function to determine status based on scores
+  function determineStatus(seoScore: number, aioScore: number): 'Saudável' | 'A melhorar' | 'Crítico' {
+    const averageScore = (seoScore + aioScore) / 2;
+    
+    if (averageScore >= 80) return 'Saudável';
+    if (averageScore >= 60) return 'A melhorar';
+    return 'Crítico';
+  }
+  
+  // Helper function to generate recommendations
+  function generateRecommendations(seo: any, aio: any) {
+    const recommendations = [];
+
+    if (seo.loadTimeDesktop > 3) {
+      recommendations.push({
+        suggestion: 'Otimize o tempo de carregamento da página para desktop',
+        seoImpact: 'Alto',
+        aioImpact: 'Nenhum',
+        priority: 9,
+      });
+    }
+
+    if (seo.loadTimeMobile > 5) {
+      recommendations.push({
+        suggestion: 'Otimize o tempo de carregamento da página para mobile',
+        seoImpact: 'Alto',
+        aioImpact: 'Nenhum',
+        priority: 9,
+      });
+    }
+
+    if (!seo.mobileFriendly) {
+      recommendations.push({
+        suggestion: 'Torne o site mobile-friendly',
+        seoImpact: 'Alto',
+        aioImpact: 'Médio',
+        priority: 8,
+      });
+    }
+
+    if (!seo.security) {
+      recommendations.push({
+        suggestion: 'Implemente HTTPS no seu site',
+        seoImpact: 'Alto',
+        aioImpact: 'Nenhum',
+        priority: 10,
+      });
+    }
+
+    if (seo.imageOptimization < 60) {
+      recommendations.push({
+        suggestion: 'Otimize as imagens do site',
+        seoImpact: 'Médio',
+        aioImpact: 'Baixo',
+        priority: 6,
+      });
+    }
+
+    if (seo.headingsStructure < 60) {
+      recommendations.push({
+        suggestion: 'Melhore a estrutura de headings do site',
+        seoImpact: 'Médio',
+        aioImpact: 'Alto',
+        priority: 7,
+      });
+    }
+
+    if (seo.metaTags < 60) {
+      recommendations.push({
+        suggestion: 'Otimize as meta tags do site',
+        seoImpact: 'Médio',
+        aioImpact: 'Baixo',
+        priority: 5,
+      });
+    }
+
+    if (aio.contentClarity < 60) {
+      recommendations.push({
+        suggestion: 'Melhore a clareza do conteúdo do site',
+        seoImpact: 'Baixo',
+        aioImpact: 'Alto',
+        priority: 7,
+      });
+    }
+
+    if (aio.logicalStructure < 60) {
+      recommendations.push({
+        suggestion: 'Melhore a estrutura lógica do site',
+        seoImpact: 'Baixo',
+        aioImpact: 'Alto',
+        priority: 6,
+      });
+    }
+
+    if (aio.naturalLanguage < 60) {
+      recommendations.push({
+        suggestion: 'Melhore a linguagem natural do site',
+        seoImpact: 'Baixo',
+        aioImpact: 'Alto',
+        priority: 5,
+      });
+    }
+    
+    return recommendations;
+  }
   
   if (isLoading) {
     return (
