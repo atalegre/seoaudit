@@ -11,6 +11,7 @@ import { Loader2 } from 'lucide-react';
 import { getPageInsightsData } from '@/utils/api/pageInsightsService';
 import { getChatGptAnalysis } from '@/utils/api/chatGptService';
 import { toast } from 'sonner';
+import { formatUrl, createAnalysisResult } from '@/utils/resultsPageHelpers';
 
 const ResultsPage = () => {
   const location = useLocation();
@@ -18,17 +19,14 @@ const ResultsPage = () => {
   const [analysisData, setAnalysisData] = useState<AnalysisResult | null>(null);
   
   useEffect(() => {
-    // Parse the URL parameter
     const params = new URLSearchParams(location.search);
     const urlParam = params.get('url');
     
     if (!urlParam) {
-      // Handle missing URL parameter
       setIsLoading(false);
       return;
     }
     
-    // Set up loading state
     setIsLoading(true);
     
     const performAnalysis = async () => {
@@ -50,17 +48,8 @@ const ResultsPage = () => {
           aioData = analyzeSite(urlParam).aio;
         }
         
-        // Combinar resultados
-        const results: AnalysisResult = {
-          url: urlParam,
-          timestamp: new Date().toISOString(), // Add timestamp
-          status: determineStatus(seoData.score, aioData.score),
-          seo: seoData,
-          aio: aioData,
-          recommendations: generateRecommendations(seoData, aioData),
-          overallStatus: determineStatus(seoData.score, aioData.score) // Add overallStatus
-        };
-        
+        // Criar resultado da análise
+        const results = createAnalysisResult(urlParam, seoData, aioData);
         setAnalysisData(results);
       } catch (error) {
         console.error('Error performing analysis:', error);
@@ -77,117 +66,6 @@ const ResultsPage = () => {
     
     performAnalysis();
   }, [location.search]);
-  
-  const formatUrl = (url: string) => {
-    // Format URL for display (remove http://, https://)
-    return url.replace(/^https?:\/\//, '');
-  };
-  
-  // Helper function to determine status based on scores
-  function determineStatus(seoScore: number, aioScore: number): 'Saudável' | 'A melhorar' | 'Crítico' {
-    const averageScore = (seoScore + aioScore) / 2;
-    
-    if (averageScore >= 80) return 'Saudável';
-    if (averageScore >= 60) return 'A melhorar';
-    return 'Crítico';
-  }
-  
-  // Helper function to generate recommendations
-  function generateRecommendations(seo: any, aio: any) {
-    const recommendations = [];
-
-    if (seo.loadTimeDesktop > 3) {
-      recommendations.push({
-        suggestion: 'Otimize o tempo de carregamento da página para desktop',
-        seoImpact: 'Alto',
-        aioImpact: 'Nenhum',
-        priority: 9,
-      });
-    }
-
-    if (seo.loadTimeMobile > 5) {
-      recommendations.push({
-        suggestion: 'Otimize o tempo de carregamento da página para mobile',
-        seoImpact: 'Alto',
-        aioImpact: 'Nenhum',
-        priority: 9,
-      });
-    }
-
-    if (!seo.mobileFriendly) {
-      recommendations.push({
-        suggestion: 'Torne o site mobile-friendly',
-        seoImpact: 'Alto',
-        aioImpact: 'Médio',
-        priority: 8,
-      });
-    }
-
-    if (!seo.security) {
-      recommendations.push({
-        suggestion: 'Implemente HTTPS no seu site',
-        seoImpact: 'Alto',
-        aioImpact: 'Nenhum',
-        priority: 10,
-      });
-    }
-
-    if (seo.imageOptimization < 60) {
-      recommendations.push({
-        suggestion: 'Otimize as imagens do site',
-        seoImpact: 'Médio',
-        aioImpact: 'Baixo',
-        priority: 6,
-      });
-    }
-
-    if (seo.headingsStructure < 60) {
-      recommendations.push({
-        suggestion: 'Melhore a estrutura de headings do site',
-        seoImpact: 'Médio',
-        aioImpact: 'Alto',
-        priority: 7,
-      });
-    }
-
-    if (seo.metaTags < 60) {
-      recommendations.push({
-        suggestion: 'Otimize as meta tags do site',
-        seoImpact: 'Médio',
-        aioImpact: 'Baixo',
-        priority: 5,
-      });
-    }
-
-    if (aio.contentClarity < 60) {
-      recommendations.push({
-        suggestion: 'Melhore a clareza do conteúdo do site',
-        seoImpact: 'Baixo',
-        aioImpact: 'Alto',
-        priority: 7,
-      });
-    }
-
-    if (aio.logicalStructure < 60) {
-      recommendations.push({
-        suggestion: 'Melhore a estrutura lógica do site',
-        seoImpact: 'Baixo',
-        aioImpact: 'Alto',
-        priority: 6,
-      });
-    }
-
-    if (aio.naturalLanguage < 60) {
-      recommendations.push({
-        suggestion: 'Melhore a linguagem natural do site',
-        seoImpact: 'Baixo',
-        aioImpact: 'Alto',
-        priority: 5,
-      });
-    }
-    
-    return recommendations;
-  }
   
   if (isLoading) {
     return (

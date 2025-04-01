@@ -1,59 +1,11 @@
-import { analyzeSite, AnalysisResult as AnalyzerResult } from '../analyzerUtils';
+
+import { analyzeSite } from '../analyzerUtils';
 import { getPageInsightsData } from './pageInsightsService';
 import { getChatGptAnalysis } from './chatGptService';
 import { getClientsFromDatabase, updateClientInDatabase, saveAnalysisResult } from './supabaseClient';
-import { Client, AnalysisResult as ApiAnalysisResult } from './types';
 import { toast } from 'sonner';
 
-// Função combinada para obter análise completa de SEO e AIO
-export async function getFullAnalysis(url: string): Promise<ApiAnalysisResult> {
-  try {
-    // Para fins de demonstração, usaremos conteúdo simulado
-    // Em uma aplicação real, buscaríamos o conteúdo real da URL
-    const mockContent = "This is sample content from the website that would be analyzed";
-    
-    // Primeiro, tentamos usar as APIs
-    try {
-      toast('Analisando site...', {
-        description: 'A análise pode demorar alguns segundos.',
-      });
-      
-      // Busca dados de AI usando o OpenAI
-      console.log('Iniciando análise de IA para:', url);
-      const aioResult = await getChatGptAnalysis(url, mockContent);
-      console.log('Resultado da análise de IA:', aioResult);
-      
-      // Combina com dados de SEO simulados até termos a API do Google integrada
-      const seoData = analyzeSite(url).seo;
-      
-      const result: ApiAnalysisResult = {
-        url: url,
-        timestamp: new Date().toISOString(),
-        status: determineStatus(seoData.score, aioResult.score),
-        overallStatus: determineStatus(seoData.score, aioResult.score),
-        seo: seoData,
-        aio: aioResult,
-        recommendations: generateRecommendations(seoData, aioResult)
-      };
-      
-      return result;
-    } catch (apiError) {
-      console.error('Erro na análise via API:', apiError);
-      
-      toast('Usando dados simulados para análise', {
-        description: 'Não foi possível conectar às APIs externas.',
-      });
-      
-      // Se falhar, volta para dados simulados
-      return analyzeSite(url);
-    }
-  } catch (error) {
-    console.error('Error performing full analysis:', error);
-    return analyzeSite(url);
-  }
-}
-
-// Helper function to determine status based on scores
+// Função para determinar o status com base nas pontuações
 function determineStatus(seoScore: number, aioScore: number): 'Saudável' | 'A melhorar' | 'Crítico' {
   const averageScore = (seoScore + aioScore) / 2;
   
@@ -62,11 +14,11 @@ function determineStatus(seoScore: number, aioScore: number): 'Saudável' | 'A m
   return 'Crítico';
 }
 
-// Helper function to generate recommendations
+// Função para gerar recomendações com base nos dados de análise
 function generateRecommendations(seo: any, aio: any) {
-  // Existing code or use the recommendations from analyzeSite
   const recommendations = [];
 
+  // SEO recommendations
   if (seo.loadTimeDesktop > 3) {
     recommendations.push({
       suggestion: 'Otimize o tempo de carregamento da página para desktop',
@@ -103,6 +55,7 @@ function generateRecommendations(seo: any, aio: any) {
     });
   }
 
+  // More SEO recommendations
   if (seo.imageOptimization < 60) {
     recommendations.push({
       suggestion: 'Otimize as imagens do site',
@@ -130,6 +83,7 @@ function generateRecommendations(seo: any, aio: any) {
     });
   }
 
+  // AIO recommendations
   if (aio.contentClarity < 60) {
     recommendations.push({
       suggestion: 'Melhore a clareza do conteúdo do site',
@@ -160,8 +114,39 @@ function generateRecommendations(seo: any, aio: any) {
   return recommendations;
 }
 
+// Função combinada para obter análise completa de SEO e AIO
+export async function getFullAnalysis(url: string) {
+  try {
+    toast('Analisando site...', {
+      description: 'A análise pode demorar alguns segundos.',
+    });
+    
+    // Busca dados do Google Page Insights para SEO
+    const seoData = await getPageInsightsData(url);
+    
+    // Busca dados de AI usando o OpenAI
+    console.log('Iniciando análise de IA para:', url);
+    const mockContent = ""; // Conteúdo vazio para usar URL na análise
+    const aioResult = await getChatGptAnalysis(url, mockContent);
+    console.log('Resultado da análise de IA:', aioResult);
+    
+    return {
+      url: url,
+      timestamp: new Date().toISOString(),
+      status: determineStatus(seoData.score, aioResult.score),
+      overallStatus: determineStatus(seoData.score, aioResult.score),
+      seo: seoData,
+      aio: aioResult,
+      recommendations: generateRecommendations(seoData, aioResult)
+    };
+  } catch (error) {
+    console.error('Error performing full analysis:', error);
+    return analyzeSite(url);
+  }
+}
+
 // Função para analisar múltiplos clientes em sequência
-export async function analyzeBulkClients(clientIds: number[]): Promise<void> {
+export async function analyzeBulkClients(clientIds: number[]) {
   // Busca os clientes do Supabase
   const clients = await getClientsFromDatabase();
   const clientsToAnalyze = clients.filter(client => clientIds.includes(client.id));

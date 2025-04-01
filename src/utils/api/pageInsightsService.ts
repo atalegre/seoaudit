@@ -19,7 +19,6 @@ export async function getPageInsightsData(url: string): Promise<any> {
       toast('Chave da API Google Page Insights não encontrada', {
         description: 'Configure a chave nas configurações para obter análise de SEO real.',
       });
-      // Usa dados simulados quando a chave da API não está disponível
       return analyzeSite(url).seo;
     }
 
@@ -37,15 +36,12 @@ export async function getPageInsightsData(url: string): Promise<any> {
     }
     
     const data = await response.json();
-    
-    // Processar os dados retornados pela API para um formato compatível com nossa aplicação
     return processPageInsightsData(data, url);
   } catch (error) {
     console.error('Error fetching Page Insights data:', error);
     toast('Erro ao buscar dados do Google Page Insights', {
       description: 'Usando dados simulados como fallback.',
     });
-    // Fallback para dados simulados
     return analyzeSite(url).seo;
   }
 }
@@ -102,7 +98,6 @@ function processPageInsightsData(data: any, url: string): any {
     };
   } catch (error) {
     console.error('Error processing Page Insights data:', error);
-    // Fallback para dados simulados
     return analyzeSite(url).seo;
   }
 }
