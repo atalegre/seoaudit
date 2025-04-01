@@ -26,7 +26,6 @@ import { BlogPost } from '@/types/blog';
 import { UploadCloud, X } from 'lucide-react';
 import { createBlogPost, updateBlogPost, uploadBlogImage } from '@/utils/supabaseBlogClient';
 
-// Define the schema for our form validation
 const blogPostSchema = z.object({
   title: z.string().min(5, { message: "O título deve ter pelo menos 5 caracteres" }),
   slug: z.string().min(3, { message: "O slug deve ter pelo menos 3 caracteres" }).regex(/^[a-z0-9-]+$/, {
@@ -55,7 +54,6 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onSuccess }) => {
   const [isDragging, setIsDragging] = useState(false);
   const isEditing = !!initialData;
 
-  // Transform the tags array into a comma-separated string if we're editing
   const defaultValues = initialData ? {
     ...initialData,
     tags: Array.isArray(initialData.tags) ? initialData.tags.join(', ') : initialData.tags
@@ -70,7 +68,6 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onSuccess }) => {
     imageSrc: '',
   };
 
-  // Set image preview if we're editing and have an image
   React.useEffect(() => {
     if (initialData?.imageSrc) {
       setImagePreview(initialData.imageSrc);
@@ -82,7 +79,6 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onSuccess }) => {
     defaultValues
   });
 
-  // Generate a slug from the title
   const generateSlug = (title: string) => {
     return title
       .toLowerCase()
@@ -92,7 +88,6 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onSuccess }) => {
       .trim();
   };
 
-  // Handle title change to auto-generate slug
   React.useEffect(() => {
     const subscription = form.watch((value, { name }) => {
       if (name === 'title' && !isEditing) {
@@ -105,7 +100,6 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onSuccess }) => {
     return () => subscription.unsubscribe();
   }, [form, isEditing]);
 
-  // Handle file drop and upload
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -147,7 +141,6 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onSuccess }) => {
 
     setImageFile(file);
     
-    // Create preview URL
     const reader = new FileReader();
     reader.onload = (e) => {
       setImagePreview(e.target?.result as string);
@@ -182,15 +175,12 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onSuccess }) => {
     try {
       let imageSrc = data.imageSrc;
       
-      // If we have a new image file, upload it
       if (imageFile) {
         imageSrc = await uploadBlogImage(imageFile);
       }
       
-      // Convert tags from comma-separated string to array
       const tagsArray = data.tags.split(',').map(tag => tag.trim());
       
-      // Prepare data for submission
       const blogPostData: BlogPost = {
         title: data.title,
         slug: data.slug,
@@ -200,15 +190,13 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onSuccess }) => {
         category: data.category,
         imageSrc,
         tags: tagsArray,
-        popularity: initialData?.popularity || Math.floor(Math.random() * 25) + 75, // Default popularity between 75-100 if new
-        date: initialData?.date || new Date().toISOString().split('T')[0], // Use current date if new
+        popularity: initialData?.popularity || Math.floor(Math.random() * 25) + 75,
+        date: initialData?.date || new Date().toISOString().split('T')[0],
       };
 
       if (isEditing && initialData?.id) {
-        // Update existing post
         await updateBlogPost(initialData.id, blogPostData);
       } else {
-        // Create new post
         await createBlogPost(blogPostData);
       }
       
@@ -283,7 +271,6 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onSuccess }) => {
               )}
             />
             
-            {/* Image Upload Area */}
             <FormItem>
               <FormLabel>Imagem de Capa</FormLabel>
               <div
@@ -337,7 +324,6 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onSuccess }) => {
               </div>
               <FormMessage />
               
-              {/* Hidden input for image URL */}
               <input 
                 type="hidden" 
                 {...form.register('imageSrc')} 
