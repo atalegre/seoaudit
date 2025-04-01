@@ -19,6 +19,7 @@ import SignUpPage from "./pages/SignUpPage";
 import ClientsPage from "./pages/dashboard/ClientsPage";
 import SettingsPage from "./pages/dashboard/SettingsPage";
 import BulkImportPage from "./pages/dashboard/BulkImportPage";
+import BlogPostsPage from "./pages/dashboard/BlogPostsPage";
 import { supabase } from "./integrations/supabase/client";
 import BlogPage from "./pages/content/BlogPage";
 import BlogPostPage from "./pages/content/BlogPostPage";
@@ -78,8 +79,9 @@ const App = () => {
               <Route path="/dashboard/clients" element={<ClientsPage />} />
               <Route path="/dashboard/bulk-import" element={<BulkImportPage />} />
               <Route path="/dashboard/settings" element={<SettingsPage />} />
+              <Route path="/dashboard/blog-posts" element={<BlogPostsPage />} />
               
-              {/* Novas rotas de conteúdo */}
+              {/* Rotas de conteúdo */}
               <Route path="/blog" element={<BlogPage />} />
               <Route path="/blog/:slug" element={<BlogPostPage />} />
               <Route path="/glossario" element={<GlossaryPage />} />

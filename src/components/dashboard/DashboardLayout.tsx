@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from "@/lib/utils";
-import { BarChart, Users, Settings, Bell, Search, Upload } from "lucide-react";
+import { BarChart, Users, Settings, Bell, Search, Upload, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -10,6 +10,7 @@ const sidebarItems = [
   { name: "Dashboard", path: "/dashboard", icon: <BarChart className="w-5 h-5" /> },
   { name: "Clientes", path: "/dashboard/clients", icon: <Users className="w-5 h-5" /> },
   { name: "Importação em Massa", path: "/dashboard/bulk-import", icon: <Upload className="w-5 h-5" /> },
+  { name: "Blog", path: "/dashboard/blog-posts", icon: <FileText className="w-5 h-5" /> },
   { name: "Configurações", path: "/dashboard/settings", icon: <Settings className="w-5 h-5" /> },
 ];
 
