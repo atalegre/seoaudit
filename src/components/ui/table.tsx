@@ -1,8 +1,7 @@
-
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
-import { useIsMobile, useBreakpoint } from "@/hooks/use-mobile"
+import { useBreakpoint } from "@/hooks/use-mobile"
 
 const Table = React.forwardRef<
   HTMLTableElement,

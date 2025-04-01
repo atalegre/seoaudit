@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
@@ -28,7 +29,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Plus, Trash2 } from 'lucide-react';
+import { Edit, Plus, Trash2, Eye } from 'lucide-react';
 import { AlertDialog, AlertDialogContent, AlertDialogAction, AlertDialogCancel, 
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
@@ -45,14 +46,15 @@ const BlogPostsPage = () => {
   const fetchPosts = async () => {
     setLoading(true);
     try {
-      // Use type assertion to bypass TypeScript check since we know the structure is correct
-      const { data, error } = await (supabase
-        .from('blog_posts' as any)
+      console.log('Fetching blog posts from Supabase...');
+      const { data, error } = await supabase
+        .from('blog_posts')
         .select('*')
-        .order('date', { ascending: false }) as any);
+        .order('date', { ascending: false });
       
       if (error) throw error;
       
+      console.log('Blog posts fetched:', data);
       setPosts(data || []);
     } catch (error) {
       console.error('Error fetching posts:', error);
@@ -82,11 +84,10 @@ const BlogPostsPage = () => {
 
   const handleDeletePost = async (id: string) => {
     try {
-      // Use type assertion to bypass TypeScript check since we know the structure is correct
-      const { error } = await (supabase
-        .from('blog_posts' as any)
+      const { error } = await supabase
+        .from('blog_posts')
         .delete()
-        .eq('id', id) as any);
+        .eq('id', id);
       
       if (error) throw error;
       
@@ -113,9 +114,9 @@ const BlogPostsPage = () => {
 
   const filteredPosts = searchTerm
     ? posts.filter(post => 
-        post.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        post.slug.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        post.category.toLowerCase().includes(searchTerm.toLowerCase())
+        post.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        post.slug?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        post.category?.toLowerCase().includes(searchTerm.toLowerCase())
       )
     : posts;
 
@@ -184,10 +185,18 @@ const BlogPostsPage = () => {
                         <Button
                           variant="ghost"
                           size="icon"
+                          onClick={() => handleEditPost(post)}
+                          title="Editar"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => navigate(`/blog/${post.slug}`)}
                           title="Visualizar"
                         >
-                          <Edit className="h-4 w-4" />
+                          <Eye className="h-4 w-4" />
                         </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>

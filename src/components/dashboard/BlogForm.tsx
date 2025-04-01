@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -24,6 +24,7 @@ import {
 import { categories } from '@/data/blog-data';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { UploadCloud, X, Image } from 'lucide-react';
 
 // Define the schema for our form validation
 const blogPostSchema = z.object({
@@ -36,7 +37,7 @@ const blogPostSchema = z.object({
   keyLearning: z.string().min(10, { message: "O aprendizado chave deve ter pelo menos 10 caracteres" }),
   category: z.string().min(1, { message: "Selecione uma categoria" }),
   tags: z.string().min(1, { message: "Adicione pelo menos uma tag" }),
-  imageSrc: z.string().url({ message: "A URL da imagem deve ser válida" }),
+  imageSrc: z.string().optional(),
 });
 
 type BlogFormValues = z.infer<typeof blogPostSchema>;
@@ -49,12 +50,15 @@ interface BlogFormProps {
 const BlogForm: React.FC<BlogFormProps> = ({ initialData, onSuccess }) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const isEditing = !!initialData;
 
   // Transform the tags array into a comma-separated string if we're editing
   const defaultValues = initialData ? {
     ...initialData,
-    tags: initialData.tags.join(', ')
+    tags: Array.isArray(initialData.tags) ? initialData.tags.join(', ') : initialData.tags
   } : {
     title: '',
     slug: '',
@@ -65,6 +69,13 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onSuccess }) => {
     tags: '',
     imageSrc: '',
   };
+
+  // Set image preview if we're editing and have an image
+  React.useEffect(() => {
+    if (initialData?.imageSrc) {
+      setImagePreview(initialData.imageSrc);
+    }
+  }, [initialData]);
 
   const form = useForm<BlogFormValues>({
     resolver: zodResolver(blogPostSchema),
@@ -94,15 +105,132 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onSuccess }) => {
     return () => subscription.unsubscribe();
   }, [form, isEditing]);
 
+  // Handle file drop and upload
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isDragging) {
+      setIsDragging(true);
+    }
+  };
+
+  const processFile = useCallback((file: File) => {
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Tipo de arquivo inválido",
+        description: "Por favor, selecione apenas arquivos de imagem.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Arquivo muito grande",
+        description: "O tamanho máximo permitido é 5MB.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setImageFile(file);
+    
+    // Create preview URL
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImagePreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  }, [toast]);
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      processFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      processFile(e.target.files[0]);
+    }
+  };
+
+  const clearSelectedImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    form.setValue('imageSrc', '');
+  };
+
+  const uploadImageToStorage = async (file: File): Promise<string> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `blog-images/${fileName}`;
+      
+      // Create a storage bucket if it doesn't exist
+      const { data: bucketExists } = await supabase.storage.getBucket('blog-images');
+      if (!bucketExists) {
+        const { error } = await supabase.storage.createBucket('blog-images', {
+          public: true,
+          fileSizeLimit: 5242880, // 5MB
+          allowedMimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp']
+        });
+        
+        if (error) throw error;
+      }
+      
+      // Upload the file
+      const { error: uploadError } = await supabase.storage
+        .from('blog-images')
+        .upload(filePath, file);
+        
+      if (uploadError) throw uploadError;
+      
+      // Get the public URL
+      const { data } = supabase.storage
+        .from('blog-images')
+        .getPublicUrl(filePath);
+        
+      return data.publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      throw error;
+    }
+  };
+
   const onSubmit = async (data: BlogFormValues) => {
     setIsSubmitting(true);
     try {
+      let imageSrc = data.imageSrc;
+      
+      // If we have a new image file, upload it
+      if (imageFile) {
+        imageSrc = await uploadImageToStorage(imageFile);
+      }
+      
       // Convert tags from comma-separated string to array
       const tagsArray = data.tags.split(',').map(tag => tag.trim());
       
       // Prepare data for submission
       const blogPostData = {
         ...data,
+        imageSrc,
         tags: tagsArray,
         popularity: initialData?.popularity || Math.floor(Math.random() * 25) + 75, // Default popularity between 75-100 if new
         date: initialData?.date || new Date().toISOString().split('T')[0], // Use current date if new
@@ -112,17 +240,15 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onSuccess }) => {
       let result;
       if (isEditing) {
         // Update existing post
-        // Use type assertion to bypass TypeScript check since we know the structure is correct
-        result = await (supabase
-          .from('blog_posts' as any)
-          .update(blogPostData as any)
-          .eq('id', initialData.id) as any);
+        result = await supabase
+          .from('blog_posts')
+          .update(blogPostData)
+          .eq('id', initialData.id);
       } else {
         // Create new post
-        // Use type assertion to bypass TypeScript check since we know the structure is correct
-        result = await (supabase
-          .from('blog_posts' as any)
-          .insert([blogPostData] as any) as any);
+        result = await supabase
+          .from('blog_posts')
+          .insert([blogPostData]);
       }
 
       if (result.error) throw result.error;
@@ -197,20 +323,68 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onSuccess }) => {
                 </FormItem>
               )}
             />
-
-            <FormField
-              control={form.control}
-              name="imageSrc"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>URL da Imagem</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://example.com/image.jpg" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            
+            {/* Image Upload Area */}
+            <FormItem>
+              <FormLabel>Imagem de Capa</FormLabel>
+              <div
+                className={`mt-1 p-6 border-2 border-dashed rounded-md transition-colors ${
+                  isDragging ? 'border-primary bg-primary/5' : 'border-gray-300'
+                }`}
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+              >
+                {imagePreview ? (
+                  <div className="relative">
+                    <img 
+                      src={imagePreview} 
+                      alt="Preview" 
+                      className="w-full h-48 object-cover rounded-md" 
+                    />
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="absolute -top-2 -right-2 rounded-full"
+                      type="button"
+                      onClick={clearSelectedImage}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center space-y-2">
+                    <UploadCloud className="h-12 w-12 text-gray-400" />
+                    <div className="text-sm text-center">
+                      <label htmlFor="file-upload" className="cursor-pointer text-primary hover:text-primary/80">
+                        <span>Carregar um arquivo</span>
+                        <input
+                          id="file-upload"
+                          name="file-upload"
+                          type="file"
+                          className="sr-only"
+                          accept="image/*"
+                          onChange={handleFileChange}
+                        />
+                      </label>
+                      <span className="text-gray-500"> ou arraste e solte</span>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      PNG, JPG, GIF até 5MB
+                    </p>
+                  </div>
+                )}
+              </div>
+              <FormMessage />
+              
+              {/* Hidden input for image URL */}
+              <input 
+                type="hidden" 
+                {...form.register('imageSrc')} 
+                value={imagePreview || form.getValues('imageSrc') || ''} 
+              />
+            </FormItem>
           </div>
 
           <div className="space-y-6">
