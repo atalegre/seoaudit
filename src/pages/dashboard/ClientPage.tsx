@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { 
@@ -46,28 +45,20 @@ import {
   Legend, 
   Tooltip 
 } from 'recharts';
+import { 
+  getClientAnalysisHistory,
+  getClientsFromDatabase,
+  getFullAnalysis,
+  saveAnalysisResult,
+  updateClientInDatabase,
+  Client
+} from '@/utils/api';
 
-// Mock client data
-const clientData = {
-  id: 1,
-  name: 'Tech Solutions',
-  website: 'techsolutions.pt',
-  contactName: 'João Pereira',
-  email: 'joao@techsolutions.pt',
-  phone: '912345678',
-  account: 'João Silva',
-  createdAt: '2023-09-01',
+const chartConfig = {
+  seo: { label: "SEO Score", theme: { light: "#2563eb", dark: "#3b82f6" } },
+  aio: { label: "AIO Score", theme: { light: "#9333ea", dark: "#a855f7" } },
 };
 
-// Mock historical data for charts
-const historicalData = [
-  { date: '2023-09-01', seoScore: 65, aioScore: 60 },
-  { date: '2023-09-15', seoScore: 68, aioScore: 63 },
-  { date: '2023-10-01', seoScore: 75, aioScore: 68 },
-  { date: '2023-10-15', seoScore: 87, aioScore: 72 },
-];
-
-// Mock recommendations
 const recommendations = [
   {
     id: 1,
@@ -99,7 +90,6 @@ const recommendations = [
   },
 ];
 
-// Mock tasks
 const tasks = [
   {
     id: 1,
@@ -121,16 +111,59 @@ const tasks = [
   },
 ];
 
-// Chart configuration
-const chartConfig = {
-  seo: { label: "SEO Score", theme: { light: "#2563eb", dark: "#3b82f6" } },
-  aio: { label: "AIO Score", theme: { light: "#9333ea", dark: "#a855f7" } },
-};
-
 const ClientPage = () => {
   const { id } = useParams<{ id: string }>();
+  const [client, setClient] = useState<Client | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [historicalData, setHistoricalData] = useState<any[]>([]);
   
-  // Function to handle task status change
+  useEffect(() => {
+    async function fetchClientData() {
+      if (!id) return;
+      
+      try {
+        setLoading(true);
+        
+        const clients = await getClientsFromDatabase();
+        const clientData = clients.find(c => c.id === Number(id));
+        
+        if (clientData) {
+          setClient(clientData);
+          
+          const history = await getClientAnalysisHistory(clientData.id);
+          
+          const formattedHistory = history.map(item => ({
+            date: new Date(item.timestamp).toISOString().split('T')[0],
+            seoScore: item.seo.score,
+            aioScore: item.aio.score
+          }));
+          
+          if (formattedHistory.length === 0) {
+            setHistoricalData([
+              { date: '2023-09-01', seoScore: 65, aioScore: 60 },
+              { date: '2023-09-15', seoScore: 68, aioScore: 63 },
+              { date: '2023-10-01', seoScore: 75, aioScore: 68 },
+              { date: '2023-10-15', seoScore: 87, aioScore: 72 },
+            ]);
+          } else {
+            setHistoricalData(formattedHistory);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching client data:', error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar os dados do cliente.",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchClientData();
+  }, [id]);
+  
   const handleTaskStatusChange = (taskId: number) => {
     toast({
       title: "Tarefa atualizada",
@@ -138,7 +171,6 @@ const ClientPage = () => {
     });
   };
   
-  // Function to handle recommendation status change
   const handleRecommendationStatusChange = (recommendationId: number) => {
     toast({
       title: "Melhoria marcada como concluída",
@@ -146,15 +178,63 @@ const ClientPage = () => {
     });
   };
   
-  // Function to handle report generation
-  const handleGenerateReport = () => {
-    toast({
-      title: "Relatório em geração",
-      description: "O novo relatório está sendo gerado e ficará disponível em breve.",
-    });
+  const handleGenerateReport = async () => {
+    if (!client || !client.website) {
+      toast({
+        title: "Erro",
+        description: "Cliente sem website definido.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      toast({
+        title: "Relatório em geração",
+        description: "O novo relatório está sendo gerado e ficará disponível em breve.",
+      });
+      
+      const result = await getFullAnalysis(client.website);
+      
+      const updatedClient = {
+        ...client,
+        lastReport: new Date().toISOString().split('T')[0],
+        seoScore: result.seo.score,
+        aioScore: result.aio.score,
+        lastAnalysis: new Date(),
+        status: 'active'
+      };
+      
+      await updateClientInDatabase(updatedClient);
+      
+      await saveAnalysisResult(client.id, result);
+      
+      setClient(updatedClient);
+      
+      setHistoricalData(prev => [
+        ...prev, 
+        {
+          date: new Date().toISOString().split('T')[0],
+          seoScore: result.seo.score,
+          aioScore: result.aio.score
+        }
+      ]);
+      
+      toast({
+        title: "Análise concluída",
+        description: "O relatório foi gerado com sucesso.",
+        variant: "success"
+      });
+    } catch (error) {
+      console.error('Error generating report:', error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao gerar o relatório.",
+        variant: "destructive"
+      });
+    }
   };
   
-  // Function to handle sending update
   const handleSendUpdate = () => {
     toast({
       title: "Atualização enviada",
@@ -162,7 +242,6 @@ const ClientPage = () => {
     });
   };
   
-  // Determine impact badge color
   const getImpactBadge = (impact: string) => {
     switch (impact) {
       case 'Alto':
@@ -176,15 +255,44 @@ const ClientPage = () => {
     }
   };
   
-  // Calculate current scores
-  const currentSEOScore = historicalData[historicalData.length - 1].seoScore;
-  const currentAIOScore = historicalData[historicalData.length - 1].aioScore;
-  const previousSEOScore = historicalData[historicalData.length - 2].seoScore;
-  const previousAIOScore = historicalData[historicalData.length - 2].aioScore;
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold mb-2">Carregando dados do cliente...</h2>
+            <p className="text-muted-foreground">Por favor, aguarde enquanto buscamos as informações.</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
   
-  // Calculate difference from previous scores
-  const seoDiff = currentSEOScore - previousSEOScore;
-  const aioDiff = currentAIOScore - previousAIOScore;
+  if (!client) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold mb-2">Cliente não encontrado</h2>
+            <p className="text-muted-foreground">O cliente solicitado não existe ou foi removido.</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+  
+  const currentSEOScore = client.seoScore || 0;
+  const currentAIOScore = client.aioScore || 0;
+  
+  let seoDiff = 0;
+  let aioDiff = 0;
+  
+  if (historicalData.length >= 2) {
+    const currentData = historicalData[historicalData.length - 1];
+    const previousData = historicalData[historicalData.length - 2];
+    seoDiff = currentData.seoScore - previousData.seoScore;
+    aioDiff = currentData.aioScore - previousData.aioScore;
+  }
   
   return (
     <DashboardLayout>
@@ -194,9 +302,9 @@ const ClientPage = () => {
             <div className="flex items-center gap-2">
               <span className="text-muted-foreground">Cliente</span>
               <ChevronRight className="w-4 h-4 text-muted-foreground" />
-              <h1 className="text-3xl font-bold">{clientData.name}</h1>
+              <h1 className="text-3xl font-bold">{client.name}</h1>
             </div>
-            <p className="text-muted-foreground mt-1">{clientData.website}</p>
+            <p className="text-muted-foreground mt-1">{client.website}</p>
           </div>
           
           <div className="flex flex-wrap gap-3">
@@ -211,7 +319,6 @@ const ClientPage = () => {
           </div>
         </div>
         
-        {/* Client Information */}
         <Card>
           <CardHeader>
             <CardTitle>Dados do Cliente</CardTitle>
@@ -221,32 +328,31 @@ const ClientPage = () => {
               <div className="space-y-4">
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground">Nome de Contato</h3>
-                  <p>{clientData.contactName}</p>
+                  <p>{client.contactName || 'Não definido'}</p>
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground">Email</h3>
-                  <p>{clientData.email}</p>
+                  <p>{client.contactEmail || 'Não definido'}</p>
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground">Telefone</h3>
-                  <p>{clientData.phone}</p>
+                  <p>{'Não definido'}</p>
                 </div>
               </div>
               <div className="space-y-4">
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground">Account Manager</h3>
-                  <p>{clientData.account}</p>
+                  <p>{client.account}</p>
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground">Cliente desde</h3>
-                  <p>{clientData.createdAt}</p>
+                  <p>{new Date(client.id).toISOString().split('T')[0]}</p>
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
         
-        {/* Score Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card>
             <CardHeader className="pb-2">
@@ -257,14 +363,16 @@ const ClientPage = () => {
                 <div className="text-4xl font-bold">
                   {currentSEOScore}
                 </div>
-                <div className={`flex items-center ${seoDiff >= 0 ? 'text-green-500' : 'text-red-500'} text-sm font-medium pb-1`}>
-                  {seoDiff >= 0 ? (
-                    <ArrowUp className="w-4 h-4 mr-1" />
-                  ) : (
-                    <ArrowDown className="w-4 h-4 mr-1" />
-                  )}
-                  {Math.abs(seoDiff)} pts
-                </div>
+                {seoDiff !== 0 && (
+                  <div className={`flex items-center ${seoDiff >= 0 ? 'text-green-500' : 'text-red-500'} text-sm font-medium pb-1`}>
+                    {seoDiff >= 0 ? (
+                      <ArrowUp className="w-4 h-4 mr-1" />
+                    ) : (
+                      <ArrowDown className="w-4 h-4 mr-1" />
+                    )}
+                    {Math.abs(seoDiff)} pts
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -278,20 +386,21 @@ const ClientPage = () => {
                 <div className="text-4xl font-bold">
                   {currentAIOScore}
                 </div>
-                <div className={`flex items-center ${aioDiff >= 0 ? 'text-green-500' : 'text-red-500'} text-sm font-medium pb-1`}>
-                  {aioDiff >= 0 ? (
-                    <ArrowUp className="w-4 h-4 mr-1" />
-                  ) : (
-                    <ArrowDown className="w-4 h-4 mr-1" />
-                  )}
-                  {Math.abs(aioDiff)} pts
-                </div>
+                {aioDiff !== 0 && (
+                  <div className={`flex items-center ${aioDiff >= 0 ? 'text-green-500' : 'text-red-500'} text-sm font-medium pb-1`}>
+                    {aioDiff >= 0 ? (
+                      <ArrowUp className="w-4 h-4 mr-1" />
+                    ) : (
+                      <ArrowDown className="w-4 h-4 mr-1" />
+                    )}
+                    {Math.abs(aioDiff)} pts
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
         </div>
         
-        {/* Historical Chart */}
         <Card>
           <CardHeader>
             <CardTitle>Evolução Histórica</CardTitle>
@@ -344,7 +453,6 @@ const ClientPage = () => {
           </CardContent>
         </Card>
         
-        {/* Recommendations & Tasks Tabs */}
         <Tabs defaultValue="recommendations">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="recommendations">Recomendações</TabsTrigger>
@@ -463,7 +571,6 @@ const ClientPage = () => {
   );
 };
 
-// Custom tooltip component for the chart
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
