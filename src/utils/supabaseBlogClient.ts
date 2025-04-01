@@ -1,4 +1,3 @@
-
 import { BlogPost } from '@/types/blog';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -192,6 +191,28 @@ export const uploadBlogImage = async (file: File): Promise<string> => {
     return publicUrlData.publicUrl;
   } catch (error) {
     console.error('Exception in uploadBlogImage:', error);
+    throw error;
+  }
+};
+
+// New function to delete all blog posts
+export const deleteAllBlogPosts = async (): Promise<void> => {
+  console.log('Attempting to delete all blog posts...');
+  try {
+    // Delete all records from the blog_posts table
+    const { error } = await supabase
+      .from('blog_posts')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000'); // This ensures we delete all records
+    
+    if (error) {
+      console.error('Error deleting all blog posts:', error);
+      throw error;
+    }
+    
+    console.log('All blog posts deleted successfully');
+  } catch (error) {
+    console.error('Exception in deleteAllBlogPosts:', error);
     throw error;
   }
 };
