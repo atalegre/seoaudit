@@ -55,68 +55,13 @@ import {
   Client
 } from '@/utils/api';
 
-const chartConfig = {
-  seo: { label: "SEO Score", theme: { light: "#2563eb", dark: "#3b82f6" } },
-  aio: { label: "AIO Score", theme: { light: "#9333ea", dark: "#a855f7" } },
-};
-
-const recommendations = [
-  {
-    id: 1,
-    description: 'Adicionar meta description única para todas as páginas importantes',
-    impact: { seo: 'Alto', aio: 'Médio' },
-    type: ['SEO', 'AIO'],
-    status: 'pending',
-  },
-  {
-    id: 2,
-    description: 'Otimizar tamanho das imagens para melhorar tempo de carregamento',
-    impact: { seo: 'Alto', aio: 'Baixo' },
-    type: ['SEO'],
-    status: 'pending',
-  },
-  {
-    id: 3,
-    description: 'Melhorar estrutura de headings para facilitar compreensão por IA',
-    impact: { seo: 'Médio', aio: 'Alto' },
-    type: ['AIO'],
-    status: 'done',
-  },
-  {
-    id: 4,
-    description: 'Implementar schema markup para produtos e serviços',
-    impact: { seo: 'Alto', aio: 'Alto' },
-    type: ['SEO', 'AIO'],
-    status: 'pending',
-  },
-];
-
-const tasks = [
-  {
-    id: 1,
-    description: 'Enviar relatório mensal de SEO',
-    dueDate: '2023-10-20',
-    status: 'pending',
-  },
-  {
-    id: 2,
-    description: 'Implementar recomendações de otimização de imagens',
-    dueDate: '2023-10-25',
-    status: 'pending',
-  },
-  {
-    id: 3,
-    description: 'Revisar e atualizar meta descriptions',
-    dueDate: '2023-10-30',
-    status: 'pending',
-  },
-];
-
 const ClientPage = () => {
   const { id } = useParams<{ id: string }>();
   const [client, setClient] = useState<Client | null>(null);
   const [loading, setLoading] = useState(true);
   const [historicalData, setHistoricalData] = useState<any[]>([]);
+  const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<any[]>([]);
   
   useEffect(() => {
     async function fetchClientData() {
@@ -139,16 +84,18 @@ const ClientPage = () => {
             aioScore: item.aio.score
           }));
           
-          if (formattedHistory.length === 0) {
-            setHistoricalData([
-              { date: '2023-09-01', seoScore: 65, aioScore: 60 },
-              { date: '2023-09-15', seoScore: 68, aioScore: 63 },
-              { date: '2023-10-01', seoScore: 75, aioScore: 68 },
-              { date: '2023-10-15', seoScore: 87, aioScore: 72 },
-            ]);
+          setHistoricalData(formattedHistory);
+          
+          // Se tivermos análises, use a mais recente para as recomendações
+          if (history.length > 0) {
+            const latestAnalysis = history[0];
+            setRecommendations(latestAnalysis.recommendations || []);
           } else {
-            setHistoricalData(formattedHistory);
+            setRecommendations([]);
           }
+          
+          // Para tarefas, começamos com array vazio em vez de dados dummy
+          setTasks([]);
         }
       } catch (error) {
         console.error('Error fetching client data:', error);
@@ -157,6 +104,9 @@ const ClientPage = () => {
           description: "Não foi possível carregar os dados do cliente.",
           variant: "destructive"
         });
+        setRecommendations([]);
+        setHistoricalData([]);
+        setTasks([]);
       } finally {
         setLoading(false);
       }
@@ -166,6 +116,14 @@ const ClientPage = () => {
   }, [id]);
   
   const handleTaskStatusChange = (taskId: number) => {
+    setTasks(prevTasks => 
+      prevTasks.map(task => 
+        task.id === taskId 
+          ? { ...task, status: task.status === 'done' ? 'pending' : 'done' }
+          : task
+      )
+    );
+    
     toast({
       title: "Tarefa atualizada",
       description: "O status da tarefa foi alterado com sucesso.",
@@ -173,6 +131,14 @@ const ClientPage = () => {
   };
   
   const handleRecommendationStatusChange = (recommendationId: number) => {
+    setRecommendations(prevRecs => 
+      prevRecs.map(rec => 
+        rec.id === recommendationId 
+          ? { ...rec, status: 'done' }
+          : rec
+      )
+    );
+    
     toast({
       title: "Melhoria marcada como concluída",
       description: "A recomendação foi marcada como concluída com sucesso.",
@@ -221,10 +187,13 @@ const ClientPage = () => {
         }
       ]);
       
+      // Atualizar recomendações com base no novo relatório
+      setRecommendations(result.recommendations || []);
+      
       toast({
         title: "Análise concluída",
         description: "O relatório foi gerado com sucesso.",
-        variant: "default" // Changed from 'success' to 'default' as 'success' isn't a valid variant
+        variant: "default"
       });
     } catch (error) {
       console.error('Error generating report:', error);
@@ -343,11 +312,11 @@ const ClientPage = () => {
               <div className="space-y-4">
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground">Account Manager</h3>
-                  <p>{client.account}</p>
+                  <p>{client.account || 'Não definido'}</p>
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground">Cliente desde</h3>
-                  <p>{new Date(client.id).toISOString().split('T')[0]}</p>
+                  <p>{client.lastAnalysis ? new Date(client.lastAnalysis).toISOString().split('T')[0] : 'Não definido'}</p>
                 </div>
               </div>
             </div>
@@ -410,47 +379,57 @@ const ClientPage = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-80">
-              <ChartContainer config={chartConfig}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={historicalData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="date"
-                      tickLine={false}
-                      axisLine={false}
-                      dy={10}
-                    />
-                    <YAxis
-                      axisLine={false}
-                      tickLine={false}
-                      tickMargin={10}
-                      domain={[0, 100]}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey="seoScore"
-                      name="SEO Score"
-                      stroke="var(--color-seo)"
-                      strokeWidth={2.5}
-                      dot={{ r: 5 }}
-                      activeDot={{ r: 8 }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="aioScore"
-                      name="AIO Score"
-                      stroke="var(--color-aio)"
-                      strokeWidth={2.5}
-                      dot={{ r: 5 }}
-                      activeDot={{ r: 8 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </div>
+            {historicalData.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <p>Ainda não há dados históricos disponíveis.</p>
+                <p className="mt-2">Gere um novo relatório para começar a acompanhar o progresso.</p>
+              </div>
+            ) : (
+              <div className="h-80">
+                <ChartContainer config={{
+                  seo: { label: "SEO Score", theme: { light: "#0EA5E9", dark: "#3b82f6" } },
+                  aio: { label: "AIO Score", theme: { light: "#9333ea", dark: "#a855f7" } },
+                }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={historicalData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="date"
+                        tickLine={false}
+                        axisLine={false}
+                        dy={10}
+                      />
+                      <YAxis
+                        axisLine={false}
+                        tickLine={false}
+                        tickMargin={10}
+                        domain={[0, 100]}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend />
+                      <Line
+                        type="monotone"
+                        dataKey="seoScore"
+                        name="SEO Score"
+                        stroke="var(--color-seo)"
+                        strokeWidth={2.5}
+                        dot={{ r: 5 }}
+                        activeDot={{ r: 8 }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="aioScore"
+                        name="AIO Score"
+                        stroke="var(--color-aio)"
+                        strokeWidth={2.5}
+                        dot={{ r: 5 }}
+                        activeDot={{ r: 8 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              </div>
+            )}
           </CardContent>
         </Card>
         
@@ -469,54 +448,51 @@ const ClientPage = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[400px]">Descrição</TableHead>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead>Impacto SEO</TableHead>
-                      <TableHead>Impacto AIO</TableHead>
-                      <TableHead>Estado</TableHead>
-                      <TableHead className="text-right">Marcar</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {recommendations.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell className="font-medium">{item.description}</TableCell>
-                        <TableCell>
-                          <div className="flex gap-1">
-                            {item.type.map(type => (
-                              <Badge key={type} variant="outline">
-                                {type}
-                              </Badge>
-                            ))}
-                          </div>
-                        </TableCell>
-                        <TableCell>{getImpactBadge(item.impact.seo)}</TableCell>
-                        <TableCell>{getImpactBadge(item.impact.aio)}</TableCell>
-                        <TableCell>
-                          {item.status === 'done' ? (
-                            <Badge className="bg-green-500">Concluída</Badge>
-                          ) : (
-                            <Badge variant="outline">Pendente</Badge>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {item.status !== 'done' && (
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => handleRecommendationStatusChange(item.id)}
-                            >
-                              <FileCheck className="w-4 h-4" />
-                            </Button>
-                          )}
-                        </TableCell>
+                {recommendations.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <p>Ainda não há recomendações disponíveis.</p>
+                    <p className="mt-2">Gere um novo relatório para receber recomendações de melhoria.</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[400px]">Descrição</TableHead>
+                        <TableHead>Impacto SEO</TableHead>
+                        <TableHead>Impacto AIO</TableHead>
+                        <TableHead>Estado</TableHead>
+                        <TableHead className="text-right">Marcar</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {recommendations.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell className="font-medium">{item.suggestion || item.description}</TableCell>
+                          <TableCell>{getImpactBadge(item.seoImpact)}</TableCell>
+                          <TableCell>{getImpactBadge(item.aioImpact)}</TableCell>
+                          <TableCell>
+                            {item.status === 'done' ? (
+                              <Badge className="bg-green-500">Concluída</Badge>
+                            ) : (
+                              <Badge variant="outline">Pendente</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {item.status !== 'done' && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleRecommendationStatusChange(item.id)}
+                              >
+                                <FileCheck className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -530,39 +506,46 @@ const ClientPage = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {tasks.map((task) => (
-                    <div 
-                      key={task.id} 
-                      className="flex items-center justify-between p-4 border rounded-lg"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Checkbox 
-                          id={`task-${task.id}`}
-                          checked={task.status === 'done'}
-                          onCheckedChange={() => handleTaskStatusChange(task.id)}
-                        />
-                        <div>
-                          <label 
-                            htmlFor={`task-${task.id}`}
-                            className="font-medium cursor-pointer"
-                          >
-                            {task.description}
-                          </label>
-                          <p className="text-sm text-muted-foreground">
-                            Data limite: {task.dueDate}
-                          </p>
+                {tasks.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <p>Ainda não há tarefas definidas.</p>
+                    <p className="mt-2">As tarefas serão geradas com base nas recomendações.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {tasks.map((task) => (
+                      <div 
+                        key={task.id} 
+                        className="flex items-center justify-between p-4 border rounded-lg"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Checkbox 
+                            id={`task-${task.id}`}
+                            checked={task.status === 'done'}
+                            onCheckedChange={() => handleTaskStatusChange(task.id)}
+                          />
+                          <div>
+                            <label 
+                              htmlFor={`task-${task.id}`}
+                              className="font-medium cursor-pointer"
+                            >
+                              {task.description}
+                            </label>
+                            <p className="text-sm text-muted-foreground">
+                              Data limite: {task.dueDate}
+                            </p>
+                          </div>
                         </div>
+                        {task.status === 'pending' && (
+                          <Badge variant="outline">Pendente</Badge>
+                        )}
+                        {task.status === 'done' && (
+                          <Badge className="bg-green-500">Concluída</Badge>
+                        )}
                       </div>
-                      {task.status === 'pending' && (
-                        <Badge variant="outline">Pendente</Badge>
-                      )}
-                      {task.status === 'done' && (
-                        <Badge className="bg-green-500">Concluída</Badge>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

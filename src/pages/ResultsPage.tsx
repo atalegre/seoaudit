@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 import ScoreDisplay from '@/components/ScoreDisplay';
 import AnalysisTabs from '@/components/AnalysisTabs';
 import ReportForm from '@/components/ReportForm';
-import { analyzeSite, AnalysisResult } from '@/utils/analyzerUtils';
+import { AnalysisResult } from '@/utils/analyzerUtils';
 import { Loader2 } from 'lucide-react';
 import { getPageInsightsData } from '@/utils/api/pageInsightsService';
 import { getChatGptAnalysis } from '@/utils/api/chatGptService';
@@ -17,6 +17,7 @@ const ResultsPage = () => {
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
   const [analysisData, setAnalysisData] = useState<AnalysisResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -24,6 +25,7 @@ const ResultsPage = () => {
     
     if (!urlParam) {
       setIsLoading(false);
+      setError("URL não fornecido");
       return;
     }
     
@@ -34,18 +36,19 @@ const ResultsPage = () => {
         // Buscar dados do Google Page Insights para SEO
         const seoData = await getPageInsightsData(urlParam);
         
-        // Tentar buscar análise de AIO ou usar dados simulados
+        // Tentar buscar análise de AIO
         let aioData;
         try {
           // Pass an empty string as content (or fetch the content if you have a way to do so)
           aioData = await getChatGptAnalysis(urlParam, '');
         } catch (error) {
           console.error('Error fetching AIO data:', error);
-          toast('Usando dados simulados para análise de AIO', {
+          toast('Erro na análise AIO', {
             description: 'Não foi possível conectar à API de IA.',
           });
-          // Usar dados simulados para AIO
-          aioData = analyzeSite(urlParam).aio;
+          setError("Não foi possível realizar a análise AIO");
+          setIsLoading(false);
+          return;
         }
         
         // Criar resultado da análise
@@ -54,11 +57,9 @@ const ResultsPage = () => {
       } catch (error) {
         console.error('Error performing analysis:', error);
         toast('Erro ao analisar site', {
-          description: 'Usando dados simulados como fallback.',
+          description: 'Não foi possível completar a análise do site.',
         });
-        // Fallback para dados simulados
-        const results = analyzeSite(urlParam);
-        setAnalysisData(results);
+        setError("Ocorreu um erro ao analisar o site");
       } finally {
         setIsLoading(false);
       }
@@ -82,13 +83,13 @@ const ResultsPage = () => {
     );
   }
   
-  if (!analysisData) {
+  if (error || !analysisData) {
     return (
       <div className="flex flex-col min-h-screen">
         <Header />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">URL em falta</h1>
+            <h1 className="text-2xl font-bold mb-4">{error || "URL em falta"}</h1>
             <p className="mb-6">Não foi possível analisar o URL. Por favor, tente novamente.</p>
             <a href="/" className="text-primary hover:underline">Voltar à página inicial</a>
           </div>

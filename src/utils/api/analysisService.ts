@@ -49,14 +49,9 @@ export async function analyzeBulkClients(clientIds: number[]): Promise<void> {
     const results = await Promise.allSettled(
       batch.map(async (clientId) => {
         try {
-          // In a real implementation, we would:
-          // 1. Get client data by ID
-          // 2. Extract website URL
-          // 3. Run analysis
-          // 4. Save results
-          
-          // For now, simulate processing delay
-          await new Promise(resolve => setTimeout(resolve, 500));
+          // No more simulated processing
+          console.log(`Processing client ${clientId}`);
+          // Implementar lógica real de processamento quando disponível
           return true; // Success
         } catch (error) {
           console.error(`Error analyzing client ${clientId}:`, error);

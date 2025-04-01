@@ -1,4 +1,3 @@
-
 import { analyzeSite } from '../analyzerUtils';
 import { getApiKey } from './supabaseClient';
 import { toast } from 'sonner';
@@ -19,7 +18,22 @@ export async function getPageInsightsData(url: string): Promise<any> {
       toast.warning('Chave da API Google Page Insights não encontrada', {
         description: 'Configure a chave nas configurações para obter análise de SEO real.',
       });
-      return analyzeSite(url).seo;
+      
+      // Retornar objeto vazio em vez de dados simulados
+      return {
+        score: 0,
+        performanceScore: 0,
+        bestPracticesScore: 0,
+        url: url,
+        loadTimeDesktop: 0,
+        loadTimeMobile: 0,
+        mobileFriendly: false,
+        security: false,
+        imageOptimization: 0,
+        headingsStructure: 0,
+        metaTags: 0,
+        recommendations: []
+      };
     }
 
     toast('Analisando SEO com Google Page Insights...', {
@@ -41,9 +55,24 @@ export async function getPageInsightsData(url: string): Promise<any> {
   } catch (error) {
     console.error('Error fetching Page Insights data:', error);
     toast.error('Erro ao buscar dados do Google Page Insights', {
-      description: 'Usando dados simulados como fallback.',
+      description: 'Não foi possível analisar o site.',
     });
-    return analyzeSite(url).seo;
+    
+    // Retornar objeto vazio em vez de dados simulados
+    return {
+      score: 0,
+      performanceScore: 0,
+      bestPracticesScore: 0,
+      url: url,
+      loadTimeDesktop: 0,
+      loadTimeMobile: 0,
+      mobileFriendly: false,
+      security: false,
+      imageOptimization: 0,
+      headingsStructure: 0,
+      metaTags: 0,
+      recommendations: []
+    };
   }
 }
 
