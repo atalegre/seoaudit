@@ -14,6 +14,8 @@ import {
 } from '@/components/ui/card';
 import { BlogPost } from '@/types/blog';
 import { getBlogPosts, deleteBlogPost } from '@/utils/supabaseBlogClient';
+import { AlertTriangle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const BlogPostsPage = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -21,33 +23,40 @@ const BlogPostsPage = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [currentPost, setCurrentPost] = useState<BlogPost | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const fetchPosts = async () => {
     setLoading(true);
+    setError(null);
     console.log('Starting to fetch blog posts...');
     try {
       console.log('Calling getBlogPosts function...');
       const data = await getBlogPosts();
       console.log('Response from getBlogPosts:', data);
       setPosts(data || []);
+      
       if (data && data.length > 0) {
         toast({
           title: 'Posts carregados',
           description: `${data.length} posts foram carregados com sucesso.`,
         });
       } else {
-        toast({
-          title: 'Nenhum post encontrado',
-          description: 'Não foram encontrados posts no banco de dados.',
-          variant: 'destructive',
-        });
+        console.log('No posts found in the database');
+        // Don't show error toast for empty posts, we'll show a UI message instead
       }
     } catch (error) {
       console.error('Error fetching posts in BlogPostsPage:', error);
+      let errorMessage = 'Não foi possível carregar os posts do blog.';
+      
+      if (error instanceof Error) {
+        errorMessage += ` Erro: ${error.message}`;
+      }
+      
+      setError(errorMessage);
       toast({
         title: 'Erro',
-        description: 'Não foi possível carregar os posts do blog. Verifique o console para mais detalhes.',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
@@ -117,13 +126,30 @@ const BlogPostsPage = () => {
             />
           </CardHeader>
           <CardContent>
-            <BlogPostsTable
-              posts={posts}
-              loading={loading}
-              onEdit={handleEditPost}
-              onDelete={handleDeletePost}
-              searchTerm={searchTerm}
-            />
+            {error ? (
+              <div className="bg-destructive/20 p-4 rounded-md">
+                <div className="flex items-center space-x-2">
+                  <AlertTriangle className="h-5 w-5 text-destructive" />
+                  <p className="text-destructive font-medium">Erro ao carregar posts</p>
+                </div>
+                <p className="mt-2 text-sm text-muted-foreground">{error}</p>
+                <Button 
+                  onClick={fetchPosts} 
+                  variant="outline" 
+                  className="mt-4"
+                >
+                  Tentar novamente
+                </Button>
+              </div>
+            ) : (
+              <BlogPostsTable
+                posts={posts}
+                loading={loading}
+                onEdit={handleEditPost}
+                onDelete={handleDeletePost}
+                searchTerm={searchTerm}
+              />
+            )}
           </CardContent>
         </Card>
 

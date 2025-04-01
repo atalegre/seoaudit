@@ -6,6 +6,27 @@ import { supabase } from '@/integrations/supabase/client';
 export const getBlogPosts = async (): Promise<BlogPost[]> => {
   console.log('Fetching blog posts from Supabase...');
   try {
+    // Check if supabase client is properly initialized
+    if (!supabase) {
+      console.error('Supabase client is not initialized');
+      throw new Error('Database connection error');
+    }
+
+    console.log('Supabase URL being used:', supabase.supabaseUrl);
+    
+    // Test connection with a simple query first
+    const { data: testData, error: testError } = await supabase
+      .from('blog_posts')
+      .select('count(*)');
+    
+    if (testError) {
+      console.error('Test connection failed:', testError);
+      throw testError;
+    }
+    
+    console.log('Test connection successful, post count:', testData);
+    
+    // Proceed with actual query
     const { data, error } = await supabase
       .from('blog_posts')
       .select('*')
@@ -17,6 +38,13 @@ export const getBlogPosts = async (): Promise<BlogPost[]> => {
     }
     
     console.log('Blog posts data received:', data);
+    
+    // Check if data is null or empty
+    if (!data || data.length === 0) {
+      console.log('No blog posts found in the database');
+      return [];
+    }
+    
     return data as BlogPost[] || [];
   } catch (error) {
     console.error('Exception in getBlogPosts:', error);
@@ -124,6 +152,25 @@ export const uploadBlogImage = async (file: File): Promise<string> => {
     const filePath = `${fileName}`;
     
     console.log(`Uploading blog image: ${fileName}`);
+    
+    // Check if storage bucket exists
+    const { data: buckets, error: bucketsError } = await supabase
+      .storage
+      .listBuckets();
+    
+    if (bucketsError) {
+      console.error('Error checking storage buckets:', bucketsError);
+      throw bucketsError;
+    }
+    
+    console.log('Available buckets:', buckets);
+    
+    const blogImagesBucket = buckets.find(b => b.name === 'blog-images');
+    
+    if (!blogImagesBucket) {
+      console.error('blog-images bucket does not exist');
+      throw new Error('Storage bucket not found');
+    }
     
     // Upload the file
     const { error: uploadError } = await supabase.storage
