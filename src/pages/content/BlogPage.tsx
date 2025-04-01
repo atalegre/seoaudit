@@ -1,26 +1,49 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ContentLayout from '@/components/content/ContentLayout';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Search } from 'lucide-react';
-import { blogPosts, categories } from '@/data/blog-data';
+import { Search, Loader2 } from 'lucide-react';
+import { categories } from '@/data/blog-data';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import BlogSidebar from '@/components/content/BlogSidebar';
 import { cn } from '@/lib/utils';
+import { BlogPost } from '@/types/blog';
+import { getBlogPosts } from '@/utils/supabaseBlogClient';
 
 const BlogPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const posts = await getBlogPosts();
+        setBlogPosts(posts);
+      } catch (err) {
+        console.error('Error fetching blog posts:', err);
+        setError('Não foi possível carregar os posts do blog.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchPosts();
+  }, []);
   
   // Filtrar posts por categoria e pesquisa
   const filteredPosts = blogPosts.filter(post => {
     const matchesCategory = activeCategory === 'all' || post.category === activeCategory;
-    const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         post.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = post.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         post.excerpt?.toLowerCase().includes(searchQuery.toLowerCase());
     
     return matchesCategory && matchesSearch;
   });
@@ -71,7 +94,23 @@ const BlogPage = () => {
           </TabsList>
 
           <TabsContent value={activeCategory} className="mt-6">
-            {filteredPosts.length === 0 ? (
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary mr-2" />
+                <span>Carregando posts...</span>
+              </div>
+            ) : error ? (
+              <div className="text-center py-12">
+                <h3 className="text-xl font-medium text-destructive">{error}</h3>
+                <Button 
+                  onClick={() => window.location.reload()} 
+                  variant="outline" 
+                  className="mt-4"
+                >
+                  Tentar novamente
+                </Button>
+              </div>
+            ) : filteredPosts.length === 0 ? (
               <div className="text-center py-12">
                 <h3 className="text-xl font-medium">Nenhum artigo encontrado</h3>
                 <p className="text-muted-foreground">Tente outra pesquisa ou categoria</p>
@@ -90,8 +129,8 @@ const BlogPage = () => {
                       </div>
                       <CardHeader className="pb-2">
                         <div className="mb-2">
-                          <Badge className={cn("font-normal", getCategoryColor(post.category))}>
-                            {post.category}
+                          <Badge className={cn("font-normal", getCategoryColor(post.category || ''))}> 
+                            {post.category || 'Sem categoria'}
                           </Badge>
                         </div>
                         <CardTitle className="line-clamp-2 group-hover:text-primary transition-colors">
@@ -104,11 +143,11 @@ const BlogPage = () => {
                         </CardDescription>
                       </CardContent>
                       <CardFooter className="text-sm text-muted-foreground border-t pt-4">
-                        {new Date(post.date).toLocaleDateString('pt-PT', {
+                        {post.date ? new Date(post.date).toLocaleDateString('pt-PT', {
                           day: 'numeric',
                           month: 'long', 
                           year: 'numeric'
-                        })}
+                        }) : 'Data desconhecida'}
                       </CardFooter>
                     </Card>
                   </Link>
