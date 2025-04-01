@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,9 +13,11 @@ import {
   XCircle, 
   Zap,
   Layout,
-  Loader2
+  Loader2,
+  MessageSquare
 } from 'lucide-react';
 import { SeoAnalysisResult, AioAnalysisResult } from '@/utils/api/types';
+import LLMPresenceAudit from './LLMPresenceAudit';
 
 interface AnalysisTabsProps {
   seoData: SeoAnalysisResult;
@@ -37,10 +38,11 @@ const AnalysisTabs: React.FC<AnalysisTabsProps> = ({
 }) => {
   return (
     <Tabs defaultValue="seo" className="w-full animate-fade-in" style={{ animationDelay: '300ms' }}>
-      <TabsList className="grid grid-cols-4 mb-6">
+      <TabsList className="grid grid-cols-5 mb-6">
         <TabsTrigger value="seo" className="text-seo">Análise SEO</TabsTrigger>
         <TabsTrigger value="coreweb" className="text-seo">Core Web Vitals</TabsTrigger>
         <TabsTrigger value="aio" className="text-aio">Análise AIO</TabsTrigger>
+        <TabsTrigger value="llm" className="text-aio">LLM Presence</TabsTrigger>
         <TabsTrigger value="combined">Recomendações</TabsTrigger>
       </TabsList>
       
@@ -587,6 +589,10 @@ const AnalysisTabs: React.FC<AnalysisTabsProps> = ({
             )}
           </CardContent>
         </Card>
+      </TabsContent>
+
+      <TabsContent value="llm" className="space-y-4">
+        <LLMPresenceAudit />
       </TabsContent>
 
       <TabsContent value="combined" className="space-y-4">
