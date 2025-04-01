@@ -59,6 +59,22 @@ const BlogPage = () => {
     }
   };
 
+  // Função para obter uma imagem de fallback quando a imagem principal falhar
+  const getDefaultImage = () => {
+    const defaultImages = [
+      '/placeholder.svg',
+      'https://images.unsplash.com/photo-1649972904349-6e44c42644a7',
+      'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b',
+      'https://images.unsplash.com/photo-1518770660439-4636190af475'
+    ];
+    return defaultImages[Math.floor(Math.random() * defaultImages.length)];
+  };
+
+  // Função para lidar com erros de carregamento de imagens
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.src = getDefaultImage();
+  };
+
   return (
     <ContentLayout
       sidebar={<BlogSidebar />}
@@ -122,9 +138,10 @@ const BlogPage = () => {
                     <Card className="h-full overflow-hidden transition-all hover:shadow-md">
                       <div className="aspect-video overflow-hidden bg-muted">
                         <img 
-                          src={post.imageSrc} 
+                          src={post.imageSrc || getDefaultImage()} 
                           alt={post.title}
                           className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                          onError={handleImageError}
                         />
                       </div>
                       <CardHeader className="pb-2">

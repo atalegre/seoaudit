@@ -48,6 +48,22 @@ const BlogPostPage = () => {
     fetchPost();
   }, [slug, navigate]);
 
+  // Função para obter uma imagem de fallback quando a imagem principal falhar
+  const getDefaultImage = () => {
+    const defaultImages = [
+      '/placeholder.svg',
+      'https://images.unsplash.com/photo-1649972904349-6e44c42644a7',
+      'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b',
+      'https://images.unsplash.com/photo-1518770660439-4636190af475'
+    ];
+    return defaultImages[Math.floor(Math.random() * defaultImages.length)];
+  };
+  
+  // Função para lidar com erros de carregamento de imagens
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.src = getDefaultImage();
+  };
+
   if (loading) {
     return (
       <ContentLayout className="bg-secondary/30">
@@ -139,9 +155,10 @@ const BlogPostPage = () => {
           {post.imageSrc && (
             <div className="aspect-video overflow-hidden rounded-lg mb-8">
               <img 
-                src={post.imageSrc} 
+                src={post.imageSrc || getDefaultImage()} 
                 alt={post.title}
                 className="h-full w-full object-cover"
+                onError={handleImageError}
               />
             </div>
           )}
