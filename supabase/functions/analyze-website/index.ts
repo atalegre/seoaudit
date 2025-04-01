@@ -25,13 +25,13 @@ serve(async (req) => {
     console.log('Edge function foi chamada - API Key OpenAI encontrada');
 
     // Pegar URL e conteúdo da requisição
-    const { url, content } = await req.json();
+    const { url, content, timestamp } = await req.json();
     
     if (!url) {
       throw new Error('URL é obrigatória');
     }
 
-    console.log(`Analisando URL: ${url}`);
+    console.log(`Analisando URL: ${url} - Timestamp: ${timestamp || 'not provided'}`);
 
     // Para análise real, utilizamos o conteúdo. 
     // Se não for fornecido, usamos apenas a URL para análise simplificada
@@ -39,8 +39,9 @@ serve(async (req) => {
       ? `Analise este site: ${url}\n\nConteúdo: ${content}\n\nFaça uma análise detalhada de SEO e como modelos de IA interpretam este conteúdo.`
       : `Analise este site: ${url}\n\nFaça uma análise detalhada de SEO e como modelos de IA interpretam este URL.`;
 
-    console.log('Enviando requisição para API OpenAI');
+    console.log('Enviando requisição para API OpenAI com modelo gpt-4o-mini');
     
+    const startTime = Date.now();
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -58,9 +59,13 @@ serve(async (req) => {
             role: "user",
             content: prompt
           }
-        ]
+        ],
+        max_tokens: 1000
       })
     });
+    
+    const responseTime = Date.now() - startTime;
+    console.log(`Tempo de resposta da API OpenAI: ${responseTime}ms`);
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -70,6 +75,12 @@ serve(async (req) => {
     
     console.log('Resposta da API OpenAI recebida');
     const data = await response.json();
+    
+    if (!data.choices || data.choices.length === 0) {
+      console.error('Resposta da OpenAI não contém choices:', data);
+      throw new Error('Resposta inválida da API OpenAI');
+    }
+    
     const analysisText = data.choices[0]?.message?.content || '';
     console.log("Resposta da API OpenAI:", analysisText.substring(0, 100) + "...");
     
@@ -99,7 +110,8 @@ serve(async (req) => {
         naturalLanguage: parseInt(languageMatch?.[1] || '80'),
         topicsDetected: topics,
         confusingParts: confusingParts,
-        rawAnalysis: analysisText
+        rawAnalysis: analysisText,
+        apiUsed: true // Flag to confirm API was used
       };
 
       console.log('Análise extraída com sucesso:', JSON.stringify(result).substring(0, 100) + "...");
@@ -120,6 +132,7 @@ serve(async (req) => {
         topicsDetected: ['Marketing Digital', 'SEO', 'Presença Online'],
         confusingParts: ['Parágrafos muito longos', 'Informação técnica sem explicação'],
         rawAnalysis: analysisText,
+        apiUsed: true, // Flag to confirm API was used
         error: 'Erro ao analisar resposta'
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -130,7 +143,8 @@ serve(async (req) => {
     console.error('Erro ao analisar website:', error);
     
     return new Response(JSON.stringify({
-      error: error.message || 'Erro interno ao analisar website'
+      error: error.message || 'Erro interno ao analisar website',
+      apiUsed: false
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500

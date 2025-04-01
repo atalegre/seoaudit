@@ -41,54 +41,100 @@ const ResultsPage = () => {
           console.log('URL normalizada para:', normalizedUrl);
         }
         
-        // Buscar dados do Google Page Insights para SEO
-        let seoData;
+        // Attempt to scrape content
+        let pageContent = '';
         try {
-          console.log('Iniciando análise SEO com Page Insights');
-          seoData = await getPageInsightsData(normalizedUrl);
-          console.log('Dados SEO recebidos:', seoData);
-        } catch (error) {
-          console.error('Error fetching Page Insights data:', error);
-          toast.error('Erro na análise SEO', {
-            description: 'Não foi possível conectar à API do Google Page Insights.',
-          });
-          
-          // Provide default SEO data to prevent errors
-          seoData = {
-            score: 0,
-            loadTimeDesktop: 0,
-            loadTimeMobile: 0,
-            mobileFriendly: false,
-            imageOptimization: 0,
-            headingsStructure: 0,
-            metaTags: 0,
-            security: false,
-            issues: []
-          };
+          // In a real implementation, this would be a function to fetch the page content
+          // For now, we'll skip content fetching as it requires a proxy or backend
+          console.log('Pular extração de conteúdo (requer backend)');
+        } catch (contentError) {
+          console.warn('Não foi possível extrair conteúdo:', contentError);
         }
         
-        // Tentar buscar análise de AIO
-        let aioData;
-        try {
-          console.log('Iniciando análise AIO com OpenAI');
-          // Pass an empty string as content (or fetch the content if you have a way to do so)
-          aioData = await getChatGptAnalysis(normalizedUrl, '');
-          console.log('Dados AIO recebidos:', aioData);
-        } catch (error) {
-          console.error('Error fetching AIO data:', error);
-          toast.error('Erro na análise AIO', {
-            description: 'Não foi possível conectar à API de IA.',
-          });
+        // Parallel requests for better performance
+        const [seoDataPromise, aioDataPromise] = await Promise.allSettled([
+          // Get SEO data from Google Page Insights
+          (async () => {
+            try {
+              console.log('Iniciando análise SEO com Page Insights');
+              const data = await getPageInsightsData(normalizedUrl);
+              console.log('Dados SEO recebidos:', data);
+              return data;
+            } catch (error) {
+              console.error('Error fetching Page Insights data:', error);
+              toast.error('Erro na análise SEO', {
+                description: 'Não foi possível conectar à API do Google Page Insights.',
+              });
+              
+              // Provide default SEO data to prevent errors
+              return {
+                score: 0,
+                loadTimeDesktop: 0,
+                loadTimeMobile: 0,
+                mobileFriendly: false,
+                imageOptimization: 0,
+                headingsStructure: 0,
+                metaTags: 0,
+                security: false,
+                issues: []
+              };
+            }
+          })(),
           
-          // Provide default AIO data to prevent errors
-          aioData = {
-            score: 0,
-            contentClarity: 0,
-            logicalStructure: 0,
-            naturalLanguage: 0,
-            topicsDetected: [],
-            confusingParts: []
-          };
+          // Get AIO analysis using OpenAI
+          (async () => {
+            try {
+              console.log('Iniciando análise AIO com OpenAI');
+              // Pass content if available, otherwise just pass URL
+              const data = await getChatGptAnalysis(normalizedUrl, pageContent);
+              console.log('Dados AIO recebidos:', data);
+              return data;
+            } catch (error) {
+              console.error('Error fetching AIO data:', error);
+              toast.error('Erro na análise AIO', {
+                description: 'Não foi possível conectar à API de IA.',
+              });
+              
+              // Provide default AIO data to prevent errors
+              return {
+                score: 0,
+                contentClarity: 0,
+                logicalStructure: 0,
+                naturalLanguage: 0,
+                topicsDetected: [],
+                confusingParts: []
+              };
+            }
+          })()
+        ]);
+        
+        // Extract data from promises
+        const seoData = seoDataPromise.status === 'fulfilled' ? seoDataPromise.value : {
+          score: 0,
+          loadTimeDesktop: 0,
+          loadTimeMobile: 0,
+          mobileFriendly: false,
+          imageOptimization: 0,
+          headingsStructure: 0,
+          metaTags: 0,
+          security: false,
+          issues: []
+        };
+        
+        const aioData = aioDataPromise.status === 'fulfilled' ? aioDataPromise.value : {
+          score: 0,
+          contentClarity: 0,
+          logicalStructure: 0,
+          naturalLanguage: 0,
+          topicsDetected: [],
+          confusingParts: []
+        };
+        
+        // Show toast if AI analysis was successful
+        if (aioDataPromise.status === 'fulfilled' && aioData.apiUsed) {
+          toast.success('Análise de IA concluída com sucesso', {
+            description: 'A API OpenAI foi utilizada para analisar o site'
+          });
         }
         
         // Criar resultado da análise
@@ -154,24 +200,24 @@ const ResultsPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
               <ScoreDisplay
-                seoScore={analysisData.seo?.score || 0}
-                aioScore={analysisData.aio?.score || 0}
-                status={analysisData.overallStatus || 'Crítico'}
-                url={formatUrl(analysisData.url)}
+                seoScore={analysisData?.seo?.score || 0}
+                aioScore={analysisData?.aio?.score || 0}
+                status={analysisData?.overallStatus || 'Crítico'}
+                url={formatUrl(analysisData?.url || '')}
               />
               
               <AnalysisTabs
-                seoData={analysisData.seo}
-                aioData={analysisData.aio}
-                recommendations={analysisData.recommendations || []}
+                seoData={analysisData?.seo}
+                aioData={analysisData?.aio}
+                recommendations={analysisData?.recommendations || []}
               />
             </div>
             
             <div className="lg:col-span-1">
               <ReportForm 
-                url={analysisData.url} 
-                seoScore={analysisData.seo?.score || 0}
-                aioScore={analysisData.aio?.score || 0}
+                url={analysisData?.url || ''} 
+                seoScore={analysisData?.seo?.score || 0}
+                aioScore={analysisData?.aio?.score || 0}
               />
             </div>
           </div>

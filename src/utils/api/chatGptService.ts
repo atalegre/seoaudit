@@ -27,7 +27,11 @@ export async function getChatGptAnalysis(url: string, content: string = ''): Pro
         // Chamar a função Edge do Supabase
         console.log('Chamando função Edge do Supabase para análise do site');
         const { data, error } = await supabase.functions.invoke('analyze-website', {
-          body: { url, content }
+          body: { 
+            url, 
+            content,
+            timestamp: new Date().toISOString() // Add timestamp to help with debugging
+          }
         });
         
         if (error) {
@@ -36,14 +40,25 @@ export async function getChatGptAnalysis(url: string, content: string = ''): Pro
         }
 
         console.log('Resposta da função Edge recebida:', data);
+        
+        // Verificar se a resposta contém os dados esperados
+        if (!data || (!data.score && data.score !== 0)) {
+          console.warn('Resposta da Edge function não contém score:', data);
+          throw new Error('Resposta da função Edge não contém os dados esperados');
+        }
+        
         return data;
       } catch (edgeFunctionError) {
         console.error('Erro ao usar função Edge para análise:', edgeFunctionError);
+        toast.error('Erro na análise do site via Edge function', {
+          description: 'Usando análise local como fallback'
+        });
         console.log('Usando análise local como fallback devido ao erro na função Edge');
         return analyzeSite(url).aio;
       }
     }
 
+    // Usando API key direta fornecida pelo usuário
     console.log('Chamando API do OpenAI diretamente com API key');
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -62,7 +77,8 @@ export async function getChatGptAnalysis(url: string, content: string = ''): Pro
             role: "user",
             content: `Analise este conteúdo de website da URL ${url}: ${content || 'Por favor, analise a estrutura e qualidade do conteúdo com base na URL.'}`
           }
-        ]
+        ],
+        max_tokens: 1000
       })
     });
     
@@ -103,13 +119,15 @@ export async function getChatGptAnalysis(url: string, content: string = ''): Pro
         logicalStructure: parseInt(structureMatch?.[1] || '75'),
         naturalLanguage: parseInt(languageMatch?.[1] || '80'),
         topicsDetected: topics,
-        confusingParts: confusingParts
+        confusingParts: confusingParts,
+        rawAnalysis: analysisText // Include the raw response for debugging
       };
       
       console.log('Análise extraída com sucesso:', result);
       return result;
     } catch (parseError) {
       console.error('Erro ao analisar resposta do ChatGPT:', parseError);
+      console.log('Texto completo da resposta:', analysisText);
       console.log('Usando análise local como fallback devido a erro no parsing');
       return analyzeSite(url).aio;
     }
