@@ -1,3 +1,4 @@
+
 import { Client, AnalysisResult } from './types';
 import { getPageInsightsData } from './pageInsightsService';
 import { getChatGptAnalysis } from './chatGptService';
@@ -15,11 +16,11 @@ export async function getFullAnalysis(url: string): Promise<AnalysisResult> {
       url = 'https://' + url;
     }
     
-    // Get SEO data from PageInsights
-    const seoData = await getPageInsightsData(url);
-    
-    // Get AIO data from ChatGPT
-    const aioData = await getChatGptAnalysis(url);
+    // Get SEO and AIO data concurrently
+    const [seoData, aioData] = await Promise.all([
+      getPageInsightsData(url),
+      getChatGptAnalysis(url)
+    ]);
     
     // Combine results
     return createAnalysisResult(url, seoData, aioData);
@@ -33,35 +34,49 @@ export async function getFullAnalysis(url: string): Promise<AnalysisResult> {
  * Analyzes multiple client websites in bulk
  */
 export async function analyzeBulkClients(clientIds: number[]): Promise<void> {
-  // Keep track of successful and failed analyses
+  if (clientIds.length === 0) return;
+  
   let successCount = 0;
   let failCount = 0;
   
-  // Process each client in sequence to avoid overwhelming APIs
-  for (const clientId of clientIds) {
-    try {
-      // This would typically fetch the client data from the database
-      // But for now we'll simulate the process with a delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // In a real implementation, we would:
-      // 1. Get the client data by ID
-      // 2. Extract the website URL
-      // 3. Run a full analysis
-      // 4. Save the results
-      // For now, we'll just increment the success counter
-      successCount++;
-      
-    } catch (error) {
-      console.error(`Error analyzing client ${clientId}:`, error);
-      failCount++;
-    }
+  // Process clients in batches to improve performance while not overwhelming APIs
+  const batchSize = 3; // Process 3 clients concurrently
+  
+  for (let i = 0; i < clientIds.length; i += batchSize) {
+    const batch = clientIds.slice(i, i + batchSize);
+    
+    // Process batch concurrently
+    const results = await Promise.allSettled(
+      batch.map(async (clientId) => {
+        try {
+          // In a real implementation, we would:
+          // 1. Get client data by ID
+          // 2. Extract website URL
+          // 3. Run analysis
+          // 4. Save results
+          
+          // For now, simulate processing delay
+          await new Promise(resolve => setTimeout(resolve, 500));
+          return true; // Success
+        } catch (error) {
+          console.error(`Error analyzing client ${clientId}:`, error);
+          return false; // Failure
+        }
+      })
+    );
+    
+    // Count results
+    results.forEach(result => {
+      if (result.status === 'fulfilled' && result.value) {
+        successCount++;
+      } else {
+        failCount++;
+      }
+    });
   }
   
-  // Log the results
   console.log(`Analysis complete: ${successCount} successful, ${failCount} failed`);
   
-  // If any analyses failed, throw an error
   if (failCount > 0) {
     throw new Error(`${failCount} análises falharam`);
   }

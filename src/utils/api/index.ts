@@ -1,10 +1,10 @@
 
-// Exporta todas as funções públicas dos serviços
+// Export all public functions from services
 
-// Tipos
+// Types
 export * from './types';
 
-// Cliente Supabase
+// Supabase Client
 export { 
   getClientsFromDatabase,
   saveClientsToDatabase,
@@ -15,7 +15,7 @@ export {
   getApiKey
 } from './supabaseClient';
 
-// Serviços de análise
+// Analysis services
 export { getPageInsightsData } from './pageInsightsService';
 export { getChatGptAnalysis } from './chatGptService';
 export { processBulkImport } from './bulkImportService';
