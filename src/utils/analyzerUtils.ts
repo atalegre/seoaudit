@@ -29,18 +29,19 @@ export interface CombinedRecommendation {
   seoImpact: 'Alto' | 'Médio' | 'Baixo' | 'Nenhum';
   aioImpact: 'Alto' | 'Médio' | 'Baixo' | 'Nenhum';
   priority: number; // 1-10 (10 being highest)
+  status?: 'pending' | 'in_progress' | 'done' | 'ignored';
 }
 
 export type StatusClassification = 'Crítico' | 'A melhorar' | 'Saudável';
 
 export interface AnalysisResult {
   url: string;
-  timestamp: string; // Added this property
+  timestamp: string;
   seo: SeoAnalysis;
   aio: AioAnalysis;
   recommendations: CombinedRecommendation[];
   status: StatusClassification;
-  overallStatus: StatusClassification; // Added this property
+  overallStatus: StatusClassification;
 }
 
 // Helper function to determine the overall status based on SEO and AIO scores
@@ -120,37 +121,43 @@ const generateRecommendations = (seo: SeoAnalysis, aio: AioAnalysis): CombinedRe
       suggestion: 'Adicionar meta descriptions únicas em todas as páginas',
       seoImpact: 'Alto',
       aioImpact: 'Médio',
-      priority: 9
+      priority: 9,
+      status: 'pending'
     },
     {
       suggestion: 'Otimizar imagens para reduzir o tempo de carregamento',
       seoImpact: 'Alto',
       aioImpact: 'Baixo',
-      priority: 8
+      priority: 8,
+      status: 'pending'
     },
     {
       suggestion: 'Adicionar cabeçalhos hierárquicos (H1, H2, H3) com palavras-chave',
       seoImpact: 'Alto',
       aioImpact: 'Alto',
-      priority: 10
+      priority: 10,
+      status: 'pending'
     },
     {
       suggestion: 'Simplificar parágrafos longos e textos densos',
       seoImpact: 'Baixo',
       aioImpact: 'Alto',
-      priority: 7
+      priority: 7,
+      status: 'pending'
     },
     {
       suggestion: 'Implementar HTTPS em todo o site',
       seoImpact: 'Médio',
       aioImpact: 'Médio',
-      priority: 8
+      priority: 8,
+      status: 'pending'
     },
     {
       suggestion: 'Criar estrutura de conteúdo mais lógica e organizada',
       seoImpact: 'Médio',
       aioImpact: 'Alto',
-      priority: 9
+      priority: 9,
+      status: 'pending'
     }
   ];
 };

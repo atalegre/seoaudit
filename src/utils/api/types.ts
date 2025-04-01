@@ -54,6 +54,7 @@ export interface AnalysisResult {
     seoImpact: 'Alto' | 'Médio' | 'Baixo' | 'Nenhum';
     aioImpact: 'Alto' | 'Médio' | 'Baixo' | 'Nenhum';
     priority: number;
+    status?: 'pending' | 'in_progress' | 'done' | 'ignored';
   }>;
   status?: StatusClassification;
   overallStatus: StatusClassification;

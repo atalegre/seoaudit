@@ -25,6 +25,7 @@ export function generateRecommendations(seo: any, aio: any) {
         seoImpact: 'Alto',
         aioImpact: 'Nenhum',
         priority: 9,
+        status: 'pending'
       }
     },
     {
@@ -34,6 +35,7 @@ export function generateRecommendations(seo: any, aio: any) {
         seoImpact: 'Alto',
         aioImpact: 'Nenhum',
         priority: 9,
+        status: 'pending'
       }
     },
     {
@@ -43,6 +45,7 @@ export function generateRecommendations(seo: any, aio: any) {
         seoImpact: 'Alto',
         aioImpact: 'Médio',
         priority: 8,
+        status: 'pending'
       }
     },
     {
@@ -52,6 +55,7 @@ export function generateRecommendations(seo: any, aio: any) {
         seoImpact: 'Alto',
         aioImpact: 'Nenhum',
         priority: 10,
+        status: 'pending'
       }
     },
     {
@@ -61,6 +65,7 @@ export function generateRecommendations(seo: any, aio: any) {
         seoImpact: 'Médio',
         aioImpact: 'Baixo',
         priority: 6,
+        status: 'pending'
       }
     },
     {
@@ -70,6 +75,7 @@ export function generateRecommendations(seo: any, aio: any) {
         seoImpact: 'Médio',
         aioImpact: 'Alto',
         priority: 7,
+        status: 'pending'
       }
     },
     {
@@ -79,6 +85,7 @@ export function generateRecommendations(seo: any, aio: any) {
         seoImpact: 'Médio',
         aioImpact: 'Baixo',
         priority: 5,
+        status: 'pending'
       }
     },
     {
@@ -88,6 +95,7 @@ export function generateRecommendations(seo: any, aio: any) {
         seoImpact: 'Baixo',
         aioImpact: 'Alto',
         priority: 7,
+        status: 'pending'
       }
     },
     {
@@ -97,6 +105,7 @@ export function generateRecommendations(seo: any, aio: any) {
         seoImpact: 'Baixo',
         aioImpact: 'Alto',
         priority: 6,
+        status: 'pending'
       }
     },
     {
@@ -106,6 +115,7 @@ export function generateRecommendations(seo: any, aio: any) {
         seoImpact: 'Baixo',
         aioImpact: 'Alto',
         priority: 5,
+        status: 'pending'
       }
     }
   ];
