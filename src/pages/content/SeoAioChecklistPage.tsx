@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import ContentLayout from '@/components/content/ContentLayout';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, CheckCircle2, Download, ChevronDown, ChevronUp, Globe, Bot, Rocket } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Download, ChevronDown, ChevronUp, Globe, Bot, Rocket, ArrowRight } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
