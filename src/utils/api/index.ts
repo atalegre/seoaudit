@@ -4,11 +4,12 @@
 // Types
 export * from './types';
 
+// Serviços específicos
+export * from './userService';
+export * from './clientService';
+
 // Supabase Client
 export { 
-  getClientsFromDatabase,
-  saveClientsToDatabase,
-  updateClientInDatabase,
   saveAnalysisResult,
   getClientAnalysisHistory,
   storeApiKey,

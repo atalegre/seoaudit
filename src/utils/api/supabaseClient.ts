@@ -1,95 +1,10 @@
 
 import { createClient } from '@supabase/supabase-js';
-import { Client, AnalysisResult } from './types';
+import { AnalysisResult, SeoAnalysisResult, AioAnalysisResult, StatusClassification } from './types';
 import { supabase as supabaseInstance } from '@/integrations/supabase/client';
 
 // Usar a instância do Supabase da integração
 const supabase = supabaseInstance;
-
-// Função para obter todos os clientes do Supabase
-export async function getClientsFromDatabase(): Promise<Client[]> {
-  try {
-    const { data, error } = await supabase
-      .from('clients')
-      .select('*');
-    
-    if (error) {
-      throw error;
-    }
-    
-    // Se não houver dados, retorna um array vazio
-    return (data || []) as Client[];
-  } catch (error) {
-    console.error('Erro ao buscar clientes do Supabase:', error);
-    
-    // Se ainda não existir conexão com o Supabase, usamos o localStorage como fallback
-    return JSON.parse(localStorage.getItem('clients') || '[]');
-  }
-}
-
-// Função para salvar novos clientes no Supabase
-export async function saveClientsToDatabase(clients: Client[]): Promise<{success: boolean, data: any}> {
-  try {
-    console.log('Attempting to save clients to database:', clients);
-    
-    // Insere os novos clientes, ignorando duplicados baseado no id
-    const { data, error } = await supabase
-      .from('clients')
-      .upsert(clients as any, { 
-        onConflict: 'contactEmail',
-        ignoreDuplicates: false 
-      });
-    
-    if (error) {
-      console.error('Error saving clients to Supabase:', error);
-      throw error;
-    }
-    
-    console.log('Clientes salvos no Supabase com sucesso:', data);
-    return { success: true, data };
-  } catch (error) {
-    console.error('Erro ao salvar clientes no Supabase:', error);
-    
-    // Fallback para localStorage se o Supabase falhar
-    const existingClients = JSON.parse(localStorage.getItem('clients') || '[]');
-    const mergedClients = [...existingClients];
-    
-    // Adiciona apenas clientes que ainda não existem no array
-    clients.forEach(newClient => {
-      if (!mergedClients.some(c => c.id === newClient.id || c.contactEmail === newClient.contactEmail)) {
-        mergedClients.push(newClient);
-      }
-    });
-    
-    localStorage.setItem('clients', JSON.stringify(mergedClients));
-    return { success: false, data: mergedClients };
-  }
-}
-
-// Função para atualizar um cliente específico
-export async function updateClientInDatabase(client: Client): Promise<void> {
-  try {
-    const { error } = await supabase
-      .from('clients')
-      .update(client as any)
-      .eq('id', client.id.toString());
-    
-    if (error) {
-      throw error;
-    }
-    
-    console.log(`Cliente ${client.name} atualizado com sucesso`);
-  } catch (error) {
-    console.error('Erro ao atualizar cliente no Supabase:', error);
-    
-    // Fallback para localStorage
-    const clients = JSON.parse(localStorage.getItem('clients') || '[]');
-    const updatedClients = clients.map((c: Client) => 
-      c.id === client.id ? client : c
-    );
-    localStorage.setItem('clients', JSON.stringify(updatedClients));
-  }
-}
 
 // Função para salvar resultados de análise no Supabase
 export async function saveAnalysisResult(clientId: number, result: AnalysisResult): Promise<void> {
@@ -100,14 +15,14 @@ export async function saveAnalysisResult(clientId: number, result: AnalysisResul
       timestamp: result.timestamp,
       seo_score: result.seo.score,
       aio_score: result.aio.score,
-      seo_data: result.seo as any,
-      aio_data: result.aio as any,
+      seo_data: result.seo,
+      aio_data: result.aio,
       overall_status: result.overallStatus
     };
     
     const { error } = await supabase
       .from('analysis_results')
-      .insert(analysisData as any);
+      .insert(analysisData);
     
     if (error) {
       throw error;
@@ -153,7 +68,7 @@ export async function getClientAnalysisHistory(clientId: number): Promise<Analys
       aio: item.aio_data,
       overallStatus: item.overall_status,
       recommendations: [] // Add this property to match AnalysisResult type
-    }))) as AnalysisResult[];
+    }))) as unknown as AnalysisResult[];
   } catch (error) {
     console.error('Erro ao buscar histórico de análises:', error);
     
@@ -168,7 +83,7 @@ export async function getClientAnalysisHistory(clientId: number): Promise<Analys
       aio: item.aio_data,
       overallStatus: item.overall_status,
       recommendations: [] // Add this property to match AnalysisResult type
-    })) as AnalysisResult[];
+    })) as unknown as AnalysisResult[];
   }
 }
 
@@ -231,84 +146,5 @@ export async function getApiKey(keyType: 'googlePageInsightsKey' | 'chatGptApiKe
     
     // Fallback para localStorage
     return localStorage.getItem(keyType);
-  }
-}
-
-// Funções para gerenciar usuários
-
-export async function getAllUsers() {
-  try {
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    if (error) throw error;
-    return data || [];
-  } catch (error) {
-    console.error('Erro ao buscar usuários:', error);
-    return [];
-  }
-}
-
-export async function getUserById(userId: string) {
-  try {
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .single();
-    
-    if (error) throw error;
-    return data;
-  } catch (error) {
-    console.error('Erro ao buscar detalhes do usuário:', error);
-    return null;
-  }
-}
-
-export async function createUser(userData: { name: string, email: string, role: 'admin' | 'editor' | 'user' }) {
-  try {
-    const { data, error } = await supabase
-      .from('users')
-      .insert([userData as any])
-      .select();
-    
-    if (error) throw error;
-    return data?.[0] || null;
-  } catch (error) {
-    console.error('Erro ao criar usuário:', error);
-    throw error;
-  }
-}
-
-export async function updateUser(userId: string, userData: { name?: string, email?: string, role?: 'admin' | 'editor' | 'user' }) {
-  try {
-    const { data, error } = await supabase
-      .from('users')
-      .update(userData as any)
-      .eq('id', userId)
-      .select();
-    
-    if (error) throw error;
-    return data?.[0] || null;
-  } catch (error) {
-    console.error('Erro ao atualizar usuário:', error);
-    throw error;
-  }
-}
-
-export async function deleteUser(userId: string) {
-  try {
-    const { error } = await supabase
-      .from('users')
-      .delete()
-      .eq('id', userId);
-    
-    if (error) throw error;
-    return true;
-  } catch (error) {
-    console.error('Erro ao excluir usuário:', error);
-    throw error;
   }
 }

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import { Pencil, Trash, UserPlus } from 'lucide-react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -28,15 +26,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-
-// Types
-type User = {
-  id: string;
-  name: string;
-  email: string;
-  role: 'admin' | 'editor' | 'user';
-  created_at?: string;
-};
+import { User, getAllUsers, createUser, updateUser, deleteUser } from '@/utils/api/userService';
 
 // Form schema
 const userFormSchema = z.object({
@@ -70,18 +60,8 @@ const UserManagement = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      // Using a more type-safe approach with explicit typing
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        throw error;
-      }
-
-      // Type cast the data to our User type
-      setUsers((data || []) as User[]);
+      const data = await getAllUsers();
+      setUsers(data);
     } catch (error) {
       console.error('Erro ao buscar usuários:', error);
       toast({
@@ -123,14 +103,7 @@ const UserManagement = () => {
   // Remover usuário
   const handleDeleteUser = async (userId: string) => {
     try {
-      const { error } = await supabase
-        .from('users')
-        .delete()
-        .eq('id', userId);
-
-      if (error) {
-        throw error;
-      }
+      await deleteUser(userId);
 
       toast({
         title: 'Usuário removido',
@@ -154,17 +127,7 @@ const UserManagement = () => {
     try {
       if (currentUser) {
         // Atualizar usuário
-        const { error } = await supabase
-          .from('users')
-          .update({
-            name: values.name,
-            email: values.email,
-            role: values.role,
-            updated_at: new Date().toISOString(),
-          } as any)
-          .eq('id', currentUser.id);
-
-        if (error) throw error;
+        await updateUser(currentUser.id, values);
         
         toast({
           title: 'Usuário atualizado',
@@ -172,16 +135,7 @@ const UserManagement = () => {
         });
       } else {
         // Criar novo usuário
-        const { data, error } = await supabase
-          .from('users')
-          .insert({
-            name: values.name,
-            email: values.email,
-            role: values.role,
-          } as any)
-          .select();
-
-        if (error) throw error;
+        await createUser(values);
         
         toast({
           title: 'Usuário criado',
