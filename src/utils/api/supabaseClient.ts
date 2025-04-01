@@ -18,7 +18,7 @@ export async function getClientsFromDatabase(): Promise<Client[]> {
     }
     
     // Se não houver dados, retorna um array vazio
-    return data || [];
+    return (data || []) as Client[];
   } catch (error) {
     console.error('Erro ao buscar clientes do Supabase:', error);
     
@@ -35,7 +35,7 @@ export async function saveClientsToDatabase(clients: Client[]): Promise<{success
     // Insere os novos clientes, ignorando duplicados baseado no id
     const { data, error } = await supabase
       .from('clients')
-      .upsert(clients, { 
+      .upsert(clients as any, { 
         onConflict: 'contactEmail',
         ignoreDuplicates: false 
       });
@@ -71,8 +71,8 @@ export async function updateClientInDatabase(client: Client): Promise<void> {
   try {
     const { error } = await supabase
       .from('clients')
-      .update(client)
-      .eq('id', client.id);
+      .update(client as any)
+      .eq('id', client.id.toString());
     
     if (error) {
       throw error;
@@ -95,19 +95,19 @@ export async function updateClientInDatabase(client: Client): Promise<void> {
 export async function saveAnalysisResult(clientId: number, result: AnalysisResult): Promise<void> {
   try {
     const analysisData = {
-      client_id: clientId,
+      client_id: clientId.toString(), // Convert to string to match DB schema
       url: result.url,
       timestamp: result.timestamp,
       seo_score: result.seo.score,
       aio_score: result.aio.score,
-      seo_data: result.seo,
-      aio_data: result.aio,
+      seo_data: result.seo as any,
+      aio_data: result.aio as any,
       overall_status: result.overallStatus
     };
     
     const { error } = await supabase
       .from('analysis_results')
-      .insert(analysisData);
+      .insert(analysisData as any);
     
     if (error) {
       throw error;
@@ -138,7 +138,7 @@ export async function getClientAnalysisHistory(clientId: number): Promise<Analys
     const { data, error } = await supabase
       .from('analysis_results')
       .select('*')
-      .eq('client_id', clientId)
+      .eq('client_id', clientId.toString()) // Convert to string to match DB schema
       .order('timestamp', { ascending: false });
     
     if (error) {
@@ -146,13 +146,14 @@ export async function getClientAnalysisHistory(clientId: number): Promise<Analys
     }
     
     // Transforma o formato do banco de dados para o formato da aplicação
-    return (data || []).map(item => ({
+    return ((data || []).map(item => ({
       url: item.url,
       timestamp: item.timestamp,
       seo: item.seo_data,
       aio: item.aio_data,
-      overallStatus: item.overall_status
-    }));
+      overallStatus: item.overall_status,
+      recommendations: [] // Add this property to match AnalysisResult type
+    }))) as AnalysisResult[];
   } catch (error) {
     console.error('Erro ao buscar histórico de análises:', error);
     
@@ -165,8 +166,9 @@ export async function getClientAnalysisHistory(clientId: number): Promise<Analys
       timestamp: item.timestamp,
       seo: item.seo_data,
       aio: item.aio_data,
-      overallStatus: item.overall_status
-    }));
+      overallStatus: item.overall_status,
+      recommendations: [] // Add this property to match AnalysisResult type
+    })) as AnalysisResult[];
   }
 }
 
@@ -269,7 +271,7 @@ export async function createUser(userData: { name: string, email: string, role: 
   try {
     const { data, error } = await supabase
       .from('users')
-      .insert([userData])
+      .insert([userData as any])
       .select();
     
     if (error) throw error;
@@ -284,7 +286,7 @@ export async function updateUser(userId: string, userData: { name?: string, emai
   try {
     const { data, error } = await supabase
       .from('users')
-      .update(userData)
+      .update(userData as any)
       .eq('id', userId)
       .select();
     

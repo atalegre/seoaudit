@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Pencil, Plus, Trash, UserPlus } from 'lucide-react';
+import { Pencil, Trash, UserPlus } from 'lucide-react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -70,6 +70,7 @@ const UserManagement = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
+      // Using a more type-safe approach with explicit typing
       const { data, error } = await supabase
         .from('users')
         .select('*')
@@ -79,7 +80,8 @@ const UserManagement = () => {
         throw error;
       }
 
-      setUsers(data || []);
+      // Type cast the data to our User type
+      setUsers((data || []) as User[]);
     } catch (error) {
       console.error('Erro ao buscar usuários:', error);
       toast({
@@ -159,7 +161,7 @@ const UserManagement = () => {
             email: values.email,
             role: values.role,
             updated_at: new Date().toISOString(),
-          })
+          } as any)
           .eq('id', currentUser.id);
 
         if (error) throw error;
@@ -176,7 +178,7 @@ const UserManagement = () => {
             name: values.name,
             email: values.email,
             role: values.role,
-          })
+          } as any)
           .select();
 
         if (error) throw error;
