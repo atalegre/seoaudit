@@ -18,5 +18,5 @@ export {
 // Serviços de análise
 export { getPageInsightsData } from './pageInsightsService';
 export { getChatGptAnalysis } from './chatGptService';
-export { getFullAnalysis, analyzeBulkClients } from './analysisService';
 export { processBulkImport } from './bulkImportService';
+
