@@ -28,7 +28,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Plus, Trash2, Eye } from 'lucide-react';
+import { Edit, Plus, Trash2, Eye, Loader2 } from 'lucide-react';
 import { AlertDialog, AlertDialogContent, AlertDialogAction, AlertDialogCancel, 
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
@@ -143,7 +143,10 @@ const BlogPostsPage = () => {
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="text-center py-4">Carregando posts...</div>
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-primary mr-2" />
+                <span>Carregando posts...</span>
+              </div>
             ) : filteredPosts.length === 0 ? (
               <div className="text-center py-4 text-muted-foreground">
                 {searchTerm ? 'Nenhum post encontrado para esta pesquisa.' : 'Nenhum post criado ainda.'}
@@ -168,7 +171,7 @@ const BlogPostsPage = () => {
                         <Badge variant="outline">{post.category}</Badge>
                       </TableCell>
                       <TableCell>
-                        {new Date(post.date || '').toLocaleDateString('pt-PT')}
+                        {post.date ? new Date(post.date).toLocaleDateString('pt-PT') : 'N/A'}
                       </TableCell>
                       <TableCell className="text-right space-x-2">
                         <Button

@@ -22,6 +22,7 @@ export const getBlogPosts = async (): Promise<BlogPost[]> => {
       throw error;
     }
     
+    console.log('Blog posts data received:', data);
     return data as BlogPost[] || [];
   } catch (error) {
     console.error('Exception in getBlogPosts:', error);
