@@ -16,6 +16,9 @@ const Header = () => {
   const menuItems = [
     { title: 'Home', path: '/' },
     { title: 'Como Funciona', path: '/como-funciona' },
+    { title: 'Blog', path: '/blog' },
+    { title: 'Glossário', path: '/glossario' },
+    { title: 'Guias', path: '/guias' },
     { title: 'FAQ', path: '/faq' },
     { title: 'Contacto', path: '/contacto' },
   ];

@@ -20,6 +20,12 @@ import ClientsPage from "./pages/dashboard/ClientsPage";
 import SettingsPage from "./pages/dashboard/SettingsPage";
 import BulkImportPage from "./pages/dashboard/BulkImportPage";
 import { supabase } from "./integrations/supabase/client";
+import BlogPage from "./pages/content/BlogPage";
+import BlogPostPage from "./pages/content/BlogPostPage";
+import GlossaryPage from "./pages/content/GlossaryPage";
+import GlossaryTermPage from "./pages/content/GlossaryTermPage";
+import GuidesPage from "./pages/content/GuidesPage";
+import SeoAioChecklistPage from "./pages/content/SeoAioChecklistPage";
 
 // Create a new QueryClient instance
 const queryClient = new QueryClient();
@@ -72,6 +78,15 @@ const App = () => {
               <Route path="/dashboard/clients" element={<ClientsPage />} />
               <Route path="/dashboard/bulk-import" element={<BulkImportPage />} />
               <Route path="/dashboard/settings" element={<SettingsPage />} />
+              
+              {/* Novas rotas de conteúdo */}
+              <Route path="/blog" element={<BlogPage />} />
+              <Route path="/blog/:slug" element={<BlogPostPage />} />
+              <Route path="/glossario" element={<GlossaryPage />} />
+              <Route path="/glossario/:slug" element={<GlossaryTermPage />} />
+              <Route path="/guias" element={<GuidesPage />} />
+              <Route path="/guias/seo-aio-checklist" element={<SeoAioChecklistPage />} />
+              
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
