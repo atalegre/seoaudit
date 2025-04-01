@@ -113,7 +113,7 @@ const ResultsPage = () => {
               <ScoreDisplay
                 seoScore={analysisData.seo.score}
                 aioScore={analysisData.aio.score}
-                status={analysisData.status}
+                status={analysisData.overallStatus}
                 url={formatUrl(analysisData.url)}
               />
               
@@ -125,7 +125,11 @@ const ResultsPage = () => {
             </div>
             
             <div className="lg:col-span-1">
-              <ReportForm url={analysisData.url} />
+              <ReportForm 
+                url={analysisData.url} 
+                seoScore={analysisData.seo.score}
+                aioScore={analysisData.aio.score}
+              />
             </div>
           </div>
         </div>

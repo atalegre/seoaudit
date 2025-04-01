@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
@@ -45,6 +45,8 @@ const SignInPage = () => {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [session, setSession] = useState<any>(null);
+  const location = useLocation();
+  const locationState = location.state as { email?: string; returnTo?: string } | null;
 
   useEffect(() => {
     // Check if user is already logged in
@@ -70,8 +72,17 @@ const SignInPage = () => {
       }
     );
 
+    // Auto-preencher email se vier do fluxo de análise
+    if (locationState?.email) {
+      // Encontre o input de email e preencha-o
+      const emailInput = document.getElementById('email') as HTMLInputElement;
+      if (emailInput) {
+        emailInput.value = locationState.email;
+      }
+    }
+
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, locationState]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -173,6 +184,15 @@ const SignInPage = () => {
       });
     }
   }
+
+  const handleSuccess = () => {
+    // Redirecionar para returnTo se existir, senão para dashboard
+    if (locationState?.returnTo) {
+      navigate(locationState.returnTo);
+    } else {
+      navigate('/dashboard');
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen">

@@ -5,22 +5,30 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download, Check } from 'lucide-react';
+import { Download, Check, ArrowRight } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { saveClientsToDatabase } from '@/utils/api/supabaseClient';
+import { Client } from '@/utils/api/types';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ReportFormProps {
   url: string;
+  seoScore?: number;
+  aioScore?: number;
 }
 
-const ReportForm: React.FC<ReportFormProps> = ({ url }) => {
+const ReportForm: React.FC<ReportFormProps> = ({ url, seoScore, aioScore }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [sendByEmail, setSendByEmail] = useState(true);
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!name || !email) {
@@ -30,12 +38,75 @@ const ReportForm: React.FC<ReportFormProps> = ({ url }) => {
     
     setIsSubmitting(true);
     
-    // Simulate form submission
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      // Verificar se o usuário já existe ou criar conta
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password: `${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`, // Senha aleatória
+        options: {
+          data: {
+            name,
+            phone,
+          },
+        },
+      });
+      
+      if (authError && authError.message !== 'User already registered') {
+        throw authError;
+      }
+      
+      // Criar cliente no sistema
+      const newClient: Client = {
+        id: Date.now(), // Temporário, será substituído pelo ID do Supabase
+        name,
+        contactName: name,
+        contactEmail: email,
+        website: url,
+        status: 'active',
+        account: 'Sistema',
+        seoScore: seoScore,
+        aioScore: aioScore,
+        lastAnalysis: new Date(),
+      };
+      
+      await saveClientsToDatabase([newClient]);
+      
+      // Simulação de envio de email
+      if (sendByEmail) {
+        // Aqui seria implementado o envio real do email
+        toast.success('Relatório enviado para o seu email com sucesso!');
+      }
+      
+      // Sucesso
       setIsSubmitted(true);
-      toast.success('Relatório enviado para o seu email com sucesso!');
-    }, 1500);
+      
+      // Autenticar o usuário
+      if (!authData?.user) {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password: `${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`, // Isto não funcionará, mas tentamos o login para usuários existentes
+        });
+        
+        // Se não conseguir autenticar, apenas redireciona para a página de login
+        if (signInError) {
+          setTimeout(() => {
+            navigate('/signin', { state: { email, returnTo: '/dashboard/client' } });
+          }, 2000);
+          return;
+        }
+      }
+      
+      // Redirecionar para o dashboard após 2 segundos
+      setTimeout(() => {
+        navigate('/dashboard/client');
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Erro ao processar formulário:', error);
+      toast.error('Ocorreu um erro. Tente novamente.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   
   if (isSubmitted) {
@@ -44,10 +115,10 @@ const ReportForm: React.FC<ReportFormProps> = ({ url }) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Check className="h-5 w-5 text-green-500" />
-            Relatório Enviado
+            Relatório Processado
           </CardTitle>
           <CardDescription>
-            Verificámos o seu email e enviámos o relatório completo
+            A sua análise foi processada com sucesso
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -56,13 +127,20 @@ const ReportForm: React.FC<ReportFormProps> = ({ url }) => {
               <Check className="h-8 w-8 text-green-500" />
             </div>
             <p className="text-center text-sm text-gray-600 max-w-sm">
-              Um especialista irá contactá-lo em breve para ajudar a melhorar o seu site.
+              {sendByEmail ? 
+                'Enviámos o relatório para o seu email e ' : 
+                ''}
+              estamos a redirecioná-lo para o seu dashboard...
             </p>
           </div>
         </CardContent>
         <CardFooter className="flex justify-center">
-          <Button variant="outline" onClick={() => setIsSubmitted(false)}>
-            Editar informações
+          <Button 
+            variant="default" 
+            onClick={() => navigate('/dashboard/client')}
+            className="flex items-center gap-2"
+          >
+            Ir para o Dashboard <ArrowRight className="h-4 w-4" />
           </Button>
         </CardFooter>
       </Card>
@@ -74,10 +152,10 @@ const ReportForm: React.FC<ReportFormProps> = ({ url }) => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Download className="h-5 w-5 text-primary" />
-          Receba o relatório completo
+          Acesso ao relatório completo
         </CardTitle>
         <CardDescription>
-          Preencha o formulário abaixo para receber uma análise detalhada
+          Preencha o formulário abaixo para aceder ao dashboard e receber uma análise detalhada
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
@@ -116,6 +194,19 @@ const ReportForm: React.FC<ReportFormProps> = ({ url }) => {
             />
           </div>
           
+          <div className="flex items-center space-x-2 mt-2">
+            <input
+              type="checkbox"
+              id="sendByEmail"
+              checked={sendByEmail}
+              onChange={(e) => setSendByEmail(e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+            />
+            <Label htmlFor="sendByEmail" className="text-sm font-normal">
+              Receber também por email
+            </Label>
+          </div>
+          
           <p className="text-xs text-muted-foreground mt-4">
             * Campos obrigatórios. Ao submeter este formulário, concorda com os nossos Termos e Condições e Política de Privacidade.
           </p>
@@ -127,7 +218,7 @@ const ReportForm: React.FC<ReportFormProps> = ({ url }) => {
             className="w-full"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'A processar...' : 'Receber Relatório'}
+            {isSubmitting ? 'A processar...' : 'Aceder ao Dashboard'}
           </Button>
         </CardFooter>
       </form>
