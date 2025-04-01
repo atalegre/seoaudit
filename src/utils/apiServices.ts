@@ -108,3 +108,110 @@ export async function getFullAnalysis(url: string): Promise<AnalysisResult> {
     return analyzeSite(url);
   }
 }
+
+// Interface for the client data structure
+export interface Client {
+  id: number;
+  name: string;
+  website: string;
+  contactEmail: string;
+  contactName: string;
+  account: string;
+  status: 'active' | 'inactive' | 'pending';
+  lastReport?: string;
+  seoScore?: number;
+  aioScore?: number;
+  lastAnalysis?: Date;
+}
+
+// Function to process a CSV file with client data
+export async function processBulkImport(file: File): Promise<Client[]> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const csvData = event.target?.result as string;
+        const lines = csvData.split('\n');
+        
+        // Skip header row
+        const header = lines[0].split(',');
+        const nameIndex = header.findIndex(h => h.trim().toLowerCase() === 'name');
+        const websiteIndex = header.findIndex(h => h.trim().toLowerCase() === 'website');
+        const contactEmailIndex = header.findIndex(h => h.trim().toLowerCase() === 'contactemail');
+        const contactNameIndex = header.findIndex(h => h.trim().toLowerCase() === 'contactname');
+        
+        // Process data rows
+        const clients: Client[] = [];
+        for (let i = 1; i < lines.length; i++) {
+          if (!lines[i].trim()) continue; // Skip empty lines
+          
+          const values = lines[i].split(',');
+          if (values.length < 2) continue; // Skip invalid lines
+          
+          const client: Client = {
+            id: Date.now() + i, // Generate a unique ID
+            name: values[nameIndex]?.trim() || 'Unknown',
+            website: values[websiteIndex]?.trim() || '',
+            contactEmail: values[contactEmailIndex]?.trim() || '',
+            contactName: values[contactNameIndex]?.trim() || '',
+            account: 'Admin', // Default account
+            status: 'pending' // Default status
+          };
+          
+          if (client.website) {
+            clients.push(client);
+          }
+        }
+        
+        // Store clients in localStorage
+        const existingClients = JSON.parse(localStorage.getItem('clients') || '[]');
+        const updatedClients = [...existingClients, ...clients];
+        localStorage.setItem('clients', JSON.stringify(updatedClients));
+        
+        resolve(clients);
+      } catch (error) {
+        reject(error);
+      }
+    };
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsText(file);
+  });
+}
+
+// Function to retrieve all clients
+export function getClients(): Client[] {
+  return JSON.parse(localStorage.getItem('clients') || '[]');
+}
+
+// Function to analyze multiple clients in sequence
+export async function analyzeBulkClients(clientIds: number[]): Promise<void> {
+  const clients = getClients();
+  const clientsToAnalyze = clients.filter(client => clientIds.includes(client.id));
+  
+  for (const client of clientsToAnalyze) {
+    try {
+      if (!client.website) continue;
+      
+      // Perform the full analysis
+      const result = await getFullAnalysis(client.website);
+      
+      // Update client with analysis results
+      client.lastReport = new Date().toISOString().split('T')[0];
+      client.seoScore = result.seo.overallScore;
+      client.aioScore = result.aio.overallScore;
+      client.lastAnalysis = new Date();
+      client.status = 'active';
+      
+      // Update the client in the list
+      const updatedClients = clients.map(c => 
+        c.id === client.id ? client : c
+      );
+      
+      // Save the updated client list
+      localStorage.setItem('clients', JSON.stringify(updatedClients));
+      
+    } catch (error) {
+      console.error(`Error analyzing client ${client.name}:`, error);
+    }
+  }
+}

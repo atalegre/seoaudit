@@ -18,6 +18,7 @@ import SignInPage from "./pages/SignInPage";
 import SignUpPage from "./pages/SignUpPage";
 import ClientsPage from "./pages/dashboard/ClientsPage";
 import SettingsPage from "./pages/dashboard/SettingsPage";
+import BulkImportPage from "./pages/dashboard/BulkImportPage";
 
 // Create a new QueryClient instance
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ const App = () => {
               <Route path="/dashboard/client" element={<ClientDashboardPage />} />
               <Route path="/dashboard/client/:id" element={<ClientPage />} />
               <Route path="/dashboard/clients" element={<ClientsPage />} />
+              <Route path="/dashboard/bulk-import" element={<BulkImportPage />} />
               <Route path="/dashboard/settings" element={<SettingsPage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFoundPage />} />
