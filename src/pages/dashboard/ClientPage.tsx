@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
@@ -202,7 +203,7 @@ const ClientPage = () => {
         seoScore: result.seo.score,
         aioScore: result.aio.score,
         lastAnalysis: new Date(),
-        status: 'active'
+        status: 'active' as const // Type assertion to ensure compatibility
       };
       
       await updateClientInDatabase(updatedClient);
@@ -223,7 +224,7 @@ const ClientPage = () => {
       toast({
         title: "Análise concluída",
         description: "O relatório foi gerado com sucesso.",
-        variant: "success"
+        variant: "default" // Changed from 'success' to 'default' as 'success' isn't a valid variant
       });
     } catch (error) {
       console.error('Error generating report:', error);

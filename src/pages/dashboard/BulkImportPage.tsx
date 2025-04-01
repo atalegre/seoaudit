@@ -35,7 +35,7 @@ import {
   AlertTriangle, 
   BarChart
 } from 'lucide-react';
-import { Client, processBulkImport, analyzeBulkClients } from '@/utils/apiServices';
+import { Client, processBulkImport, analyzeBulkClients } from '@/utils/api';
 
 const BulkImportPage = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
