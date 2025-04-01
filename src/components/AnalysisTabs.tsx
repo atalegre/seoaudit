@@ -4,18 +4,24 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { AlertTriangle, Clock, Smartphone, Image, FileText, Shield, CheckCircle2, XCircle } from 'lucide-react';
-import { SeoAnalysis, AioAnalysis, CombinedRecommendation } from '@/utils/analyzerUtils';
+import { SeoAnalysisResult, AioAnalysisResult } from '@/utils/api/types';
 
 interface AnalysisTabsProps {
-  seoData: SeoAnalysis;
-  aioData: AioAnalysis;
-  recommendations: CombinedRecommendation[];
+  seoData: SeoAnalysisResult;
+  aioData: AioAnalysisResult;
+  recommendations?: Array<{
+    suggestion: string;
+    seoImpact: 'Alto' | 'Médio' | 'Baixo' | 'Nenhum';
+    aioImpact: 'Alto' | 'Médio' | 'Baixo' | 'Nenhum';
+    priority: number;
+    status?: 'pending' | 'in_progress' | 'done' | 'ignored';
+  }>;
 }
 
 const AnalysisTabs: React.FC<AnalysisTabsProps> = ({ 
   seoData, 
   aioData, 
-  recommendations 
+  recommendations = [] // Provide a default empty array if recommendations is undefined
 }) => {
   return (
     <Tabs defaultValue="seo" className="w-full animate-fade-in" style={{ animationDelay: '300ms' }}>
@@ -36,20 +42,20 @@ const AnalysisTabs: React.FC<AnalysisTabsProps> = ({
             <div>
               <div className="flex justify-between mb-1 items-center">
                 <span className="text-sm">Desktop</span>
-                <span className={`text-sm font-medium ${seoData.loadTimeDesktop < 2 ? 'text-green-600' : seoData.loadTimeDesktop < 3 ? 'text-amber-600' : 'text-red-600'}`}>
-                  {seoData.loadTimeDesktop}s
+                <span className={`text-sm font-medium ${seoData?.loadTimeDesktop < 2 ? 'text-green-600' : seoData?.loadTimeDesktop < 3 ? 'text-amber-600' : 'text-red-600'}`}>
+                  {seoData?.loadTimeDesktop || 0}s
                 </span>
               </div>
-              <Progress value={100 - (seoData.loadTimeDesktop * 20)} className="h-2" />
+              <Progress value={100 - ((seoData?.loadTimeDesktop || 0) * 20)} className="h-2" />
             </div>
             <div>
               <div className="flex justify-between mb-1 items-center">
                 <span className="text-sm">Mobile</span>
-                <span className={`text-sm font-medium ${seoData.loadTimeMobile < 3 ? 'text-green-600' : seoData.loadTimeMobile < 5 ? 'text-amber-600' : 'text-red-600'}`}>
-                  {seoData.loadTimeMobile}s
+                <span className={`text-sm font-medium ${seoData?.loadTimeMobile < 3 ? 'text-green-600' : seoData?.loadTimeMobile < 5 ? 'text-amber-600' : 'text-red-600'}`}>
+                  {seoData?.loadTimeMobile || 0}s
                 </span>
               </div>
-              <Progress value={100 - (seoData.loadTimeMobile * 10)} className="h-2" />
+              <Progress value={100 - ((seoData?.loadTimeMobile || 0) * 10)} className="h-2" />
             </div>
           </CardContent>
         </Card>
@@ -63,14 +69,14 @@ const AnalysisTabs: React.FC<AnalysisTabsProps> = ({
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-center p-4">
-                {seoData.mobileFriendly ? (
+                {seoData?.mobileFriendly ? (
                   <CheckCircle2 className="h-16 w-16 text-green-500" />
                 ) : (
                   <XCircle className="h-16 w-16 text-red-500" />
                 )}
               </div>
               <p className="text-center text-sm mt-2">
-                {seoData.mobileFriendly 
+                {seoData?.mobileFriendly 
                   ? "O seu site é otimizado para dispositivos móveis"
                   : "O seu site precisa de melhorias para dispositivos móveis"}
               </p>
@@ -85,14 +91,14 @@ const AnalysisTabs: React.FC<AnalysisTabsProps> = ({
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-center p-4">
-                {seoData.security ? (
+                {seoData?.security ? (
                   <CheckCircle2 className="h-16 w-16 text-green-500" />
                 ) : (
                   <XCircle className="h-16 w-16 text-red-500" />
                 )}
               </div>
               <p className="text-center text-sm mt-2">
-                {seoData.security 
+                {seoData?.security 
                   ? "HTTPS implementado corretamente"
                   : "É necessário implementar HTTPS no seu site"}
               </p>
@@ -124,14 +130,14 @@ const AnalysisTabs: React.FC<AnalysisTabsProps> = ({
                       cy="50"
                       r="45"
                       fill="transparent"
-                      stroke={seoData.imageOptimization > 70 ? '#22c55e' : seoData.imageOptimization > 40 ? '#f59e0b' : '#ef4444'}
+                      stroke={(seoData?.imageOptimization || 0) > 70 ? '#22c55e' : (seoData?.imageOptimization || 0) > 40 ? '#f59e0b' : '#ef4444'}
                       strokeWidth="8"
-                      strokeDasharray={`${seoData.imageOptimization * 2.83} ${283 - seoData.imageOptimization * 2.83}`}
+                      strokeDasharray={`${(seoData?.imageOptimization || 0) * 2.83} ${283 - (seoData?.imageOptimization || 0) * 2.83}`}
                       strokeLinecap="round"
                       transform="rotate(-90 50 50)"
                     />
                   </svg>
-                  <span className="absolute text-xl font-semibold">{seoData.imageOptimization}%</span>
+                  <span className="absolute text-xl font-semibold">{seoData?.imageOptimization || 0}%</span>
                 </div>
               </div>
             </CardContent>
@@ -160,14 +166,14 @@ const AnalysisTabs: React.FC<AnalysisTabsProps> = ({
                       cy="50"
                       r="45"
                       fill="transparent"
-                      stroke={seoData.headingsStructure > 70 ? '#22c55e' : seoData.headingsStructure > 40 ? '#f59e0b' : '#ef4444'}
+                      stroke={(seoData?.headingsStructure || 0) > 70 ? '#22c55e' : (seoData?.headingsStructure || 0) > 40 ? '#f59e0b' : '#ef4444'}
                       strokeWidth="8"
-                      strokeDasharray={`${seoData.headingsStructure * 2.83} ${283 - seoData.headingsStructure * 2.83}`}
+                      strokeDasharray={`${(seoData?.headingsStructure || 0) * 2.83} ${283 - (seoData?.headingsStructure || 0) * 2.83}`}
                       strokeLinecap="round"
                       transform="rotate(-90 50 50)"
                     />
                   </svg>
-                  <span className="absolute text-xl font-semibold">{seoData.headingsStructure}%</span>
+                  <span className="absolute text-xl font-semibold">{seoData?.headingsStructure || 0}%</span>
                 </div>
               </div>
             </CardContent>
@@ -196,14 +202,14 @@ const AnalysisTabs: React.FC<AnalysisTabsProps> = ({
                       cy="50"
                       r="45"
                       fill="transparent"
-                      stroke={seoData.metaTags > 70 ? '#22c55e' : seoData.metaTags > 40 ? '#f59e0b' : '#ef4444'}
+                      stroke={(seoData?.metaTags || 0) > 70 ? '#22c55e' : (seoData?.metaTags || 0) > 40 ? '#f59e0b' : '#ef4444'}
                       strokeWidth="8"
-                      strokeDasharray={`${seoData.metaTags * 2.83} ${283 - seoData.metaTags * 2.83}`}
+                      strokeDasharray={`${(seoData?.metaTags || 0) * 2.83} ${283 - (seoData?.metaTags || 0) * 2.83}`}
                       strokeLinecap="round"
                       transform="rotate(-90 50 50)"
                     />
                   </svg>
-                  <span className="absolute text-xl font-semibold">{seoData.metaTags}%</span>
+                  <span className="absolute text-xl font-semibold">{seoData?.metaTags || 0}%</span>
                 </div>
               </div>
             </CardContent>
@@ -217,19 +223,23 @@ const AnalysisTabs: React.FC<AnalysisTabsProps> = ({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {seoData.issues.map((issue, index) => (
-              <div key={index} className="border-l-4 pl-4 py-2" 
-                style={{ 
-                  borderColor: issue.severity === 'high' 
-                    ? '#ef4444' 
-                    : issue.severity === 'medium' 
-                      ? '#f59e0b' 
-                      : '#22c55e'
-                }}>
-                <h4 className="font-medium">{issue.title}</h4>
-                <p className="text-sm text-gray-600">{issue.description}</p>
-              </div>
-            ))}
+            {seoData?.issues && seoData.issues.length > 0 ? (
+              seoData.issues.map((issue, index) => (
+                <div key={index} className="border-l-4 pl-4 py-2" 
+                  style={{ 
+                    borderColor: issue.severity === 'high' 
+                      ? '#ef4444' 
+                      : issue.severity === 'medium' 
+                        ? '#f59e0b' 
+                        : '#22c55e'
+                  }}>
+                  <h4 className="font-medium">{issue.title}</h4>
+                  <p className="text-sm text-gray-600">{issue.description}</p>
+                </div>
+              ))
+            ) : (
+              <p className="text-center text-muted-foreground">Nenhum problema identificado.</p>
+            )}
           </CardContent>
         </Card>
       </TabsContent>
@@ -258,14 +268,14 @@ const AnalysisTabs: React.FC<AnalysisTabsProps> = ({
                       cy="50"
                       r="45"
                       fill="transparent"
-                      stroke={aioData.contentClarity > 70 ? '#8B5CF6' : aioData.contentClarity > 40 ? '#f59e0b' : '#ef4444'}
+                      stroke={(aioData?.contentClarity || 0) > 70 ? '#8B5CF6' : (aioData?.contentClarity || 0) > 40 ? '#f59e0b' : '#ef4444'}
                       strokeWidth="8"
-                      strokeDasharray={`${aioData.contentClarity * 2.83} ${283 - aioData.contentClarity * 2.83}`}
+                      strokeDasharray={`${(aioData?.contentClarity || 0) * 2.83} ${283 - (aioData?.contentClarity || 0) * 2.83}`}
                       strokeLinecap="round"
                       transform="rotate(-90 50 50)"
                     />
                   </svg>
-                  <span className="absolute text-xl font-semibold">{aioData.contentClarity}%</span>
+                  <span className="absolute text-xl font-semibold">{aioData?.contentClarity || 0}%</span>
                 </div>
               </div>
             </CardContent>
@@ -293,14 +303,14 @@ const AnalysisTabs: React.FC<AnalysisTabsProps> = ({
                       cy="50"
                       r="45"
                       fill="transparent"
-                      stroke={aioData.logicalStructure > 70 ? '#8B5CF6' : aioData.logicalStructure > 40 ? '#f59e0b' : '#ef4444'}
+                      stroke={(aioData?.logicalStructure || 0) > 70 ? '#8B5CF6' : (aioData?.logicalStructure || 0) > 40 ? '#f59e0b' : '#ef4444'}
                       strokeWidth="8"
-                      strokeDasharray={`${aioData.logicalStructure * 2.83} ${283 - aioData.logicalStructure * 2.83}`}
+                      strokeDasharray={`${(aioData?.logicalStructure || 0) * 2.83} ${283 - (aioData?.logicalStructure || 0) * 2.83}`}
                       strokeLinecap="round"
                       transform="rotate(-90 50 50)"
                     />
                   </svg>
-                  <span className="absolute text-xl font-semibold">{aioData.logicalStructure}%</span>
+                  <span className="absolute text-xl font-semibold">{aioData?.logicalStructure || 0}%</span>
                 </div>
               </div>
             </CardContent>
@@ -328,14 +338,14 @@ const AnalysisTabs: React.FC<AnalysisTabsProps> = ({
                       cy="50"
                       r="45"
                       fill="transparent"
-                      stroke={aioData.naturalLanguage > 70 ? '#8B5CF6' : aioData.naturalLanguage > 40 ? '#f59e0b' : '#ef4444'}
+                      stroke={(aioData?.naturalLanguage || 0) > 70 ? '#8B5CF6' : (aioData?.naturalLanguage || 0) > 40 ? '#f59e0b' : '#ef4444'}
                       strokeWidth="8"
-                      strokeDasharray={`${aioData.naturalLanguage * 2.83} ${283 - aioData.naturalLanguage * 2.83}`}
+                      strokeDasharray={`${(aioData?.naturalLanguage || 0) * 2.83} ${283 - (aioData?.naturalLanguage || 0) * 2.83}`}
                       strokeLinecap="round"
                       transform="rotate(-90 50 50)"
                     />
                   </svg>
-                  <span className="absolute text-xl font-semibold">{aioData.naturalLanguage}%</span>
+                  <span className="absolute text-xl font-semibold">{aioData?.naturalLanguage || 0}%</span>
                 </div>
               </div>
             </CardContent>
@@ -348,13 +358,17 @@ const AnalysisTabs: React.FC<AnalysisTabsProps> = ({
             <CardDescription>Como os modelos de IA classificam seu conteúdo</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {aioData.topicsDetected.map((topic, index) => (
-                <span key={index} className="bg-aio/10 text-aio px-3 py-1 rounded-full text-sm">
-                  {topic}
-                </span>
-              ))}
-            </div>
+            {aioData?.topicsDetected && aioData.topicsDetected.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {aioData.topicsDetected.map((topic, index) => (
+                  <span key={index} className="bg-aio/10 text-aio px-3 py-1 rounded-full text-sm">
+                    {topic}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-muted-foreground">Nenhum tópico detectado.</p>
+            )}
           </CardContent>
         </Card>
 
@@ -364,11 +378,15 @@ const AnalysisTabs: React.FC<AnalysisTabsProps> = ({
             <CardDescription>Elementos que podem dificultar a compreensão</CardDescription>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-2 list-disc list-inside">
-              {aioData.confusingParts.map((part, index) => (
-                <li key={index} className="text-sm text-gray-700">{part}</li>
-              ))}
-            </ul>
+            {aioData?.confusingParts && aioData.confusingParts.length > 0 ? (
+              <ul className="space-y-2 list-disc list-inside">
+                {aioData.confusingParts.map((part, index) => (
+                  <li key={index} className="text-sm text-gray-700">{part}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-center text-muted-foreground">Nenhuma parte confusa identificada.</p>
+            )}
           </CardContent>
         </Card>
       </TabsContent>
@@ -380,65 +398,72 @@ const AnalysisTabs: React.FC<AnalysisTabsProps> = ({
             <CardDescription>Ações prioritárias para melhorar seu site</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-2">Sugestão</th>
-                    <th className="text-center py-3 px-2">Impacto SEO</th>
-                    <th className="text-center py-3 px-2">Impacto AIO</th>
-                    <th className="text-center py-3 px-2">Prioridade</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recommendations
-                    .sort((a, b) => b.priority - a.priority)
-                    .map((rec, index) => (
-                    <tr key={index} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-2 text-sm">{rec.suggestion}</td>
-                      <td className="py-3 px-2 text-center">
-                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium
-                          ${rec.seoImpact === 'Alto' 
-                            ? 'bg-seo/10 text-seo' 
-                            : rec.seoImpact === 'Médio'
-                              ? 'bg-amber-100 text-amber-800'
-                              : rec.seoImpact === 'Baixo'
-                                ? 'bg-gray-100 text-gray-800'
-                                : 'bg-gray-50 text-gray-500'
-                          }
-                        `}>
-                          {rec.seoImpact}
-                        </span>
-                      </td>
-                      <td className="py-3 px-2 text-center">
-                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium
-                          ${rec.aioImpact === 'Alto' 
-                            ? 'bg-aio/10 text-aio' 
-                            : rec.aioImpact === 'Médio'
-                              ? 'bg-amber-100 text-amber-800'
-                              : rec.aioImpact === 'Baixo'
-                                ? 'bg-gray-100 text-gray-800'
-                                : 'bg-gray-50 text-gray-500'
-                          }
-                        `}>
-                          {rec.aioImpact}
-                        </span>
-                      </td>
-                      <td className="py-3 px-2">
-                        <div className="flex justify-center">
-                          <div className="h-2 w-full max-w-24 bg-gray-200 rounded-full overflow-hidden">
-                            <div 
-                              className={`h-full ${rec.priority >= 9 ? 'bg-red-500' : rec.priority >= 7 ? 'bg-amber-500' : 'bg-green-500'}`}
-                              style={{ width: `${rec.priority * 10}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                      </td>
+            {recommendations && recommendations.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-2">Sugestão</th>
+                      <th className="text-center py-3 px-2">Impacto SEO</th>
+                      <th className="text-center py-3 px-2">Impacto AIO</th>
+                      <th className="text-center py-3 px-2">Prioridade</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {recommendations
+                      .sort((a, b) => b.priority - a.priority)
+                      .map((rec, index) => (
+                      <tr key={index} className="border-b hover:bg-gray-50">
+                        <td className="py-3 px-2 text-sm">{rec.suggestion}</td>
+                        <td className="py-3 px-2 text-center">
+                          <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium
+                            ${rec.seoImpact === 'Alto' 
+                              ? 'bg-seo/10 text-seo' 
+                              : rec.seoImpact === 'Médio'
+                                ? 'bg-amber-100 text-amber-800'
+                                : rec.seoImpact === 'Baixo'
+                                  ? 'bg-gray-100 text-gray-800'
+                                  : 'bg-gray-50 text-gray-500'
+                            }
+                          `}>
+                            {rec.seoImpact}
+                          </span>
+                        </td>
+                        <td className="py-3 px-2 text-center">
+                          <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium
+                            ${rec.aioImpact === 'Alto' 
+                              ? 'bg-aio/10 text-aio' 
+                              : rec.aioImpact === 'Médio'
+                                ? 'bg-amber-100 text-amber-800'
+                                : rec.aioImpact === 'Baixo'
+                                  ? 'bg-gray-100 text-gray-800'
+                                  : 'bg-gray-50 text-gray-500'
+                            }
+                          `}>
+                            {rec.aioImpact}
+                          </span>
+                        </td>
+                        <td className="py-3 px-2">
+                          <div className="flex justify-center">
+                            <div className="h-2 w-full max-w-24 bg-gray-200 rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full ${rec.priority >= 9 ? 'bg-red-500' : rec.priority >= 7 ? 'bg-amber-500' : 'bg-green-500'}`}
+                                style={{ width: `${rec.priority * 10}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-12 text-muted-foreground">
+                <p>Ainda não há recomendações disponíveis.</p>
+                <p className="mt-2">Gere um novo relatório para receber recomendações de melhoria.</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </TabsContent>

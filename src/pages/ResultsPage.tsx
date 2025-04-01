@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 import ScoreDisplay from '@/components/ScoreDisplay';
 import AnalysisTabs from '@/components/AnalysisTabs';
 import ReportForm from '@/components/ReportForm';
-import { AnalysisResult } from '@/utils/analyzerUtils';
+import { AnalysisResult } from '@/utils/api/types';
 import { Loader2 } from 'lucide-react';
 import { getPageInsightsData } from '@/utils/api/pageInsightsService';
 import { getChatGptAnalysis } from '@/utils/api/chatGptService';
@@ -33,30 +33,64 @@ const ResultsPage = () => {
     
     const performAnalysis = async () => {
       try {
+        // Normalize the URL format to ensure it starts with http:// or https://
+        let normalizedUrl = urlParam;
+        if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
+          normalizedUrl = 'https://' + normalizedUrl;
+        }
+        
         // Buscar dados do Google Page Insights para SEO
-        const seoData = await getPageInsightsData(urlParam);
+        let seoData;
+        try {
+          seoData = await getPageInsightsData(normalizedUrl);
+        } catch (error) {
+          console.error('Error fetching Page Insights data:', error);
+          toast.error('Erro na análise SEO', {
+            description: 'Não foi possível conectar à API do Google Page Insights.',
+          });
+          
+          // Provide default SEO data to prevent errors
+          seoData = {
+            score: 0,
+            loadTimeDesktop: 0,
+            loadTimeMobile: 0,
+            mobileFriendly: false,
+            imageOptimization: 0,
+            headingsStructure: 0,
+            metaTags: 0,
+            security: false,
+            issues: []
+          };
+        }
         
         // Tentar buscar análise de AIO
         let aioData;
         try {
           // Pass an empty string as content (or fetch the content if you have a way to do so)
-          aioData = await getChatGptAnalysis(urlParam, '');
+          aioData = await getChatGptAnalysis(normalizedUrl, '');
         } catch (error) {
           console.error('Error fetching AIO data:', error);
-          toast('Erro na análise AIO', {
+          toast.error('Erro na análise AIO', {
             description: 'Não foi possível conectar à API de IA.',
           });
-          setError("Não foi possível realizar a análise AIO");
-          setIsLoading(false);
-          return;
+          
+          // Provide default AIO data to prevent errors
+          aioData = {
+            score: 0,
+            contentClarity: 0,
+            logicalStructure: 0,
+            naturalLanguage: 0,
+            topicsDetected: [],
+            confusingParts: []
+          };
         }
         
         // Criar resultado da análise
-        const results = createAnalysisResult(urlParam, seoData, aioData);
+        const results = createAnalysisResult(normalizedUrl, seoData, aioData);
         setAnalysisData(results);
       } catch (error) {
         console.error('Error performing analysis:', error);
-        toast('Erro ao analisar site', {
+        toast.error('Erro ao analisar site', {
           description: 'Não foi possível completar a análise do site.',
         });
         setError("Ocorreu um erro ao analisar o site");
@@ -112,24 +146,24 @@ const ResultsPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
               <ScoreDisplay
-                seoScore={analysisData.seo.score}
-                aioScore={analysisData.aio.score}
-                status={analysisData.overallStatus}
+                seoScore={analysisData.seo?.score || 0}
+                aioScore={analysisData.aio?.score || 0}
+                status={analysisData.overallStatus || 'Crítico'}
                 url={formatUrl(analysisData.url)}
               />
               
               <AnalysisTabs
                 seoData={analysisData.seo}
                 aioData={analysisData.aio}
-                recommendations={analysisData.recommendations}
+                recommendations={analysisData.recommendations || []}
               />
             </div>
             
             <div className="lg:col-span-1">
               <ReportForm 
                 url={analysisData.url} 
-                seoScore={analysisData.seo.score}
-                aioScore={analysisData.aio.score}
+                seoScore={analysisData.seo?.score || 0}
+                aioScore={analysisData.aio?.score || 0}
               />
             </div>
           </div>
