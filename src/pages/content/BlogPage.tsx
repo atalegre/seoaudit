@@ -10,6 +10,7 @@ import { blogPosts, categories } from '@/data/blog-data';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import BlogSidebar from '@/components/content/BlogSidebar';
+import { cn } from '@/lib/utils';
 
 const BlogPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
