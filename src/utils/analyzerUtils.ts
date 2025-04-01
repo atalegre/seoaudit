@@ -1,4 +1,6 @@
 
+import { StatusClassification } from './api/types';
+
 export interface SeoAnalysis {
   score: number;
   loadTimeDesktop: number;
@@ -32,8 +34,6 @@ export interface CombinedRecommendation {
   status?: 'pending' | 'in_progress' | 'done' | 'ignored';
 }
 
-export type StatusClassification = 'Crítico' | 'A melhorar' | 'Saudável';
-
 export interface AnalysisResult {
   url: string;
   timestamp: string;
@@ -49,8 +49,8 @@ export const getOverallStatus = (seoScore: number, aioScore: number): StatusClas
   const averageScore = (seoScore + aioScore) / 2;
   
   if (averageScore < 50) return 'Crítico';
-  if (averageScore < 75) return 'A melhorar';
-  return 'Saudável';
+  if (averageScore < 75) return 'Médio';
+  return 'Bom';
 };
 
 // Helper function to generate a random score between min and max
@@ -167,8 +167,8 @@ const determineStatus = (seoScore: number, aioScore: number): StatusClassificati
   const averageScore = (seoScore + aioScore) / 2;
   
   if (averageScore < 50) return 'Crítico';
-  if (averageScore < 75) return 'A melhorar';
-  return 'Saudável';
+  if (averageScore < 75) return 'Médio';
+  return 'Bom';
 };
 
 // Main analysis function

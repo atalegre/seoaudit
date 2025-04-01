@@ -39,13 +39,16 @@ export interface AioAnalysisResult {
   confusingParts: string[];
 }
 
+// Tipo para o status da análise - alinhado com analyzerUtils.ts
+export type StatusClassification = 'Excelente' | 'Bom' | 'Médio' | 'Crítico' | 'A melhorar' | 'Saudável';
+
 // Tipo para os resultados completos da análise
 export interface AnalysisResult {
   url: string;
   timestamp: string;
   seo: SeoAnalysisResult;
   aio: AioAnalysisResult;
-  overallStatus?: 'Excelente' | 'Bom' | 'Médio' | 'Crítico';
+  overallStatus?: StatusClassification;
   recommendations: Array<{
     id?: number;
     suggestion: string;
@@ -55,4 +58,18 @@ export interface AnalysisResult {
     priority: number;
     status?: 'pending' | 'in_progress' | 'done' | 'ignored';
   }>;
+}
+
+// Interface para o cliente
+export interface Client {
+  id: number;
+  name: string;
+  website?: string;
+  contactName?: string;
+  contactEmail?: string;
+  status?: 'active' | 'inactive' | 'pending';
+  seoScore?: number;
+  aioScore?: number;
+  lastAnalysis?: Date | string;
+  account?: string;
 }

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
@@ -51,9 +50,9 @@ import {
   getClientsFromDatabase,
   getFullAnalysis,
   saveAnalysisResult,
-  updateClientInDatabase,
-  Client
+  updateClientInDatabase
 } from '@/utils/api';
+import { Client } from '@/utils/api/types';
 
 const ClientPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -86,7 +85,6 @@ const ClientPage = () => {
           
           setHistoricalData(formattedHistory);
           
-          // Se tivermos análises, use a mais recente para as recomendações
           if (history.length > 0) {
             const latestAnalysis = history[0];
             setRecommendations(latestAnalysis.recommendations || []);
@@ -94,7 +92,6 @@ const ClientPage = () => {
             setRecommendations([]);
           }
           
-          // Para tarefas, começamos com array vazio em vez de dados dummy
           setTasks([]);
         }
       } catch (error) {
@@ -169,7 +166,7 @@ const ClientPage = () => {
         seoScore: result.seo.score,
         aioScore: result.aio.score,
         lastAnalysis: new Date(),
-        status: 'active' as const // Type assertion to ensure compatibility
+        status: 'active' as const
       };
       
       await updateClientInDatabase(updatedClient);
@@ -187,7 +184,6 @@ const ClientPage = () => {
         }
       ]);
       
-      // Atualizar recomendações com base no novo relatório
       setRecommendations(result.recommendations || []);
       
       toast({

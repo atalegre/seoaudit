@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
@@ -35,7 +34,8 @@ import {
   AlertTriangle, 
   BarChart
 } from 'lucide-react';
-import { Client, processBulkImport, analyzeBulkClients } from '@/utils/api';
+import { Client } from '@/utils/api/types';
+import { processBulkImport, analyzeBulkClients } from '@/utils/api';
 
 const BulkImportPage = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -126,7 +126,6 @@ const BulkImportPage = () => {
         description: `${selectedClients.length} clientes analisados com sucesso.`,
       });
       
-      // Redirect to clients page after analysis
       navigate("/dashboard/clients");
       
     } catch (error) {

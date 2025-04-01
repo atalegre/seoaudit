@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -13,7 +12,6 @@ import { getChatGptAnalysis } from '@/utils/api/chatGptService';
 import { toast } from 'sonner';
 import { formatUrl, createAnalysisResult } from '@/utils/resultsPageHelpers';
 
-// Definição de constantes para localStorage
 const ANALYSIS_STORAGE_KEY = 'web_analysis_results';
 const ANALYSIS_URL_KEY = 'web_analysis_url';
 
@@ -33,15 +31,13 @@ const ResultsPage = () => {
       return;
     }
 
-    // Verificar se já temos uma análise recente para este URL
     const storedUrl = localStorage.getItem(ANALYSIS_URL_KEY);
     const storedAnalysis = localStorage.getItem(ANALYSIS_STORAGE_KEY);
     
-    // Se temos resultados armazenados para o mesmo URL, usamos eles
     if (storedUrl === urlParam && storedAnalysis) {
       try {
         console.log('Usando análise em cache para URL:', urlParam);
-        const parsedAnalysis = JSON.parse(storedAnalysis);
+        const parsedAnalysis = JSON.parse(storedAnalysis) as AnalysisResult;
         setAnalysisData(parsedAnalysis);
         setIsLoading(false);
         toast('Usando análise em cache', {
@@ -51,7 +47,6 @@ const ResultsPage = () => {
         return;
       } catch (parseError) {
         console.error('Erro ao analisar dados em cache:', parseError);
-        // Se houver erro ao analisar o cache, continuamos com uma nova análise
       }
     }
     
@@ -60,7 +55,6 @@ const ResultsPage = () => {
     
     const performAnalysis = async () => {
       try {
-        // Normalize the URL format to ensure it starts with http:// or https://
         let normalizedUrl = urlParam;
         if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
           normalizedUrl = 'https://' + normalizedUrl;
@@ -72,20 +66,14 @@ const ResultsPage = () => {
           duration: 3000
         });
         
-        // Attempt to scrape content
         let pageContent = '';
         try {
-          // In a real implementation, this would be a function to fetch the page content
-          // For now, we'll skip content fetching as it requires a proxy or backend
           console.log('Pular extração de conteúdo (requer backend)');
         } catch (contentError) {
           console.warn('Não foi possível extrair conteúdo:', contentError);
         }
         
-        // Parallel requests for better performance
-        console.log('Iniciando requisições paralelas para SEO e AIO');
         const [seoDataPromise, aioDataPromise] = await Promise.allSettled([
-          // Get SEO data from Google Page Insights
           (async () => {
             try {
               console.log('Iniciando análise SEO com Page Insights');
@@ -98,7 +86,6 @@ const ResultsPage = () => {
                 description: 'Não foi possível conectar à API do Google Page Insights.',
               });
               
-              // Provide default SEO data to prevent errors
               return {
                 score: 0,
                 loadTimeDesktop: 0,
@@ -113,15 +100,12 @@ const ResultsPage = () => {
             }
           })(),
           
-          // Get AIO analysis using OpenAI
           (async () => {
             try {
               console.log('Iniciando análise AIO com OpenAI');
-              // Pass content if available, otherwise just pass URL
               const data = await getChatGptAnalysis(normalizedUrl, pageContent);
               console.log('Dados AIO recebidos:', data);
               
-              // Check if API was used
               if (data && data.apiUsed) {
                 console.log('API OpenAI foi utilizada com sucesso para análise');
               } else {
@@ -135,7 +119,6 @@ const ResultsPage = () => {
                 description: 'Não foi possível conectar à API de IA.',
               });
               
-              // Provide default AIO data to prevent errors
               return {
                 score: 0,
                 contentClarity: 0,
@@ -148,7 +131,6 @@ const ResultsPage = () => {
           })()
         ]);
         
-        // Extract data from promises
         const seoData = seoDataPromise.status === 'fulfilled' ? seoDataPromise.value : {
           score: 0,
           loadTimeDesktop: 0,
@@ -170,19 +152,15 @@ const ResultsPage = () => {
           confusingParts: []
         };
         
-        // Show toast if AI analysis was successful
         if (aioDataPromise.status === 'fulfilled' && aioData.apiUsed) {
           toast.success('Análise de IA concluída com sucesso', {
             description: 'A API OpenAI foi utilizada para analisar o site'
           });
         }
         
-        // Criar resultado da análise
-        console.log('Criando resultado da análise');
         const results = createAnalysisResult(normalizedUrl, seoData, aioData);
         console.log('Resultado da análise criado:', results);
         
-        // Armazenar no localStorage para persistência
         localStorage.setItem(ANALYSIS_URL_KEY, urlParam);
         localStorage.setItem(ANALYSIS_STORAGE_KEY, JSON.stringify(results));
         
@@ -201,11 +179,9 @@ const ResultsPage = () => {
     performAnalysis();
   }, [location.search]);
   
-  // Função para limpar o cache e forçar uma nova análise
   const handleReanalyze = () => {
     localStorage.removeItem(ANALYSIS_STORAGE_KEY);
     localStorage.removeItem(ANALYSIS_URL_KEY);
-    // Recarregar a página para forçar uma nova análise
     window.location.reload();
   };
   
@@ -255,7 +231,7 @@ const ResultsPage = () => {
               <ScoreDisplay
                 seoScore={analysisData?.seo?.score || 0}
                 aioScore={analysisData?.aio?.score || 0}
-                status={analysisData?.overallStatus || 'Crítico'}
+                status={analysisData?.overallStatus as any || 'Crítico'}
                 url={formatUrl(analysisData?.url || '')}
               />
               

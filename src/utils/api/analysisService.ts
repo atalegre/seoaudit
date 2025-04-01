@@ -1,5 +1,5 @@
 
-import { Client, AnalysisResult } from './types';
+import { AnalysisResult, Client } from './types';
 import { getPageInsightsData } from './pageInsightsService';
 import { getChatGptAnalysis } from './chatGptService';
 import { saveAnalysisResult } from './supabaseClient';
