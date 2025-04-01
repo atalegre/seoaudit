@@ -1,4 +1,3 @@
-
 import { analyzeSite } from '../analyzerUtils';
 import { getApiKey } from './supabaseClient';
 import { toast } from 'sonner';
@@ -20,21 +19,9 @@ export async function getPageInsightsData(url: string): Promise<any> {
         description: 'Configure a chave nas configurações para obter análise de SEO real.',
       });
       
-      // Retornar objeto vazio em vez de dados simulados
-      return {
-        score: 0,
-        performanceScore: 0,
-        bestPracticesScore: 0,
-        url: url,
-        loadTimeDesktop: 0,
-        loadTimeMobile: 0,
-        mobileFriendly: false,
-        security: false,
-        imageOptimization: 0,
-        headingsStructure: 0,
-        metaTags: 0,
-        recommendations: []
-      };
+      // Use o analisador local como fallback
+      console.log('Using local analyzer as fallback');
+      return analyzeSite(url).seo;
     }
 
     toast('Analisando SEO com Google Page Insights...', {
@@ -43,6 +30,7 @@ export async function getPageInsightsData(url: string): Promise<any> {
 
     const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&strategy=mobile&category=performance&category=seo&category=best-practices`;
     
+    console.log('Fetching Google Page Insights data from:', apiUrl.replace(apiKey, '[API_KEY_HIDDEN]'));
     const response = await fetch(apiUrl);
     
     if (!response.ok) {
@@ -52,29 +40,30 @@ export async function getPageInsightsData(url: string): Promise<any> {
     }
     
     const data = await response.json();
-    console.log('Google Page Insights API response:', JSON.stringify(data).substring(0, 500) + '...');
+    console.log('Google Page Insights API response received successfully');
+    
+    // Log a small portion of the response to avoid flooding the console
+    if (data) {
+      console.log('API response preview:', 
+        JSON.stringify({
+          kind: data.kind,
+          id: data.id,
+          responseCode: data.responseCode,
+          analysisUTCTimestamp: data.analysisUTCTimestamp
+        })
+      );
+    }
+    
     return processPageInsightsData(data, url);
   } catch (error) {
     console.error('Error fetching Page Insights data:', error);
     toast.error('Erro ao buscar dados do Google Page Insights', {
-      description: 'Não foi possível analisar o site.',
+      description: 'Utilizando análise local como alternativa.',
     });
     
-    // Retornar objeto vazio em vez de dados simulados
-    return {
-      score: 0,
-      performanceScore: 0,
-      bestPracticesScore: 0,
-      url: url,
-      loadTimeDesktop: 0,
-      loadTimeMobile: 0,
-      mobileFriendly: false,
-      security: false,
-      imageOptimization: 0,
-      headingsStructure: 0,
-      metaTags: 0,
-      recommendations: []
-    };
+    // Use o analisador local como fallback
+    console.log('Using local analyzer as fallback due to error');
+    return analyzeSite(url).seo;
   }
 }
 
