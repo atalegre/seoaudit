@@ -29,6 +29,7 @@ const ResultsPage = () => {
       return;
     }
     
+    console.log('Iniciando análise para URL:', urlParam);
     setIsLoading(true);
     
     const performAnalysis = async () => {
@@ -37,12 +38,15 @@ const ResultsPage = () => {
         let normalizedUrl = urlParam;
         if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
           normalizedUrl = 'https://' + normalizedUrl;
+          console.log('URL normalizada para:', normalizedUrl);
         }
         
         // Buscar dados do Google Page Insights para SEO
         let seoData;
         try {
+          console.log('Iniciando análise SEO com Page Insights');
           seoData = await getPageInsightsData(normalizedUrl);
+          console.log('Dados SEO recebidos:', seoData);
         } catch (error) {
           console.error('Error fetching Page Insights data:', error);
           toast.error('Erro na análise SEO', {
@@ -66,8 +70,10 @@ const ResultsPage = () => {
         // Tentar buscar análise de AIO
         let aioData;
         try {
+          console.log('Iniciando análise AIO com OpenAI');
           // Pass an empty string as content (or fetch the content if you have a way to do so)
           aioData = await getChatGptAnalysis(normalizedUrl, '');
+          console.log('Dados AIO recebidos:', aioData);
         } catch (error) {
           console.error('Error fetching AIO data:', error);
           toast.error('Erro na análise AIO', {
@@ -86,7 +92,9 @@ const ResultsPage = () => {
         }
         
         // Criar resultado da análise
+        console.log('Criando resultado da análise');
         const results = createAnalysisResult(normalizedUrl, seoData, aioData);
+        console.log('Resultado da análise criado:', results);
         setAnalysisData(results);
       } catch (error) {
         console.error('Error performing analysis:', error);

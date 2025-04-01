@@ -18,8 +18,11 @@ serve(async (req) => {
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
     
     if (!OPENAI_API_KEY) {
+      console.error('OPENAI_API_KEY não está configurada nas variáveis de ambiente');
       throw new Error('OPENAI_API_KEY não está configurada');
     }
+
+    console.log('Edge function foi chamada - API Key OpenAI encontrada');
 
     // Pegar URL e conteúdo da requisição
     const { url, content } = await req.json();
@@ -28,12 +31,16 @@ serve(async (req) => {
       throw new Error('URL é obrigatória');
     }
 
+    console.log(`Analisando URL: ${url}`);
+
     // Para análise real, utilizamos o conteúdo. 
     // Se não for fornecido, usamos apenas a URL para análise simplificada
     const prompt = content 
       ? `Analise este site: ${url}\n\nConteúdo: ${content}\n\nFaça uma análise detalhada de SEO e como modelos de IA interpretam este conteúdo.`
       : `Analise este site: ${url}\n\nFaça uma análise detalhada de SEO e como modelos de IA interpretam este URL.`;
 
+    console.log('Enviando requisição para API OpenAI');
+    
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -56,24 +63,26 @@ serve(async (req) => {
     });
     
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(`Erro na API OpenAI: ${JSON.stringify(error)}`);
+      const errorData = await response.json().catch(() => ({}));
+      console.error(`Erro na API OpenAI: ${response.status} ${response.statusText}`, errorData);
+      throw new Error(`Erro na API OpenAI: ${response.status} ${response.statusText}`);
     }
     
+    console.log('Resposta da API OpenAI recebida');
     const data = await response.json();
     const analysisText = data.choices[0]?.message?.content || '';
-    console.log("Resposta da API OpenAI:", analysisText);
+    console.log("Resposta da API OpenAI:", analysisText.substring(0, 100) + "...");
     
     try {
       // Extrair dados da resposta do OpenAI
-      const scoreMatch = analysisText.match(/pontuação geral.*?(\d+)/i);
-      const clarityMatch = analysisText.match(/clareza de conteúdo.*?(\d+)/i);
-      const structureMatch = analysisText.match(/estrutura lógica.*?(\d+)/i);
-      const languageMatch = analysisText.match(/linguagem natural.*?(\d+)/i);
+      const scoreMatch = analysisText.match(/pontuação geral.*?(\d+)/i) || analysisText.match(/overall score.*?(\d+)/i);
+      const clarityMatch = analysisText.match(/clareza de conteúdo.*?(\d+)/i) || analysisText.match(/content clarity.*?(\d+)/i);
+      const structureMatch = analysisText.match(/estrutura lógica.*?(\d+)/i) || analysisText.match(/logical structure.*?(\d+)/i);
+      const languageMatch = analysisText.match(/linguagem natural.*?(\d+)/i) || analysisText.match(/natural language.*?(\d+)/i);
       
       // Extrair tópicos (abordagem simplificada)
-      const topicsMatch = analysisText.match(/tópicos principais:.*?\n([\s\S]*?)\n\n/i);
-      const confusingMatch = analysisText.match(/partes confusas:.*?\n([\s\S]*?)(\n\n|$)/i);
+      const topicsMatch = analysisText.match(/tópicos principais:.*?\n([\s\S]*?)\n\n/i) || analysisText.match(/key topics:.*?\n([\s\S]*?)\n\n/i);
+      const confusingMatch = analysisText.match(/partes confusas:.*?\n([\s\S]*?)(\n\n|$)/i) || analysisText.match(/confusing parts:.*?\n([\s\S]*?)(\n\n|$)/i);
       
       const topics = topicsMatch ? 
         topicsMatch[1].split('\n').map(t => t.replace(/^-\s*/, '').trim()).filter(Boolean) :
@@ -92,6 +101,8 @@ serve(async (req) => {
         confusingParts: confusingParts,
         rawAnalysis: analysisText
       };
+
+      console.log('Análise extraída com sucesso:', JSON.stringify(result).substring(0, 100) + "...");
 
       return new Response(JSON.stringify(result), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
