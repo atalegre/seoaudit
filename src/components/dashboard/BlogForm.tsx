@@ -217,7 +217,12 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onSuccess }) => {
       
       // Prepare data for submission
       const blogPostData: BlogPost = {
-        ...data,
+        title: data.title,
+        slug: data.slug,
+        excerpt: data.excerpt,
+        content: data.content,
+        keyLearning: data.keyLearning,
+        category: data.category,
         imageSrc,
         tags: tagsArray,
         popularity: initialData?.popularity || Math.floor(Math.random() * 25) + 75, // Default popularity between 75-100 if new
@@ -236,7 +241,7 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onSuccess }) => {
         // Create new post
         result = await supabase
           .from('blog_posts')
-          .insert([blogPostData] as any);
+          .insert([blogPostData]);
       }
 
       if (result.error) throw result.error;

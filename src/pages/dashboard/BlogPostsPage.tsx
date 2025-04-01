@@ -51,7 +51,7 @@ const BlogPostsPage = () => {
       const { data, error } = await supabase
         .from('blog_posts')
         .select('*')
-        .order('date', { ascending: false }) as { data: BlogPost[] | null, error: any };
+        .order('date', { ascending: false });
       
       if (error) throw error;
       
@@ -88,7 +88,7 @@ const BlogPostsPage = () => {
       const { error } = await supabase
         .from('blog_posts')
         .delete()
-        .eq('id', id) as { error: any };
+        .eq('id', id);
       
       if (error) throw error;
       
