@@ -7,7 +7,7 @@ export interface BlogPost {
   content?: string;
   keyLearning?: string;
   category?: string;
-  tags?: string[] | string;
+  tags?: string[] | string; // Can be either an array or comma-separated string
   imageSrc?: string;
   popularity?: number;
   date?: string;

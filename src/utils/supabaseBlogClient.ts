@@ -40,9 +40,15 @@ export const getBlogPostBySlug = async (slug: string): Promise<BlogPost | null> 
 };
 
 export const createBlogPost = async (post: BlogPost): Promise<void> => {
+  // Ensure tags is always an array before sending to Supabase
+  const formattedPost = {
+    ...post,
+    tags: Array.isArray(post.tags) ? post.tags : post.tags?.split(',').map(tag => tag.trim()) || []
+  };
+
   const { error } = await supabase
     .from('blog_posts')
-    .insert([post]);
+    .insert([formattedPost]);
   
   if (error) {
     console.error('Error creating blog post:', error);
@@ -51,9 +57,15 @@ export const createBlogPost = async (post: BlogPost): Promise<void> => {
 };
 
 export const updateBlogPost = async (id: string, post: BlogPost): Promise<void> => {
+  // Ensure tags is always an array before sending to Supabase
+  const formattedPost = {
+    ...post,
+    tags: Array.isArray(post.tags) ? post.tags : post.tags?.split(',').map(tag => tag.trim()) || []
+  };
+
   const { error } = await supabase
     .from('blog_posts')
-    .update(post)
+    .update(formattedPost)
     .eq('id', id);
   
   if (error) {
