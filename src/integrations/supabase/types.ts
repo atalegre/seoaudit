@@ -9,7 +9,138 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      analysis_results: {
+        Row: {
+          aio_data: Json | null
+          aio_score: number | null
+          client_id: string | null
+          created_at: string | null
+          id: string
+          overall_status: string | null
+          seo_data: Json | null
+          seo_score: number | null
+          timestamp: string | null
+          url: string
+        }
+        Insert: {
+          aio_data?: Json | null
+          aio_score?: number | null
+          client_id?: string | null
+          created_at?: string | null
+          id?: string
+          overall_status?: string | null
+          seo_data?: Json | null
+          seo_score?: number | null
+          timestamp?: string | null
+          url: string
+        }
+        Update: {
+          aio_data?: Json | null
+          aio_score?: number | null
+          client_id?: string | null
+          created_at?: string | null
+          id?: string
+          overall_status?: string | null
+          seo_data?: Json | null
+          seo_score?: number | null
+          timestamp?: string | null
+          url?: string
+        }
+        Relationships: []
+      }
+      api_keys: {
+        Row: {
+          created_at: string | null
+          id: string
+          key_type: string
+          key_value: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          key_type: string
+          key_value: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          key_type?: string
+          key_value?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      email_notifications: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          notification_type: string
+          sent_at: string | null
+          status: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          notification_type: string
+          sent_at?: string | null
+          status: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          notification_type?: string
+          sent_at?: string | null
+          status?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      scheduled_tasks: {
+        Row: {
+          created_at: string | null
+          frequency: string
+          id: string
+          is_active: boolean | null
+          last_run: string | null
+          next_run: string
+          url: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          frequency: string
+          id?: string
+          is_active?: boolean | null
+          last_run?: string | null
+          next_run: string
+          url: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          frequency?: string
+          id?: string
+          is_active?: boolean | null
+          last_run?: string | null
+          next_run?: string
+          url?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
