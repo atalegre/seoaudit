@@ -1,5 +1,6 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import { Helmet } from 'react-helmet';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import {
@@ -54,13 +55,70 @@ const FAQPage = () => {
     }
   ];
 
+  // Add structured data for FAQ page when component mounts
+  useEffect(() => {
+    // Create structured data script for FAQs
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    
+    const faqStructuredData = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": faqs.map(faq => ({
+        "@type": "Question",
+        "name": faq.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": faq.answer
+        }
+      }))
+    };
+    
+    script.textContent = JSON.stringify(faqStructuredData);
+    document.head.appendChild(script);
+    
+    // Clean up when component unmounts
+    return () => {
+      document.head.removeChild(script);
+    };
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen">
+      <Helmet>
+        <title>Perguntas Frequentes | SEO AI Checker</title>
+        <meta name="description" content="Encontre respostas para as perguntas mais frequentes sobre SEO, AIO e como o SEO AI Checker pode ajudar a melhorar a visibilidade do seu site." />
+        <meta name="keywords" content="FAQ, perguntas frequentes, SEO, AIO, otimização para IA, SEO AI Checker" />
+        <link rel="canonical" href="https://seoaichecker.com/faq" />
+      </Helmet>
+      
       <Header />
       
       <main className="flex-1 container py-12 px-4">
         <div className="max-w-3xl mx-auto">
-          <h1 className="text-3xl md:text-4xl font-bold mb-8">Perguntas Frequentes</h1>
+          <div className="mb-8">
+            <nav aria-label="Breadcrumb" className="text-sm mb-6">
+              <ol className="flex items-center space-x-2">
+                <li><a href="/" className="text-muted-foreground hover:text-primary">Início</a></li>
+                <li className="text-muted-foreground">/</li>
+                <li className="font-medium">Perguntas Frequentes</li>
+              </ol>
+            </nav>
+            
+            <h1 className="text-3xl md:text-4xl font-bold mb-4">Perguntas Frequentes</h1>
+            <p className="text-lg text-muted-foreground">Encontre respostas para as dúvidas mais comuns sobre o SEO AI Checker e otimização para motores de busca e IA.</p>
+          </div>
+          
+          {/* TL;DR Summary Section for AIO */}
+          <div className="mb-8 p-4 border rounded-lg bg-secondary/20">
+            <h2 className="text-lg font-semibold mb-2">Resumo Rápido</h2>
+            <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+              <li>O SEO AI Checker analisa sites para SEO (motores de busca) e AIO (modelos de IA)</li>
+              <li>A versão básica é gratuita e fornece recomendações de melhoria</li>
+              <li>Recomenda-se analisar seu site a cada 3-6 meses</li>
+              <li>Oferecemos serviços premium para implementação das recomendações</li>
+            </ul>
+          </div>
           
           <Accordion type="single" collapsible className="w-full space-y-4">
             {faqs.map((faq, index) => (
