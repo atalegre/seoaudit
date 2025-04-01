@@ -1,11 +1,10 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Zap, BarChart } from 'lucide-react';
+import { Search, Zap, BarChart, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { useToast } from '@/hooks/use-toast';
 
 const Hero = () => {
   const [url, setUrl] = useState('');
@@ -98,6 +97,24 @@ const Hero = () => {
               <Search className="h-6 w-6 text-gray-800" />
             </div>
             <p className="text-sm">100% gratuito, sem compromisso</p>
+          </div>
+        </div>
+        
+        {/* Three additional bullet points */}
+        <div className="w-full max-w-3xl mt-8 animate-fade-in" style={{ animationDelay: '400ms' }}>
+          <div className="flex flex-col space-y-3">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+              <p className="text-sm">Obtenha relatórios detalhados sobre os pontos fortes e fracos do seu site</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+              <p className="text-sm">Receba recomendações personalizadas para melhorar a sua classificação nas pesquisas</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+              <p className="text-sm">Acompanhe o progresso do seu site ao longo do tempo com análises periódicas</p>
+            </div>
           </div>
         </div>
       </div>
