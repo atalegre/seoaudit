@@ -31,7 +31,8 @@ serve(async (req) => {
       throw new Error('URL é obrigatória');
     }
 
-    console.log(`Analisando URL: ${url} - Timestamp: ${timestamp || 'não fornecido'}`);
+    const requestId = crypto.randomUUID();
+    console.log(`[${requestId}] Analisando URL: ${url} - Timestamp: ${timestamp || 'não fornecido'}`);
 
     // Criar prompts mais específicos para melhorar a análise
     const systemPrompt = "Você é um analisador especializado em websites que avalia claramente o conteúdo. IMPORTANTE: Forneça pontuações NUMÉRICAS DE 0 A 100 para clareza de conteúdo, estrutura lógica e linguagem natural, além de uma pontuação geral. Identifique explicitamente os tópicos principais e partes confusas.";
@@ -40,9 +41,9 @@ serve(async (req) => {
       ? `Analise este site: ${url}\n\nConteúdo: ${content}\n\nFaça uma análise detalhada e forneça PONTUAÇÕES NUMÉRICAS de 0 a 100 para cada critério.`
       : `Analise este site: ${url}\n\nFaça uma análise detalhada e forneça PONTUAÇÕES NUMÉRICAS de 0 a 100 para cada critério.`;
 
-    console.log('System prompt:', systemPrompt);
-    console.log('User prompt:', userPrompt);
-    console.log('Enviando requisição para API OpenAI com modelo gpt-4o-mini');
+    console.log(`[${requestId}] System prompt:`, systemPrompt);
+    console.log(`[${requestId}] User prompt:`, userPrompt);
+    console.log(`[${requestId}] Enviando requisição para API OpenAI com modelo gpt-4o-mini`);
     
     const startTime = Date.now();
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -68,24 +69,24 @@ serve(async (req) => {
     });
     
     const responseTime = Date.now() - startTime;
-    console.log(`Tempo de resposta da API OpenAI: ${responseTime}ms`);
+    console.log(`[${requestId}] Tempo de resposta da API OpenAI: ${responseTime}ms`);
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error(`Erro na API OpenAI: ${response.status} ${response.statusText}`, errorData);
+      console.error(`[${requestId}] Erro na API OpenAI: ${response.status} ${response.statusText}`, errorData);
       throw new Error(`Erro na API OpenAI: ${response.status} ${response.statusText}`);
     }
     
-    console.log('Resposta da API OpenAI recebida');
+    console.log(`[${requestId}] Resposta da API OpenAI recebida`);
     const data = await response.json();
     
     if (!data.choices || data.choices.length === 0) {
-      console.error('Resposta da OpenAI não contém choices:', data);
+      console.error(`[${requestId}] Resposta da OpenAI não contém choices:`, data);
       throw new Error('Resposta inválida da API OpenAI');
     }
     
     const analysisText = data.choices[0]?.message?.content || '';
-    console.log("Resposta completa da API OpenAI:", analysisText);
+    console.log(`[${requestId}] Resposta completa da API OpenAI:`, analysisText);
     
     try {
       // Extrair dados da resposta do OpenAI
@@ -94,7 +95,7 @@ serve(async (req) => {
       const structureMatch = analysisText.match(/estrutura lógica.*?(\d+)/i) || analysisText.match(/logical structure.*?(\d+)/i);
       const languageMatch = analysisText.match(/linguagem natural.*?(\d+)/i) || analysisText.match(/natural language.*?(\d+)/i);
       
-      console.log('Matches encontrados:', {
+      console.log(`[${requestId}] Matches encontrados:`, {
         score: scoreMatch?.[1],
         clarity: clarityMatch?.[1],
         structure: structureMatch?.[1],
@@ -121,17 +122,18 @@ serve(async (req) => {
         topicsDetected: topics,
         confusingParts: confusingParts,
         rawAnalysis: analysisText,
-        apiUsed: true // Flag to confirm API was used
+        apiUsed: true, // Flag para confirmar que a API foi usada
+        requestId: requestId // Adicionando ID de requisição para rastreamento
       };
 
-      console.log('Análise extraída com sucesso:', JSON.stringify(result).substring(0, 300) + "...");
+      console.log(`[${requestId}] Análise extraída com sucesso:`, JSON.stringify(result).substring(0, 300) + "...");
 
       return new Response(JSON.stringify(result), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200
       });
     } catch (parseError) {
-      console.error('Erro ao analisar a resposta do OpenAI:', parseError);
+      console.error(`[${requestId}] Erro ao analisar a resposta do OpenAI:`, parseError);
       
       // Retornar os dados brutos se não conseguir analisar
       return new Response(JSON.stringify({
@@ -142,8 +144,9 @@ serve(async (req) => {
         topicsDetected: ['Marketing Digital', 'SEO', 'Presença Online'],
         confusingParts: ['Parágrafos muito longos', 'Informação técnica sem explicação'],
         rawAnalysis: analysisText,
-        apiUsed: true, // Flag to confirm API was used
-        error: 'Erro ao analisar resposta'
+        apiUsed: true, // Flag para confirmar que a API foi usada
+        error: 'Erro ao analisar resposta',
+        requestId: requestId
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200

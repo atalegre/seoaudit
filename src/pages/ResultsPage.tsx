@@ -13,6 +13,10 @@ import { getChatGptAnalysis } from '@/utils/api/chatGptService';
 import { toast } from 'sonner';
 import { formatUrl, createAnalysisResult } from '@/utils/resultsPageHelpers';
 
+// Definição de constantes para localStorage
+const ANALYSIS_STORAGE_KEY = 'web_analysis_results';
+const ANALYSIS_URL_KEY = 'web_analysis_url';
+
 const ResultsPage = () => {
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
@@ -28,8 +32,30 @@ const ResultsPage = () => {
       setError("URL não fornecido");
       return;
     }
+
+    // Verificar se já temos uma análise recente para este URL
+    const storedUrl = localStorage.getItem(ANALYSIS_URL_KEY);
+    const storedAnalysis = localStorage.getItem(ANALYSIS_STORAGE_KEY);
     
-    console.log('Iniciando análise para URL:', urlParam);
+    // Se temos resultados armazenados para o mesmo URL, usamos eles
+    if (storedUrl === urlParam && storedAnalysis) {
+      try {
+        console.log('Usando análise em cache para URL:', urlParam);
+        const parsedAnalysis = JSON.parse(storedAnalysis);
+        setAnalysisData(parsedAnalysis);
+        setIsLoading(false);
+        toast('Usando análise em cache', {
+          description: 'Mostrando resultados da análise anterior',
+          duration: 3000
+        });
+        return;
+      } catch (parseError) {
+        console.error('Erro ao analisar dados em cache:', parseError);
+        // Se houver erro ao analisar o cache, continuamos com uma nova análise
+      }
+    }
+    
+    console.log('Iniciando nova análise para URL:', urlParam);
     setIsLoading(true);
     
     const performAnalysis = async () => {
@@ -155,6 +181,11 @@ const ResultsPage = () => {
         console.log('Criando resultado da análise');
         const results = createAnalysisResult(normalizedUrl, seoData, aioData);
         console.log('Resultado da análise criado:', results);
+        
+        // Armazenar no localStorage para persistência
+        localStorage.setItem(ANALYSIS_URL_KEY, urlParam);
+        localStorage.setItem(ANALYSIS_STORAGE_KEY, JSON.stringify(results));
+        
         setAnalysisData(results);
       } catch (error) {
         console.error('Error performing analysis:', error);
@@ -169,6 +200,14 @@ const ResultsPage = () => {
     
     performAnalysis();
   }, [location.search]);
+  
+  // Função para limpar o cache e forçar uma nova análise
+  const handleReanalyze = () => {
+    localStorage.removeItem(ANALYSIS_STORAGE_KEY);
+    localStorage.removeItem(ANALYSIS_URL_KEY);
+    // Recarregar a página para forçar uma nova análise
+    window.location.reload();
+  };
   
   if (isLoading) {
     return (
@@ -219,6 +258,16 @@ const ResultsPage = () => {
                 status={analysisData?.overallStatus || 'Crítico'}
                 url={formatUrl(analysisData?.url || '')}
               />
+              
+              <div className="flex justify-end">
+                <button 
+                  onClick={handleReanalyze}
+                  className="text-sm text-primary hover:underline flex items-center gap-1"
+                >
+                  <Loader2 className="h-3 w-3" />
+                  Analisar novamente
+                </button>
+              </div>
               
               <AnalysisTabs
                 seoData={analysisData?.seo}
