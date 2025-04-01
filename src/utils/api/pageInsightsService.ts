@@ -1,3 +1,4 @@
+
 import { analyzeSite } from '../analyzerUtils';
 import { getApiKey } from './supabaseClient';
 import { toast } from 'sonner';
@@ -5,22 +6,26 @@ import { toast } from 'sonner';
 // Função para obter os dados do Google Page Insights
 export async function getPageInsightsData(url: string): Promise<any> {
   try {
+    console.log('Starting Google Page Insights analysis for URL:', url);
+    
     // Primeiro tenta obter a chave da API do Supabase
     let apiKey = await getApiKey('googlePageInsightsKey');
+    console.log('API key from Supabase:', apiKey ? 'Found' : 'Not found');
     
     // Se não encontrou no Supabase, tenta do localStorage como fallback
     if (!apiKey) {
       apiKey = localStorage.getItem('googlePageInsightsKey');
+      console.log('API key from localStorage:', apiKey ? 'Found' : 'Not found');
     }
     
     if (!apiKey) {
-      console.error('Google Page Insights API key not found');
+      console.error('Google Page Insights API key not found in Supabase or localStorage');
       toast.warning('Chave da API Google Page Insights não encontrada', {
         description: 'Configure a chave nas configurações para obter análise de SEO real.',
       });
       
       // Use o analisador local como fallback
-      console.log('Using local analyzer as fallback');
+      console.log('Using local analyzer as fallback due to missing API key');
       return analyzeSite(url).seo;
     }
 
@@ -31,30 +36,52 @@ export async function getPageInsightsData(url: string): Promise<any> {
     const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&strategy=mobile&category=performance&category=seo&category=best-practices`;
     
     console.log('Fetching Google Page Insights data from:', apiUrl.replace(apiKey, '[API_KEY_HIDDEN]'));
-    const response = await fetch(apiUrl);
     
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Google Page Insights API error:', errorData);
-      throw new Error(`Erro ao acessar API do Google Page Insights: ${errorData.error?.message || response.statusText}`);
+    // Add a timeout to the fetch request to prevent hanging
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    
+    try {
+      const response = await fetch(apiUrl, { 
+        signal: controller.signal,
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: { message: response.statusText } }));
+        console.error('Google Page Insights API error:', errorData);
+        console.error('HTTP Status:', response.status, response.statusText);
+        throw new Error(`Erro ao acessar API do Google Page Insights: ${errorData.error?.message || response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log('Google Page Insights API response received successfully');
+      
+      // Log a small portion of the response to avoid flooding the console
+      if (data) {
+        console.log('API response preview:', 
+          JSON.stringify({
+            kind: data.kind,
+            id: data.id,
+            responseCode: data.responseCode,
+            analysisUTCTimestamp: data.analysisUTCTimestamp
+          })
+        );
+      }
+      
+      return processPageInsightsData(data, url);
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      if (fetchError.name === 'AbortError') {
+        console.error('Google Page Insights API request timed out after 30 seconds');
+        throw new Error('A requisição para o Google Page Insights atingiu o tempo limite.');
+      }
+      throw fetchError;
     }
-    
-    const data = await response.json();
-    console.log('Google Page Insights API response received successfully');
-    
-    // Log a small portion of the response to avoid flooding the console
-    if (data) {
-      console.log('API response preview:', 
-        JSON.stringify({
-          kind: data.kind,
-          id: data.id,
-          responseCode: data.responseCode,
-          analysisUTCTimestamp: data.analysisUTCTimestamp
-        })
-      );
-    }
-    
-    return processPageInsightsData(data, url);
   } catch (error) {
     console.error('Error fetching Page Insights data:', error);
     toast.error('Erro ao buscar dados do Google Page Insights', {
