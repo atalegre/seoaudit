@@ -9,91 +9,83 @@ export async function signInWithEmail(email: string, password: string) {
   console.log("Attempting to sign in with email:", email);
   
   try {
-    // First try a direct signin
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    
-    if (!error) {
-      console.log("Standard signin successful");
+    // For demo users, use a simplified approach
+    if ((email === 'atalegre@me.com' && password === 'admin123') || 
+        (email === 'seoclient@exemplo.com' && password === 'client123')) {
       
-      // Ensure user exists in users table with proper role
-      if (data.user) {
-        if (email === 'atalegre@me.com') {
+      const isAdmin = email === 'atalegre@me.com';
+      console.log(`Special handling for demo user: ${email}`);
+      
+      // Try to create the account first (will fail if exists, but that's ok)
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email, 
+        password,
+        options: {
+          data: {
+            full_name: isAdmin ? 'SEO Admin' : 'SEO Client',
+            role: isAdmin ? 'admin' : 'user',
+          }
+        }
+      });
+      
+      // Now try to sign in regardless of whether signup succeeded
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (!error && data.user) {
+        console.log("Demo user login successful");
+        
+        // Ensure user exists in database with proper role
+        if (isAdmin) {
+          await ensureAdminUserInDb(data.user.id, email);
+        } else {
+          await ensureUserInDb(
+            data.user.id,
+            email,
+            'SEO Client',
+            'user'
+          );
+        }
+        
+        return { data, error: null };
+      } else {
+        console.error("Demo user login failed:", error);
+        throw error || new Error("Failed to authenticate");
+      }
+    } 
+    else {
+      // Standard login for non-demo users
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (!error && data.user) {
+        console.log("Standard login successful");
+        
+        // Ensure user profile exists in database
+        const isAdmin = email === 'atalegre@me.com';
+        if (isAdmin) {
           await ensureAdminUserInDb(data.user.id, email);
         } else {
           await ensureUserInDb(
             data.user.id, 
             data.user.email || '', 
             data.user.user_metadata?.full_name || 'User',
-            data.user.email === 'atalegre@me.com' ? 'admin' : 'user'
+            'user'
           );
         }
-      }
-      
-      return { data, error: null };
-    }
-    
-    // Special handling for our demo users
-    if (
-      (email === 'atalegre@me.com' && password === 'admin123') ||
-      (email === 'seoclient@exemplo.com' && password === 'client123')
-    ) {
-      console.log(`Special handling for demo user: ${email}`);
-      
-      // Try to create the user if they don't exist
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email, 
-        password,
-        options: {
-          data: {
-            full_name: email === 'atalegre@me.com' ? 'SEO Admin' : 'SEO Client',
-            role: email === 'atalegre@me.com' ? 'admin' : 'user',
-          }
-        }
-      });
-      
-      if (!signUpError || signUpError.message.includes('already registered')) {
-        // Now try logging in again
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
         
-        if (!signInError) {
-          console.log("Demo user signin successful after account creation/update");
-          
-          // Ensure user exists in users table with proper role
-          if (signInData.user) {
-            // Fix for TypeScript error - use variable comparison instead of direct string comparison
-            const isAdmin = email === 'atalegre@me.com';
-            
-            if (isAdmin) {
-              await ensureAdminUserInDb(signInData.user.id, email);
-            } else {
-              await ensureUserInDb(
-                signInData.user.id,
-                email,
-                isAdmin ? 'SEO Admin' : 'SEO Client',
-                isAdmin ? 'admin' : 'user'
-              );
-            }
-          }
-          
-          return { data: signInData, error: null };
-        } else {
-          console.error("Demo user still failed to login:", signInError);
-          throw signInError;
-        }
+        return { data, error: null };
+      } else {
+        console.error("Standard login failed:", error);
+        throw error || new Error("Failed to authenticate");
       }
     }
-    
-    // If we get here, signin failed and we couldn't fix it
-    console.error("Signin failed with error:", error);
-    throw error;
   } catch (error: any) {
-    console.error("Exception during signin:", error);
+    console.error("Exception during login:", error);
     throw error;
   }
 }

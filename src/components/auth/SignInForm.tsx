@@ -48,51 +48,41 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
     try {
       console.log("Login attempt with:", values.email);
       
-      try {
-        const { data, error } = await signInWithEmail(values.email, values.password);
+      const { data, error } = await signInWithEmail(values.email, values.password);
+      
+      if (error) {
+        console.error("Login error:", error);
+        setAuthError(error.message);
         
-        if (error) {
-          console.error("Login error:", error);
-          setAuthError(error.message);
+        toast({
+          variant: "destructive",
+          title: "Erro de autenticação",
+          description: "Email ou password incorretos. Tente as credenciais de demonstração listadas abaixo.",
+        });
+      } else {
+        console.log("Login successful:", data);
+        toast({
+          title: "Login bem-sucedido",
+          description: "Bem-vindo de volta!",
+        });
+        
+        if (data.user) {
+          const userRole = await checkUserRole(data.user.id);
+          console.log("User role:", userRole);
           
-          toast({
-            variant: "destructive",
-            title: "Erro de autenticação",
-            description: "Email ou password incorretos. Tente as credenciais de demonstração listadas abaixo.",
-          });
-        } else {
-          console.log("Login successful:", data);
-          toast({
-            title: "Login bem-sucedido",
-            description: "Bem-vindo de volta!",
-          });
-          
-          if (data.user) {
-            const userRole = await checkUserRole(data.user.id);
-            console.log("User role:", userRole);
-            
-            if (userRole === 'admin') {
-              navigate('/dashboard');
-            } else {
-              navigate('/dashboard/client');
-            }
+          if (userRole === 'admin') {
+            navigate('/dashboard');
           } else {
             navigate('/dashboard/client');
           }
+        } else {
+          navigate('/dashboard/client');
         }
-      } catch (error: any) {
-        console.error("Exception during login:", error);
-        
-        setAuthError(error.message);
-        toast({
-          variant: "destructive",
-          title: "Erro",
-          description: "Falha na autenticação. Tente novamente com as credenciais de demonstração.",
-        });
       }
     } catch (error: any) {
       console.error("Exception during login:", error);
-      setAuthError(error.message);
+      setAuthError(error.message || "Erro de autenticação");
+      
       toast({
         variant: "destructive",
         title: "Erro",
