@@ -14,6 +14,7 @@ import PasswordField from './PasswordField';
 import PasswordRequirements from './PasswordRequirements';
 import NameField from './NameField';
 import TermsCheckbox from './TermsCheckbox';
+import { supabase } from '@/integrations/supabase/client';
 
 type SignUpFormProps = {
   setAuthError: (error: string | null) => void;
@@ -33,6 +34,28 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
       acceptTerms: false,
     },
   });
+
+  // Função para enviar email de confirmação
+  async function sendConfirmationEmail(email: string, name: string, confirmationUrl: string) {
+    try {
+      const { data, error } = await supabase.functions.invoke('send-email', {
+        body: {
+          type: 'confirmation',
+          email,
+          name,
+          confirmationUrl
+        }
+      });
+
+      if (error) {
+        console.error("Erro ao enviar email de confirmação:", error);
+      } else {
+        console.log("Email de confirmação enviado:", data);
+      }
+    } catch (error) {
+      console.error("Exceção ao enviar email de confirmação:", error);
+    }
+  }
 
   async function onSubmit(values: SignUpFormValues) {
     setIsRegistering(true);
@@ -57,6 +80,13 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
         navigate('/dashboard/client');
       } else {
         // Email confirmation required
+        // Construir URL de confirmação - normalmente é enviado pelo próprio Supabase
+        // mas simulamos aqui para o email de confirmação customizado
+        const confirmationUrl = `${window.location.origin}/auth/callback?next=/dashboard/client`;
+        
+        // Enviar email de confirmação personalizado
+        await sendConfirmationEmail(values.email, values.name, confirmationUrl);
+        
         toast({
           title: "Registo iniciado",
           description: "Por favor verifique o seu email para confirmar a sua conta.",

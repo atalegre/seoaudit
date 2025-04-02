@@ -29,6 +29,37 @@ const ReportForm: React.FC<ReportFormProps> = ({ url, seoScore, aioScore, compac
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   
+  // Função para enviar o relatório por email
+  async function sendReportByEmail(email: string, name: string, seoScore: number, aioScore: number, url: string) {
+    try {
+      // Construir o URL do relatório com os parâmetros
+      const reportUrl = `${window.location.origin}/dashboard/client?url=${encodeURIComponent(url)}`;
+      
+      const { data, error } = await supabase.functions.invoke('send-email', {
+        body: {
+          type: 'report',
+          email,
+          name,
+          reportUrl,
+          seoScore,
+          aioScore,
+          websiteUrl: url
+        }
+      });
+
+      if (error) {
+        console.error("Erro ao enviar email com relatório:", error);
+        return false;
+      } else {
+        console.log("Email com relatório enviado:", data);
+        return true;
+      }
+    } catch (error) {
+      console.error("Exceção ao enviar email com relatório:", error);
+      return false;
+    }
+  }
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -77,10 +108,21 @@ const ReportForm: React.FC<ReportFormProps> = ({ url, seoScore, aioScore, compac
       const savedClientResult = await saveClientsToDatabase([newClient]);
       console.log('Save client result:', savedClientResult);
       
-      // Simulação de envio de email
+      // Envio de email com relatório
       if (sendByEmail) {
-        // Aqui seria implementado o envio real do email
-        toast.success('Relatório enviado para o seu email com sucesso!');
+        const emailSent = await sendReportByEmail(
+          email, 
+          name, 
+          seoScore ?? 0, 
+          aioScore ?? 0, 
+          url
+        );
+        
+        if (emailSent) {
+          toast.success('Relatório enviado para o seu email com sucesso!');
+        } else {
+          toast.error('Não foi possível enviar o relatório por email. Tente novamente mais tarde.');
+        }
       }
       
       // Sucesso
