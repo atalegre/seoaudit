@@ -1,6 +1,5 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import type { User } from '@supabase/supabase-js';
 
 // Function to create default admin and client users if they don't exist
 export async function createDefaultUsers() {
@@ -33,9 +32,10 @@ export async function createOrUpdateAdmin() {
       // Check if user already exists first
       const { data } = await supabase.auth.admin.listUsers();
       
-      // Properly type the users array
-      const users = data?.users as User[] | null;
-      const adminExists = users ? users.some(user => user.email === adminEmail) : false;
+      // Fix the type issue by checking if data exists and then if users array exists
+      const adminExists = data && data.users 
+        ? data.users.some(user => user.email === adminEmail)
+        : false;
       
       if (!adminExists) {
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
@@ -126,9 +126,10 @@ export async function createOrUpdateClient() {
       // Check if user already exists first
       const { data } = await supabase.auth.admin.listUsers();
       
-      // Properly type the users array
-      const users = data?.users as User[] | null;
-      const clientExists = users ? users.some(user => user.email === clientEmail) : false;
+      // Fix the type issue by checking if data exists and then if users array exists
+      const clientExists = data && data.users 
+        ? data.users.some(user => user.email === clientEmail)
+        : false;
       
       if (!clientExists) {
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
