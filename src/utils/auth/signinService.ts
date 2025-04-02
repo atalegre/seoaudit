@@ -66,14 +66,17 @@ export async function signInWithEmail(email: string, password: string) {
           
           // Ensure user exists in users table with proper role
           if (signInData.user) {
-            if (email === 'atalegre@me.com') {
+            // Fix for TypeScript error - use variable comparison instead of direct string comparison
+            const isAdmin = email === 'atalegre@me.com';
+            
+            if (isAdmin) {
               await ensureAdminUserInDb(signInData.user.id, email);
             } else {
               await ensureUserInDb(
                 signInData.user.id,
                 email,
-                email === 'atalegre@me.com' ? 'SEO Admin' : 'SEO Client',
-                email === 'atalegre@me.com' ? 'admin' : 'user'
+                isAdmin ? 'SEO Admin' : 'SEO Client',
+                isAdmin ? 'admin' : 'user'
               );
             }
           }
