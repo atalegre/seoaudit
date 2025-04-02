@@ -10,9 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import EmailField from './EmailField';
 import PasswordField from './PasswordField';
-import { signInWithEmail } from '@/utils/auth/signinService';
-import { checkUserRole } from '@/utils/auth/userProfileService';
-import { createOrUpdateAdmin, createOrUpdateClient } from '@/utils/auth/createDefaultUsers';
+import { signInWithEmail } from '@/utils/auth/authService';
 
 const formSchema = z.object({
   email: z
@@ -50,13 +48,6 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
     try {
       console.log("Login attempt with:", values.email);
       
-      // Pre-setup demo accounts if that's what we're trying to log in with
-      if (values.email === 'atalegre@me.com') {
-        await createOrUpdateAdmin();
-      } else if (values.email === 'seoclient@exemplo.com') {
-        await createOrUpdateClient();
-      }
-      
       // Attempt to sign in with email and password
       const { data, error } = await signInWithEmail(values.email, values.password);
       
@@ -80,21 +71,8 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
           description: "Bem-vindo de volta!",
         });
         
-        // Determine where to redirect based on user role
-        try {
-          const userRole = await checkUserRole(data.user.id);
-          console.log("User role:", userRole);
-          
-          if (userRole === 'admin') {
-            navigate('/dashboard');
-          } else {
-            navigate('/dashboard/client');
-          }
-        } catch (roleError) {
-          console.error("Error checking role:", roleError);
-          // Default to client dashboard if role check fails
-          navigate('/dashboard/client');
-        }
+        // Always redirect to dashboard - the proper view (admin or client) will be determined by the dashboard itself
+        navigate('/dashboard');
       } else {
         setAuthError("Unknown error during authentication");
         toast({
