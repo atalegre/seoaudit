@@ -1,6 +1,7 @@
 
 import { corsHeaders } from "./corsHeaders.ts";
 import { getSystemPrompt, getUserPrompt } from "./prompts.ts";
+import OpenAI from "openai";
 
 /**
  * Request analysis from OpenAI API

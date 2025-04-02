@@ -1,0 +1,9 @@
+
+{
+  "imports": {
+    "openai": "https://esm.sh/openai@4.20.1"
+  },
+  "tasks": {
+    "start": "deno run --allow-net --allow-env --allow-read index.ts"
+  }
+}

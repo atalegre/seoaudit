@@ -7,5 +7,5 @@ verify_jwt = false
 [functions.send-email]
 verify_jwt = false
 
-[functions.analyze-website.import_map]
-imports = { "openai" = "https://esm.sh/openai@4.20.1" }
+[functions.analyze-website.deployment.import_map]
+imports = { openai = "https://esm.sh/openai@4.20.1" }
