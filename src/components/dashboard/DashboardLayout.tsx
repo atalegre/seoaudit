@@ -21,13 +21,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { checkUserRole } from '@/utils/auth/authService';
 
-const sidebarItems = [
+// Define different sidebar items based on user role
+const adminSidebarItems = [
   { name: "Dashboard", path: "/dashboard", icon: <BarChart className="w-5 h-5" /> },
   { name: "Clientes", path: "/dashboard/clients", icon: <Users className="w-5 h-5" /> },
   { name: "Importação em Massa", path: "/dashboard/bulk-import", icon: <Upload className="w-5 h-5" /> },
   { name: "Blog", path: "/dashboard/blog-posts", icon: <FileText className="w-5 h-5" /> },
   { name: "Configurações", path: "/dashboard/settings", icon: <Settings className="w-5 h-5" /> },
+];
+
+const clientSidebarItems = [
+  { name: "Dashboard", path: "/dashboard/client", icon: <BarChart className="w-5 h-5" /> },
+  { name: "Relatórios", path: "/dashboard/client/reports", icon: <FileText className="w-5 h-5" /> },
+  { name: "Configurações", path: "/dashboard/client/settings", icon: <Settings className="w-5 h-5" /> },
 ];
 
 interface DashboardLayoutProps {
@@ -43,22 +51,51 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [user, setUser] = useState<any>(null);
   const [userEmail, setUserEmail] = useState<string>('');
   const [userName, setUserName] = useState<string>('AD');
+  const [userRole, setUserRole] = useState<string>('user');
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Use appropriate sidebar items based on role
+  const sidebarItems = userRole === 'admin' ? adminSidebarItems : clientSidebarItems;
   
   // Check if user is logged in and get user info
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        setUser(session.user);
-        setUserEmail(session.user.email || 'admin@exemplo.com');
-        
-        // Get user name from user metadata if available
-        const fullName = session.user.user_metadata?.full_name;
-        if (fullName) {
-          setUserName(getInitials(fullName));
+      setIsLoading(true);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          setUser(session.user);
+          setUserEmail(session.user.email || '');
+          
+          // Get user name from user metadata if available
+          const fullName = session.user.user_metadata?.full_name;
+          if (fullName) {
+            setUserName(getInitials(fullName));
+          }
+          
+          // Get user role
+          const role = await checkUserRole(session.user.id);
+          setUserRole(role);
+          
+          // Check access permissions
+          const pathParts = location.pathname.split('/');
+          if (pathParts[1] === 'dashboard') {
+            if (pathParts[2] === undefined && role !== 'admin') {
+              // Non-admins trying to access main dashboard should be redirected
+              navigate('/dashboard/client');
+            } else if (role === 'admin' && pathParts[2] === 'client' && !pathParts[3]) {
+              // Admins can view client dashboard if they explicitly go there
+              // No redirect needed here
+            }
+          }
+        } else {
+          navigate('/signin');
         }
-      } else {
+      } catch (error) {
+        console.error('Auth check error:', error);
         navigate('/signin');
+      } finally {
+        setIsLoading(false);
       }
     };
     
@@ -66,18 +103,22 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         if (event === 'SIGNED_OUT') {
           navigate('/signin');
         } else if (session) {
           setUser(session.user);
-          setUserEmail(session.user.email || 'admin@exemplo.com');
+          setUserEmail(session.user.email || '');
           
           // Get user name from user metadata if available
           const fullName = session.user.user_metadata?.full_name;
           if (fullName) {
             setUserName(getInitials(fullName));
           }
+          
+          // Update role
+          const role = await checkUserRole(session.user.id);
+          setUserRole(role);
         }
       }
     );
@@ -85,28 +126,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate]);
-  
-  // Precarregar rotas quando o usuário passa o mouse sobre os links (para desktop)
-  useEffect(() => {
-    // Preload function only for desktop
-    if (isMobile) return;
-    
-    const preloadRoutes = () => {
-      // Preload routes based on current page
-      const currentPathParts = location.pathname.split('/');
-      const basePath = currentPathParts[1] || 'dashboard';
-      
-      // Dynamically import neighbor routes
-      import(`../../pages/${basePath === 'dashboard' ? 'dashboard/DashboardPage' : 'Index'}.tsx`)
-        .catch(error => console.log('Preloading routes in background'));
-    };
-    
-    // Delay preloading to not interfere with initial render
-    const timer = setTimeout(preloadRoutes, 2000);
-    
-    return () => clearTimeout(timer);
-  }, [location.pathname, isMobile]);
+  }, [navigate, location.pathname]);
   
   // Get initials from name
   const getInitials = (name: string) => {
@@ -157,6 +177,10 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       ))}
     </nav>
   );
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center min-h-screen">Carregando...</div>;
+  }
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -172,8 +196,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               </SheetTrigger>
               <SheetContent side="left" className="w-64 p-0">
                 <div className="p-4 border-b">
-                  <Link to="/dashboard" className="font-bold text-lg text-primary">
-                    SEOAudit Admin
+                  <Link to={userRole === 'admin' ? "/dashboard" : "/dashboard/client"} className="font-bold text-lg text-primary">
+                    SEOAudit {userRole === 'admin' ? 'Admin' : 'Client'}
                   </Link>
                 </div>
                 <SidebarContent />
@@ -181,8 +205,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             </Sheet>
           )}
           
-          <Link to="/dashboard" className="font-bold text-xl text-primary">
-            {isMobile ? "SEOAudit" : "SEOAudit Admin"}
+          <Link to={userRole === 'admin' ? "/dashboard" : "/dashboard/client"} className="font-bold text-xl text-primary">
+            {isMobile ? "SEOAudit" : `SEOAudit ${userRole === 'admin' ? 'Admin' : 'Client'}`}
           </Link>
         </div>
         
@@ -210,23 +234,23 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                   <span className="text-xs md:text-sm font-medium">{userName}</span>
                 </div>
                 <div className="hidden md:block">
-                  <p className="text-sm font-medium">{user?.user_metadata?.full_name || 'Admin'}</p>
+                  <p className="text-sm font-medium">{user?.user_metadata?.full_name || (userRole === 'admin' ? 'Admin' : 'Cliente')}</p>
                   <p className="text-xs text-muted-foreground">{userEmail}</p>
                 </div>
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Minha conta</DropdownMenuLabel>
+              <DropdownMenuLabel>Minha conta ({userRole})</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/dashboard/profile')}>
+              <DropdownMenuItem className="cursor-pointer" onClick={() => navigate(userRole === 'admin' ? '/dashboard/profile' : '/dashboard/client/profile')}>
                 <User className="mr-2 h-4 w-4" />
                 <span>Perfil</span>
               </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/dashboard/settings')}>
+              <DropdownMenuItem className="cursor-pointer" onClick={() => navigate(userRole === 'admin' ? '/dashboard/settings' : '/dashboard/client/settings')}>
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Configurações</span>
               </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/dashboard/change-password')}>
+              <DropdownMenuItem className="cursor-pointer" onClick={() => navigate(userRole === 'admin' ? '/dashboard/change-password' : '/dashboard/client/change-password')}>
                 <Lock className="mr-2 h-4 w-4" />
                 <span>Alterar senha</span>
               </DropdownMenuItem>

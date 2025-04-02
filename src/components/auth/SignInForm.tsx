@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import EmailField from './EmailField';
 import PasswordField from './PasswordField';
+import { checkUserRole } from '@/utils/auth/authService';
 
 const formSchema = z.object({
   email: z
@@ -69,8 +70,18 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
           description: "Bem-vindo de volta!",
         });
         
-        // Explicitly redirect to client dashboard
-        navigate('/dashboard/client');
+        // Check user role and redirect accordingly
+        if (data.user) {
+          const userRole = await checkUserRole(data.user.id);
+          
+          if (userRole === 'admin') {
+            navigate('/dashboard'); // Admin dashboard
+          } else {
+            navigate('/dashboard/client'); // Client dashboard
+          }
+        } else {
+          navigate('/dashboard/client'); // Default redirect
+        }
       }
     } catch (error: any) {
       console.error("Exception during login:", error);
@@ -92,8 +103,11 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
         <PasswordField form={form} name="password" />
         <div className="text-sm text-muted-foreground">
           <p>Para entrar como admin, use:</p>
-          <p>Email: admin@exemplo.com</p>
-          <p>Password: admin123</p>
+          <p>Email: seoadmin@exemplo.com</p>
+          <p>Password: admin</p>
+          <p className="mt-2">Para entrar como cliente, use:</p>
+          <p>Email: seoclient@exemplo.com</p>
+          <p>Password: client</p>
         </div>
         <Button 
           type="submit" 

@@ -30,6 +30,7 @@ import GlossaryTermPage from "./pages/content/GlossaryTermPage";
 import GuidesPage from "./pages/content/GuidesPage";
 import SeoAioChecklistPage from "./pages/content/SeoAioChecklistPage";
 import VerificationPage from "./pages/VerificationPage";
+import { createDefaultUsers } from "./utils/auth/createDefaultUsers";
 
 const queryClient = new QueryClient();
 
@@ -85,6 +86,11 @@ const AuthCallback = () => {
 };
 
 const App = () => {
+  // Create default users on app init
+  useEffect(() => {
+    createDefaultUsers();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
