@@ -8,7 +8,7 @@ export async function createDefaultUsers() {
     const { data: adminData, error: adminError } = await supabase
       .from('users')
       .select('*')
-      .eq('email', 'seoadmin@exemplo.com')
+      .eq('email', 'atalegre@me.com')
       .maybeSingle();
 
     if (adminError) throw adminError;
@@ -19,7 +19,7 @@ export async function createDefaultUsers() {
       
       // First create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: 'seoadmin@exemplo.com',
+        email: 'atalegre@me.com',
         password: 'admin123',
         options: {
           data: {
@@ -40,7 +40,7 @@ export async function createDefaultUsers() {
             { 
               id: authData.user.id,
               name: 'SEO Admin',
-              email: 'seoadmin@exemplo.com',
+              email: 'atalegre@me.com',
               role: 'admin'
             }
           ]);

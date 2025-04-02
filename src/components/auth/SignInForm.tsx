@@ -116,7 +116,7 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
         <PasswordField form={form} name="password" />
         <div className="text-sm text-muted-foreground">
           <p>Para entrar como admin, use:</p>
-          <p>Email: seoadmin@exemplo.com</p>
+          <p>Email: atalegre@me.com</p>
           <p>Password: admin123</p>
           <p className="mt-2">Para entrar como cliente, use:</p>
           <p>Email: seoclient@exemplo.com</p>
