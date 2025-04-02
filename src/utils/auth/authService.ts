@@ -3,7 +3,7 @@ import { createDefaultUsers } from './createDefaultUsers';
 import { signUpWithEmail } from './signupService';
 import { signInWithEmail } from './signinService';
 import { resetPassword, updatePassword } from './passwordService';
-import { checkUserRole } from './userProfileService';
+import { checkUserRole, ensureUserInDb } from './userProfileService';
 
 // Re-export all the functions
 export { 
@@ -12,7 +12,8 @@ export {
   signInWithEmail,
   resetPassword,
   updatePassword,
-  checkUserRole
+  checkUserRole,
+  ensureUserInDb
 };
 
 // Re-export types
