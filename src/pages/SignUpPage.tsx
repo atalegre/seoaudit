@@ -105,7 +105,8 @@ const SignUpPage = () => {
           console.error("User record creation error:", usersError);
           // Don't block the signup process if this fails
           toast({
-            variant: "warning",
+            // Fix: Change "warning" to "default" since it's not a valid variant
+            variant: "default",
             title: "Aviso",
             description: "Conta criada, mas alguns dados do perfil podem estar incompletos.",
           });

@@ -22,7 +22,12 @@ export async function getAllUsers(): Promise<User[]> {
       .order('created_at', { ascending: false });
     
     if (error) throw error;
-    return data || [];
+    
+    // Ensure the role is properly typed
+    return (data || []).map(user => ({
+      ...user,
+      role: user.role as 'admin' | 'editor' | 'user'
+    }));
   } catch (error) {
     console.error('Erro ao buscar usuários:', error);
     return [];
@@ -41,7 +46,12 @@ export async function getUserById(userId: string): Promise<User | null> {
       .single();
     
     if (error) throw error;
-    return data;
+    
+    // Ensure the role is properly typed
+    return data ? {
+      ...data,
+      role: data.role as 'admin' | 'editor' | 'user'
+    } : null;
   } catch (error) {
     console.error('Erro ao buscar detalhes do usuário:', error);
     return null;
@@ -64,7 +74,12 @@ export async function createUser(userData: { name: string, email: string, role: 
       .select();
     
     if (error) throw error;
-    return data?.[0] || null;
+    
+    // Ensure the role is properly typed
+    return data?.[0] ? {
+      ...data[0],
+      role: data[0].role as 'admin' | 'editor' | 'user'
+    } : null;
   } catch (error) {
     console.error('Erro ao criar usuário:', error);
     throw error;
@@ -88,7 +103,12 @@ export async function updateUser(userId: string, userData: { name?: string, emai
       .select();
     
     if (error) throw error;
-    return data?.[0] || null;
+    
+    // Ensure the role is properly typed
+    return data?.[0] ? {
+      ...data[0],
+      role: data[0].role as 'admin' | 'editor' | 'user'
+    } : null;
   } catch (error) {
     console.error('Erro ao atualizar usuário:', error);
     throw error;
