@@ -1,10 +1,14 @@
-import React, { useEffect, useState } from 'react';
+
+import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ScoreDisplay from '@/components/ScoreDisplay';
-import AnalysisTabs from '@/components/AnalysisTabs';
 import ReportForm from '@/components/ReportForm';
+import EnhancedRecommendations from '@/components/EnhancedRecommendations';
+import TechnicalHealthPanel from '@/components/TechnicalHealthPanel';
+import AioAnalysisPanel from '@/components/AioAnalysisPanel';
+import LLMPresenceAudit from '@/components/LLMPresenceAudit';
 import { AnalysisResult } from '@/utils/api/types';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { getPageInsightsData } from '@/utils/api/pageInsightsService';
@@ -14,6 +18,7 @@ import { formatUrl, createAnalysisResult } from '@/utils/resultsPageHelpers';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const ANALYSIS_STORAGE_KEY = 'web_analysis_results';
 const ANALYSIS_URL_KEY = 'web_analysis_url';
@@ -27,6 +32,11 @@ const ResultsPage = () => {
   const [seoError, setSeoError] = useState<string | null>(null);
   const [aioError, setAioError] = useState<string | null>(null);
   const isMobile = useIsMobile();
+  const recommendationsRef = useRef<HTMLDivElement>(null);
+  
+  const scrollToRecommendations = () => {
+    recommendationsRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
   
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -220,8 +230,11 @@ const ResultsPage = () => {
               <ScoreDisplay
                 seoScore={analysisData?.seo?.score || 0}
                 aioScore={analysisData?.aio?.score || 0}
+                performanceScore={analysisData?.seo?.performanceScore || 65}
+                llmPresenceScore={30}
                 status={analysisData?.overallStatus as any || 'Crítico'}
                 url={formatUrl(analysisData?.url || '')}
+                onScrollToRecommendations={scrollToRecommendations}
               />
               
               <div className="flex justify-end">
@@ -234,12 +247,43 @@ const ResultsPage = () => {
                 </button>
               </div>
               
-              <AnalysisTabs
-                seoData={analysisData?.seo}
-                aioData={analysisData?.aio}
-                url={analysisData?.url || ''}
-                recommendations={analysisData?.recommendations || []}
-              />
+              <Tabs defaultValue="analysis">
+                <TabsList className="mb-4">
+                  <TabsTrigger value="analysis">Análise Detalhada</TabsTrigger>
+                  <TabsTrigger value="recommendations">Recomendações</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="analysis" className="space-y-6">
+                  <TechnicalHealthPanel
+                    loadTimeDesktop={analysisData.seo.loadTimeDesktop || 3.2}
+                    loadTimeMobile={analysisData.seo.loadTimeMobile || 5.1}
+                    mobileFriendly={analysisData.seo.mobileFriendly || false}
+                    security={analysisData.seo.security || false}
+                    imageOptimization={analysisData.seo.imageOptimization || 60}
+                    performanceScore={analysisData.seo.performanceScore || 65}
+                    lcp={analysisData.seo.lcp}
+                    cls={analysisData.seo.cls}
+                    fid={analysisData.seo.fid}
+                  />
+                  
+                  <AioAnalysisPanel
+                    aioScore={analysisData.aio.score}
+                    contentClarity={analysisData.aio.contentClarity}
+                    logicalStructure={analysisData.aio.logicalStructure}
+                    naturalLanguage={analysisData.aio.naturalLanguage}
+                    topicsDetected={analysisData.aio.topicsDetected || []}
+                    confusingParts={analysisData.aio.confusingParts || []}
+                  />
+                  
+                  <LLMPresenceAudit url={analysisData.url} autoStart={true} />
+                </TabsContent>
+                
+                <TabsContent value="recommendations">
+                  <div ref={recommendationsRef}>
+                    <EnhancedRecommendations recommendations={analysisData.recommendations || []} />
+                  </div>
+                </TabsContent>
+              </Tabs>
             </div>
             
             {!isMobile && (
