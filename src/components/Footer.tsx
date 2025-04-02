@@ -10,7 +10,7 @@ const Footer = () => {
       <div className="container py-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-3">
-            <div className="flex items-center gap-2">
+            <div>
               <img 
                 src="/lovable-uploads/d5a32965-2a6a-49a6-8474-6efb96afd0f7.png" 
                 alt="SEOAudit Logo" 
