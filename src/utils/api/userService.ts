@@ -61,7 +61,12 @@ export async function getUserById(userId: string): Promise<User | null> {
 /**
  * Cria um novo usuário
  */
-export async function createUser(userData: { name: string, email: string, role: 'admin' | 'editor' | 'user' }): Promise<User | null> {
+export async function createUser(userData: { 
+  id?: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'editor' | 'user' 
+}): Promise<User | null> {
   try {
     // Make sure all required fields are provided
     if (!userData.name || !userData.email || !userData.role) {

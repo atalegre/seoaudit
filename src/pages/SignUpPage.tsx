@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,6 +6,7 @@ import * as z from 'zod';
 import { Eye, EyeOff, UserPlus, Mail, User, Github, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { createUser } from '@/utils/api/userService';
 
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -69,7 +69,7 @@ const SignUpPage = () => {
     setAuthError(null);
     
     try {
-      // Register with Supabase Auth
+      // Step 1: Register with Supabase Auth
       const { data, error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
@@ -91,41 +91,45 @@ const SignUpPage = () => {
           description: error.message,
         });
       } else {
-        // Also create a record in the public.users table
-        const { error: usersError } = await supabase
-          .from('users')
-          .insert([{ 
-            id: data?.user?.id,
-            name: values.name, 
-            email: values.email, 
-            role: 'user'
-          }]);
-            
-        if (usersError) {
+        // Step 2: Create a user record in the public.users table using our service
+        try {
+          if (data?.user) {
+            await createUser({
+              id: data.user.id,
+              name: values.name,
+              email: values.email,
+              role: 'user' as 'admin' | 'editor' | 'user'
+            });
+
+            // Check if email confirmation is required
+            if (data.session) {
+              // User was signed in automatically, redirect to dashboard
+              toast({
+                title: "Registo bem-sucedido",
+                description: "A sua conta foi criada com sucesso!",
+              });
+              navigate('/dashboard/client');
+            } else {
+              // Email confirmation required
+              toast({
+                title: "Registo iniciado",
+                description: "Por favor verifique o seu email para confirmar a sua conta.",
+              });
+            }
+          }
+        } catch (usersError: any) {
           console.error("User record creation error:", usersError);
           // Don't block the signup process if this fails
           toast({
-            // Fix: Change "warning" to "default" since it's not a valid variant
             variant: "default",
             title: "Aviso",
             description: "Conta criada, mas alguns dados do perfil podem estar incompletos.",
           });
-        }
-
-        // Check if email confirmation is required
-        if (data?.user && data?.session) {
-          // User was signed in automatically, redirect to dashboard
-          toast({
-            title: "Registo bem-sucedido",
-            description: "A sua conta foi criada com sucesso!",
-          });
-          navigate('/dashboard/client');
-        } else {
-          // Email confirmation required
-          toast({
-            title: "Registo iniciado",
-            description: "Por favor verifique o seu email para confirmar a sua conta.",
-          });
+          
+          // If we have a session, still redirect user
+          if (data?.session) {
+            navigate('/dashboard/client');
+          }
         }
       }
     } catch (error: any) {

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -45,19 +44,13 @@ const SignInPage = () => {
   const locationState = location.state as { email?: string; returnTo?: string } | null;
 
   useEffect(() => {
-    // Check if user is already logged in
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        navigate('/dashboard');
-      }
-    });
-
-    // Setup auth listener
+    // Set up auth listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         console.log("Auth state change event:", event);
         console.log("Session:", session);
         setSession(session);
+        
         if (session) {
           // Check user role for redirection
           const userRole = session.user.user_metadata?.role;
@@ -72,12 +65,16 @@ const SignInPage = () => {
       }
     );
 
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate('/dashboard');
+      }
+    });
+
     // Auto-preencher email se vier do fluxo de análise
     if (locationState?.email) {
-      const emailInput = document.getElementById('email') as HTMLInputElement;
-      if (emailInput) {
-        emailInput.value = locationState.email;
-      }
+      form.setValue('email', locationState.email);
     }
 
     return () => subscription.unsubscribe();
