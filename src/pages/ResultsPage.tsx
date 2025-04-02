@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -11,7 +10,7 @@ import AioAnalysisPanel from '@/components/AioAnalysisPanel';
 import LLMPresenceAudit from '@/components/LLMPresenceAudit';
 import { AnalysisResult } from '@/utils/api/types';
 import { AlertCircle, Loader2 } from 'lucide-react';
-import { getPageInsightsData } from '@/utils/api'; // Updated import path
+import { getPageInsightsData } from '@/utils/api';
 import { getChatGptAnalysis } from '@/utils/api/chatGptService';
 import { toast } from 'sonner';
 import { formatUrl, createAnalysisResult } from '@/utils/resultsPageHelpers';
@@ -234,6 +233,7 @@ const ResultsPage = () => {
                 llmPresenceScore={30}
                 status={analysisData?.overallStatus as any || 'Crítico'}
                 url={formatUrl(analysisData?.url || '')}
+                logoUrl={analysisData?.logoUrl}
                 onScrollToRecommendations={scrollToRecommendations}
               />
               

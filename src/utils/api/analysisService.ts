@@ -2,6 +2,7 @@
 import { AnalysisResult, Client } from './types';
 import { getPageInsightsData } from './pageInsights'; // Updated import path
 import { getChatGptAnalysis } from './chatGptService';
+import { fetchSiteLogo } from './logoService';
 import { saveAnalysisResult } from './supabaseClient';
 import { createAnalysisResult } from '../resultsPageHelpers';
 import { toast } from 'sonner';
@@ -16,7 +17,7 @@ export async function getFullAnalysis(url: string): Promise<AnalysisResult> {
       url = 'https://' + url;
     }
     
-    // Get SEO and AIO data concurrently with improved error handling
+    // Get SEO, AIO and logo data concurrently with improved error handling
     const seoPromise = getPageInsightsData(url)
       .catch(error => {
         console.error('SEO API failed:', error);
@@ -34,12 +35,25 @@ export async function getFullAnalysis(url: string): Promise<AnalysisResult> {
         });
         return null;
       });
+      
+    const logoPromise = fetchSiteLogo(url)
+      .catch(error => {
+        console.error('Logo API failed:', error);
+        toast.warning('Busca de logo falhou', {
+          description: 'Análise continuará sem logo.'
+        });
+        return null;
+      });
     
-    // Wait for both promises to settle
-    const [seoResult, aioResult] = await Promise.all([seoPromise, aioPromise]);
+    // Wait for all promises to settle
+    const [seoResult, aioResult, logoUrl] = await Promise.all([seoPromise, aioPromise, logoPromise]);
     
     // Create result with available data - now guaranteed to have data even in failure cases
     const result = createAnalysisResult(url, seoResult, aioResult);
+    
+    // Add logo URL to the result
+    result.logoUrl = logoUrl;
+    
     return result;
   } catch (error) {
     console.error('Error in full analysis:', error);

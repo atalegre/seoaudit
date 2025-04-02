@@ -1,10 +1,10 @@
-
 import React from 'react';
 import { CircleCheck, CircleAlert, AlertCircle, Zap, Globe, BrainCircuit, MessageSquare } from 'lucide-react';
 import { StatusClassification } from '@/utils/api/types';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
+import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
 
 interface ScoreCircleProps {
   score: number;
@@ -15,7 +15,6 @@ interface ScoreCircleProps {
 }
 
 const ScoreCircle: React.FC<ScoreCircleProps> = ({ score, label, colorClass, size = 'md', icon }) => {
-  // Calculate the stroke-dasharray and stroke-dashoffset for the circle progress
   const radius = size === 'lg' ? 42 : size === 'md' ? 38 : 30;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (score / 100) * circumference;
@@ -117,6 +116,7 @@ interface ScoreDisplayProps {
   llmPresenceScore?: number; 
   status: StatusClassification;
   url: string;
+  logoUrl?: string | null;
   onScrollToRecommendations?: () => void;
 }
 
@@ -127,9 +127,9 @@ const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
   llmPresenceScore = 30,
   status,
   url,
+  logoUrl,
   onScrollToRecommendations
 }) => {
-  // Calculate overall score with respective weights
   const overallScore = Math.round(
     (seoScore * 0.4) + 
     (aioScore * 0.3) + 
@@ -137,7 +137,6 @@ const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
     (llmPresenceScore * 0.1)
   );
   
-  // Determine status cards based on scores
   const getSeoStatusCard = () => {
     if (seoScore >= 80) {
       return {
@@ -213,7 +212,6 @@ const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
     }
   };
   
-  // Status cards
   const seoStatusCard = getSeoStatusCard();
   const aioStatusCard = getAioStatusCard();
   const llmStatusCard = getLlmStatusCard();
@@ -222,11 +220,19 @@ const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
     <div className="p-6 bg-white rounded-lg shadow-sm border animate-scale-in">
       <div className="flex flex-col space-y-4">
         <div className="flex justify-between items-start">
-          <div>
-            <h2 className="text-xl font-semibold">Resultado da análise</h2>
-            <p className="text-sm text-gray-600 break-all">
-              URL: <span className="font-medium">{url}</span>
-            </p>
+          <div className="flex items-center gap-3">
+            {logoUrl && (
+              <Avatar className="h-12 w-12 border">
+                <AvatarImage src={logoUrl} alt={`Logo de ${url}`} />
+                <AvatarFallback>{url.charAt(0).toUpperCase()}</AvatarFallback>
+              </Avatar>
+            )}
+            <div>
+              <h2 className="text-xl font-semibold">Resultado da análise</h2>
+              <p className="text-sm text-gray-600 break-all">
+                URL: <span className="font-medium">{url}</span>
+              </p>
+            </div>
           </div>
           <Badge 
             variant="outline" 
@@ -241,7 +247,6 @@ const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
           </Badge>
         </div>
         
-        {/* Overall Score and Individual Scores Section */}
         <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 mt-2">
           <ScoreCircle 
             score={overallScore} 
@@ -267,7 +272,6 @@ const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
           </div>
         </div>
         
-        {/* Score explanation */}
         <div className="text-center mt-2">
           <p className="text-sm text-gray-600 bg-gray-50 rounded-md p-2">
             Este é o score global de performance digital, combinando SEO (40%), AIO (30%), 
@@ -275,7 +279,6 @@ const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
           </p>
         </div>
         
-        {/* Executive Summary */}
         <div className="mt-4 pt-4 border-t">
           <h3 className="font-medium mb-3 text-base">Resumo executivo</h3>
           <div className="grid gap-3 grid-cols-1 md:grid-cols-3">
@@ -295,7 +298,6 @@ const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
           </div>
         </div>
         
-        {/* Inspirational message */}
         <div className="mt-4 text-center">
           <p className="text-sm italic text-gray-500">
             "Pequenas melhorias hoje, grande impacto amanhã."

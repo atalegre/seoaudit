@@ -7,6 +7,7 @@ export * from './types';
 // Serviços específicos
 export * from './userService';
 export * from './clientService';
+export * from './logoService';
 
 // Supabase Client
 export { 
