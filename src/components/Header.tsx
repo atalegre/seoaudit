@@ -81,9 +81,8 @@ const Header = () => {
         <div className="flex items-center gap-2 font-bold text-xl">
           <div className="flex items-center">
             <span className="text-seo">SEO</span>
-            <span className="text-aio">AI</span>
+            <span className="text-aio">Audit</span>
           </div>
-          <span>Checker</span>
         </div>
         <div className="flex items-center gap-4">
           <DesktopNav />

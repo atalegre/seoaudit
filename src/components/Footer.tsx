@@ -13,9 +13,8 @@ const Footer = () => {
             <div className="flex items-center gap-2 font-bold text-xl">
               <div className="flex items-center">
                 <span className="text-seo">SEO</span>
-                <span className="text-aio">AI</span>
+                <span className="text-aio">Audit</span>
               </div>
-              <span>Checker</span>
             </div>
             <p className="text-sm text-muted-foreground">
               Otimize o seu site para motores de busca e modelos de IA.
@@ -63,7 +62,7 @@ const Footer = () => {
             <h3 className="font-medium mb-3">Contacto</h3>
             <ul className="space-y-2 text-sm">
               <li className="text-muted-foreground">
-                Email: info@seoaichecker.pt
+                Email: info@seoaudit.pt
               </li>
               <li className="text-muted-foreground">
                 Telefone: +351 910 123 456
@@ -74,7 +73,7 @@ const Footer = () => {
         
         <div className="border-t mt-8 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            &copy; {currentYear} SEO AI Checker. Todos os direitos reservados.
+            &copy; {currentYear} SEOAudit. Todos os direitos reservados.
           </p>
           <div className="flex gap-4">
             <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground">

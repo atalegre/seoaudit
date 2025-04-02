@@ -65,7 +65,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               <SheetContent side="left" className="w-64 p-0">
                 <div className="p-4 border-b">
                   <Link to="/dashboard" className="font-bold text-lg text-primary">
-                    SEO+AIO Admin
+                    SEOAudit Admin
                   </Link>
                 </div>
                 <SidebarContent />
@@ -74,7 +74,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           )}
           
           <Link to="/dashboard" className="font-bold text-xl text-primary">
-            {isMobile ? "SEO+AIO" : "SEO+AIO Admin"}
+            {isMobile ? "SEOAudit" : "SEOAudit Admin"}
           </Link>
         </div>
         
