@@ -29,21 +29,29 @@ export async function createOrUpdateAdmin() {
     // First try to create the admin account in auth
     try {
       console.log("Attempting to create admin account");
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: adminEmail,
-        password: adminPassword,
-        options: {
-          data: {
-            full_name: 'SEO Admin',
-            role: 'admin',
-          }
-        }
-      });
+      // Check if user already exists first
+      const { data: { users } } = await supabase.auth.admin.listUsers();
+      const adminExists = users.some(user => user.email === adminEmail);
       
-      if (signUpError && !signUpError.message.includes("User already registered")) {
-        console.error("Error creating admin user in auth:", signUpError);
+      if (!adminExists) {
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: adminEmail,
+          password: adminPassword,
+          options: {
+            data: {
+              full_name: 'Admin User',
+              role: 'admin',
+            }
+          }
+        });
+        
+        if (signUpError && !signUpError.message.includes("User already registered")) {
+          console.error("Error creating admin user in auth:", signUpError);
+        } else {
+          console.log("Admin account created");
+        }
       } else {
-        console.log("Admin account created or already exists");
+        console.log("Admin account already exists");
       }
     } catch (error) {
       console.error("Error setting up admin auth account:", error);
@@ -59,18 +67,18 @@ export async function createOrUpdateAdmin() {
         .maybeSingle();
       
       if (!existingAdminInTable) {
-        // Try to get auth user id first
-        const { data: authData } = await supabase.auth.signInWithPassword({
+        // Try to get admin auth ID
+        const { data } = await supabase.auth.signInWithPassword({
           email: adminEmail,
           password: adminPassword
         });
         
-        if (authData?.user) {
+        if (data?.user) {
           // Create new users table entry
           await supabase.from('users').insert([
             {
-              id: authData.user.id,
-              name: 'SEO Admin',
+              id: data.user.id,
+              name: 'Admin User',
               email: adminEmail,
               role: 'admin'
             }
@@ -79,6 +87,8 @@ export async function createOrUpdateAdmin() {
           
           // Sign out after setup
           await supabase.auth.signOut();
+        } else {
+          console.log("Could not get admin auth user ID");
         }
       } else if (existingAdminInTable.role !== 'admin') {
         // Update role if needed
@@ -87,6 +97,8 @@ export async function createOrUpdateAdmin() {
           .update({ role: 'admin' })
           .eq('email', adminEmail);
         console.log("Updated admin role in users table");
+      } else {
+        console.log("Admin record already exists in users table");
       }
     } catch (error) {
       console.error("Error ensuring admin in users table:", error);
@@ -107,21 +119,29 @@ export async function createOrUpdateClient() {
     // First try to create the client account in auth
     try {
       console.log("Attempting to create client account");
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: clientEmail,
-        password: clientPassword,
-        options: {
-          data: {
-            full_name: 'SEO Client',
-            role: 'user',
-          }
-        }
-      });
+      // Check if user already exists first
+      const { data: { users } } = await supabase.auth.admin.listUsers();
+      const clientExists = users.some(user => user.email === clientEmail);
       
-      if (signUpError && !signUpError.message.includes("User already registered")) {
-        console.error("Error creating client user in auth:", signUpError);
+      if (!clientExists) {
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: clientEmail,
+          password: clientPassword,
+          options: {
+            data: {
+              full_name: 'SEO Client',
+              role: 'user',
+            }
+          }
+        });
+        
+        if (signUpError && !signUpError.message.includes("User already registered")) {
+          console.error("Error creating client user in auth:", signUpError);
+        } else {
+          console.log("Client account created");
+        }
       } else {
-        console.log("Client account created or already exists");
+        console.log("Client account already exists");
       }
     } catch (error) {
       console.error("Error setting up client auth account:", error);
@@ -137,17 +157,17 @@ export async function createOrUpdateClient() {
         .maybeSingle();
       
       if (!existingClientInTable) {
-        // Try to get auth user id first
-        const { data: authData } = await supabase.auth.signInWithPassword({
+        // Try to get client auth ID
+        const { data } = await supabase.auth.signInWithPassword({
           email: clientEmail,
           password: clientPassword
         });
         
-        if (authData?.user) {
+        if (data?.user) {
           // Create new users table entry
           await supabase.from('users').insert([
             {
-              id: authData.user.id,
+              id: data.user.id,
               name: 'SEO Client',
               email: clientEmail,
               role: 'user'
@@ -157,51 +177,16 @@ export async function createOrUpdateClient() {
           
           // Sign out after setup
           await supabase.auth.signOut();
+        } else {
+          console.log("Could not get client auth user ID");
         }
+      } else {
+        console.log("Client record already exists in users table");
       }
     } catch (error) {
       console.error("Error ensuring client in users table:", error);
     }
   } catch (error) {
     console.error('Error in createOrUpdateClient:', error);
-  }
-}
-
-// Helper function for manually ensuring a user is an admin
-export async function ensureAdminUser(userId: string, email: string) {
-  try {
-    // Check if user exists in users table
-    const { data: existingUser } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .maybeSingle();
-    
-    if (!existingUser) {
-      // Create new users table entry
-      await supabase.from('users').insert([
-        {
-          id: userId,
-          name: 'SEO Admin',
-          email: email,
-          role: 'admin'
-        }
-      ]);
-      console.log(`Created admin user entry for ${email}`);
-      return true;
-    } else if (existingUser.role !== 'admin') {
-      // Update role if needed
-      await supabase
-        .from('users')
-        .update({ role: 'admin' })
-        .eq('id', userId);
-      console.log(`Updated ${email} to admin role`);
-      return true;
-    }
-    
-    return true; // User already exists with admin role
-  } catch (error) {
-    console.error("Error ensuring admin user:", error);
-    return false;
   }
 }

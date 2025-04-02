@@ -11,6 +11,7 @@ import { Form } from '@/components/ui/form';
 import EmailField from './EmailField';
 import PasswordField from './PasswordField';
 import { signInWithEmail } from '@/utils/auth/authService';
+import { supabase } from '@/integrations/supabase/client';
 
 const formSchema = z.object({
   email: z
@@ -71,8 +72,21 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
           description: "Bem-vindo de volta!",
         });
         
-        // Navigate to dashboard after successful login
-        navigate('/dashboard');
+        // Check user role to determine redirect path
+        const { data: userData } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', data.user.id)
+          .maybeSingle();
+        
+        const role = userData?.role || 'user';
+        
+        // Navigate based on role
+        if (role === 'admin') {
+          navigate('/dashboard');
+        } else {
+          navigate('/dashboard/client');
+        }
       } else {
         setAuthError("Unknown error during authentication");
         toast({

@@ -53,6 +53,11 @@ export async function ensureUserInDb(
   role: string = 'user'
 ): Promise<void> {
   try {
+    // Special handling for admin account
+    if (email === 'atalegre@me.com') {
+      role = 'admin';
+    }
+    
     // Use upsert to create or update user
     const { error } = await supabase
       .from('users')

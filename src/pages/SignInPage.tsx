@@ -31,7 +31,7 @@ const SignInPage = () => {
           // Check if user exists in users table
           const { data: userInTable } = await supabase
             .from('users')
-            .select('*')
+            .select('role')
             .eq('id', session.user.id)
             .maybeSingle();
             
@@ -50,10 +50,21 @@ const SignInPage = () => {
             ]);
             
             console.log(`Created user record for ${session.user.email} with role ${role}`);
+            
+            // Navigate based on role
+            if (role === 'admin') {
+              navigate('/dashboard');
+            } else {
+              navigate('/dashboard/client');
+            }
+          } else {
+            // Navigate based on existing role
+            if (userInTable.role === 'admin') {
+              navigate('/dashboard');
+            } else {
+              navigate('/dashboard/client');
+            }
           }
-          
-          // Redirect to dashboard - proper routing based on role will be handled there
-          navigate('/dashboard');
         }
       } catch (error) {
         console.error("Error checking session:", error);
@@ -63,7 +74,7 @@ const SignInPage = () => {
     };
     
     checkSession();
-  }, [navigate, toast]);
+  }, [navigate]);
 
   const footerContent = (
     <p className="text-sm text-muted-foreground">

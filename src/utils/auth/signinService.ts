@@ -17,14 +17,14 @@ export async function signInWithEmail(email: string, password: string) {
     if (error) {
       console.error("Login error:", error);
       
-      // Special handling for demo accounts when login fails
+      // Special handling for demo accounts
       if ((email === 'atalegre@me.com' && password === 'admin123') || 
           (email === 'seoclient@exemplo.com' && password === 'client123')) {
         
-        console.log("Demo account login failed, attempting to create account first");
+        console.log("Demo account login failed, creating demo account");
         
-        // Create a demo account with these credentials
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        // Create the demo account
+        const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -39,41 +39,56 @@ export async function signInWithEmail(email: string, password: string) {
           return { data: null, error: signUpError };
         }
         
-        // Try login again
-        const secondAttempt = await supabase.auth.signInWithPassword({
+        // Try login again after account creation
+        const secondLoginAttempt = await supabase.auth.signInWithPassword({
           email,
           password
         });
         
-        if (secondAttempt.error) {
-          console.error("Second login attempt failed:", secondAttempt.error);
-          return { data: null, error: secondAttempt.error };
+        if (secondLoginAttempt.error) {
+          console.error("Second login attempt failed:", secondLoginAttempt.error);
+          return { data: null, error: secondLoginAttempt.error };
         }
         
         // If login succeeds, ensure proper role in users table
-        if (secondAttempt.data.user) {
-          const role = email === 'atalegre@me.com' ? 'admin' : 'user';
-          const name = email === 'atalegre@me.com' ? 'Admin User' : 'SEO Client';
-          
+        if (secondLoginAttempt.data.user) {
           try {
-            // Create or update user in the database
-            await supabase.from('users').upsert([
-              {
-                id: secondAttempt.data.user.id,
-                name: name,
-                email: email,
-                role: role
-              }
-            ], { onConflict: 'id' });
+            const role = email === 'atalegre@me.com' ? 'admin' : 'user';
+            const name = email === 'atalegre@me.com' ? 'Admin User' : 'SEO Client';
             
-            console.log(`User record created/updated for ${email} with role ${role}`);
+            // Check if user exists in users table
+            const { data: existingUser } = await supabase
+              .from('users')
+              .select('*')
+              .eq('id', secondLoginAttempt.data.user.id)
+              .single();
+              
+            if (!existingUser) {
+              // Create user record if it doesn't exist
+              await supabase.from('users').insert([
+                {
+                  id: secondLoginAttempt.data.user.id,
+                  name: name,
+                  email: email,
+                  role: role
+                }
+              ]);
+              console.log(`Created user record for ${email} with role ${role}`);
+            } else if (existingUser.role !== role) {
+              // Update role if needed
+              await supabase
+                .from('users')
+                .update({ role: role })
+                .eq('id', secondLoginAttempt.data.user.id);
+              console.log(`Updated role for ${email} to ${role}`);
+            }
           } catch (dbError) {
-            console.error("Error ensuring user in database:", dbError);
-            // Continue with the successful login even if database update fails
+            console.error("Database operation failed:", dbError);
+            // Continue with login even if database update fails
           }
         }
         
-        return secondAttempt;
+        return secondLoginAttempt;
       }
       
       return { data: null, error };
@@ -85,25 +100,39 @@ export async function signInWithEmail(email: string, password: string) {
       const name = email === 'atalegre@me.com' ? 'Admin User' : 'SEO Client';
       
       try {
-        // Create or update user in the database
-        await supabase.from('users').upsert([
-          {
-            id: data.user.id,
-            name: name,
-            email: email,
-            role: role
-          }
-        ], { onConflict: 'id' });
-        
-        console.log(`User record created/updated for ${email} with role ${role}`);
+        // Check if user exists in users table
+        const { data: existingUser } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', data.user.id)
+          .single();
+          
+        if (!existingUser) {
+          // Create user record if it doesn't exist
+          await supabase.from('users').insert([
+            {
+              id: data.user.id,
+              name: name,
+              email: email,
+              role: role
+            }
+          ]);
+          console.log(`Created user record for ${email} with role ${role}`);
+        } else if (existingUser.role !== role) {
+          // Update role if needed
+          await supabase
+            .from('users')
+            .update({ role: role })
+            .eq('id', data.user.id);
+          console.log(`Updated role for ${email} to ${role}`);
+        }
       } catch (dbError) {
-        console.error("Error ensuring user in database:", dbError);
-        // Continue with the successful login even if database update fails
+        console.error("Database operation failed:", dbError);
+        // Continue with login even if database update fails
       }
     }
     
     return { data, error: null };
-    
   } catch (error: any) {
     console.error("Exception during login:", error);
     return { data: null, error };
