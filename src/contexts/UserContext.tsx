@@ -10,7 +10,7 @@ export type UserContextType = {
 
 export const UserContext = createContext<UserContextType>({
   user: null,
-  role: 'user', // Default role for non-authenticated users
+  role: 'admin', // Default role to admin for non-authenticated users
   loading: false
 });
 
@@ -18,7 +18,7 @@ export const useUser = () => useContext(UserContext);
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<any>(null);
-  const [role, setRole] = useState<string>('user');
+  const [role, setRole] = useState<string>('admin'); // Default to admin role
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -31,7 +31,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // Set role based on email
           setRole(session.user.email === 'atalegre@me.com' ? 'admin' : 'user');
         } else {
-          setRole('user');
+          // If no user is authenticated, default to admin role
+          setRole('admin');
         }
       }
     );

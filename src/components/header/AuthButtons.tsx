@@ -15,31 +15,13 @@ const AuthButtons = () => {
     navigate('/');
   };
 
-  if (user) {
-    return (
-      <div className="flex items-center gap-4">
-        <Button 
-          variant="outline" 
-          onClick={() => {
-            if (role === 'admin') {
-              navigate('/dashboard'); // Admin goes to main dashboard
-            } else {
-              navigate('/dashboard/client'); // Regular users go to client dashboard
-            }
-          }}
-        >
-          Dashboard
-        </Button>
-        <Button variant="ghost" onClick={handleSignOut}>Sair</Button>
-      </div>
-    );
-  }
-
+  // Always show the button to access the dashboard
   return (
     <div className="flex items-center gap-4">
       <Button variant="default" onClick={() => navigate('/dashboard')}>
         Acessar Dashboard
       </Button>
+      {user && <Button variant="ghost" onClick={handleSignOut}>Sair</Button>}
     </div>
   );
 };

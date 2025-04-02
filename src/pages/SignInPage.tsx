@@ -26,55 +26,53 @@ const SignInPage = () => {
     navigate('/dashboard');
   };
 
-  const footerContent = (
-    <>
-      <p className="text-sm text-muted-foreground mb-2">
-        Não tem uma conta?{' '}
-        <Link to="/signup" className="text-primary hover:underline font-medium">
-          Registre-se
-        </Link>
-      </p>
-      <Button 
-        variant="outline" 
-        className="w-full mt-2" 
-        onClick={handleSkipLogin}
-      >
-        Continuar sem login
-      </Button>
-    </>
-  );
-
-  if (isLoading) {
-    return (
-      <AuthLayout>
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <p>Verificando sessão...</p>
-        </div>
-      </AuthLayout>
-    );
-  }
-
+  // Add a prominent button in the main content area to continue without login
   return (
     <AuthLayout>
-      <AuthCard 
-        title="Entrar"
-        description="Digite suas credenciais para entrar na sua conta"
-        footer={footerContent}
-      >
-        <AuthError error={authError} />
+      <div className="w-full max-w-md flex flex-col items-center gap-6">
+        <Button 
+          onClick={handleSkipLogin}
+          size="lg" 
+          className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3"
+        >
+          Continuar sem Login → Entrar diretamente no Dashboard
+        </Button>
         
-        <SignInForm 
-          email={locationState?.email} 
-          returnTo={locationState?.returnTo}
-          setAuthError={setAuthError}
-        />
-        
-        <div className="mt-4 text-center text-sm">
-          <Link to="/recuperar-password" className="text-primary hover:underline">
-            Esqueceu a password?
-          </Link>
+        <div className="w-full flex items-center justify-between">
+          <div className="w-1/3 border-t border-gray-300"></div>
+          <div className="px-3 text-sm text-gray-500">ou</div>
+          <div className="w-1/3 border-t border-gray-300"></div>
         </div>
-      </AuthCard>
+        
+        <AuthCard 
+          title="Entrar"
+          description="Digite suas credenciais para entrar na sua conta"
+          footer={
+            <div>
+              <p className="text-sm text-muted-foreground mb-2">
+                Não tem uma conta?{' '}
+                <Link to="/signup" className="text-primary hover:underline font-medium">
+                  Registre-se
+                </Link>
+              </p>
+            </div>
+          }
+        >
+          <AuthError error={authError} />
+          
+          <SignInForm 
+            email={locationState?.email} 
+            returnTo={locationState?.returnTo}
+            setAuthError={setAuthError}
+          />
+          
+          <div className="mt-4 text-center text-sm">
+            <Link to="/recuperar-password" className="text-primary hover:underline">
+              Esqueceu a password?
+            </Link>
+          </div>
+        </AuthCard>
+      </div>
     </AuthLayout>
   );
 };

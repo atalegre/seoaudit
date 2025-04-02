@@ -15,8 +15,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, userEmail, userName, userRole, isLoading } = useAuthCheck();
   
-  // Use appropriate sidebar items based on role, default to client items if no user
-  const sidebarItems = userRole === 'admin' ? adminSidebarItems : clientSidebarItems;
+  // Default to admin sidebar items so users can access all features without login
+  const sidebarItems = adminSidebarItems;
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -25,9 +25,9 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         isMobile={isMobile}
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
-        userRole={userRole}
+        userRole={userRole || 'admin'}
         userName={userName}
-        userEmail={userEmail}
+        userEmail={userEmail || 'guest@example.com'}
         user={user}
       />
       
