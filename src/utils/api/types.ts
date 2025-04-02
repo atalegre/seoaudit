@@ -1,3 +1,4 @@
+
 export interface AnalysisResult {
   url: string;
   timestamp: string;
@@ -38,8 +39,8 @@ export interface AioAnalysisResult {
 
 export interface Recommendation {
   suggestion: string;
-  seoImpact: string;
-  aioImpact: string;
+  seoImpact: "Alto" | "Médio" | "Baixo" | "Nenhum";
+  aioImpact: "Alto" | "Médio" | "Baixo" | "Nenhum";
   priority: number;
   status: string;
 }
@@ -54,4 +55,11 @@ export interface Client {
   contactEmail: string;
   notes?: string;
   created_at?: string;
+  // Propriedades adicionais que estão sendo usadas no código
+  status?: string;
+  account?: string;
+  seoScore?: number;
+  aioScore?: number;
+  lastAnalysis?: Date | string;
+  lastReport?: string;
 }

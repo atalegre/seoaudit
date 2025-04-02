@@ -1,8 +1,8 @@
 
-import { AnalysisResult } from './analyzerUtils';
+import { AnalysisResult, SeoAnalysisResult, AioAnalysisResult, Recommendation, StatusClassification } from './api/types';
 
 // Determine status based on scores using a more efficient approach
-export function determineStatus(seoScore: number, aioScore: number): 'Saudável' | 'A melhorar' | 'Crítico' {
+export function determineStatus(seoScore: number, aioScore: number): StatusClassification {
   const averageScore = (seoScore + aioScore) / 2;
   return averageScore >= 80 ? 'Saudável' : averageScore >= 60 ? 'A melhorar' : 'Crítico';
 }
@@ -13,8 +13,8 @@ export function formatUrl(url: string): string {
 }
 
 // Generate recommendations with improved efficiency and null safety
-export function generateRecommendations(seo: any, aio: any) {
-  const recommendations = [];
+export function generateRecommendations(seo: any, aio: any): Recommendation[] {
+  const recommendations: Recommendation[] = [];
 
   // Skip if both seo and aio are null
   if (!seo && !aio) {
@@ -28,8 +28,8 @@ export function generateRecommendations(seo: any, aio: any) {
       condition: seo && seo.loadTimeDesktop > 3,
       recommendation: {
         suggestion: 'Otimize o tempo de carregamento da página para desktop',
-        seoImpact: 'Alto',
-        aioImpact: 'Nenhum',
+        seoImpact: 'Alto' as const,
+        aioImpact: 'Nenhum' as const,
         priority: 9,
         status: 'pending'
       }
@@ -38,8 +38,8 @@ export function generateRecommendations(seo: any, aio: any) {
       condition: seo && seo.loadTimeMobile > 5,
       recommendation: {
         suggestion: 'Otimize o tempo de carregamento da página para mobile',
-        seoImpact: 'Alto',
-        aioImpact: 'Nenhum',
+        seoImpact: 'Alto' as const,
+        aioImpact: 'Nenhum' as const,
         priority: 9,
         status: 'pending'
       }
@@ -48,8 +48,8 @@ export function generateRecommendations(seo: any, aio: any) {
       condition: seo && seo.mobileFriendly === false,
       recommendation: {
         suggestion: 'Torne o site mobile-friendly',
-        seoImpact: 'Alto',
-        aioImpact: 'Médio',
+        seoImpact: 'Alto' as const,
+        aioImpact: 'Médio' as const,
         priority: 8,
         status: 'pending'
       }
@@ -58,8 +58,8 @@ export function generateRecommendations(seo: any, aio: any) {
       condition: seo && seo.security === false,
       recommendation: {
         suggestion: 'Implemente HTTPS no seu site',
-        seoImpact: 'Alto',
-        aioImpact: 'Nenhum',
+        seoImpact: 'Alto' as const,
+        aioImpact: 'Nenhum' as const,
         priority: 10,
         status: 'pending'
       }
@@ -68,8 +68,8 @@ export function generateRecommendations(seo: any, aio: any) {
       condition: seo && seo.imageOptimization < 60,
       recommendation: {
         suggestion: 'Otimize as imagens do site',
-        seoImpact: 'Médio',
-        aioImpact: 'Baixo',
+        seoImpact: 'Médio' as const,
+        aioImpact: 'Baixo' as const,
         priority: 6,
         status: 'pending'
       }
@@ -78,8 +78,8 @@ export function generateRecommendations(seo: any, aio: any) {
       condition: seo && seo.headingsStructure < 60,
       recommendation: {
         suggestion: 'Melhore a estrutura de headings do site',
-        seoImpact: 'Médio',
-        aioImpact: 'Alto',
+        seoImpact: 'Médio' as const,
+        aioImpact: 'Alto' as const,
         priority: 7,
         status: 'pending'
       }
@@ -88,8 +88,8 @@ export function generateRecommendations(seo: any, aio: any) {
       condition: seo && seo.metaTags < 60,
       recommendation: {
         suggestion: 'Otimize as meta tags do site',
-        seoImpact: 'Médio',
-        aioImpact: 'Baixo',
+        seoImpact: 'Médio' as const,
+        aioImpact: 'Baixo' as const,
         priority: 5,
         status: 'pending'
       }
@@ -98,8 +98,8 @@ export function generateRecommendations(seo: any, aio: any) {
       condition: aio && aio.contentClarity < 60,
       recommendation: {
         suggestion: 'Melhore a clareza do conteúdo do site',
-        seoImpact: 'Baixo',
-        aioImpact: 'Alto',
+        seoImpact: 'Baixo' as const,
+        aioImpact: 'Alto' as const,
         priority: 7,
         status: 'pending'
       }
@@ -108,8 +108,8 @@ export function generateRecommendations(seo: any, aio: any) {
       condition: aio && aio.logicalStructure < 60,
       recommendation: {
         suggestion: 'Melhore a estrutura lógica do site',
-        seoImpact: 'Baixo',
-        aioImpact: 'Alto',
+        seoImpact: 'Baixo' as const,
+        aioImpact: 'Alto' as const,
         priority: 6,
         status: 'pending'
       }
@@ -118,8 +118,8 @@ export function generateRecommendations(seo: any, aio: any) {
       condition: aio && aio.naturalLanguage < 60,
       recommendation: {
         suggestion: 'Melhore a linguagem natural do site',
-        seoImpact: 'Baixo',
-        aioImpact: 'Alto',
+        seoImpact: 'Baixo' as const,
+        aioImpact: 'Alto' as const,
         priority: 5,
         status: 'pending'
       }
@@ -143,7 +143,7 @@ export function createAnalysisResult(
   aioData: any | null
 ): AnalysisResult {
   // Create default data for null inputs
-  const defaultSeoData = {
+  const defaultSeoData: SeoAnalysisResult = {
     score: 60,
     performanceScore: 65,
     bestPracticesScore: 70,
@@ -156,11 +156,10 @@ export function createAnalysisResult(
     metaTags: 60,
     lcp: 3.5,
     fid: 120,
-    cls: 0.15,
-    recommendations: []
+    cls: 0.15
   };
 
-  const defaultAioData = {
+  const defaultAioData: AioAnalysisResult = {
     score: 65,
     contentClarity: 70,
     logicalStructure: 65,
@@ -179,9 +178,10 @@ export function createAnalysisResult(
     url,
     timestamp: new Date().toISOString(),
     status,
-    seo: seo,
-    aio: aio,
+    seo,
+    aio,
     recommendations: generateRecommendations(seo, aio),
-    overallStatus: status
+    overallStatus: status,
+    logoUrl: null
   };
 }
