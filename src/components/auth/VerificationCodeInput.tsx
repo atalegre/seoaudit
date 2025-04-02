@@ -1,105 +1,42 @@
 
 import React from 'react';
-import { 
-  InputOTP, 
-  InputOTPGroup, 
-  InputOTPSlot 
-} from '@/components/ui/input-otp';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { verifyOTP } from '@/utils/auth/authService';
+import { Mail, ExternalLink } from 'lucide-react';
 
 interface VerificationCodeInputProps {
   email: string;
   onVerificationSuccess: () => void;
 }
 
-const VerificationCodeInput = ({ email, onVerificationSuccess }: VerificationCodeInputProps) => {
-  const [verificationCode, setVerificationCode] = React.useState('');
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const { toast } = useToast();
-
-  const handleVerify = async () => {
-    if (verificationCode.length !== 6) {
-      setError('Por favor, insira o código completo de 6 dígitos.');
-      return;
-    }
-
-    setIsSubmitting(true);
-    setError(null);
-    
-    try {
-      await verifyOTP(email, verificationCode);
-      toast({
-        title: "Verificação bem-sucedida",
-        description: "O seu email foi verificado com sucesso.",
-      });
-      onVerificationSuccess();
-    } catch (error: any) {
-      console.error('Error verifying code:', error);
-      setError(error.message);
-      toast({
-        variant: "destructive",
-        title: "Erro na verificação",
-        description: error.message,
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
+const VerificationCodeInput = ({ email }: VerificationCodeInputProps) => {
   return (
-    <div className="space-y-4 mt-6">
-      <div className="text-center space-y-2">
-        <h3 className="text-lg font-medium">Verificação de Email</h3>
+    <div className="space-y-6 mt-6">
+      <div className="flex flex-col items-center justify-center text-center space-y-2">
+        <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
+          <Mail className="h-8 w-8 text-primary" />
+        </div>
+        
+        <h3 className="text-lg font-medium">Verifique o seu email</h3>
+        
         <p className="text-sm text-muted-foreground">
-          Insira o código de 6 dígitos enviado para {email}
+          Enviámos um link de verificação para{" "}
+          <span className="font-medium text-foreground">{email}</span>.
+        </p>
+        
+        <p className="text-sm text-muted-foreground mt-2">
+          Por favor clique no link enviado para verificar a sua conta.
         </p>
       </div>
       
-      {error && (
-        <div className="text-sm text-destructive text-center">
-          {error}
+      <div className="border rounded-lg p-4 bg-muted/30">
+        <div className="flex items-center gap-2 mb-2">
+          <ExternalLink size={18} className="text-primary" />
+          <h4 className="font-medium">O que fazer a seguir:</h4>
         </div>
-      )}
-      
-      <div className="flex justify-center">
-        <InputOTP 
-          maxLength={6} 
-          value={verificationCode} 
-          onChange={setVerificationCode}
-        >
-          <InputOTPGroup>
-            <InputOTPSlot index={0} />
-            <InputOTPSlot index={1} />
-            <InputOTPSlot index={2} />
-            <InputOTPSlot index={3} />
-            <InputOTPSlot index={4} />
-            <InputOTPSlot index={5} />
-          </InputOTPGroup>
-        </InputOTP>
-      </div>
-      
-      <Button 
-        onClick={handleVerify} 
-        disabled={isSubmitting || verificationCode.length !== 6}
-        className="w-full"
-      >
-        {isSubmitting ? 'Verificando...' : 'Verificar'}
-      </Button>
-      
-      <div className="text-center">
-        <Button 
-          variant="link" 
-          onClick={() => {
-            // Reset form for clarity
-            setVerificationCode('');
-            setError(null);
-          }}
-        >
-          Não recebeu o código? Tentar novamente
-        </Button>
+        <ol className="list-decimal list-inside space-y-1 text-sm">
+          <li>Verifique a sua caixa de entrada de email</li>
+          <li>Clique no link "Confirmar conta" no email recebido</li>
+          <li>Você será redirecionado automaticamente após a verificação</li>
+        </ol>
       </div>
     </div>
   );

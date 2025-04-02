@@ -1,12 +1,12 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import AuthLayout from '@/components/auth/AuthLayout';
 import AuthCard from '@/components/auth/AuthCard';
-import VerificationCodeInput from '@/components/auth/VerificationCodeInput';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { Mail, ExternalLink } from 'lucide-react';
 
 const VerificationPage = () => {
   const navigate = useNavigate();
@@ -43,16 +43,39 @@ const VerificationPage = () => {
     });
   }, [location, navigate, toast]);
 
-  const handleVerificationSuccess = () => {
-    // Clear the stored email
-    localStorage.removeItem('pendingVerificationEmail');
-    // Redirect to dashboard
-    navigate('/dashboard/client');
-  };
-
   const handleReturnToLogin = () => {
     localStorage.removeItem('pendingVerificationEmail');
     navigate('/signin');
+  };
+
+  const handleResendVerification = async () => {
+    try {
+      if (!email) {
+        toast({
+          variant: "destructive",
+          title: "Erro",
+          description: "Email não encontrado.",
+        });
+        return;
+      }
+
+      await supabase.auth.resend({
+        type: 'signup',
+        email,
+      });
+      
+      toast({
+        title: "Email reenviado",
+        description: "Um novo link de verificação foi enviado para o seu email.",
+      });
+    } catch (error: any) {
+      console.error('Error resending verification:', error);
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: error.message || "Não foi possível reenviar o email de verificação.",
+      });
+    }
   };
 
   return (
@@ -66,14 +89,44 @@ const VerificationPage = () => {
           </Button>
         }
       >
-        {email ? (
-          <VerificationCodeInput
-            email={email}
-            onVerificationSuccess={handleVerificationSuccess}
-          />
-        ) : (
-          <div className="text-center">Carregando...</div>
-        )}
+        <div className="space-y-6">
+          <div className="flex flex-col items-center justify-center text-center space-y-2">
+            <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
+              <Mail className="h-8 w-8 text-primary" />
+            </div>
+            
+            <h3 className="text-lg font-medium">Verifique o seu email</h3>
+            
+            <p className="text-sm text-muted-foreground">
+              Enviámos um link de verificação para{" "}
+              <span className="font-medium text-foreground">{email}</span>.
+            </p>
+            
+            <p className="text-sm text-muted-foreground mt-2">
+              Por favor clique no link enviado para o email para verificar a sua conta.
+            </p>
+          </div>
+          
+          <div className="border rounded-lg p-4 bg-muted/30">
+            <div className="flex items-center gap-2 mb-2">
+              <ExternalLink size={18} className="text-primary" />
+              <h4 className="font-medium">O que fazer a seguir:</h4>
+            </div>
+            <ol className="list-decimal list-inside space-y-1 text-sm">
+              <li>Verifique a sua caixa de entrada de email</li>
+              <li>Clique no link "Confirmar conta" no email recebido</li>
+              <li>Você será redirecionado automaticamente após a verificação</li>
+            </ol>
+          </div>
+          
+          <Button 
+            variant="ghost" 
+            className="w-full" 
+            onClick={handleResendVerification}
+          >
+            Não recebeu o email? Reenviar
+          </Button>
+        </div>
       </AuthCard>
     </AuthLayout>
   );

@@ -63,16 +63,3 @@ export async function updatePassword(password: string) {
     throw error;
   }
 }
-
-export async function verifyOTP(email: string, token: string) {
-  // Use the verifyOTP method to verify the email with the provided token
-  const { error } = await supabase.auth.verifyOtp({
-    email,
-    token,
-    type: 'email'
-  });
-
-  if (error) {
-    throw error;
-  }
-}

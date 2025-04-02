@@ -41,17 +41,18 @@ const AuthCallback = () => {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        const { error } = await supabase.auth.getSession();
+        const { data, error } = await supabase.auth.getSession();
         
         // Check if there's an OTP expired error in the URL
         const urlParams = new URLSearchParams(window.location.hash.substring(1));
         const errorCode = urlParams.get('error_code');
+        const errorType = urlParams.get('error');
         
-        if (errorCode === 'otp_expired') {
+        if (errorType === 'access_denied' && errorCode === 'otp_expired') {
           // If OTP is expired, redirect to verification page
           const email = localStorage.getItem('pendingVerificationEmail');
           if (email) {
-            navigate('/verification', { state: { email } });
+            navigate('/verification', { state: { email, expired: true } });
           } else {
             // If we don't have the email, redirect to sign in
             navigate('/signin');
@@ -59,9 +60,11 @@ const AuthCallback = () => {
         } else if (error) {
           console.error("Auth callback error:", error);
           navigate('/signin');
-        } else {
+        } else if (data.session) {
           // Successful auth, redirect to dashboard
           navigate('/dashboard/client');
+        } else {
+          navigate('/signin');
         }
       } catch (error) {
         console.error("Exception during auth callback:", error);
