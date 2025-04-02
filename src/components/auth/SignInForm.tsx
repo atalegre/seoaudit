@@ -48,6 +48,15 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
     
     try {
       console.log("Login attempt with:", values.email);
+      
+      // Verificar se a conta existe mas não está confirmada
+      const { data: authUsers, error: fetchError } = await supabase.auth.admin.listUsers();
+      if (fetchError) {
+        console.log("Error fetching users:", fetchError);
+      } else {
+        console.log("Auth users:", authUsers);
+      }
+      
       // Try to log in with Supabase Auth
       const { data, error } = await supabase.auth.signInWithPassword({
         email: values.email,
@@ -56,6 +65,14 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
 
       if (error) {
         console.error("Login error:", error);
+        
+        // Mostrar informações adicionais sobre o erro
+        if (error.message) {
+          console.log("Error message:", error.message);
+          console.log("Error status:", error.status);
+          console.log("Error code:", error.code);
+        }
+        
         setAuthError(error.message);
         
         // Special handling for unconfirmed email
@@ -70,11 +87,20 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
           return;
         }
         
-        toast({
-          variant: "destructive",
-          title: "Erro de autenticação",
-          description: error.message,
-        });
+        // Tratamento específico se as credenciais forem inválidas
+        if (error.message.includes("Invalid login credentials")) {
+          toast({
+            variant: "destructive",
+            title: "Credenciais inválidas",
+            description: "Email ou senha incorretos. Verifique se você já confirmou seu email.",
+          });
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Erro de autenticação",
+            description: error.message,
+          });
+        }
       } else {
         // Successfully logged in
         console.log("Login successful:", data);
@@ -86,6 +112,7 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
         // Check user role and redirect accordingly
         if (data.user) {
           const userRole = await checkUserRole(data.user.id);
+          console.log("User role:", userRole);
           
           if (userRole === 'admin') {
             navigate('/dashboard'); // Admin dashboard

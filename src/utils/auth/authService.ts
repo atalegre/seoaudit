@@ -13,6 +13,24 @@ export type SignUpData = {
 export async function signUpWithEmail(data: SignUpData) {
   const { name, email, password, role = 'user' } = data;
 
+  // Verificar se o usuário já existe
+  const { data: existingUsers } = await supabase
+    .from('users')
+    .select('*')
+    .eq('email', email);
+
+  if (existingUsers && existingUsers.length > 0) {
+    console.log("User already exists in users table:", existingUsers);
+  }
+
+  // Verificar se já existe na auth
+  const { data: existingAuthUser, error: authError } = await supabase.auth.admin.getUserByEmail(email);
+  if (existingAuthUser) {
+    console.log("User already exists in auth:", existingAuthUser);
+    return { user: existingAuthUser };
+  }
+
+  // Tentar registro normal se não existir
   const { data: authData, error } = await supabase.auth.signUp({
     email,
     password,
@@ -25,24 +43,41 @@ export async function signUpWithEmail(data: SignUpData) {
   });
 
   if (error) {
+    console.error("SignUp error:", error);
     throw error;
   }
   
   // Create a record in the users table
   if (authData.user) {
     try {
-      const { error: userError } = await supabase
+      // Verificar se já existe na tabela users
+      const { data: existingUser } = await supabase
         .from('users')
-        .insert([
-          { 
-            id: authData.user.id,
-            name: name,
-            email: email,
-            role: role
+        .select('*')
+        .eq('id', authData.user.id)
+        .single();
+      
+      if (existingUser) {
+        console.log("User already exists in users table with ID:", existingUser);
+      } else {
+        const { error: userError } = await supabase
+          .from('users')
+          .insert([
+            { 
+              id: authData.user.id,
+              name: name,
+              email: email,
+              role: role
+            }
+          ]);
+          
+        if (userError) {
+          console.error("Error creating user record:", userError);
+          if (userError.message.includes("duplicate key")) {
+            console.log("User already exists in users table (duplicate key)");
           }
-        ]);
-        
-      if (userError) throw userError;
+        }
+      }
     } catch (err) {
       console.error('Error creating user record:', err);
       // Continue with auth flow even if this fails
@@ -57,7 +92,11 @@ export async function signUpWithEmail(data: SignUpData) {
 
 export async function signInWithEmail(email: string, password: string) {
   // Create default users if they don't exist (for demo purposes)
-  await createDefaultUsers();
+  try {
+    await createDefaultUsers();
+  } catch (error) {
+    console.error("Error creating default users:", error);
+  }
   
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
@@ -65,6 +104,7 @@ export async function signInWithEmail(email: string, password: string) {
   });
 
   if (error) {
+    console.error("SignIn error:", error);
     throw error;
   }
 
@@ -100,7 +140,10 @@ export async function checkUserRole(userId: string): Promise<string> {
       .eq('id', userId)
       .single();
     
-    if (error) throw error;
+    if (error) {
+      console.error("Error checking user role:", error);
+      throw error;
+    }
     return data?.role || 'user';
   } catch (error) {
     console.error('Error checking user role:', error);
