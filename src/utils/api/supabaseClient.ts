@@ -16,15 +16,16 @@ export async function saveAnalysisResult(clientId: number, result: AnalysisResul
       timestamp: result.timestamp,
       seo_score: result.seo.score,
       aio_score: result.aio.score,
-      seo_data: JSON.parse(JSON.stringify(result.seo)), // Convert to JSON compatible format
-      aio_data: JSON.parse(JSON.stringify(result.aio)), // Convert to JSON compatible format
-      overall_status: result.overallStatus
+      seo_data: JSON.stringify(result.seo), // Ensure it's a JSON string
+      aio_data: JSON.stringify(result.aio), // Ensure it's a JSON string
+      overall_status: result.overallStatus,
+      recommendations: JSON.stringify(result.recommendations || []) // Store recommendations
     };
     
     // Use type assertion to insert data safely
-    const { error } = await (supabase
+    const { error } = await supabase
       .from('analysis_results')
-      .insert(analysisData as any)) as { error: any };
+      .insert(analysisData as any);
     
     if (error) {
       throw error;
@@ -63,14 +64,32 @@ export async function getClientAnalysisHistory(clientId: number): Promise<Analys
     }
     
     // Transforma o formato do banco de dados para o formato da aplicação
-    return (data || []).map(item => ({
-      url: item.url,
-      timestamp: item.timestamp,
-      seo: item.seo_data,
-      aio: item.aio_data,
-      overallStatus: item.overall_status,
-      recommendations: [] // Add this property to match AnalysisResult type
-    })) as AnalysisResult[];
+    return (data || []).map(item => {
+      // Parse JSON strings back to objects
+      const seoData = typeof item.seo_data === 'string' 
+        ? JSON.parse(item.seo_data) 
+        : item.seo_data;
+      
+      const aioData = typeof item.aio_data === 'string'
+        ? JSON.parse(item.aio_data)
+        : item.aio_data;
+      
+      const recommendations = item.recommendations 
+        ? (typeof item.recommendations === 'string' 
+            ? JSON.parse(item.recommendations) 
+            : item.recommendations) 
+        : [];
+
+      // Create a proper AnalysisResult object
+      return {
+        url: item.url,
+        timestamp: item.timestamp,
+        seo: seoData as SeoAnalysisResult,
+        aio: aioData as AioAnalysisResult,
+        recommendations: recommendations,
+        overallStatus: item.overall_status as StatusClassification
+      } as AnalysisResult;
+    });
   } catch (error) {
     console.error('Erro ao buscar histórico de análises:', error);
     
@@ -84,8 +103,8 @@ export async function getClientAnalysisHistory(clientId: number): Promise<Analys
       seo: item.seo_data,
       aio: item.aio_data,
       overallStatus: item.overall_status,
-      recommendations: [] // Add this property to match AnalysisResult type
-    })) as AnalysisResult[];
+      recommendations: item.recommendations || []
+    }) as AnalysisResult);
   }
 }
 
