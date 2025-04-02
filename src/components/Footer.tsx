@@ -11,10 +11,11 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-3">
             <div className="flex items-center gap-2 font-bold text-xl">
-              <div className="flex items-center">
-                <span className="text-seo">SEO</span>
-                <span className="text-aio">Audit</span>
-              </div>
+              <img 
+                src="/lovable-uploads/d5a32965-2a6a-49a6-8474-6efb96afd0f7.png" 
+                alt="SEOAudit Logo" 
+                className="h-8" 
+              />
             </div>
             <p className="text-sm text-muted-foreground">
               Otimize o seu site para motores de busca e modelos de IA.
