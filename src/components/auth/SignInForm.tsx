@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import EmailField from './EmailField';
 import PasswordField from './PasswordField';
-import { signInWithEmail } from '@/utils/auth/authService';
+import { signInWithEmail } from '@/utils/auth/signinService';
 import { supabase } from '@/integrations/supabase/client';
 
 const formSchema = z.object({
