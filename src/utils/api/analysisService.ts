@@ -1,4 +1,3 @@
-
 import { AnalysisResult, Client } from './types';
 import { getPageInsightsData } from './pageInsightsService';
 import { getChatGptAnalysis } from './chatGptService';
@@ -17,41 +16,36 @@ export async function getFullAnalysis(url: string): Promise<AnalysisResult> {
     }
     
     // Get SEO and AIO data concurrently
-    const seoPromise = getPageInsightsData(url);
-    const aioPromise = getChatGptAnalysis(url);
+    const seoPromise = getPageInsightsData(url)
+      .catch(error => {
+        console.error('SEO API failed:', error);
+        toast.warning('Análise SEO falhou', {
+          description: 'Usando dados SEO simulados.'
+        });
+        return null;
+      });
+    
+    const aioPromise = getChatGptAnalysis(url)
+      .catch(error => {
+        console.error('AIO API failed:', error);
+        toast.warning('Análise AIO falhou', {
+          description: 'Usando dados AIO simulados.'
+        });
+        return null;
+      });
     
     // Wait for both promises to settle
-    const [seoResult, aioResult] = await Promise.allSettled([seoPromise, aioPromise]);
-    
-    // Check if both APIs failed
-    if (seoResult.status === 'rejected' && aioResult.status === 'rejected') {
-      throw new Error('Ambas as APIs falharam. Não foi possível realizar a análise.');
-    }
-    
-    // Extract data or handle errors
-    const seoData = seoResult.status === 'fulfilled' ? seoResult.value : null;
-    const aioData = aioResult.status === 'fulfilled' ? aioResult.value : null;
-    
-    // Show warnings for individual API failures
-    if (seoResult.status === 'rejected') {
-      console.error('SEO API failed:', seoResult.reason);
-      toast.error('Análise SEO falhou', {
-        description: 'Não foi possível obter dados de SEO.'
-      });
-    }
-    
-    if (aioResult.status === 'rejected') {
-      console.error('AIO API failed:', aioResult.reason);
-      toast.error('Análise AIO falhou', {
-        description: 'Não foi possível obter dados de AIO.'
-      });
-    }
+    const [seoResult, aioResult] = await Promise.all([seoPromise, aioPromise]);
     
     // Create result with available data
-    return createAnalysisResult(url, seoData, aioData);
+    return createAnalysisResult(url, seoResult, aioResult);
   } catch (error) {
     console.error('Error in full analysis:', error);
-    throw new Error('Falha ao realizar análise completa do website');
+    toast.warning('Utilizando análise simulada', {
+      description: 'Não foi possível conectar com as APIs de análise.'
+    });
+    // Criar resultado com dados simulados em caso de falha completa
+    return createAnalysisResult(url, null, null);
   }
 }
 

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Loader2, AlertTriangle, MessageSquare, PenLine, CheckCircle, XCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface LLMPresenceAuditProps {
   url?: string;
@@ -16,6 +17,7 @@ const LLMPresenceAudit: React.FC<LLMPresenceAuditProps> = ({ url = "", autoStart
   const [report, setReport] = useState("");
   const [loading, setLoading] = useState(false);
   const [presenceScore, setPresenceScore] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const extractDomainFromUrl = (urlString: string): string => {
     try {
@@ -40,6 +42,7 @@ const LLMPresenceAudit: React.FC<LLMPresenceAuditProps> = ({ url = "", autoStart
     if (!domain && !url) return;
     
     setLoading(true);
+    setError(null);
     
     const domainToUse = domain || extractDomainFromUrl(url);
     
@@ -106,6 +109,15 @@ ${score > 60 ? '✔️ O conteúdo atual já aborda temas relevantes para AIO' :
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {error && (
+            <Alert variant="warning" className="mb-4">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                {error}. Mostrando análise simulada.
+              </AlertDescription>
+            </Alert>
+          )}
+        
           {loading ? (
             <div className="flex justify-center items-center py-12">
               <div className="flex flex-col items-center gap-3">
