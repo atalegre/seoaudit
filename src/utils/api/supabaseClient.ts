@@ -77,11 +77,13 @@ export async function getClientAnalysisHistory(clientId: number): Promise<Analys
       // Handle recommendations - may not exist in older records
       let recommendations = [];
       
-      // Check if recommendations exist in the record
-      if ('recommendations' in item && item.recommendations) {
-        recommendations = typeof item.recommendations === 'string' 
-          ? JSON.parse(item.recommendations) 
-          : item.recommendations;
+      // Check if recommendations exist in the record using a type-safe approach
+      // Use type assertion to safely access potentially missing properties
+      const record = item as any;
+      if (record && 'recommendations' in record && record.recommendations) {
+        recommendations = typeof record.recommendations === 'string' 
+          ? JSON.parse(record.recommendations) 
+          : record.recommendations;
       }
       
       // Create a proper AnalysisResult object
