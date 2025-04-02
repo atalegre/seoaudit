@@ -43,27 +43,52 @@ const LLMPresenceAudit: React.FC<LLMPresenceAuditProps> = ({ url = "", autoStart
     
     const domainToUse = domain || extractDomainFromUrl(url);
     
-    // Simulação de chamada à API do ChatGPT
-    const simulatedResponse = `
-Resultado da auditoria LLM para o domínio: ${domainToUse}
+    // Gerar um score consistente baseado no domínio
+    const generateConsistentScore = (domain: string): number => {
+      // Usar uma função hash simples para gerar um número baseado no nome do domínio
+      let hash = 0;
+      for (let i = 0; i < domain.length; i++) {
+        hash = ((hash << 5) - hash) + domain.charCodeAt(i);
+        hash |= 0; // Converte para inteiro de 32 bits
+      }
+      
+      // Normalizar o hash para o intervalo 30-70
+      const normalizedScore = Math.abs(hash % 41) + 30;
+      return normalizedScore;
+    };
+    
+    // Gerar relatório baseado no domínio
+    const generateConsistentReport = (domain: string, score: number): string => {
+      const recommendations = [
+        `- Criar artigos que respondam a perguntas diretas sobre ${domain}`,
+        `- Incluir definições claras sobre serviços e objetivos`,
+        `- Aumentar a autoridade com backlinks`,
+        `- Garantir estrutura clara (headings, listas, FAQ)`
+      ];
+      
+      // Determinar se o domínio é mencionado em LLMs baseado no score
+      const isDomainMentioned = score > 50;
+      
+      return `
+Resultado da auditoria LLM para o domínio: ${domain}
 
-❌ A sua marca ainda não é mencionada diretamente em respostas de IA.
+${isDomainMentioned ? '✔️ A sua marca é mencionada em respostas de IA, mas com frequência limitada.' : '❌ A sua marca ainda não é mencionada diretamente em respostas de IA.'}
 
 Recomendações:
-- Criar artigos que respondam a perguntas diretas sobre ${domainToUse}
-- Incluir definições claras sobre serviços e objetivos
-- Aumentar a autoridade com backlinks
-- Garantir estrutura clara (headings, listas, FAQ)
+${recommendations.join('\n')}
 
-✔️ O conteúdo atual já aborda temas relevantes para AIO
+${score > 60 ? '✔️ O conteúdo atual já aborda temas relevantes para AIO' : '❌ O conteúdo atual precisa de mais contexto para AIO'}
 `;
+    };
     
-    // Simulate a score based on the content
-    const randomScore = Math.floor(Math.random() * 40) + 30; // Random score between 30-70
+    // Gerar score consistente para o domínio
+    const domainScore = generateConsistentScore(domainToUse);
+    const domainReport = generateConsistentReport(domainToUse, domainScore);
     
+    // Simular tempo de processamento
     setTimeout(() => {
-      setReport(simulatedResponse);
-      setPresenceScore(randomScore);
+      setReport(domainReport);
+      setPresenceScore(domainScore);
       setLoading(false);
     }, 1500);
   };
@@ -140,7 +165,7 @@ Recomendações:
                       <h3 className="font-medium">Menção direta</h3>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      Sua marca não é mencionada diretamente em respostas de IA.
+                      {presenceScore > 50 ? "Sua marca é ocasionalmente mencionada em respostas de IA." : "Sua marca não é mencionada diretamente em respostas de IA."}
                     </p>
                   </CardContent>
                 </Card>
@@ -168,7 +193,7 @@ Recomendações:
                       <h3 className="font-medium">Relevância</h3>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      O conteúdo aborda temas relevantes para AIO.
+                      {presenceScore > 60 ? "O conteúdo aborda temas relevantes para AIO." : "O conteúdo precisa focar em tópicos mais relevantes para AIO."}
                     </p>
                   </CardContent>
                 </Card>
