@@ -74,16 +74,24 @@ const BulkImportPage = () => {
       const clients = await processBulkImport(selectedFile);
       setImportedClients(clients);
       
-      toast({
-        title: "Importação concluída",
-        description: `${clients.length} clientes importados com sucesso.`,
-      });
+      if (clients.length > 0) {
+        toast({
+          title: "Importação concluída",
+          description: `${clients.length} clientes importados com sucesso.`,
+        });
+      } else {
+        toast({
+          title: "Importação concluída",
+          description: "Nenhum cliente válido foi encontrado no arquivo CSV.",
+          variant: "destructive",
+        });
+      }
       
     } catch (error) {
       console.error("Error importing clients:", error);
       toast({
         title: "Erro na importação",
-        description: "Ocorreu um erro ao processar o arquivo. Verifique o formato.",
+        description: "Ocorreu um erro ao processar o arquivo. Verifique se o formato do CSV está correto.",
         variant: "destructive",
       });
     } finally {

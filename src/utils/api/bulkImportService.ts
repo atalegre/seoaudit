@@ -26,14 +26,26 @@ export async function processBulkImport(file: File): Promise<Client[]> {
           const values = lines[i].split(',');
           if (values.length < 2) continue; // Pula linhas inválidas
           
+          // Add validation to ensure required fields are available
+          if (nameIndex === -1 || websiteIndex === -1) {
+            console.error('CSV header missing required columns (name or website)');
+            continue;
+          }
+          
           const client: Client = {
             id: Date.now() + i, // Gera um ID único
             name: values[nameIndex]?.trim() || 'Unknown',
             website: values[websiteIndex]?.trim() || '',
             contactEmail: values[contactEmailIndex]?.trim() || '',
             contactName: values[contactNameIndex]?.trim() || '',
-            account: 'Admin', // Valor padrão
-            status: 'pending' // Status padrão
+            notes: '',
+            // Add required fields used in the UI
+            status: 'pending',
+            account: 'Admin',
+            seoScore: 0,
+            aioScore: 0,
+            lastAnalysis: new Date().toISOString(),
+            lastReport: ''
           };
           
           if (client.website) {
@@ -41,15 +53,35 @@ export async function processBulkImport(file: File): Promise<Client[]> {
           }
         }
         
-        // Salva clientes no Supabase
-        await saveClientsToDatabase(clients);
+        console.log('Parsed clients from CSV:', clients);
+        
+        try {
+          // Try to save clients to database
+          await saveClientsToDatabase(clients);
+        } catch (error) {
+          console.warn('Failed to save to database, using localStorage fallback:', error);
+          // Save to localStorage as fallback
+          const existingClients = JSON.parse(localStorage.getItem('clients') || '[]');
+          localStorage.setItem('clients', JSON.stringify([...existingClients, ...clients]));
+        }
         
         resolve(clients);
       } catch (error) {
+        console.error('Error processing CSV:', error);
         reject(error);
       }
     };
-    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.onerror = (error) => {
+      console.error('Error reading file:', error);
+      reject(new Error('Failed to read file'));
+    };
     reader.readAsText(file);
   });
+}
+
+// Utility function to analyze bulk clients (stub for now)
+export async function analyzeBulkClients(clientIds: number[]): Promise<void> {
+  console.log('Analyzing clients:', clientIds);
+  // Implementation would go here
+  return Promise.resolve();
 }

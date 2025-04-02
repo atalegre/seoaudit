@@ -1,28 +1,40 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Client } from './types';
+import { toast } from 'sonner';
 
 /**
  * Busca todos os clientes do Supabase
  */
 export async function getClientsFromDatabase(): Promise<Client[]> {
   try {
-    // Use type assertion to bypass TypeScript's type checking for the table name
-    const { data, error } = await (supabase
-      .from('clients' as any)
-      .select('*')) as { data: any[], error: any };
+    console.log('Fetching clients from database...');
+    
+    // Try to fetch from clients table
+    const { data, error } = await supabase
+      .from('clients')
+      .select('*');
     
     if (error) {
+      // If error is "relation does not exist", it means the table needs to be created
+      if (error.code === '42P01') {
+        console.warn('Clients table does not exist in Supabase, using localStorage fallback');
+      } else {
+        console.error('Error fetching clients from Supabase:', error);
+      }
       throw error;
     }
     
+    console.log('Fetched clients:', data);
     // Se não houver dados, retorna um array vazio
     return (data || []) as Client[];
   } catch (error) {
-    console.error('Erro ao buscar clientes do Supabase:', error);
+    console.warn('Using localStorage fallback for clients');
     
     // Se ainda não existir conexão com o Supabase, usamos o localStorage como fallback
-    return JSON.parse(localStorage.getItem('clients') || '[]');
+    const localClients = JSON.parse(localStorage.getItem('clients') || '[]');
+    console.log('Fetched clients from localStorage:', localClients);
+    return localClients;
   }
 }
 
@@ -30,27 +42,40 @@ export async function getClientsFromDatabase(): Promise<Client[]> {
  * Salva novos clientes no Supabase
  */
 export async function saveClientsToDatabase(clients: Client[]): Promise<{success: boolean, data: any}> {
+  if (!clients || clients.length === 0) {
+    console.log('No clients to save');
+    return { success: true, data: [] };
+  }
+  
   try {
     console.log('Attempting to save clients to database:', clients);
     
-    // Insere os novos clientes, ignorando duplicados baseado no id
-    // Use type assertion to bypass TypeScript's type checking
-    const { data, error } = await (supabase
-      .from('clients' as any)
-      .upsert(clients as any, { 
+    // Insere os novos clientes
+    const { data, error } = await supabase
+      .from('clients')
+      .upsert(clients, { 
         onConflict: 'contactEmail',
         ignoreDuplicates: false 
-      })) as { data: any, error: any };
+      });
     
     if (error) {
-      console.error('Error saving clients to Supabase:', error);
+      // If the table doesn't exist, handle that case separately
+      if (error.code === '42P01') {
+        console.warn('Clients table does not exist in Supabase');
+        toast.warning('A tabela de clientes não existe no banco de dados', { 
+          description: 'Os dados serão armazenados localmente'
+        });
+      } else {
+        console.error('Error saving clients to Supabase:', error);
+      }
       throw error;
     }
     
+    toast.success('Clientes importados com sucesso');
     console.log('Clientes salvos no Supabase com sucesso:', data);
     return { success: true, data };
   } catch (error) {
-    console.error('Erro ao salvar clientes no Supabase:', error);
+    console.warn('Error saving to database, using localStorage fallback:', error);
     
     // Fallback para localStorage se o Supabase falhar
     const existingClients = JSON.parse(localStorage.getItem('clients') || '[]');
@@ -64,6 +89,9 @@ export async function saveClientsToDatabase(clients: Client[]): Promise<{success
     });
     
     localStorage.setItem('clients', JSON.stringify(mergedClients));
+    toast.success('Clientes importados com sucesso', { 
+      description: 'Os dados foram armazenados localmente'
+    });
     return { success: false, data: mergedClients };
   }
 }
@@ -73,11 +101,10 @@ export async function saveClientsToDatabase(clients: Client[]): Promise<{success
  */
 export async function updateClientInDatabase(client: Client): Promise<void> {
   try {
-    // Use type assertion to bypass TypeScript's type checking
-    const { error } = await (supabase
-      .from('clients' as any)
-      .update(client as any)
-      .eq('id', client.id.toString())) as { error: any };
+    const { error } = await supabase
+      .from('clients')
+      .update(client)
+      .eq('id', client.id.toString());
     
     if (error) {
       throw error;
@@ -85,7 +112,7 @@ export async function updateClientInDatabase(client: Client): Promise<void> {
     
     console.log(`Cliente ${client.name} atualizado com sucesso`);
   } catch (error) {
-    console.error('Erro ao atualizar cliente no Supabase:', error);
+    console.warn('Using localStorage fallback for updating client');
     
     // Fallback para localStorage
     const clients = JSON.parse(localStorage.getItem('clients') || '[]');
