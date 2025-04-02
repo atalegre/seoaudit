@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -27,15 +26,8 @@ const SignInPage = () => {
         setSession(session);
         
         if (session) {
-          // Check user role for redirection
-          const userRole = session.user.user_metadata?.role;
-          console.log("User role:", userRole);
-          
-          if (userRole === 'admin') {
-            navigate('/dashboard');
-          } else {
-            navigate('/dashboard/client');
-          }
+          // User is logged in, redirect to client dashboard by default
+          navigate('/dashboard/client');
         }
       }
     );
@@ -43,12 +35,12 @@ const SignInPage = () => {
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate('/dashboard');
+        navigate('/dashboard/client');
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, locationState]);
+  }, [navigate]);
 
   async function signInWithGoogle() {
     setAuthError(null);

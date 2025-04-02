@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -79,45 +78,35 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
           description: error.message,
         });
       } else {
-        // Step 2: Create a user record in the public.users table using our service
+        // Success - try to create a user record, but don't block on it
         try {
           if (data?.user) {
             await createUser({
               id: data.user.id,
               name: values.name,
               email: values.email,
-              role: 'user' as 'admin' | 'editor' | 'user'
+              role: 'user'
             });
-
-            // Check if email confirmation is required
-            if (data.session) {
-              // User was signed in automatically, redirect to dashboard
-              toast({
-                title: "Registo bem-sucedido",
-                description: "A sua conta foi criada com sucesso!",
-              });
-              navigate('/dashboard/client');
-            } else {
-              // Email confirmation required
-              toast({
-                title: "Registo iniciado",
-                description: "Por favor verifique o seu email para confirmar a sua conta.",
-              });
-            }
           }
-        } catch (usersError: any) {
+        } catch (usersError) {
           console.error("User record creation error:", usersError);
-          // Don't block the signup process if this fails
+          // Don't block signup if this fails
+        }
+        
+        if (data?.session) {
+          // User was signed in automatically
           toast({
-            variant: "default",
-            title: "Aviso",
-            description: "Conta criada, mas alguns dados do perfil podem estar incompletos.",
+            title: "Registo bem-sucedido",
+            description: "A sua conta foi criada com sucesso!",
           });
-          
-          // If we have a session, still redirect user
-          if (data?.session) {
-            navigate('/dashboard/client');
-          }
+          // Always redirect to client dashboard
+          navigate('/dashboard/client');
+        } else {
+          // Email confirmation required
+          toast({
+            title: "Registo iniciado",
+            description: "Por favor verifique o seu email para confirmar a sua conta.",
+          });
         }
       }
     } catch (error: any) {

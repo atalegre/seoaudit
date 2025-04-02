@@ -69,7 +69,8 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
           description: "Bem-vindo de volta!",
         });
         
-        // User will be redirected by the auth state change listener
+        // Explicitly redirect to client dashboard
+        navigate('/dashboard/client');
       }
     } catch (error: any) {
       console.error("Exception during login:", error);
