@@ -3,9 +3,7 @@ project_id = "vwtracpgzdqrowvjmizi"
 
 [functions.analyze-website]
 verify_jwt = false
+import_map = "supabase/functions/analyze-website/import_map.json"
 
 [functions.send-email]
 verify_jwt = false
-
-[functions.analyze-website.deployment.import_map]
-imports = { openai = "https://esm.sh/openai@4.20.1" }
