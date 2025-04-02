@@ -13,31 +13,42 @@ const SignInPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [authError, setAuthError] = useState<string | null>(null);
-  const [session, setSession] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const location = useLocation();
   const locationState = location.state as { email?: string; returnTo?: string } | null;
 
   useEffect(() => {
-    // Set up auth listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.log("Auth state change event:", event);
-        console.log("Session:", session);
-        setSession(session);
+    const checkSession = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Check for existing session
+        const { data: { session } } = await supabase.auth.getSession();
         
         if (session) {
-          // User is logged in, redirect to client dashboard by default
+          console.log("User is already logged in, redirecting to dashboard");
+          navigate('/dashboard/client');
+        }
+      } catch (error) {
+        console.error("Error checking session:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    checkSession();
+    
+    // Set up auth listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        console.log("Auth state change:", event);
+        
+        if (session) {
+          console.log("User logged in, redirecting");
           navigate('/dashboard/client');
         }
       }
     );
-
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        navigate('/dashboard/client');
-      }
-    });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
@@ -50,6 +61,16 @@ const SignInPage = () => {
       </Link>
     </p>
   );
+
+  if (isLoading) {
+    return (
+      <AuthLayout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <p>Verificando sessão...</p>
+        </div>
+      </AuthLayout>
+    );
+  }
 
   return (
     <AuthLayout>

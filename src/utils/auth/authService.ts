@@ -13,7 +13,7 @@ export type SignUpData = {
 export async function signUpWithEmail(data: SignUpData) {
   const { name, email, password, role = 'user' } = data;
 
-  // Verificar se o usuário já existe
+  // Check if user already exists
   const { data: existingUsers } = await supabase
     .from('users')
     .select('*')
@@ -23,7 +23,7 @@ export async function signUpWithEmail(data: SignUpData) {
     console.log("User already exists in users table:", existingUsers);
   }
 
-  // Tentar registro normal
+  // Try normal registration
   const { data: authData, error } = await supabase.auth.signUp({
     email,
     password,
@@ -43,7 +43,7 @@ export async function signUpWithEmail(data: SignUpData) {
   // Create a record in the users table
   if (authData.user) {
     try {
-      // Verificar se já existe na tabela users
+      // Check if exists in users table
       const { data: existingUser } = await supabase
         .from('users')
         .select('*')
@@ -84,13 +84,15 @@ export async function signUpWithEmail(data: SignUpData) {
 }
 
 export async function signInWithEmail(email: string, password: string) {
-  // Create default users if they don't exist (for demo purposes)
+  // First try to create default users in case they don't exist
   try {
     await createDefaultUsers();
   } catch (error) {
     console.error("Error creating default users:", error);
+    // Continue with login attempt even if default user creation fails
   }
   
+  // Then attempt login
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
@@ -101,7 +103,7 @@ export async function signInWithEmail(email: string, password: string) {
     throw error;
   }
 
-  return data;
+  return { data, error: null };
 }
 
 export async function resetPassword(email: string) {

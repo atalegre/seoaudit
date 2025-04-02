@@ -6,138 +6,138 @@ export async function createDefaultUsers() {
   try {
     console.log("Creating default users...");
     
-    // Check if admin user exists in users table
-    const { data: adminData, error: adminError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('email', 'atalegre@me.com')
-      .maybeSingle();
-
-    if (adminError) {
-      console.error("Error checking admin user:", adminError);
-      throw adminError;
-    }
-
-    // Create admin user if not exists
-    if (!adminData) {
-      console.log('Creating admin user');
-      
-      // First create auth user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: 'atalegre@me.com',
-        password: 'admin123',
-        options: {
-          data: {
-            full_name: 'SEO Admin',
-            role: 'admin',
-          },
-        }
-      });
-
-      if (authError) {
-        console.error("Error creating admin auth:", authError);
-        if (authError.message.includes("User already registered")) {
-          console.log("Admin already exists in auth");
-        } else {
-          throw authError;
-        }
-      } else if (authData.user) {
-        console.log("Admin auth user created:", authData.user.id);
-        
-        // Then create users table entry
-        const { error: userError } = await supabase
-          .from('users')
-          .insert([
-            { 
-              id: authData.user.id,
-              name: 'SEO Admin',
-              email: 'atalegre@me.com',
-              role: 'admin'
-            }
-          ]);
-          
-        if (userError) {
-          console.error("Error creating admin user:", userError);
-          if (userError.message.includes("duplicate key")) {
-            console.log("Admin already exists in users table (duplicate key)");
-          } else {
-            throw userError;
-          }
-        } else {
-          console.log("Admin user created successfully");
-        }
-      }
-    } else {
-      console.log("Admin user already exists:", adminData);
-    }
-
-    // Check if client user exists
-    const { data: clientData, error: clientError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('email', 'seoclient@exemplo.com')
-      .maybeSingle();
-      
-    if (clientError) {
-      console.error("Error checking client user:", clientError);
-      throw clientError;
-    }
-
-    // Create client user if not exists
-    if (!clientData) {
-      console.log('Creating client user');
-      
-      // First create auth user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: 'seoclient@exemplo.com',
-        password: 'client123',
-        options: {
-          data: {
-            full_name: 'SEO Client',
-            role: 'user',
-          },
-        }
-      });
-
-      if (authError) {
-        console.error("Error creating client auth:", authError);
-        if (authError.message.includes("User already registered")) {
-          console.log("Client already exists in auth");
-        } else {
-          throw authError;
-        }
-      } else if (authData.user) {
-        console.log("Client auth user created:", authData.user.id);
-        
-        // Then create users table entry
-        const { error: userError } = await supabase
-          .from('users')
-          .insert([
-            { 
-              id: authData.user.id,
-              name: 'SEO Client',
-              email: 'seoclient@exemplo.com',
-              role: 'user'
-            }
-          ]);
-          
-        if (userError) {
-          console.error("Error creating client user:", userError);
-          if (userError.message.includes("duplicate key")) {
-            console.log("Client already exists in users table (duplicate key)");
-          } else {
-            throw userError;
-          }
-        } else {
-          console.log("Client user created successfully");
-        }
-      }
-    } else {
-      console.log("Client user already exists:", clientData);
-    }
+    // Try to create admin user
+    await createOrUpdateUser({
+      email: 'atalegre@me.com',
+      password: 'admin123',
+      name: 'SEO Admin',
+      role: 'admin'
+    });
+    
+    // Try to create client user
+    await createOrUpdateUser({
+      email: 'seoclient@exemplo.com',
+      password: 'client123',
+      name: 'SEO Client',
+      role: 'user'
+    });
     
     console.log('Default users setup complete');
   } catch (error) {
     console.error('Error creating default users:', error);
+    // Continue with auth flow even if this fails
+  }
+}
+
+async function createOrUpdateUser({ email, password, name, role }: { 
+  email: string;
+  password: string;
+  name: string;
+  role: string;
+}) {
+  // First check if user exists in auth
+  const { data: userData } = await supabase.auth.signInWithPassword({
+    email: email,
+    password: password
+  }).catch(() => ({ data: null }));
+  
+  if (userData?.user) {
+    // User exists with correct password
+    console.log(`User ${email} already exists with correct password`);
+    
+    // Ensure user exists in users table too
+    await ensureUserInUsersTable(userData.user.id, name, email, role);
+    return;
+  }
+  
+  // Check if user exists in auth by email
+  const { data: existingUser } = await supabase
+    .from('users')
+    .select('*')
+    .eq('email', email)
+    .maybeSingle();
+    
+  if (existingUser) {
+    console.log(`User ${email} exists in users table, updating auth if needed`);
+    
+    // Try to update password (this might fail if user doesn't exist in auth)
+    try {
+      // This will fail if user doesn't exist in auth
+      const { error } = await supabase.auth.admin.updateUserById(
+        existingUser.id, 
+        { password: password }
+      );
+      
+      if (error) {
+        console.log(`Failed to update password for ${email}, will try creating`);
+      } else {
+        return;
+      }
+    } catch (e) {
+      console.log(`Error updating user, will try creating: ${e}`);
+    }
+  }
+  
+  // Create new user in auth
+  console.log(`Creating user ${email} in auth`);
+  const { data: authData, error: authError } = await supabase.auth.signUp({
+    email: email,
+    password: password,
+    options: {
+      data: {
+        full_name: name,
+        role: role,
+      },
+    }
+  });
+  
+  if (authError) {
+    // If user already exists, this might fail, but that's okay
+    if (authError.message?.includes("User already registered")) {
+      console.log(`User ${email} already exists in auth`);
+    } else {
+      console.error(`Error creating ${email} in auth:`, authError);
+      throw authError;
+    }
+  } else if (authData?.user) {
+    console.log(`Created ${email} in auth with ID: ${authData.user.id}`);
+    
+    // Create users table entry
+    await ensureUserInUsersTable(authData.user.id, name, email, role);
+  }
+}
+
+async function ensureUserInUsersTable(userId: string, name: string, email: string, role: string) {
+  // Check if already exists
+  const { data: existingUser } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', userId)
+    .maybeSingle();
+    
+  if (existingUser) {
+    console.log(`User ${email} already exists in users table`);
+    return;
+  }
+  
+  // Insert if not exists
+  const { error: userError } = await supabase
+    .from('users')
+    .insert([{ 
+      id: userId,
+      name: name,
+      email: email,
+      role: role
+    }]);
+    
+  if (userError) {
+    if (userError.message.includes("duplicate key")) {
+      console.log(`User ${email} already exists in users table (duplicate key)`);
+    } else {
+      console.error(`Error creating user record for ${email}:`, userError);
+      throw userError;
+    }
+  } else {
+    console.log(`Created ${email} in users table`);
   }
 }

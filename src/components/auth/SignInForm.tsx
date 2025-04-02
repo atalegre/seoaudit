@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import EmailField from './EmailField';
 import PasswordField from './PasswordField';
-import { checkUserRole } from '@/utils/auth/authService';
+import { signInWithEmail, checkUserRole } from '@/utils/auth/authService';
 
 const formSchema = z.object({
   email: z
@@ -49,25 +49,13 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
     try {
       console.log("Login attempt with:", values.email);
       
-      // Try to log in with Supabase Auth
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: values.email,
-        password: values.password,
-      });
+      // Use the signInWithEmail service function instead of direct Supabase call
+      const { data, error } = await signInWithEmail(values.email, values.password);
 
       if (error) {
         console.error("Login error:", error);
-        
-        // Mostrar informações adicionais sobre o erro
-        if (error.message) {
-          console.log("Error message:", error.message);
-          console.log("Error status:", error.status);
-          console.log("Error code:", error.code);
-        }
-        
         setAuthError(error.message);
         
-        // Special handling for unconfirmed email
         if (error.message.includes("Email not confirmed")) {
           localStorage.setItem('pendingVerificationEmail', values.email);
           toast({
@@ -79,40 +67,29 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
           return;
         }
         
-        // Tratamento específico se as credenciais forem inválidas
-        if (error.message.includes("Invalid login credentials")) {
-          toast({
-            variant: "destructive",
-            title: "Credenciais inválidas",
-            description: "Email ou senha incorretos. Verifique se você está usando as senhas corretas para as contas de demonstração.",
-          });
-        } else {
-          toast({
-            variant: "destructive",
-            title: "Erro de autenticação",
-            description: error.message,
-          });
-        }
+        toast({
+          variant: "destructive",
+          title: "Erro de autenticação",
+          description: "Email ou password incorretos. Tente as credenciais de demonstração listadas abaixo.",
+        });
       } else {
-        // Successfully logged in
         console.log("Login successful:", data);
         toast({
           title: "Login bem-sucedido",
           description: "Bem-vindo de volta!",
         });
         
-        // Check user role and redirect accordingly
         if (data.user) {
           const userRole = await checkUserRole(data.user.id);
           console.log("User role:", userRole);
           
           if (userRole === 'admin') {
-            navigate('/dashboard'); // Admin dashboard
+            navigate('/dashboard');
           } else {
-            navigate('/dashboard/client'); // Client dashboard
+            navigate('/dashboard/client');
           }
         } else {
-          navigate('/dashboard/client'); // Default redirect
+          navigate('/dashboard/client');
         }
       }
     } catch (error: any) {
@@ -121,7 +98,7 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
       toast({
         variant: "destructive",
         title: "Erro",
-        description: error.message,
+        description: "Falha na autenticação. Tente novamente com as credenciais de demonstração.",
       });
     } finally {
       setIsLoggingIn(false);
@@ -134,13 +111,13 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
         <EmailField form={form} />
         <PasswordField form={form} name="password" />
         <div className="text-sm text-muted-foreground border-2 border-red-300 bg-red-50 p-3 rounded">
-          <p className="font-bold">⚠️ Importante: Use as seguintes credenciais:</p>
+          <p className="font-bold mb-2">⚠️ Importante: Use exatamente estas credenciais:</p>
           <p>Para entrar como admin:</p>
-          <p>Email: atalegre@me.com</p>
-          <p className="font-semibold">Password: admin123</p>
-          <p className="mt-2">Para entrar como cliente:</p>
-          <p>Email: seoclient@exemplo.com</p>
-          <p className="font-semibold">Password: client123</p>
+          <p>Email: <span className="font-mono">atalegre@me.com</span></p>
+          <p className="font-semibold mb-2">Password: <span className="font-mono">admin123</span></p>
+          <p>Para entrar como cliente:</p>
+          <p>Email: <span className="font-mono">seoclient@exemplo.com</span></p>
+          <p className="font-semibold">Password: <span className="font-mono">client123</span></p>
         </div>
         <Button 
           type="submit" 
