@@ -27,27 +27,42 @@ export async function createDefaultUsers() {
       
       // Skip the rest of admin user creation
     } else {
-      // Try to find the user in auth
-      const { data: { users: authUsers } } = await supabase.auth.admin.listUsers();
-      const adminAuthUser = authUsers?.find(user => user.email === 'atalegre@me.com');
-      
-      if (adminAuthUser) {
-        console.log("Found admin in auth but not in users table, creating users table entry");
+      // Try to find the user in auth using admin API - this might fail with insufficient permissions
+      try {
+        // TypeScript fix: Use explicit typing for auth users array
+        const { data } = await supabase.auth.admin.listUsers();
+        const authUsers = data?.users || [];
         
-        // Create users table entry with admin role
-        await supabase
-          .from('users')
-          .insert([
-            { 
-              id: adminAuthUser.id,
-              name: adminAuthUser.user_metadata?.full_name || 'SEO Admin',
-              email: 'atalegre@me.com',
-              role: 'admin'
-            }
-          ])
-          .select();
+        // TypeScript fix: Check if authUsers is an array and has elements before trying to find
+        if (Array.isArray(authUsers) && authUsers.length > 0) {
+          const adminAuthUser = authUsers.find(user => 
+            user && typeof user === 'object' && 'email' in user && user.email === 'atalegre@me.com'
+          );
           
-        console.log("Created admin user in users table");
+          if (adminAuthUser) {
+            console.log("Found admin in auth but not in users table, creating users table entry");
+            
+            // Create users table entry with admin role
+            await supabase
+              .from('users')
+              .insert([
+                { 
+                  id: adminAuthUser.id,
+                  name: adminAuthUser.user_metadata?.full_name || 'SEO Admin',
+                  email: 'atalegre@me.com',
+                  role: 'admin'
+                }
+              ])
+              .select();
+              
+            console.log("Created admin user in users table");
+          }
+        } else {
+          console.log("No auth users found or insufficient permissions");
+        }
+      } catch (error) {
+        console.log("Error accessing admin API, might need service role key:", error);
+        // Continue with next steps, don't block execution
       }
     }
     
