@@ -30,8 +30,10 @@ export async function createOrUpdateAdmin() {
     try {
       console.log("Attempting to create admin account");
       // Check if user already exists first
-      const { data: { users } } = await supabase.auth.admin.listUsers();
-      const adminExists = users.some(user => user.email === adminEmail);
+      const { data } = await supabase.auth.admin.listUsers();
+      
+      // Check if admin exists by filtering the users array
+      const adminExists = data?.users ? data.users.some(user => user.email === adminEmail) : false;
       
       if (!adminExists) {
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
@@ -120,8 +122,10 @@ export async function createOrUpdateClient() {
     try {
       console.log("Attempting to create client account");
       // Check if user already exists first
-      const { data: { users } } = await supabase.auth.admin.listUsers();
-      const clientExists = users.some(user => user.email === clientEmail);
+      const { data } = await supabase.auth.admin.listUsers();
+      
+      // Check if client exists by filtering the users array
+      const clientExists = data?.users ? data.users.some(user => user.email === clientEmail) : false;
       
       if (!clientExists) {
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
