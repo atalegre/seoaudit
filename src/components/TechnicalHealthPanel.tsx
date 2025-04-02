@@ -1,71 +1,11 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Zap, Smartphone, Lock, Image, Check, AlertCircle, AlertTriangle, X } from 'lucide-react';
+import { Zap, Smartphone, Lock, Image } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-
-interface MetricItemProps {
-  title: string;
-  value: string | number;
-  status: 'success' | 'warning' | 'error' | 'neutral';
-  icon: React.ReactNode;
-  description?: string;
-}
-
-// Componente otimizado separado para reduzir re-renderizações
-const MetricItem = React.memo(({ 
-  title, 
-  value, 
-  status, 
-  icon,
-  description 
-}: MetricItemProps) => {
-  const statusColor = {
-    success: "text-green-500",
-    warning: "text-amber-500",
-    error: "text-red-500",
-    neutral: "text-blue-500",
-  };
-  
-  const statusBg = {
-    success: "bg-green-50",
-    warning: "bg-amber-50",
-    error: "bg-red-50",
-    neutral: "bg-blue-50",
-  };
-  
-  const statusIcon = {
-    success: <Check className="h-4 w-4 text-green-500" />,
-    warning: <AlertCircle className="h-4 w-4 text-amber-500" />,
-    error: <X className="h-4 w-4 text-red-500" />,
-    neutral: <AlertTriangle className="h-4 w-4 text-blue-500" />,
-  };
-  
-  return (
-    <div className="flex items-center gap-3 p-3 rounded-lg border">
-      <div className={cn("p-2 rounded-full", statusBg[status])}>
-        {icon}
-      </div>
-      <div className="flex-grow">
-        <div className="flex justify-between items-center">
-          <h4 className="text-sm font-medium">{title}</h4>
-          <div className="flex items-center gap-1">
-            {statusIcon[status]}
-            <span className={cn("text-sm font-medium", statusColor[status])}>
-              {value}
-            </span>
-          </div>
-        </div>
-        {description && (
-          <p className="text-xs text-gray-500 mt-1">{description}</p>
-        )}
-      </div>
-    </div>
-  );
-});
-
-MetricItem.displayName = 'MetricItem';
+import MetricItem from './metrics/MetricItem';
+import CoreWebVitalsSection from './metrics/CoreWebVitalsSection';
 
 interface TechnicalHealthPanelProps {
   loadTimeDesktop: number;
@@ -94,15 +34,6 @@ const TechnicalHealthPanel: React.FC<TechnicalHealthPanelProps> = React.memo(({
   // Helper functions para status
   const getSpeedStatus = (seconds: number) => 
     seconds <= 2 ? 'success' : seconds <= 4 ? 'warning' : 'error';
-  
-  const getLcpStatus = (seconds: number) => 
-    seconds <= 2.5 ? 'success' : seconds <= 4 ? 'warning' : 'error';
-  
-  const getClsStatus = (value: number) => 
-    value <= 0.1 ? 'success' : value <= 0.25 ? 'warning' : 'error';
-  
-  const getFidStatus = (ms: number) => 
-    ms <= 100 ? 'success' : ms <= 300 ? 'warning' : 'error';
 
   // Valor texto simples para mobileFriendly
   const mobileFriendlyText = mobileFriendly ? 'Sim' : 'Não';
@@ -178,35 +109,7 @@ const TechnicalHealthPanel: React.FC<TechnicalHealthPanelProps> = React.memo(({
                     imageOptimization >= 40 ? "Otimização parcial de imagens" : "Imagens sem otimização adequada"}
         />
         
-        <div className="mt-2 optimized-rendering">
-          <h4 className="text-xs font-medium uppercase text-gray-500 mb-2">Core Web Vitals</h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <MetricItem 
-              title="LCP" 
-              value={`${lcp.toFixed(1)}s`}
-              status={getLcpStatus(lcp)}
-              icon={<Zap className={cn("h-4 w-4", getLcpStatus(lcp) === 'success' ? "text-green-500" : 
-                                           getLcpStatus(lcp) === 'warning' ? "text-amber-500" : "text-red-500")} />}
-              description="Largest Contentful Paint"
-            />
-            <MetricItem 
-              title="CLS" 
-              value={cls.toFixed(2)}
-              status={getClsStatus(cls)}
-              icon={<AlertTriangle className={cn("h-4 w-4", getClsStatus(cls) === 'success' ? "text-green-500" : 
-                                                   getClsStatus(cls) === 'warning' ? "text-amber-500" : "text-red-500")} />}
-              description="Cumulative Layout Shift"
-            />
-            <MetricItem 
-              title="FID" 
-              value={`${fid}ms`}
-              status={getFidStatus(fid)}
-              icon={<AlertTriangle className={cn("h-4 w-4", getFidStatus(fid) === 'success' ? "text-green-500" : 
-                                                   getFidStatus(fid) === 'warning' ? "text-amber-500" : "text-red-500")} />}
-              description="First Input Delay"
-            />
-          </div>
-        </div>
+        <CoreWebVitalsSection lcp={lcp} cls={cls} fid={fid} />
       </CardContent>
     </Card>
   );
