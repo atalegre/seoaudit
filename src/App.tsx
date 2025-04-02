@@ -16,6 +16,8 @@ import ClientDashboardPage from "./pages/dashboard/ClientDashboardPage";
 import ClientPage from "./pages/dashboard/ClientPage";
 import SignInPage from "./pages/SignInPage";
 import SignUpPage from "./pages/SignUpPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ClientsPage from "./pages/dashboard/ClientsPage";
 import SettingsPage from "./pages/dashboard/SettingsPage";
 import BulkImportPage from "./pages/dashboard/BulkImportPage";
@@ -65,6 +67,8 @@ const App = () => {
             <Route path="/contacto" element={<ContactPage />} />
             <Route path="/signin" element={<SignInPage />} />
             <Route path="/signup" element={<SignUpPage />} />
+            <Route path="/recuperar-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             
             {/* Dashboard routes */}
