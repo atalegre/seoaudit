@@ -153,6 +153,195 @@ export const glossaryTerms = [
       }
     ],
     related: ['seo-tecnico', 'indexabilidade', 'robots-txt', 'sitemap-xml']
+  },
+  {
+    slug: 'e-e-a-t',
+    title: 'E-E-A-T',
+    shortDefinition: 'Experience, Expertise, Authoritativeness, Trustworthiness - princípio do Google para avaliar a qualidade de páginas e sites.',
+    relevance: ['SEO', 'AIO'],
+    explanation: `<p>E-E-A-T (Experience, Expertise, Authoritativeness, Trustworthiness) é um princípio usado pelo Google para avaliar a qualidade geral das páginas web. É uma expansão do anterior E-A-T, com a adição do fator "Experience" (Experiência) em 2022.</p>
+    <p>Estes quatro elementos são considerados fundamentais para determinar se uma página oferece conteúdo confiável e de qualidade:</p>
+    <ul>
+      <li><strong>Experience (Experiência)</strong>: Demonstra que o autor tem experiência prática e de primeira mão sobre o assunto abordado.</li>
+      <li><strong>Expertise (Especialização)</strong>: Indica que o autor possui conhecimento técnico aprofundado sobre o tema.</li>
+      <li><strong>Authoritativeness (Autoridade)</strong>: Refere-se à reputação e ao reconhecimento do autor, site ou organização no setor.</li>
+      <li><strong>Trustworthiness (Confiabilidade)</strong>: Avalia a transparência, segurança e credibilidade geral do conteúdo e da plataforma.</li>
+    </ul>`,
+    influence: `<p>O E-E-A-T é especialmente importante para páginas que podem afetar a "felicidade, saúde, estabilidade financeira ou segurança" dos usuários, conhecidas como páginas YMYL (Your Money, Your Life).</p>
+    <p>Embora não seja um fator de classificação direto, o E-E-A-T influencia:</p>
+    <ul>
+      <li>Como os avaliadores humanos do Google julgam a qualidade de um site durante as avaliações de qualidade.</li>
+      <li>Como os algoritmos interpretam sinais que sugerem experiência, especialização, autoridade e confiabilidade.</li>
+      <li>A capacidade do conteúdo de resistir a atualizações algorítmicas focadas em qualidade.</li>
+      <li>A percepção dos modelos de IA sobre a confiabilidade e autoridade de uma fonte de informação.</li>
+    </ul>
+    <p>Com a ascensão dos LLMs, o E-E-A-T também se torna crucial para determinar quais fontes são citadas e recomendadas por assistentes de IA.</p>`,
+    faqs: [
+      {
+        question: 'Como demonstrar E-E-A-T no meu site?',
+        answer: 'Crie páginas "Sobre" detalhadas, inclua biografias dos autores com credenciais relevantes, obtenha backlinks de sites autoritativos, forneça referências para afirmações factuais, mantenha o conteúdo atualizado, mostre informações de contato transparentes e adicione depoimentos ou avaliações de clientes verificáveis.'
+      },
+      {
+        question: 'O E-E-A-T é igualmente importante para todos os tipos de sites?',
+        answer: 'Não. É particularmente crítico para sites YMYL (Your Money, Your Life) que podem impactar a saúde, finanças ou segurança dos usuários. Para sites de entretenimento ou conteúdo não-crítico, outros fatores podem ter peso maior, embora o E-E-A-T ainda seja relevante.'
+      },
+      {
+        question: 'Como o E-E-A-T se relaciona com o AIO?',
+        answer: 'Os modelos de IA tendem a favorecer fontes que demonstram alto nível de E-E-A-T ao citar ou recomendar conteúdo. Sites que estabelecem clara experiência e autoridade têm maior probabilidade de serem referenciados por assistentes de IA quando respondem a consultas dos usuários.'
+      }
+    ],
+    related: ['aio', 'seo-tecnico', 'llm', 'schema-markup']
+  },
+  {
+    slug: 'featured-snippet',
+    title: 'Featured Snippet',
+    shortDefinition: 'Caixa destacada no topo dos resultados de busca que apresenta uma resposta direta extraída de uma página web.',
+    relevance: ['SEO'],
+    explanation: `<p>Featured Snippet (ou Trecho em Destaque) é um formato especial de resultado de pesquisa que aparece no topo da página de resultados dos motores de busca, acima dos resultados orgânicos tradicionais. Também conhecido como "posição zero", esse bloco destacado apresenta um trecho de conteúdo que visa responder diretamente à consulta do usuário.</p>
+    <p>Os Featured Snippets podem aparecer em vários formatos:</p>
+    <ul>
+      <li><strong>Parágrafo</strong>: Um bloco de texto que responde diretamente à pergunta.</li>
+      <li><strong>Lista</strong>: Uma lista numerada ou com marcadores, ideal para passos sequenciais ou itens relacionados.</li>
+      <li><strong>Tabela</strong>: Dados apresentados em formato tabular, útil para comparações e dados estruturados.</li>
+      <li><strong>Vídeo</strong>: Em alguns casos, com um timestamp específico relevante à consulta.</li>
+    </ul>`,
+    influence: `<p>Os Featured Snippets têm um impacto significativo na visibilidade e no tráfego orgânico:</p>
+    <ul>
+      <li>Aumentam significativamente a visibilidade da marca, ocupando um espaço privilegiado na SERP.</li>
+      <li>Podem aumentar a taxa de cliques (CTR), especialmente para consultas complexas que requerem mais informações.</li>
+      <li>Melhoram a percepção de autoridade e confiabilidade do site.</li>
+      <li>Oferecem uma grande vantagem competitiva, principalmente em nichos disputados.</li>
+      <li>São frequentemente usados por assistentes de voz e IA para fornecer respostas aos usuários.</li>
+    </ul>
+    <p>No entanto, também podem resultar em buscas "sem cliques" quando o usuário obtém toda a informação de que precisa diretamente no snippet, sem necessidade de visitar o site de origem.</p>`,
+    faqs: [
+      {
+        question: 'Como otimizar para conquistar Featured Snippets?',
+        answer: 'Identifique perguntas comuns em seu nicho e responda-as claramente e concisamente. Estruture seu conteúdo com cabeçalhos lógicos, use listas e tabelas quando apropriado, forneça definições diretas, mantenha seus parágrafos concisos e use marcação de dados estruturados para ajudar os mecanismos de busca a entender seu conteúdo.'
+      },
+      {
+        question: 'Qual a diferença entre Featured Snippet e Knowledge Graph?',
+        answer: 'O Featured Snippet extrai informações de uma página web específica e sempre cita a fonte, enquanto o Knowledge Graph apresenta informações extraídas da base de conhecimento do próprio Google, compilada de várias fontes, sem necessariamente vincular a uma fonte específica.'
+      },
+      {
+        question: 'Os Featured Snippets afetam negativamente o tráfego para meu site?',
+        answer: 'Isso depende do tipo de consulta. Para consultas informativas simples, pode haver aumento de buscas "zero-click". Porém, para tópicos complexos, os snippets geralmente aumentam a visibilidade e a autoridade, incentivando os usuários a clicar para saber mais. Estudos mostram resultados variados, com alguns sites relatando aumento de tráfego após conquistar snippets.'
+      }
+    ],
+    related: ['seo-tecnico', 'serp', 'zero-click-search', 'schema-markup']
+  },
+  {
+    slug: 'schema-markup',
+    title: 'Schema Markup',
+    shortDefinition: 'Código estruturado adicionado a um site que ajuda os motores de busca e sistemas de IA a entender melhor o conteúdo.',
+    relevance: ['SEO', 'AIO'],
+    explanation: `<p>Schema Markup (ou Marcação de Esquema) é um tipo específico de código estruturado que pode ser adicionado ao HTML de um site para ajudar os motores de busca e outros sistemas a entender melhor o conteúdo. Desenvolvido em colaboração entre Google, Bing, Yahoo e Yandex, o Schema.org fornece um vocabulário compartilhado para marcação estruturada.</p>
+    <p>Esta marcação pode ser implementada de várias formas, sendo as mais comuns:</p>
+    <ul>
+      <li><strong>JSON-LD</strong>: Um formato baseado em JavaScript inserido no cabeçalho ou corpo do HTML.</li>
+      <li><strong>Microdata</strong>: Atributos HTML adicionados diretamente aos elementos visíveis.</li>
+      <li><strong>RDFa</strong>: Uma extensão do HTML5 para vincular documentos web a modelos de dados.</li>
+    </ul>
+    <p>O Schema Markup permite identificar claramente diversos elementos como artigos, produtos, eventos, receitas, pessoas, organizações, avaliações e muito mais.</p>`,
+    influence: `<p>A implementação de Schema Markup traz benefícios significativos para SEO e AIO:</p>
+    <ul>
+      <li><strong>Para SEO</strong>: Possibilita rich snippets nas SERPs, aumentando a visibilidade e CTR. Melhora a interpretação do conteúdo pelos algoritmos de busca, o que pode contribuir para rankings mais precisos.</li>
+      <li><strong>Para AIO</strong>: Facilita a extração de informações estruturadas por modelos de IA, aumentando a probabilidade de ser citado corretamente. Reduz ambiguidades e interpretações incorretas do seu conteúdo.</li>
+      <li>Pode resultar em apresentações especiais nos resultados de busca, como carrosséis, painéis de conhecimento e outras apresentações enriquecidas.</li>
+      <li>Melhora a capacidade dos sistemas de identificar entidades, relações e atributos específicos no seu conteúdo.</li>
+    </ul>
+    <p>Com a evolução dos modelos de IA, que dependem cada vez mais de dados estruturados para compreensão precisa, o Schema Markup torna-se uma ferramenta essencial para garantir que seu conteúdo seja interpretado corretamente.</p>`,
+    faqs: [
+      {
+        question: 'Quais são os tipos mais importantes de Schema Markup para implementar?',
+        answer: 'Os tipos mais valiosos variam conforme o site, mas alguns universalmente úteis incluem Organization (para dados da empresa), WebSite (para informações do site), BreadcrumbList (para navegação), Article (para blogs/notícias), FAQPage (para perguntas frequentes), Product (para e-commerce), LocalBusiness (para negócios locais) e Review (para avaliações). Para AIO, DefinedTerm e DefinedTermSet são particularmente valiosos para glossários e conteúdo educativo.'
+      },
+      {
+        question: 'Implementar Schema Markup melhora diretamente o ranking no Google?',
+        answer: 'Não há confirmação oficial de que Schema Markup seja um fator direto de ranking. No entanto, ele melhora indiretamente os rankings ao permitir que os motores de busca entendam melhor o conteúdo e contexto, resultando em indexação mais precisa. Além disso, os rich snippets gerados pelo Schema Markup frequentemente aumentam o CTR, o que pode impactar positivamente os rankings ao longo do tempo.'
+      },
+      {
+        question: 'Como posso verificar se meu Schema Markup está implementado corretamente?',
+        answer: 'Utilize ferramentas como o Teste de Resultados Enriquecidos do Google, o Rich Results Test, ou o Validador de Schema.org. Estas ferramentas identificam erros e oferecem sugestões de melhoria. O Google Search Console também fornece relatórios sobre marcações estruturadas detectadas no seu site e possíveis problemas de implementação.'
+      }
+    ],
+    related: ['seo-tecnico', 'featured-snippet', 'serp', 'aio', 'e-e-a-t']
+  },
+  {
+    slug: 'zero-click-search',
+    title: 'Zero-click Search',
+    shortDefinition: 'Busca onde o usuário obtém a informação desejada diretamente na página de resultados, sem necessidade de clicar em um site.',
+    relevance: ['SEO', 'AIO'],
+    explanation: `<p>Zero-click search (busca sem cliques) refere-se a uma situação em que um usuário realiza uma pesquisa em um motor de busca, obtém a informação que procura diretamente na página de resultados (SERP) e não clica em nenhum dos links apresentados.</p>
+    <p>Este fenômeno tem crescido significativamente nos últimos anos devido à evolução das SERPs, que agora apresentam:</p>
+    <ul>
+      <li>Featured snippets com respostas diretas a perguntas</li>
+      <li>Knowledge panels com informações detalhadas</li>
+      <li>Carrosséis de imagens e vídeos</li>
+      <li>Calculadoras, conversores e outras ferramentas interativas</li>
+      <li>Informações sobre o clima, horários de funcionamento e outros dados factuais</li>
+    </ul>
+    <p>Com a integração de IA generativa nos motores de busca, essa tendência deve se intensificar ainda mais, com respostas cada vez mais completas sendo geradas diretamente nas SERPs.</p>`,
+    influence: `<p>O aumento das buscas zero-click traz importantes implicações para estratégias de SEO e AIO:</p>
+    <ul>
+      <li>Redução no tráfego orgânico para consultas informacionais simples, especialmente perguntas factuais com respostas curtas.</li>
+      <li>Maior competição pela "posição zero" (featured snippets) como forma de garantir visibilidade de marca, mesmo sem cliques.</li>
+      <li>Necessidade de repensar métricas de sucesso além do tráfego, como visibilidade da marca e menções.</li>
+      <li>Importância crescente de otimizar conteúdo para ser citado corretamente por sistemas de IA gerativos.</li>
+    </ul>
+    <p>Para adaptação a esse cenário, empresas e criadores de conteúdo precisam desenvolver estratégias que aproveitem a visibilidade nas SERPs mesmo sem cliques, ou que incentivem os usuários a buscar informações mais aprofundadas além das respostas imediatas.</p>`,
+    faqs: [
+      {
+        question: 'Como posso adaptar minha estratégia de SEO para o cenário de zero-click search?',
+        answer: 'Foque em consultas complexas que não podem ser totalmente respondidas em snippets, crie conteúdo que desperte curiosidade e vá além do básico, otimize para featured snippets atraentes que incentivem o click-through, diversifique sua estratégia para incluir consultas transacionais e comerciais (menos afetadas por zero-click), e considere os benefícios de branding mesmo quando não há cliques.'
+      },
+      {
+        question: 'Quais tipos de consultas são mais afetados pelas buscas zero-click?',
+        answer: 'Consultas informacionais simples como definições de termos, fatos históricos, horários de funcionamento, previsão do tempo e perguntas de sim/não são as mais impactadas. Consultas que buscam uma resposta rápida e objetiva frequentemente resultam em buscas sem cliques, enquanto consultas que exigem explicações detalhadas, comparações ou análises ainda tendem a gerar cliques para os sites.'
+      },
+      {
+        question: 'Como o fenômeno de zero-click search se relaciona com o AIO?',
+        answer: 'Tanto as buscas zero-click quanto o AIO representam formas de intermediação da informação. Nos dois casos, sistemas (motores de busca ou IAs) extraem e apresentam informações dos sites de origem, potencialmente reduzindo visitas diretas. Otimizar para ambos requer conteúdo claro, estruturado e de alta qualidade que seja facilmente interpretável por máquinas, ao mesmo tempo em que oferece valor único que incentive os usuários a buscar mais informações na fonte original.'
+      }
+    ],
+    related: ['serp', 'featured-snippet', 'aio', 'schema-markup']
+  },
+  {
+    slug: 'core-web-vitals',
+    title: 'Core Web Vitals',
+    shortDefinition: 'Conjunto de métricas de experiência do usuário usadas pelo Google como sinais de ranking que medem velocidade, responsividade e estabilidade visual.',
+    relevance: ['SEO'],
+    explanation: `<p>Core Web Vitals são um conjunto de métricas específicas que medem a experiência do usuário em termos de velocidade de carregamento, interatividade e estabilidade visual de uma página web. Introduzidas pelo Google em 2020, estas métricas se tornaram fatores oficiais de ranking em 2021, como parte da atualização Page Experience.</p>
+    <p>As três métricas principais que compõem os Core Web Vitals são:</p>
+    <ul>
+      <li><strong>LCP (Largest Contentful Paint)</strong>: Mede o tempo de carregamento percebido, registrando quando o maior elemento de conteúdo na viewport inicial é renderizado. O ideal é que ocorra em 2,5 segundos ou menos.</li>
+      <li><strong>FID (First Input Delay)</strong>: Mede a responsividade e interatividade, registrando o tempo entre a primeira interação do usuário e a resposta do navegador. O ideal é que seja de 100 milissegundos ou menos.</li>
+      <li><strong>CLS (Cumulative Layout Shift)</strong>: Mede a estabilidade visual, calculando quanto os elementos visíveis se movem durante o carregamento da página. O ideal é uma pontuação de 0,1 ou menos.</li>
+    </ul>
+    <p>Em 2023, o Google anunciou que o FID será substituído pelo INP (Interaction to Next Paint) em março de 2024, oferecendo uma medida mais abrangente da responsividade da página ao longo de toda a experiência do usuário.</p>`,
+    influence: `<p>Os Core Web Vitals exercem uma influência significativa no desempenho de SEO de várias maneiras:</p>
+    <ul>
+      <li>São fatores de classificação confirmados que afetam o posicionamento nos resultados de busca, especialmente em situações de empate entre conteúdos de qualidade similar.</li>
+      <li>Impactam diretamente métricas de engajamento como taxa de rejeição, tempo no site e páginas por sessão, que indiretamente afetam o SEO.</li>
+      <li>São destacados em ferramentas como o Google Search Console e PageSpeed Insights, enfatizando sua importância para webmasters.</li>
+      <li>Afetam a elegibilidade para apresentações especiais nas SERPs, como Top Stories em dispositivos móveis.</li>
+    </ul>
+    <p>Um bom desempenho nos Core Web Vitals também contribui para uma experiência do usuário superior, o que pode aumentar conversões e fidelização, além de criar sinais positivos de engajamento que indiretamente beneficiam o SEO.</p>`,
+    faqs: [
+      {
+        question: 'Como posso melhorar meus Core Web Vitals?',
+        answer: 'Para o LCP, otimize imagens, use CDN, implemente lazy loading seletivo e reduza o código CSS/JavaScript. Para o FID (ou INP), minimize JavaScript desnecessário, divida tarefas longas e otimize o caminho de renderização crítico. Para o CLS, especifique dimensões para imagens e vídeos, reserve espaço para anúncios e elementos dinâmicos, e evite inserir conteúdo acima do conteúdo existente durante o carregamento da página.'
+      },
+      {
+        question: 'Como verificar os Core Web Vitals do meu site?',
+        answer: 'Use ferramentas como Google Search Console (relatório Core Web Vitals), PageSpeed Insights, Lighthouse, Chrome DevTools com a aba Performance, ou o Chrome User Experience Report (CrUX). Para monitoramento contínuo, considere ferramentas como Google Analytics 4 com monitoramento de Web Vitals habilitado ou soluções de monitoramento RUM (Real User Monitoring).'
+      },
+      {
+        question: 'Qual o peso dos Core Web Vitals no algoritmo de classificação do Google?',
+        answer: 'O Google não divulga pesos específicos, mas indicou que os Core Web Vitals são sinais importantes, embora não tão impactantes quanto fatores como relevância de conteúdo e qualidade dos links. Eles funcionam mais como "desempatadores" entre páginas de conteúdo similar e têm maior impacto em nichos altamente competitivos onde muitos sites oferecem conteúdo de qualidade comparável.'
+      }
+    ],
+    related: ['seo-tecnico', 'serp', 'crawlability']
   }
 ];
 
