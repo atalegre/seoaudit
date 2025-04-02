@@ -78,7 +78,7 @@ export async function saveClientsToDatabase(clients: Client[]): Promise<{success
       account: client.account || 'Admin',
       seoscore: client.seoScore || 0, // Note the lowercase field name for DB
       aioscore: client.aioScore || 0, // Note the lowercase field name for DB
-      lastanalysis: client.lastAnalysis || new Date().toISOString(), // Note the lowercase field name for DB
+      lastanalysis: typeof client.lastAnalysis === 'string' ? client.lastAnalysis : new Date().toISOString(), // Convert Date to string if needed
       lastreport: client.lastReport || '' // Note the lowercase field name for DB
     }));
     
@@ -145,7 +145,7 @@ export async function updateClientInDatabase(client: Client): Promise<void> {
       account: client.account,
       seoscore: client.seoScore,
       aioscore: client.aioScore,
-      lastanalysis: client.lastAnalysis,
+      lastanalysis: typeof client.lastAnalysis === 'string' ? client.lastAnalysis : new Date().toISOString(), // Convert Date to string
       lastreport: client.lastReport
     };
     
