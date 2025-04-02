@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -126,16 +127,27 @@ const UserManagement = () => {
   const onSubmit = async (values: UserFormValues) => {
     try {
       if (currentUser) {
+        // Make sure all required fields are present when updating
+        const updateData = {
+          name: values.name,
+          email: values.email,
+          role: values.role
+        };
+        
         // Atualizar usuário
-        await updateUser(currentUser.id, values);
+        await updateUser(currentUser.id, updateData);
         
         toast({
           title: 'Usuário atualizado',
           description: 'As informações do usuário foram atualizadas com sucesso',
         });
       } else {
-        // Criar novo usuário
-        await createUser(values);
+        // Criar novo usuário - all fields are required based on the schema
+        await createUser({
+          name: values.name,
+          email: values.email, 
+          role: values.role
+        });
         
         toast({
           title: 'Usuário criado',

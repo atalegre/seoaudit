@@ -24,7 +24,7 @@ import {
 import { MoreHorizontal, Search, PlusCircle, Eye, Edit, Trash2, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Client } from '@/utils/api/types';
-import { getClientsFromDatabase } from '@/utils/api/supabaseClient';
+import { getClientsFromDatabase } from '@/utils/api/clientService';
 import { toast } from 'sonner';
 
 const ClientsPage = () => {

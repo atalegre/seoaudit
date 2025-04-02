@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Download, Check, ArrowRight } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { saveClientsToDatabase } from '@/utils/api/supabaseClient';
+import { saveClientsToDatabase } from '@/utils/api/clientService';
 import { Client } from '@/utils/api/types';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';

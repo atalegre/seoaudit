@@ -1,6 +1,6 @@
 
 import { Client } from './types';
-import { saveClientsToDatabase } from './supabaseClient';
+import { saveClientsToDatabase } from './clientService';
 
 // Função para processar um arquivo CSV com dados de clientes
 export async function processBulkImport(file: File): Promise<Client[]> {

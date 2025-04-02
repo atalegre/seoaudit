@@ -9,20 +9,22 @@ const supabase = supabaseInstance;
 // Função para salvar resultados de análise no Supabase
 export async function saveAnalysisResult(clientId: number, result: AnalysisResult): Promise<void> {
   try {
+    // Convert complex objects to JSON and ensure all types are compatible
     const analysisData = {
       client_id: clientId.toString(), // Convert to string to match DB schema
       url: result.url,
       timestamp: result.timestamp,
       seo_score: result.seo.score,
       aio_score: result.aio.score,
-      seo_data: result.seo,
-      aio_data: result.aio,
+      seo_data: JSON.parse(JSON.stringify(result.seo)), // Convert to JSON compatible format
+      aio_data: JSON.parse(JSON.stringify(result.aio)), // Convert to JSON compatible format
       overall_status: result.overallStatus
     };
     
-    const { error } = await supabase
+    // Use type assertion to insert data safely
+    const { error } = await (supabase
       .from('analysis_results')
-      .insert(analysisData);
+      .insert(analysisData as any)) as { error: any };
     
     if (error) {
       throw error;
@@ -61,14 +63,14 @@ export async function getClientAnalysisHistory(clientId: number): Promise<Analys
     }
     
     // Transforma o formato do banco de dados para o formato da aplicação
-    return ((data || []).map(item => ({
+    return (data || []).map(item => ({
       url: item.url,
       timestamp: item.timestamp,
       seo: item.seo_data,
       aio: item.aio_data,
       overallStatus: item.overall_status,
       recommendations: [] // Add this property to match AnalysisResult type
-    }))) as unknown as AnalysisResult[];
+    })) as AnalysisResult[];
   } catch (error) {
     console.error('Erro ao buscar histórico de análises:', error);
     
@@ -83,7 +85,7 @@ export async function getClientAnalysisHistory(clientId: number): Promise<Analys
       aio: item.aio_data,
       overallStatus: item.overall_status,
       recommendations: [] // Add this property to match AnalysisResult type
-    })) as unknown as AnalysisResult[];
+    })) as AnalysisResult[];
   }
 }
 
