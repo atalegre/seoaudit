@@ -6,13 +6,7 @@ export async function createDefaultUsers() {
   try {
     console.log("Creating default users...");
     
-    // Check if admin user exists in auth
-    const { data: adminAuth, error: adminAuthError } = await supabase.auth.admin.getUserByEmail('atalegre@me.com');
-    if (adminAuthError) {
-      console.error("Error checking admin auth:", adminAuthError);
-    }
-    
-    // Check if admin user exists
+    // Check if admin user exists in users table
     const { data: adminData, error: adminError } = await supabase
       .from('users')
       .select('*')

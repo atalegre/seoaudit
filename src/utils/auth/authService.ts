@@ -23,14 +23,7 @@ export async function signUpWithEmail(data: SignUpData) {
     console.log("User already exists in users table:", existingUsers);
   }
 
-  // Verificar se já existe na auth
-  const { data: existingAuthUser, error: authError } = await supabase.auth.admin.getUserByEmail(email);
-  if (existingAuthUser) {
-    console.log("User already exists in auth:", existingAuthUser);
-    return { user: existingAuthUser };
-  }
-
-  // Tentar registro normal se não existir
+  // Tentar registro normal
   const { data: authData, error } = await supabase.auth.signUp({
     email,
     password,

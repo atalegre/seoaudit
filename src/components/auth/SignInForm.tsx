@@ -49,14 +49,6 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
     try {
       console.log("Login attempt with:", values.email);
       
-      // Verificar se a conta existe mas não está confirmada
-      const { data: authUsers, error: fetchError } = await supabase.auth.admin.listUsers();
-      if (fetchError) {
-        console.log("Error fetching users:", fetchError);
-      } else {
-        console.log("Auth users:", authUsers);
-      }
-      
       // Try to log in with Supabase Auth
       const { data, error } = await supabase.auth.signInWithPassword({
         email: values.email,
@@ -92,7 +84,7 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
           toast({
             variant: "destructive",
             title: "Credenciais inválidas",
-            description: "Email ou senha incorretos. Verifique se você já confirmou seu email.",
+            description: "Email ou senha incorretos. Verifique se você está usando as senhas corretas para as contas de demonstração.",
           });
         } else {
           toast({
@@ -141,13 +133,14 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <EmailField form={form} />
         <PasswordField form={form} name="password" />
-        <div className="text-sm text-muted-foreground">
-          <p>Para entrar como admin, use:</p>
+        <div className="text-sm text-muted-foreground border-2 border-red-300 bg-red-50 p-3 rounded">
+          <p className="font-bold">⚠️ Importante: Use as seguintes credenciais:</p>
+          <p>Para entrar como admin:</p>
           <p>Email: atalegre@me.com</p>
-          <p>Password: admin123</p>
-          <p className="mt-2">Para entrar como cliente, use:</p>
+          <p className="font-semibold">Password: admin123</p>
+          <p className="mt-2">Para entrar como cliente:</p>
           <p>Email: seoclient@exemplo.com</p>
-          <p>Password: client123</p>
+          <p className="font-semibold">Password: client123</p>
         </div>
         <Button 
           type="submit" 
