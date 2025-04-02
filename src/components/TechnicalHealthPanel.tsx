@@ -1,5 +1,5 @@
 
-import React, { lazy, Suspense } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Zap, Smartphone, Lock, Image, Check, AlertCircle, AlertTriangle, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -13,14 +13,14 @@ interface MetricItemProps {
   description?: string;
 }
 
-// Componente otimizado para carregamento mais rápido
-const MetricItem: React.FC<MetricItemProps> = ({ 
+// Componente otimizado separado para reduzir re-renderizações
+const MetricItem = React.memo(({ 
   title, 
   value, 
   status, 
   icon,
   description 
-}) => {
+}: MetricItemProps) => {
   const statusColor = {
     success: "text-green-500",
     warning: "text-amber-500",
@@ -63,7 +63,9 @@ const MetricItem: React.FC<MetricItemProps> = ({
       </div>
     </div>
   );
-};
+});
+
+MetricItem.displayName = 'MetricItem';
 
 interface TechnicalHealthPanelProps {
   loadTimeDesktop: number;
@@ -77,7 +79,7 @@ interface TechnicalHealthPanelProps {
   fid?: number;
 }
 
-// Componente principal que usa React.memo para prevenir re-renders desnecessários
+// Usando React.memo para evitar re-renderizações desnecessárias
 const TechnicalHealthPanel: React.FC<TechnicalHealthPanelProps> = React.memo(({
   loadTimeDesktop,
   loadTimeMobile,
@@ -89,36 +91,21 @@ const TechnicalHealthPanel: React.FC<TechnicalHealthPanelProps> = React.memo(({
   cls = 0.25,
   fid = 100
 }) => {
-  // Helper function to determine speed status
-  const getSpeedStatus = (seconds: number) => {
-    if (seconds <= 2) return 'success';
-    if (seconds <= 4) return 'warning';
-    return 'error';
-  };
+  // Helper functions para status
+  const getSpeedStatus = (seconds: number) => 
+    seconds <= 2 ? 'success' : seconds <= 4 ? 'warning' : 'error';
   
-  // Helper function for web vital status
-  const getLcpStatus = (seconds: number) => {
-    if (seconds <= 2.5) return 'success';
-    if (seconds <= 4) return 'warning';
-    return 'error';
-  };
+  const getLcpStatus = (seconds: number) => 
+    seconds <= 2.5 ? 'success' : seconds <= 4 ? 'warning' : 'error';
   
-  const getClsStatus = (value: number) => {
-    if (value <= 0.1) return 'success';
-    if (value <= 0.25) return 'warning';
-    return 'error';
-  };
+  const getClsStatus = (value: number) => 
+    value <= 0.1 ? 'success' : value <= 0.25 ? 'warning' : 'error';
   
-  const getFidStatus = (ms: number) => {
-    if (ms <= 100) return 'success';
-    if (ms <= 300) return 'warning';
-    return 'error';
-  };
-  
-  // Helper function to format mobile friendly status
-  const getMobileFriendlyText = () => {
-    return mobileFriendly ? 'Sim' : 'Não';
-  };
+  const getFidStatus = (ms: number) => 
+    ms <= 100 ? 'success' : ms <= 300 ? 'warning' : 'error';
+
+  // Valor texto simples para mobileFriendly
+  const mobileFriendlyText = mobileFriendly ? 'Sim' : 'Não';
   
   return (
     <Card>
@@ -148,25 +135,25 @@ const TechnicalHealthPanel: React.FC<TechnicalHealthPanelProps> = React.memo(({
             value={`${loadTimeDesktop.toFixed(1)}s`}
             status={getSpeedStatus(loadTimeDesktop)}
             icon={<Zap className={cn("h-4 w-4", loadTimeDesktop <= 2 ? "text-green-500" : 
-                                             loadTimeDesktop <= 4 ? "text-amber-500" : "text-red-500")} />}
+                                           loadTimeDesktop <= 4 ? "text-amber-500" : "text-red-500")} />}
             description={loadTimeDesktop <= 2 ? "Excelente tempo de resposta" : 
-                         loadTimeDesktop <= 4 ? "Tempo de resposta aceitável" : "Tempo de resposta lento"}
+                       loadTimeDesktop <= 4 ? "Tempo de resposta aceitável" : "Tempo de resposta lento"}
           />
           <MetricItem 
             title="Carregamento Mobile" 
             value={`${loadTimeMobile.toFixed(1)}s`}
             status={getSpeedStatus(loadTimeMobile)}
             icon={<Smartphone className={cn("h-4 w-4", loadTimeMobile <= 2 ? "text-green-500" : 
-                                               loadTimeMobile <= 4 ? "text-amber-500" : "text-red-500")} />}
+                                             loadTimeMobile <= 4 ? "text-amber-500" : "text-red-500")} />}
             description={loadTimeMobile <= 2 ? "Rápido em dispositivos móveis" : 
-                         loadTimeMobile <= 4 ? "Aceitável em dispositivos móveis" : "Lento em dispositivos móveis"}
+                       loadTimeMobile <= 4 ? "Aceitável em dispositivos móveis" : "Lento em dispositivos móveis"}
           />
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <MetricItem 
             title="Adaptável para Mobile" 
-            value={getMobileFriendlyText()}
+            value={mobileFriendlyText}
             status={mobileFriendly ? 'success' : 'error'}
             icon={<Smartphone className={cn("h-4 w-4", mobileFriendly ? "text-green-500" : "text-red-500")} />}
             description={mobileFriendly ? "Site otimizado para dispositivos móveis" : "Site não adaptado para visualização móvel"}
@@ -185,13 +172,13 @@ const TechnicalHealthPanel: React.FC<TechnicalHealthPanelProps> = React.memo(({
           value={`${imageOptimization}%`}
           status={imageOptimization >= 70 ? 'success' : imageOptimization >= 40 ? 'warning' : 'error'}
           icon={<Image className={cn("h-4 w-4", 
-                                      imageOptimization >= 70 ? "text-green-500" : 
-                                      imageOptimization >= 40 ? "text-amber-500" : "text-red-500")} />}
+                                    imageOptimization >= 70 ? "text-green-500" : 
+                                    imageOptimization >= 40 ? "text-amber-500" : "text-red-500")} />}
           description={imageOptimization >= 70 ? "Imagens bem otimizadas" : 
-                      imageOptimization >= 40 ? "Otimização parcial de imagens" : "Imagens sem otimização adequada"}
+                    imageOptimization >= 40 ? "Otimização parcial de imagens" : "Imagens sem otimização adequada"}
         />
         
-        <div className="mt-2 offscreen-content">
+        <div className="mt-2 optimized-rendering">
           <h4 className="text-xs font-medium uppercase text-gray-500 mb-2">Core Web Vitals</h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <MetricItem 
@@ -199,7 +186,7 @@ const TechnicalHealthPanel: React.FC<TechnicalHealthPanelProps> = React.memo(({
               value={`${lcp.toFixed(1)}s`}
               status={getLcpStatus(lcp)}
               icon={<Zap className={cn("h-4 w-4", getLcpStatus(lcp) === 'success' ? "text-green-500" : 
-                                             getLcpStatus(lcp) === 'warning' ? "text-amber-500" : "text-red-500")} />}
+                                           getLcpStatus(lcp) === 'warning' ? "text-amber-500" : "text-red-500")} />}
               description="Largest Contentful Paint"
             />
             <MetricItem 
@@ -207,7 +194,7 @@ const TechnicalHealthPanel: React.FC<TechnicalHealthPanelProps> = React.memo(({
               value={cls.toFixed(2)}
               status={getClsStatus(cls)}
               icon={<AlertTriangle className={cn("h-4 w-4", getClsStatus(cls) === 'success' ? "text-green-500" : 
-                                                     getClsStatus(cls) === 'warning' ? "text-amber-500" : "text-red-500")} />}
+                                                   getClsStatus(cls) === 'warning' ? "text-amber-500" : "text-red-500")} />}
               description="Cumulative Layout Shift"
             />
             <MetricItem 
@@ -215,7 +202,7 @@ const TechnicalHealthPanel: React.FC<TechnicalHealthPanelProps> = React.memo(({
               value={`${fid}ms`}
               status={getFidStatus(fid)}
               icon={<AlertTriangle className={cn("h-4 w-4", getFidStatus(fid) === 'success' ? "text-green-500" : 
-                                                     getFidStatus(fid) === 'warning' ? "text-amber-500" : "text-red-500")} />}
+                                                   getFidStatus(fid) === 'warning' ? "text-amber-500" : "text-red-500")} />}
               description="First Input Delay"
             />
           </div>
