@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { ensureAdminUserInDb } from './userProfileService';
 
 // Function to create default admin and client users if they don't exist
 export async function createDefaultUsers() {
@@ -171,40 +172,5 @@ export async function createOrUpdateClient() {
 
 // Helper function for manually ensuring a user has admin privileges
 export async function ensureAdminUser(userId: string, email: string) {
-  try {
-    // Check if user exists in users table
-    const { data: existingUser } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .maybeSingle();
-      
-    if (existingUser) {
-      // Update role to admin if needed
-      if (existingUser.role !== 'admin') {
-        await supabase
-          .from('users')
-          .update({ role: 'admin' })
-          .eq('id', userId);
-        console.log(`User ${email} updated to admin role`);
-      }
-    } else {
-      // Create new entry in users table
-      await supabase
-        .from('users')
-        .insert([
-          { 
-            id: userId,
-            name: 'SEO Admin',
-            email: email,
-            role: 'admin'
-          }
-        ]);
-      console.log(`User ${email} added to users table with admin role`);
-    }
-    return true;
-  } catch (error) {
-    console.error('Error ensuring admin user:', error);
-    return false;
-  }
+  return ensureAdminUserInDb(userId, email);
 }
