@@ -115,7 +115,7 @@ export async function getClientAnalysisHistory(clientId: number): Promise<Analys
 }
 
 // Função para armazenar chaves de API no Supabase
-export async function storeApiKey(keyType: 'googlePageInsightsKey' | 'chatGptApiKey', value: string): Promise<void> {
+export async function storeApiKey(keyType: 'googlePageInsightsKey' | 'chatGptApiKey' | 'logoApiKey', value: string): Promise<void> {
   try {
     // Always store in localStorage for easier access
     localStorage.setItem(keyType, value);
@@ -141,7 +141,7 @@ export async function storeApiKey(keyType: 'googlePageInsightsKey' | 'chatGptApi
 }
 
 // Função para obter chaves de API do Supabase
-export async function getApiKey(keyType: 'googlePageInsightsKey' | 'chatGptApiKey'): Promise<string | null> {
+export async function getApiKey(keyType: 'googlePageInsightsKey' | 'chatGptApiKey' | 'logoApiKey'): Promise<string | null> {
   try {
     const { data, error } = await supabase
       .from('api_keys')
