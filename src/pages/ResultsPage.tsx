@@ -11,7 +11,7 @@ import AioAnalysisPanel from '@/components/AioAnalysisPanel';
 import LLMPresenceAudit from '@/components/LLMPresenceAudit';
 import { AnalysisResult } from '@/utils/api/types';
 import { AlertCircle, Loader2 } from 'lucide-react';
-import { getPageInsightsData } from '@/utils/api/pageInsightsService';
+import { getPageInsightsData } from '@/utils/api'; // Updated import path
 import { getChatGptAnalysis } from '@/utils/api/chatGptService';
 import { toast } from 'sonner';
 import { formatUrl, createAnalysisResult } from '@/utils/resultsPageHelpers';

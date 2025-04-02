@@ -1,6 +1,6 @@
 
 import { AnalysisResult, Client } from './types';
-import { getPageInsightsData } from './pageInsightsService';
+import { getPageInsightsData } from './pageInsights'; // Updated import path
 import { getChatGptAnalysis } from './chatGptService';
 import { saveAnalysisResult } from './supabaseClient';
 import { createAnalysisResult } from '../resultsPageHelpers';
