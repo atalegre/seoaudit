@@ -6,3 +6,6 @@ allowed_import_urls = ["https://esm.sh/*", "https://deno.land/std@0.168.0/http/s
 
 [functions.analyze-website.import_map]
 imports = { "openai" = "https://esm.sh/openai@4.20.1" }
+
+[functions.send-email.deployment]
+allowed_import_urls = ["https://deno.land/std@0.168.0/http/server.ts"]
