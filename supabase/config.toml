@@ -3,7 +3,9 @@ project_id = "vwtracpgzdqrowvjmizi"
 
 [functions.analyze-website]
 verify_jwt = false
-import_map = "import_map.json"
 
 [functions.send-email]
 verify_jwt = false
+
+[functions.analyze-website.import_map]
+imports = { "openai" = "https://esm.sh/openai@4.20.1" }
