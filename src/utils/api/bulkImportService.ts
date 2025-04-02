@@ -1,6 +1,6 @@
 
 import { Client } from './types';
-import { saveClientsToDatabase } from './clientService';
+import { saveClientsToDatabase, getClientsFromDatabase, updateClientInDatabase } from './clientService';
 import { getFullAnalysis } from './analysisService';
 import { saveAnalysisResult } from './supabaseClient';
 import { toast } from 'sonner';

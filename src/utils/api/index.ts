@@ -8,6 +8,7 @@ export * from './types';
 export * from './userService';
 export * from './clientService';
 export * from './logoService';
+export * from './bulkImportService';
 
 // Supabase Client
 export { 
@@ -20,5 +21,5 @@ export {
 // Analysis services
 export { getPageInsightsData } from './pageInsights';
 export { getChatGptAnalysis } from './chatGptService';
-export { processBulkImport } from './bulkImportService';
-export { getFullAnalysis, analyzeBulkClients } from './analysisService';
+export { getFullAnalysis } from './analysisService';
+

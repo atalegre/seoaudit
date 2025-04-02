@@ -120,6 +120,54 @@ export type Database = {
         }
         Relationships: []
       }
+      clients: {
+        Row: {
+          account: string | null
+          aioscore: number | null
+          contactemail: string | null
+          contactname: string | null
+          created_at: string | null
+          id: number
+          lastanalysis: string | null
+          lastreport: string | null
+          name: string
+          notes: string | null
+          seoscore: number | null
+          status: string | null
+          website: string
+        }
+        Insert: {
+          account?: string | null
+          aioscore?: number | null
+          contactemail?: string | null
+          contactname?: string | null
+          created_at?: string | null
+          id: number
+          lastanalysis?: string | null
+          lastreport?: string | null
+          name: string
+          notes?: string | null
+          seoscore?: number | null
+          status?: string | null
+          website: string
+        }
+        Update: {
+          account?: string | null
+          aioscore?: number | null
+          contactemail?: string | null
+          contactname?: string | null
+          created_at?: string | null
+          id?: number
+          lastanalysis?: string | null
+          lastreport?: string | null
+          name?: string
+          notes?: string | null
+          seoscore?: number | null
+          status?: string | null
+          website?: string
+        }
+        Relationships: []
+      }
       email_notifications: {
         Row: {
           created_at: string | null
