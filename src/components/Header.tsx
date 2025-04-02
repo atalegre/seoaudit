@@ -81,7 +81,7 @@ const Header = () => {
         <NavigationMenu className="hidden md:flex mr-auto">
           <NavigationMenuList>
             <NavigationMenuItem>
-              <Link to="/" className={navigationMenuTriggerStyle()}>
+              <Link to="/" className={cn(navigationMenuTriggerStyle(), "bg-gradient-to-r from-seo-light to-aio-light text-white hover:from-seo hover:to-aio")}>
                 Home
               </Link>
             </NavigationMenuItem>
@@ -134,19 +134,19 @@ const Header = () => {
             </NavigationMenuItem>
 
             <NavigationMenuItem>
-              <Link to="/como-funciona" className={navigationMenuTriggerStyle()}>
+              <Link to="/como-funciona" className={cn(navigationMenuTriggerStyle(), "bg-gradient-to-r from-seo-light to-aio-light text-white hover:from-seo hover:to-aio")}>
                 Como Funciona
               </Link>
             </NavigationMenuItem>
             
             <NavigationMenuItem>
-              <Link to="/faq" className={navigationMenuTriggerStyle()}>
+              <Link to="/faq" className={cn(navigationMenuTriggerStyle(), "bg-gradient-to-r from-seo-light to-aio-light text-white hover:from-seo hover:to-aio")}>
                 FAQ
               </Link>
             </NavigationMenuItem>
             
             <NavigationMenuItem>
-              <Link to="/contacto" className={navigationMenuTriggerStyle()}>
+              <Link to="/contacto" className={cn(navigationMenuTriggerStyle(), "bg-gradient-to-r from-seo-light to-aio-light text-white hover:from-seo hover:to-aio")}>
                 Contacto
               </Link>
             </NavigationMenuItem>
