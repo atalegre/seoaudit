@@ -10,7 +10,8 @@ export async function getClientsFromDatabase(): Promise<Client[]> {
   try {
     console.log('Fetching clients from database...');
     
-    // Try to fetch from clients table
+    // Use type assertion to allow accessing the clients table
+    // @ts-ignore - This is necessary because the auto-generated types don't include the clients table yet
     const { data, error } = await supabase
       .from('clients')
       .select('*');
@@ -31,15 +32,15 @@ export async function getClientsFromDatabase(): Promise<Client[]> {
       id: Number(client.id),
       name: client.name || '',
       website: client.website || '',
-      contactName: client.contactName || '',
-      contactEmail: client.contactEmail || '',
+      contactName: client.contactname || '', // Note the lowercase field name from DB
+      contactEmail: client.contactemail || '', // Note the lowercase field name from DB
       notes: client.notes || '',
       status: client.status || 'pending',
       account: client.account || 'Admin',
-      seoScore: client.seoScore || 0,
-      aioScore: client.aioScore || 0,
-      lastAnalysis: client.lastAnalysis || new Date().toISOString(),
-      lastReport: client.lastReport || ''
+      seoScore: client.seoscore || 0, // Note the lowercase field name from DB
+      aioScore: client.aioscore || 0, // Note the lowercase field name from DB
+      lastAnalysis: client.lastanalysis || new Date().toISOString(), // Note the lowercase field name from DB
+      lastReport: client.lastreport || '' // Note the lowercase field name from DB
     }));
     
     return clients;
@@ -65,23 +66,24 @@ export async function saveClientsToDatabase(clients: Client[]): Promise<{success
   try {
     console.log('Attempting to save clients to database:', clients);
     
-    // Transform clients to match the database schema
+    // Transform clients to match the database schema (lowercase field names)
     const clientsToSave = clients.map(client => ({
       id: client.id,
       name: client.name,
       website: client.website,
-      contactName: client.contactName || '',
-      contactEmail: client.contactEmail || '',
+      contactname: client.contactName || '', // Note the lowercase field name for DB
+      contactemail: client.contactEmail || '', // Note the lowercase field name for DB
       notes: client.notes || '',
       status: client.status || 'pending',
       account: client.account || 'Admin',
-      seoScore: client.seoScore || 0,
-      aioScore: client.aioScore || 0,
-      lastAnalysis: client.lastAnalysis || new Date().toISOString(),
-      lastReport: client.lastReport || ''
+      seoscore: client.seoScore || 0, // Note the lowercase field name for DB
+      aioscore: client.aioScore || 0, // Note the lowercase field name for DB
+      lastanalysis: client.lastAnalysis || new Date().toISOString(), // Note the lowercase field name for DB
+      lastreport: client.lastReport || '' // Note the lowercase field name for DB
     }));
     
     // Insere os novos clientes
+    // @ts-ignore - This is necessary because the auto-generated types don't include the clients table yet
     const { data, error } = await supabase
       .from('clients')
       .upsert(clientsToSave, { 
@@ -132,21 +134,25 @@ export async function saveClientsToDatabase(clients: Client[]): Promise<{success
  */
 export async function updateClientInDatabase(client: Client): Promise<void> {
   try {
+    // Format the client to match the database schema (lowercase field names)
+    const clientToUpdate = {
+      name: client.name,
+      website: client.website,
+      contactname: client.contactName,
+      contactemail: client.contactEmail,
+      notes: client.notes,
+      status: client.status,
+      account: client.account,
+      seoscore: client.seoScore,
+      aioscore: client.aioScore,
+      lastanalysis: client.lastAnalysis,
+      lastreport: client.lastReport
+    };
+    
+    // @ts-ignore - This is necessary because the auto-generated types don't include the clients table yet
     const { error } = await supabase
       .from('clients')
-      .update({
-        name: client.name,
-        website: client.website,
-        contactName: client.contactName,
-        contactEmail: client.contactEmail,
-        notes: client.notes,
-        status: client.status,
-        account: client.account,
-        seoScore: client.seoScore,
-        aioScore: client.aioScore,
-        lastAnalysis: client.lastAnalysis,
-        lastReport: client.lastReport
-      })
+      .update(clientToUpdate)
       .eq('id', client.id);
     
     if (error) {
