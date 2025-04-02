@@ -1,4 +1,3 @@
-import { analyzeSite } from '../analyzerUtils';
 import { getApiKey } from './supabaseClient';
 import { toast } from 'sonner';
 
@@ -20,12 +19,11 @@ export async function getPageInsightsData(url: string): Promise<any> {
     if (!apiKey) {
       console.error('Google Page Insights API key not found in Supabase or localStorage');
       toast.warning('Chave da API Google Page Insights não encontrada', {
-        description: 'Configure a chave nas configurações para obter análise de SEO real.',
+        description: 'Configure a chave nas configurações para obter análise de SEO.',
       });
       
-      // Use o analisador local como fallback
-      console.log('Using local analyzer as fallback due to missing API key');
-      return analyzeSite(url).seo;
+      // Retornar erro em vez de usar analisador local
+      throw new Error('Chave da API Google Page Insights não encontrada');
     }
 
     toast('Analisando SEO com Google Page Insights...', {
@@ -98,7 +96,7 @@ export async function getPageInsightsData(url: string): Promise<any> {
       if (fetchError.name === 'AbortError') {
         console.error('Google Page Insights API request timed out after 30 seconds');
         toast.error('Tempo limite excedido', {
-          description: 'A API do Google demorou muito para responder. Usando análise local.'
+          description: 'A API do Google demorou muito para responder.'
         });
       } else {
         console.error('Fetch error:', fetchError.message);
@@ -115,7 +113,7 @@ export async function getPageInsightsData(url: string): Promise<any> {
           });
         } else {
           toast.error('Erro na API do Google', {
-            description: 'Utilizando análise local como alternativa.',
+            description: 'Não foi possível obter dados do Google Page Insights.',
           });
         }
       }
@@ -124,12 +122,11 @@ export async function getPageInsightsData(url: string): Promise<any> {
   } catch (error) {
     console.error('Error fetching Page Insights data:', error);
     toast.error('Erro ao buscar dados do Google Page Insights', {
-      description: 'Utilizando análise local como alternativa.',
+      description: 'Não foi possível obter análise SEO.',
     });
     
-    // Use o analisador local como fallback
-    console.log('Using local analyzer as fallback due to error');
-    return analyzeSite(url).seo;
+    // Retornar erro em vez de usar análise local como fallback
+    throw error;
   }
 }
 

@@ -21,9 +21,7 @@ serve(async (req) => {
       console.error('OPENAI_API_KEY não está configurada nas variáveis de ambiente');
       return new Response(JSON.stringify({
         error: 'API Key OpenAI não configurada no servidor',
-        apiUsed: false,
-        fallbackAnalysisProvided: true,
-        message: 'Configure a chave da API OpenAI nas configurações para obter análises mais precisas'
+        apiUsed: false
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400
@@ -111,11 +109,7 @@ Não inclua mais nada além do JSON acima. Não forneça introduções, conclus�
             ? 'Chave API OpenAI inválida ou desatualizada' 
             : `Erro na API OpenAI: ${response.status} ${response.statusText}`,
           apiUsed: false,
-          fallbackAnalysisProvided: true,
-          details: errorData,
-          message: isApiKeyError 
-            ? 'Por favor, atualize sua chave API nas configurações' 
-            : 'Usando análise local como alternativa'
+          details: errorData
         }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 502
@@ -156,53 +150,13 @@ Não inclua mais nada além do JSON acima. Não forneça introduções, conclus�
         console.error(`[${requestId}] Erro ao analisar o JSON da resposta:`, parseError);
         console.log(`[${requestId}] Tentando extrair dados da resposta em texto:`, analysisText);
         
-        // Extrair dados da resposta do OpenAI como fallback usando regex
-        const scoreMatch = analysisText.match(/"score":\s*(\d+)/i) || analysisText.match(/pontuação geral.*?(\d+)/i) || analysisText.match(/overall score.*?(\d+)/i);
-        const clarityMatch = analysisText.match(/"contentClarity":\s*(\d+)/i) || analysisText.match(/clareza de conteúdo.*?(\d+)/i) || analysisText.match(/content clarity.*?(\d+)/i);
-        const structureMatch = analysisText.match(/"logicalStructure":\s*(\d+)/i) || analysisText.match(/estrutura lógica.*?(\d+)/i) || analysisText.match(/logical structure.*?(\d+)/i);
-        const languageMatch = analysisText.match(/"naturalLanguage":\s*(\d+)/i) || analysisText.match(/linguagem natural.*?(\d+)/i) || analysisText.match(/natural language.*?(\d+)/i);
-        
-        console.log(`[${requestId}] Matches encontrados:`, {
-          score: scoreMatch?.[1],
-          clarity: clarityMatch?.[1],
-          structure: structureMatch?.[1],
-          language: languageMatch?.[1]
-        });
-        
-        // Extrair tópicos usando regex
-        const topicsMatch = analysisText.match(/"topicsDetected":\s*\[(.*?)\]/i);
-        const topics = topicsMatch ? 
-          topicsMatch[1].split(',').map(t => t.trim().replace(/"/g, '').trim()).filter(Boolean) : 
-          ['Marketing Digital', 'SEO', 'Presença Online'];
-        
-        // Extrair partes confusas usando regex
-        const confusingMatch = analysisText.match(/"confusingParts":\s*\[(.*?)\]/i);
-        const confusingParts = confusingMatch ?
-          confusingMatch[1].split(',').map(t => t.trim().replace(/"/g, '').trim()).filter(Boolean) :
-          ['Parágrafos muito longos', 'Informação técnica sem explicação'];
-        
-        const analysisMatch = analysisText.match(/"analysis":\s*"(.*?)"/i);
-        const analysis = analysisMatch ? analysisMatch[1] : '';
-        
-        const result = {
-          score: parseInt(scoreMatch?.[1] || '70'),
-          contentClarity: parseInt(clarityMatch?.[1] || '65'),
-          logicalStructure: parseInt(structureMatch?.[1] || '75'),
-          naturalLanguage: parseInt(languageMatch?.[1] || '80'),
-          topicsDetected: topics,
-          confusingParts: confusingParts,
-          analysis: analysis,
-          rawAnalysis: analysisText,
-          apiUsed: true,
-          requestId: requestId,
-          timestamp: new Date().toISOString()
-        };
-
-        console.log(`[${requestId}] Análise extraída com sucesso:`, JSON.stringify(result).substring(0, 300) + "...");
-
-        return new Response(JSON.stringify(result), {
+        return new Response(JSON.stringify({
+          error: `Falha ao analisar resposta da API: ${parseError.message}`,
+          apiUsed: false,
+          rawResponse: analysisText
+        }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200
+          status: 500
         });
       }
     } catch (fetchError) {
@@ -210,9 +164,7 @@ Não inclua mais nada além do JSON acima. Não forneça introduções, conclus�
       
       return new Response(JSON.stringify({
         error: `Falha na conexão com a API OpenAI: ${fetchError.message}`,
-        apiUsed: false,
-        fallbackAnalysisProvided: true,
-        message: 'Usando análise local como alternativa'
+        apiUsed: false
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 503
@@ -223,9 +175,7 @@ Não inclua mais nada além do JSON acima. Não forneça introduções, conclus�
     
     return new Response(JSON.stringify({
       error: error.message || 'Erro interno ao analisar website',
-      apiUsed: false,
-      fallbackAnalysisProvided: true,
-      message: 'Usando análise local como alternativa devido a erro no servidor'
+      apiUsed: false
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500

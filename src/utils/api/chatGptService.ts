@@ -1,5 +1,4 @@
 
-import { analyzeSite } from '../analyzerUtils';
 import { toast } from 'sonner';
 
 // Cliente de API mais robusto para comunicar com a edge function do Supabase
@@ -42,7 +41,7 @@ export async function getChatGptAnalysis(url: string, content: string = ''): Pro
           });
         } else {
           toast.error('Erro ao acessar serviço de análise', {
-            description: 'Usando análise local como alternativa'
+            description: 'Falha ao conectar com a API de análise'
           });
         }
         
@@ -51,9 +50,8 @@ export async function getChatGptAnalysis(url: string, content: string = ''): Pro
           console.error('Detalhes do erro:', errorData.details);
         }
         
-        // Usar análise local como fallback
-        console.info('Using local analyzer as fallback due to edge function error');
-        return analyzeSite(url).aio;
+        // Retornar erro em vez de dados simulados
+        throw new Error(`Erro na API de análise AIO: ${response.status} ${response.statusText}`);
       }
       
       const data = await response.json();
@@ -80,7 +78,7 @@ export async function getChatGptAnalysis(url: string, content: string = ''): Pro
       if (fetchError.name === 'AbortError') {
         console.error('Edge function request timed out after 30 seconds');
         toast.error('Tempo limite excedido', {
-          description: 'A análise remota demorou muito tempo, usando análise local'
+          description: 'A análise remota demorou muito tempo'
         });
       } else {
         console.error('Error connecting to edge function:', fetchError);
@@ -89,17 +87,16 @@ export async function getChatGptAnalysis(url: string, content: string = ''): Pro
         });
       }
       
-      // Usar análise local como fallback
-      console.info('Using local analyzer as fallback due to fetch error');
-      return analyzeSite(url).aio;
+      // Retornar erro em vez de usar análise local como fallback
+      throw new Error(`Erro ao conectar com a API de análise AIO: ${fetchError.message}`);
     }
   } catch (error) {
     console.error('General error in ChatGPT analysis service:', error);
     toast.error('Erro na análise de IA', {
-      description: 'Utilizando análise local como alternativa'
+      description: 'Não foi possível completar a análise de IA'
     });
     
-    // Usar análise local como fallback
-    return analyzeSite(url).aio;
+    // Retornar erro em vez de usar análise local como fallback
+    throw error;
   }
 }

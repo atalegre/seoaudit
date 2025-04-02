@@ -17,12 +17,37 @@ export async function getFullAnalysis(url: string): Promise<AnalysisResult> {
     }
     
     // Get SEO and AIO data concurrently
-    const [seoData, aioData] = await Promise.all([
-      getPageInsightsData(url),
-      getChatGptAnalysis(url)
-    ]);
+    const seoPromise = getPageInsightsData(url);
+    const aioPromise = getChatGptAnalysis(url);
     
-    // Combine results
+    // Wait for both promises to settle
+    const [seoResult, aioResult] = await Promise.allSettled([seoPromise, aioPromise]);
+    
+    // Check if both APIs failed
+    if (seoResult.status === 'rejected' && aioResult.status === 'rejected') {
+      throw new Error('Ambas as APIs falharam. Não foi possível realizar a análise.');
+    }
+    
+    // Extract data or handle errors
+    const seoData = seoResult.status === 'fulfilled' ? seoResult.value : null;
+    const aioData = aioResult.status === 'fulfilled' ? aioResult.value : null;
+    
+    // Show warnings for individual API failures
+    if (seoResult.status === 'rejected') {
+      console.error('SEO API failed:', seoResult.reason);
+      toast.error('Análise SEO falhou', {
+        description: 'Não foi possível obter dados de SEO.'
+      });
+    }
+    
+    if (aioResult.status === 'rejected') {
+      console.error('AIO API failed:', aioResult.reason);
+      toast.error('Análise AIO falhou', {
+        description: 'Não foi possível obter dados de AIO.'
+      });
+    }
+    
+    // Create result with available data
     return createAnalysisResult(url, seoData, aioData);
   } catch (error) {
     console.error('Error in full analysis:', error);

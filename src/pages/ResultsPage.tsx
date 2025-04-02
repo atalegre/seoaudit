@@ -1,26 +1,32 @@
+
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ScoreDisplay from '@/components/ScoreDisplay';
 import AnalysisTabs from '@/components/AnalysisTabs';
 import ReportForm from '@/components/ReportForm';
 import { AnalysisResult } from '@/utils/api/types';
-import { Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2 } from 'lucide-react';
 import { getPageInsightsData } from '@/utils/api/pageInsightsService';
 import { getChatGptAnalysis } from '@/utils/api/chatGptService';
 import { toast } from 'sonner';
 import { formatUrl, createAnalysisResult } from '@/utils/resultsPageHelpers';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const ANALYSIS_STORAGE_KEY = 'web_analysis_results';
 const ANALYSIS_URL_KEY = 'web_analysis_url';
 
 const ResultsPage = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [analysisData, setAnalysisData] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [seoError, setSeoError] = useState<string | null>(null);
+  const [aioError, setAioError] = useState<string | null>(null);
   const isMobile = useIsMobile();
   
   useEffect(() => {
@@ -54,6 +60,8 @@ const ResultsPage = () => {
     
     console.log('Iniciando nova análise para URL:', urlParam);
     setIsLoading(true);
+    setSeoError(null);
+    setAioError(null);
     
     const performAnalysis = async () => {
       try {
@@ -68,98 +76,40 @@ const ResultsPage = () => {
           duration: 3000
         });
         
-        let pageContent = '';
-        try {
-          console.log('Pular extração de conteúdo (requer backend)');
-        } catch (contentError) {
-          console.warn('Não foi possível extrair conteúdo:', contentError);
+        // Iniciar análises em paralelo
+        const seoDataPromise = (async () => {
+          try {
+            console.log('Iniciando análise SEO com Page Insights');
+            return await getPageInsightsData(normalizedUrl);
+          } catch (error) {
+            setSeoError(error instanceof Error ? error.message : 'Erro desconhecido na análise SEO');
+            console.error('Error fetching Page Insights data:', error);
+            return null;
+          }
+        })();
+        
+        const aioDataPromise = (async () => {
+          try {
+            console.log('Iniciando análise AIO com OpenAI');
+            return await getChatGptAnalysis(normalizedUrl);
+          } catch (error) {
+            setAioError(error instanceof Error ? error.message : 'Erro desconhecido na análise AIO');
+            console.error('Error fetching AIO data:', error);
+            return null;
+          }
+        })();
+        
+        // Aguardar os resultados
+        const [seoData, aioData] = await Promise.all([seoDataPromise, aioDataPromise]);
+        
+        // Verificar se ambas as análises falharam
+        if (!seoData && !aioData) {
+          setError('Falha em ambas as análises. Por favor, verifique suas configurações de API.');
+          setIsLoading(false);
+          return;
         }
         
-        const [seoDataPromise, aioDataPromise] = await Promise.allSettled([
-          (async () => {
-            try {
-              console.log('Iniciando análise SEO com Page Insights');
-              const data = await getPageInsightsData(normalizedUrl);
-              console.log('Dados SEO recebidos:', data);
-              return data;
-            } catch (error) {
-              console.error('Error fetching Page Insights data:', error);
-              toast.error('Erro na análise SEO', {
-                description: 'Não foi possível conectar à API do Google Page Insights.',
-              });
-              
-              return {
-                score: 0,
-                loadTimeDesktop: 0,
-                loadTimeMobile: 0,
-                mobileFriendly: false,
-                imageOptimization: 0,
-                headingsStructure: 0,
-                metaTags: 0,
-                security: false,
-                issues: []
-              };
-            }
-          })(),
-          
-          (async () => {
-            try {
-              console.log('Iniciando análise AIO com OpenAI');
-              const data = await getChatGptAnalysis(normalizedUrl, pageContent);
-              console.log('Dados AIO recebidos:', data);
-              
-              if (data && data.apiUsed) {
-                console.log('API OpenAI foi utilizada com sucesso para análise');
-              } else {
-                console.log('API OpenAI não foi utilizada, usando analisador local');
-              }
-              
-              return data;
-            } catch (error) {
-              console.error('Error fetching AIO data:', error);
-              toast.error('Erro na análise AIO', {
-                description: 'Não foi possível conectar à API de IA.',
-              });
-              
-              return {
-                score: 0,
-                contentClarity: 0,
-                logicalStructure: 0,
-                naturalLanguage: 0,
-                topicsDetected: [],
-                confusingParts: []
-              };
-            }
-          })()
-        ]);
-        
-        const seoData = seoDataPromise.status === 'fulfilled' ? seoDataPromise.value : {
-          score: 0,
-          loadTimeDesktop: 0,
-          loadTimeMobile: 0,
-          mobileFriendly: false,
-          imageOptimization: 0,
-          headingsStructure: 0,
-          metaTags: 0,
-          security: false,
-          issues: []
-        };
-        
-        const aioData = aioDataPromise.status === 'fulfilled' ? aioDataPromise.value : {
-          score: 0,
-          contentClarity: 0,
-          logicalStructure: 0,
-          naturalLanguage: 0,
-          topicsDetected: [],
-          confusingParts: []
-        };
-        
-        if (aioDataPromise.status === 'fulfilled' && aioData.apiUsed) {
-          toast.success('Análise de IA concluída com sucesso', {
-            description: 'A API OpenAI foi utilizada para analisar o site'
-          });
-        }
-        
+        // Criar resultado com os dados disponíveis
         const results = createAnalysisResult(normalizedUrl, seoData, aioData);
         console.log('Resultado da análise criado:', results);
         
@@ -187,6 +137,10 @@ const ResultsPage = () => {
     window.location.reload();
   };
   
+  const handleReturnHome = () => {
+    navigate('/');
+  };
+  
   if (isLoading) {
     return (
       <div className="flex flex-col min-h-screen">
@@ -202,15 +156,41 @@ const ResultsPage = () => {
     );
   }
   
-  if (error || !analysisData) {
+  if (error) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center max-w-md px-4">
+            <h1 className="text-2xl font-bold mb-4">Erro na Análise</h1>
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Falha na análise</AlertTitle>
+              <AlertDescription>
+                {error}
+              </AlertDescription>
+            </Alert>
+            <p className="mb-6">Verifique as configurações de API e tente novamente.</p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <Button onClick={handleReturnHome}>Voltar à página inicial</Button>
+              <Button variant="outline" onClick={handleReanalyze}>Tentar novamente</Button>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+  
+  if (!analysisData) {
     return (
       <div className="flex flex-col min-h-screen">
         <Header />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">{error || "URL em falta"}</h1>
+            <h1 className="text-2xl font-bold mb-4">URL em falta</h1>
             <p className="mb-6">Não foi possível analisar o URL. Por favor, tente novamente.</p>
-            <a href="/" className="text-primary hover:underline">Voltar à página inicial</a>
+            <Button onClick={handleReturnHome}>Voltar à página inicial</Button>
           </div>
         </div>
         <Footer />
@@ -227,6 +207,18 @@ const ResultsPage = () => {
           <h1 className="text-xl md:text-3xl font-bold mb-4 md:mb-8 animate-fade-in">
             Resultados da análise
           </h1>
+          
+          {(seoError || aioError) && (
+            <Alert variant="warning" className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Algumas análises falharam</AlertTitle>
+              <AlertDescription className="space-y-2">
+                {seoError && <p>Análise SEO: {seoError}</p>}
+                {aioError && <p>Análise AIO: {aioError}</p>}
+                <p>Os resultados mostrados podem estar incompletos.</p>
+              </AlertDescription>
+            </Alert>
+          )}
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
             <div className="lg:col-span-2 space-y-4 md:space-y-6">
