@@ -48,6 +48,7 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
     try {
       console.log("Login attempt with:", values.email);
       
+      // Attempt to sign in with email and password
       const { data, error } = await signInWithEmail(values.email, values.password);
       
       if (error) {
@@ -57,7 +58,7 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
         toast({
           variant: "destructive",
           title: "Erro de autenticação",
-          description: "Email ou password incorretos. Tente as credenciais de demonstração listadas abaixo.",
+          description: `${error.message || "Email ou password incorretos"}. Tente as credenciais de demonstração listadas abaixo.`,
         });
       } else if (data?.user) {
         console.log("Login successful:", data);
@@ -66,12 +67,19 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
           description: "Bem-vindo de volta!",
         });
         
-        const userRole = await checkUserRole(data.user.id);
-        console.log("User role:", userRole);
-        
-        if (userRole === 'admin') {
-          navigate('/dashboard');
-        } else {
+        // Determine where to redirect based on user role
+        try {
+          const userRole = await checkUserRole(data.user.id);
+          console.log("User role:", userRole);
+          
+          if (userRole === 'admin') {
+            navigate('/dashboard');
+          } else {
+            navigate('/dashboard/client');
+          }
+        } catch (roleError) {
+          console.error("Error checking role:", roleError);
+          // Default to client dashboard if role check fails
           navigate('/dashboard/client');
         }
       } else {
