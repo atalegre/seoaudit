@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { 
@@ -25,64 +24,12 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
-import { AlertCircle, TrendingDown, TrendingUp } from 'lucide-react';
+import { AlertCircle, TrendingDown, TrendingUp, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getClientsFromDatabase } from '@/utils/api/clientService';
+import { Client } from '@/utils/api/types';
+import { toast } from 'sonner';
 
-// Mock data for the dashboard
-const websiteData = [
-  { 
-    id: 1, 
-    name: 'Tech Solutions', 
-    website: 'techsolutions.pt', 
-    seoScore: 87, 
-    aioScore: 72, 
-    lastAnalysis: '2023-10-15', 
-    status: 'estável',
-    account: 'João Silva'
-  },
-  { 
-    id: 2, 
-    name: 'Design Studio', 
-    website: 'designstudio.pt', 
-    seoScore: 45, 
-    aioScore: 38, 
-    lastAnalysis: '2023-10-14', 
-    status: 'crítico',
-    account: 'Maria Santos'
-  },
-  { 
-    id: 3, 
-    name: 'Eco Shop', 
-    website: 'ecoshop.pt', 
-    seoScore: 92, 
-    aioScore: 88, 
-    lastAnalysis: '2023-10-10', 
-    status: 'saudável',
-    account: 'Pedro Costa'
-  },
-  { 
-    id: 4, 
-    name: 'City Tours', 
-    website: 'citytours.pt', 
-    seoScore: 62, 
-    aioScore: 75, 
-    lastAnalysis: '2023-10-08', 
-    status: 'melhorou',
-    account: 'Ana Oliveira'
-  },
-  { 
-    id: 5, 
-    name: 'Tech News', 
-    website: 'technews.pt', 
-    seoScore: 78, 
-    aioScore: 64, 
-    lastAnalysis: '2023-10-05', 
-    status: 'estável',
-    account: 'João Silva'
-  },
-];
-
-// Mock data for alerts
 const alerts = [
   {
     id: 1,
@@ -110,36 +57,72 @@ const alerts = [
 const DashboardPage = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [accountFilter, setAccountFilter] = useState<string>('all');
+  const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
   
-  // Filter websites based on selected filters
-  const filteredWebsites = websiteData.filter((website) => {
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        setLoading(true);
+        const clientsData = await getClientsFromDatabase();
+        console.log('Fetched clients for dashboard:', clientsData);
+        setClients(clientsData);
+      } catch (error) {
+        console.error('Error fetching clients for dashboard:', error);
+        toast.error('Erro ao carregar clientes');
+        setClients([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchClients();
+  }, []);
+  
+  const filteredWebsites = clients.filter((website) => {
     const matchesStatus = statusFilter === 'all' || website.status === statusFilter;
     const matchesAccount = accountFilter === 'all' || website.account === accountFilter;
     return matchesStatus && matchesAccount;
   });
   
-  // Get unique accounts for the filter
-  const accounts = [...new Set(websiteData.map(site => site.account))];
+  const accounts = [...new Set(clients.map(site => site.account))];
   
-  // Function to determine badge color based on status
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'crítico':
+      case 'critical':
         return <Badge variant="destructive">{status}</Badge>;
       case 'melhorou':
+      case 'improved':
         return <Badge className="bg-green-500">{status}</Badge>;
       case 'saudável':
+      case 'healthy':
         return <Badge className="bg-green-700">{status}</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
   };
   
-  // Function to determine score color based on value
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600';
     if (score >= 60) return 'text-amber-500';
     return 'text-red-500';
+  };
+
+  const getClientsCountByStatus = (status: string) => {
+    if (status === 'critical' || status === 'crítico') {
+      return clients.filter(c => c.status === 'critical' || c.status === 'crítico').length;
+    }
+    if (status === 'stable' || status === 'estável') {
+      return clients.filter(c => c.status === 'stable' || c.status === 'estável').length;
+    }
+    if (status === 'healthy' || status === 'saudável' || status === 'improved' || status === 'melhorou') {
+      return clients.filter(c => 
+        c.status === 'healthy' || c.status === 'saudável' || 
+        c.status === 'improved' || c.status === 'melhorou'
+      ).length;
+    }
+    return 0;
   };
   
   return (
@@ -163,6 +146,8 @@ const DashboardPage = () => {
                   <SelectItem value="estável">Estável</SelectItem>
                   <SelectItem value="melhorou">Melhorou</SelectItem>
                   <SelectItem value="saudável">Saudável</SelectItem>
+                  <SelectItem value="pending">Pendente</SelectItem>
+                  <SelectItem value="active">Ativo</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -190,7 +175,6 @@ const DashboardPage = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Websites Card */}
           <Card className="col-span-1 md:col-span-2">
             <CardHeader>
               <CardTitle>Websites Analisados</CardTitle>
@@ -199,49 +183,63 @@ const DashboardPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Website</TableHead>
-                    <TableHead>SEO Score</TableHead>
-                    <TableHead>AIO Score</TableHead>
-                    <TableHead>Última Análise</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead>Account</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredWebsites.map((website) => (
-                    <TableRow key={website.id}>
-                      <TableCell className="font-medium">{website.name}</TableCell>
-                      <TableCell>{website.website}</TableCell>
-                      <TableCell className={cn("font-medium", getScoreColor(website.seoScore))}>
-                        {website.seoScore}
-                      </TableCell>
-                      <TableCell className={cn("font-medium", getScoreColor(website.aioScore))}>
-                        {website.aioScore}
-                      </TableCell>
-                      <TableCell>{website.lastAnalysis}</TableCell>
-                      <TableCell>{getStatusBadge(website.status)}</TableCell>
-                      <TableCell>{website.account}</TableCell>
-                      <TableCell className="text-right">
-                        <Link 
-                          to={`/dashboard/client/${website.id}`}
-                          className="text-primary hover:underline text-sm font-medium"
-                        >
-                          Ver detalhes
-                        </Link>
-                      </TableCell>
+              {loading ? (
+                <div className="flex items-center justify-center h-24">
+                  <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                  <span>Carregando websites...</span>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome</TableHead>
+                      <TableHead>Website</TableHead>
+                      <TableHead>SEO Score</TableHead>
+                      <TableHead>AIO Score</TableHead>
+                      <TableHead>Última Análise</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead>Account</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredWebsites.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-4">
+                          Nenhum website encontrado.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredWebsites.map((website) => (
+                        <TableRow key={website.id}>
+                          <TableCell className="font-medium">{website.name}</TableCell>
+                          <TableCell>{website.website}</TableCell>
+                          <TableCell className={cn("font-medium", getScoreColor(website.seoScore || 0))}>
+                            {website.seoScore || 0}
+                          </TableCell>
+                          <TableCell className={cn("font-medium", getScoreColor(website.aioScore || 0))}>
+                            {website.aioScore || 0}
+                          </TableCell>
+                          <TableCell>{website.lastAnalysis ? new Date(website.lastAnalysis).toLocaleDateString() : 'N/A'}</TableCell>
+                          <TableCell>{getStatusBadge(website.status || 'pending')}</TableCell>
+                          <TableCell>{website.account}</TableCell>
+                          <TableCell className="text-right">
+                            <Link 
+                              to={`/dashboard/client/${website.id}`}
+                              className="text-primary hover:underline text-sm font-medium"
+                            >
+                              Ver detalhes
+                            </Link>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
           
-          {/* Alerts Card */}
           <Card>
             <CardHeader>
               <CardTitle>Alertas</CardTitle>
@@ -278,7 +276,6 @@ const DashboardPage = () => {
             </CardContent>
           </Card>
           
-          {/* Quick Stats Card */}
           <Card>
             <CardHeader>
               <CardTitle>Resumo</CardTitle>
@@ -289,24 +286,24 @@ const DashboardPage = () => {
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 border rounded-lg">
-                  <div className="text-2xl font-bold">{websiteData.length}</div>
+                  <div className="text-2xl font-bold">{clients.length}</div>
                   <div className="text-sm text-muted-foreground">Websites Total</div>
                 </div>
                 <div className="p-4 border rounded-lg">
                   <div className="text-2xl font-bold text-red-500">
-                    {websiteData.filter(w => w.status === 'crítico').length}
+                    {getClientsCountByStatus('critical')}
                   </div>
                   <div className="text-sm text-muted-foreground">Em estado crítico</div>
                 </div>
                 <div className="p-4 border rounded-lg">
                   <div className="text-2xl font-bold text-amber-500">
-                    {websiteData.filter(w => w.status === 'estável').length}
+                    {getClientsCountByStatus('stable')}
                   </div>
                   <div className="text-sm text-muted-foreground">Estáveis</div>
                 </div>
                 <div className="p-4 border rounded-lg">
                   <div className="text-2xl font-bold text-green-500">
-                    {websiteData.filter(w => w.status === 'saudável' || w.status === 'melhorou').length}
+                    {getClientsCountByStatus('healthy')}
                   </div>
                   <div className="text-sm text-muted-foreground">Saudáveis</div>
                 </div>

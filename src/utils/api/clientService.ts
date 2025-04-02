@@ -26,8 +26,23 @@ export async function getClientsFromDatabase(): Promise<Client[]> {
     }
     
     console.log('Fetched clients:', data);
-    // Se não houver dados, retorna um array vazio
-    return (data || []) as Client[];
+    // Transform the data to ensure all properties match Client type
+    const clients: Client[] = (data || []).map(client => ({
+      id: Number(client.id),
+      name: client.name || '',
+      website: client.website || '',
+      contactName: client.contactName || '',
+      contactEmail: client.contactEmail || '',
+      notes: client.notes || '',
+      status: client.status || 'pending',
+      account: client.account || 'Admin',
+      seoScore: client.seoScore || 0,
+      aioScore: client.aioScore || 0,
+      lastAnalysis: client.lastAnalysis || new Date().toISOString(),
+      lastReport: client.lastReport || ''
+    }));
+    
+    return clients;
   } catch (error) {
     console.warn('Using localStorage fallback for clients');
     
@@ -50,11 +65,27 @@ export async function saveClientsToDatabase(clients: Client[]): Promise<{success
   try {
     console.log('Attempting to save clients to database:', clients);
     
+    // Transform clients to match the database schema
+    const clientsToSave = clients.map(client => ({
+      id: client.id,
+      name: client.name,
+      website: client.website,
+      contactName: client.contactName || '',
+      contactEmail: client.contactEmail || '',
+      notes: client.notes || '',
+      status: client.status || 'pending',
+      account: client.account || 'Admin',
+      seoScore: client.seoScore || 0,
+      aioScore: client.aioScore || 0,
+      lastAnalysis: client.lastAnalysis || new Date().toISOString(),
+      lastReport: client.lastReport || ''
+    }));
+    
     // Insere os novos clientes
     const { data, error } = await supabase
       .from('clients')
-      .upsert(clients, { 
-        onConflict: 'contactEmail',
+      .upsert(clientsToSave, { 
+        onConflict: 'id',
         ignoreDuplicates: false 
       });
     
@@ -103,8 +134,20 @@ export async function updateClientInDatabase(client: Client): Promise<void> {
   try {
     const { error } = await supabase
       .from('clients')
-      .update(client)
-      .eq('id', client.id.toString());
+      .update({
+        name: client.name,
+        website: client.website,
+        contactName: client.contactName,
+        contactEmail: client.contactEmail,
+        notes: client.notes,
+        status: client.status,
+        account: client.account,
+        seoScore: client.seoScore,
+        aioScore: client.aioScore,
+        lastAnalysis: client.lastAnalysis,
+        lastReport: client.lastReport
+      })
+      .eq('id', client.id);
     
     if (error) {
       throw error;
