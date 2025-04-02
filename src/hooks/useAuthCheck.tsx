@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { checkUserRole } from '@/utils/auth/authService';
 
 interface UseAuthCheckResult {
   user: any;
@@ -17,9 +16,9 @@ export const useAuthCheck = (): UseAuthCheckResult => {
   const location = useLocation();
   const [user, setUser] = useState<any>(null);
   const [userEmail, setUserEmail] = useState<string>('');
-  const [userName, setUserName] = useState<string>('AD');
+  const [userName, setUserName] = useState<string>('Guest');
   const [userRole, setUserRole] = useState<string>('user');
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -36,59 +35,18 @@ export const useAuthCheck = (): UseAuthCheckResult => {
             setUserName(getInitials(fullName));
           }
           
-          // Get user role
-          const role = await checkUserRole(session.user.id);
+          // Get user role from email
+          const role = session.user.email === 'atalegre@me.com' ? 'admin' : 'user';
           setUserRole(role);
-          
-          // Check access permissions
-          const pathParts = location.pathname.split('/');
-          if (pathParts[1] === 'dashboard') {
-            if (pathParts[2] === undefined && role !== 'admin') {
-              // Non-admins trying to access main dashboard should be redirected
-              navigate('/dashboard/client');
-            } else if (role === 'admin' && pathParts[2] === 'client' && !pathParts[3]) {
-              // Admins can view client dashboard if they explicitly go there
-              // No redirect needed here
-            }
-          }
-        } else {
-          navigate('/signin');
         }
       } catch (error) {
         console.error('Auth check error:', error);
-        navigate('/signin');
       } finally {
         setIsLoading(false);
       }
     };
     
     checkAuth();
-    
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === 'SIGNED_OUT') {
-          navigate('/signin');
-        } else if (session) {
-          setUser(session.user);
-          setUserEmail(session.user.email || '');
-          
-          // Get user name from user metadata if available
-          const fullName = session.user.user_metadata?.full_name;
-          if (fullName) {
-            setUserName(getInitials(fullName));
-          }
-          
-          // Update role
-          const role = await checkUserRole(session.user.id);
-          setUserRole(role);
-        }
-      }
-    );
-    
-    return () => {
-      subscription.unsubscribe();
-    };
   }, [navigate, location.pathname]);
   
   // Get initials from name

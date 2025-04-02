@@ -1,7 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { checkUserRole } from '@/utils/auth/authService';
 
 export type UserContextType = {
   user: any;
@@ -11,50 +10,28 @@ export type UserContextType = {
 
 export const UserContext = createContext<UserContextType>({
   user: null,
-  role: '',
-  loading: true
+  role: 'user', // Default role for non-authenticated users
+  loading: false
 });
 
 export const useUser = () => useContext(UserContext);
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<any>(null);
-  const [role, setRole] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(true);
+  const [role, setRole] = useState<string>('user');
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    // Check if user is logged in
-    async function checkAuth() {
-      setLoading(true);
-      
-      try {
-        const { data } = await supabase.auth.getUser();
-        setUser(data.user);
-        
-        if (data.user) {
-          // Get user role
-          const userRole = await checkUserRole(data.user.id);
-          setRole(userRole);
-        }
-      } catch (error) {
-        console.error('Auth error:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    
-    checkAuth();
-
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setUser(session?.user || null);
         
         if (session?.user) {
-          const userRole = await checkUserRole(session.user.id);
-          setRole(userRole);
+          // Set role based on email
+          setRole(session.user.email === 'atalegre@me.com' ? 'admin' : 'user');
         } else {
-          setRole('');
+          setRole('user');
         }
       }
     );

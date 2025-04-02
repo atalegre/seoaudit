@@ -37,11 +37,8 @@ const AuthButtons = () => {
 
   return (
     <div className="flex items-center gap-4">
-      <Button variant="ghost" asChild>
-        <Link to="/signin">Entrar</Link>
-      </Button>
-      <Button variant="default" asChild>
-        <Link to="/signup">Registar</Link>
+      <Button variant="default" onClick={() => navigate('/dashboard')}>
+        Acessar Dashboard
       </Button>
     </div>
   );

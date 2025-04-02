@@ -1,10 +1,10 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import ResultsPage from "./pages/ResultsPage";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -31,69 +31,11 @@ import GuidesPage from "./pages/content/GuidesPage";
 import SeoAioChecklistPage from "./pages/content/SeoAioChecklistPage";
 import VerificationPage from "./pages/VerificationPage";
 import { createDefaultUsers } from "./utils/auth/createDefaultUsers";
-import { checkUserRole } from "./utils/auth/authService";
 
 const queryClient = new QueryClient();
 
-const AuthCallback = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [isProcessing, setIsProcessing] = useState(true);
-  
-  useEffect(() => {
-    const handleAuthCallback = async () => {
-      try {
-        const { data, error } = await supabase.auth.getSession();
-        
-        // Check if there's an OTP expired error in the URL
-        const urlParams = new URLSearchParams(window.location.hash.substring(1));
-        const errorCode = urlParams.get('error_code');
-        const errorType = urlParams.get('error');
-        
-        if (errorType === 'access_denied' && errorCode === 'otp_expired') {
-          // If OTP is expired, redirect to verification page
-          const email = localStorage.getItem('pendingVerificationEmail');
-          if (email) {
-            navigate('/verification', { state: { email, expired: true } });
-          } else {
-            // If we don't have the email, redirect to sign in
-            navigate('/signin');
-          }
-        } else if (error) {
-          console.error("Auth callback error:", error);
-          navigate('/signin');
-        } else if (data.session) {
-          // Successful auth, check role to determine where to redirect
-          const userRole = await checkUserRole(data.session.user.id);
-          
-          if (userRole === 'admin') {
-            navigate('/dashboard'); // Admin dashboard
-          } else {
-            navigate('/dashboard/client'); // Client dashboard
-          }
-        } else {
-          navigate('/signin');
-        }
-      } catch (error) {
-        console.error("Exception during auth callback:", error);
-        navigate('/signin');
-      } finally {
-        setIsProcessing(false);
-      }
-    };
-
-    handleAuthCallback();
-  }, [navigate]);
-
-  if (isProcessing) {
-    return <div className="flex items-center justify-center min-h-screen">Processando autenticação...</div>;
-  }
-  
-  return null;
-};
-
 const App = () => {
-  // Create default users on app init
+  // Initialize default users but don't wait for them to be created
   useEffect(() => {
     createDefaultUsers();
   }, []);
@@ -115,7 +57,7 @@ const App = () => {
             <Route path="/recuperar-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/verification" element={<VerificationPage />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/auth/callback" element={<Navigate to="/dashboard" />} />
             
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/dashboard/client" element={<ClientDashboardPage />} />

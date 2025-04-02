@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
 
 import AuthLayout from '@/components/auth/AuthLayout';
 import AuthCard from '@/components/auth/AuthCard';
@@ -13,76 +14,34 @@ const SignInPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [authError, setAuthError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const location = useLocation();
   const locationState = location.state as { email?: string; returnTo?: string } | null;
 
-  useEffect(() => {
-    const checkSession = async () => {
-      try {
-        setIsLoading(true);
-        
-        // Check for existing session
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session) {
-          console.log("User is already logged in:", session.user);
-          
-          // Check if user exists in users table
-          const { data: userInTable } = await supabase
-            .from('users')
-            .select('role')
-            .eq('id', session.user.id)
-            .maybeSingle();
-            
-          if (!userInTable) {
-            // Create user record if needed
-            const role = session.user.email === 'atalegre@me.com' ? 'admin' : 'user';
-            const name = session.user.email === 'atalegre@me.com' ? 'Admin User' : 'SEO Client';
-            
-            await supabase.from('users').insert([
-              {
-                id: session.user.id,
-                name: name,
-                email: session.user.email,
-                role: role
-              }
-            ]);
-            
-            console.log(`Created user record for ${session.user.email} with role ${role}`);
-            
-            // Navigate based on role
-            if (role === 'admin') {
-              navigate('/dashboard');
-            } else {
-              navigate('/dashboard/client');
-            }
-          } else {
-            // Navigate based on existing role
-            if (userInTable.role === 'admin') {
-              navigate('/dashboard');
-            } else {
-              navigate('/dashboard/client');
-            }
-          }
-        }
-      } catch (error) {
-        console.error("Error checking session:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    checkSession();
-  }, [navigate]);
+  const handleSkipLogin = () => {
+    toast({
+      title: "Login ignorado",
+      description: "A continuar sem autenticação.",
+    });
+    navigate('/dashboard');
+  };
 
   const footerContent = (
-    <p className="text-sm text-muted-foreground">
-      Não tem uma conta?{' '}
-      <Link to="/signup" className="text-primary hover:underline font-medium">
-        Registre-se
-      </Link>
-    </p>
+    <>
+      <p className="text-sm text-muted-foreground mb-2">
+        Não tem uma conta?{' '}
+        <Link to="/signup" className="text-primary hover:underline font-medium">
+          Registre-se
+        </Link>
+      </p>
+      <Button 
+        variant="outline" 
+        className="w-full mt-2" 
+        onClick={handleSkipLogin}
+      >
+        Continuar sem login
+      </Button>
+    </>
   );
 
   if (isLoading) {
