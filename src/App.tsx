@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -30,16 +29,14 @@ import GlossaryTermPage from "./pages/content/GlossaryTermPage";
 import GuidesPage from "./pages/content/GuidesPage";
 import SeoAioChecklistPage from "./pages/content/SeoAioChecklistPage";
 
-// Create a singleton QueryClient instance
 const queryClient = new QueryClient();
 
-// Auth callback component with better error handling
 const AuthCallback = () => {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
         const { error } = await supabase.auth.getSession();
-        window.location.href = error ? '/signin' : '/dashboard';
+        window.location.href = error ? '/signin' : '/dashboard/client';
       } catch (error) {
         console.error("Exception during auth callback:", error);
         window.location.href = '/signin';
@@ -71,7 +68,6 @@ const App = () => {
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             
-            {/* Dashboard routes */}
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/dashboard/client" element={<ClientDashboardPage />} />
             <Route path="/dashboard/client/:id" element={<ClientPage />} />
@@ -80,7 +76,6 @@ const App = () => {
             <Route path="/dashboard/settings" element={<SettingsPage />} />
             <Route path="/dashboard/blog-posts" element={<BlogPostsPage />} />
             
-            {/* Content routes */}
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/blog/:slug" element={<BlogPostPage />} />
             <Route path="/glossario" element={<GlossaryPage />} />
@@ -88,7 +83,6 @@ const App = () => {
             <Route path="/guias" element={<GuidesPage />} />
             <Route path="/guias/seo-aio-checklist" element={<SeoAioChecklistPage />} />
             
-            {/* Catch-all route */}
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </TooltipProvider>
