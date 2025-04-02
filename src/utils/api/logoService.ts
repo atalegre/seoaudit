@@ -1,5 +1,6 @@
 
 import { toast } from 'sonner';
+import { getApiKey } from './index';
 
 interface LogoResponse {
   logo_url: string;
@@ -20,10 +21,18 @@ export async function fetchSiteLogo(url: string): Promise<string | null> {
     
     console.log(`Buscando logo para o domínio: ${domain}`);
     
+    // Obter a chave da API das configurações
+    const apiKey = await getApiKey('logoApiKey') || 'sk_RM22KfReRJ2LjotDAYgcxA';
+    
+    if (!apiKey) {
+      console.error('API key do logo.dev não encontrada nas configurações');
+      return null;
+    }
+    
     const response = await fetch(`https://api.logo.dev/v1/logo?domain=${domain}`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer sk_RM22KfReRJ2LjotDAYgcxA`,
+        'Authorization': `Bearer ${apiKey}`,
         'Accept': 'application/json'
       }
     });

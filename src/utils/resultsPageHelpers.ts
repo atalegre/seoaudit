@@ -31,7 +31,7 @@ export function generateRecommendations(seo: any, aio: any): Recommendation[] {
         seoImpact: 'Alto' as const,
         aioImpact: 'Nenhum' as const,
         priority: 9,
-        status: 'pending'
+        status: 'pending' as const
       }
     },
     {
@@ -41,7 +41,7 @@ export function generateRecommendations(seo: any, aio: any): Recommendation[] {
         seoImpact: 'Alto' as const,
         aioImpact: 'Nenhum' as const,
         priority: 9,
-        status: 'pending'
+        status: 'pending' as const
       }
     },
     {
@@ -51,7 +51,7 @@ export function generateRecommendations(seo: any, aio: any): Recommendation[] {
         seoImpact: 'Alto' as const,
         aioImpact: 'Médio' as const,
         priority: 8,
-        status: 'pending'
+        status: 'pending' as const
       }
     },
     {
@@ -61,7 +61,7 @@ export function generateRecommendations(seo: any, aio: any): Recommendation[] {
         seoImpact: 'Alto' as const,
         aioImpact: 'Nenhum' as const,
         priority: 10,
-        status: 'pending'
+        status: 'pending' as const
       }
     },
     {
@@ -71,7 +71,7 @@ export function generateRecommendations(seo: any, aio: any): Recommendation[] {
         seoImpact: 'Médio' as const,
         aioImpact: 'Baixo' as const,
         priority: 6,
-        status: 'pending'
+        status: 'pending' as const
       }
     },
     {
@@ -81,7 +81,7 @@ export function generateRecommendations(seo: any, aio: any): Recommendation[] {
         seoImpact: 'Médio' as const,
         aioImpact: 'Alto' as const,
         priority: 7,
-        status: 'pending'
+        status: 'pending' as const
       }
     },
     {
@@ -91,7 +91,7 @@ export function generateRecommendations(seo: any, aio: any): Recommendation[] {
         seoImpact: 'Médio' as const,
         aioImpact: 'Baixo' as const,
         priority: 5,
-        status: 'pending'
+        status: 'pending' as const
       }
     },
     {
@@ -101,7 +101,7 @@ export function generateRecommendations(seo: any, aio: any): Recommendation[] {
         seoImpact: 'Baixo' as const,
         aioImpact: 'Alto' as const,
         priority: 7,
-        status: 'pending'
+        status: 'pending' as const
       }
     },
     {
@@ -111,7 +111,7 @@ export function generateRecommendations(seo: any, aio: any): Recommendation[] {
         seoImpact: 'Baixo' as const,
         aioImpact: 'Alto' as const,
         priority: 6,
-        status: 'pending'
+        status: 'pending' as const
       }
     },
     {
@@ -121,7 +121,7 @@ export function generateRecommendations(seo: any, aio: any): Recommendation[] {
         seoImpact: 'Baixo' as const,
         aioImpact: 'Alto' as const,
         priority: 5,
-        status: 'pending'
+        status: 'pending' as const
       }
     }
   ];

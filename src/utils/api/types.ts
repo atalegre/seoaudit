@@ -7,7 +7,7 @@ export interface AnalysisResult {
   aio: AioAnalysisResult;
   recommendations?: Recommendation[];
   overallStatus: StatusClassification;
-  logoUrl?: string | null; // Adicionado para armazenar a URL do logo
+  logoUrl?: string | null; // Added for logo URL storage
 }
 
 export interface SeoAnalysisResult {
@@ -42,7 +42,7 @@ export interface Recommendation {
   seoImpact: "Alto" | "Médio" | "Baixo" | "Nenhum";
   aioImpact: "Alto" | "Médio" | "Baixo" | "Nenhum";
   priority: number;
-  status: string;
+  status: "pending" | "in_progress" | "done" | "ignored"; // Updated to match RecommendationItem status types
 }
 
 export type StatusClassification = 'Saudável' | 'A melhorar' | 'Crítico';

@@ -49,10 +49,12 @@ export async function getFullAnalysis(url: string): Promise<AnalysisResult> {
     const [seoResult, aioResult, logoUrl] = await Promise.all([seoPromise, aioPromise, logoPromise]);
     
     // Create result with available data - now guaranteed to have data even in failure cases
-    const result = createAnalysisResult(url, seoResult, aioResult) as AnalysisResult;
+    const result = createAnalysisResult(url, seoResult, aioResult);
     
     // Add logo URL to the result
     result.logoUrl = logoUrl;
+    
+    console.log('Analysis result with logo:', result);
     
     return result;
   } catch (error) {
@@ -61,7 +63,8 @@ export async function getFullAnalysis(url: string): Promise<AnalysisResult> {
       description: 'Não foi possível conectar com as APIs de análise.'
     });
     // Criar resultado com dados simulados em caso de falha completa
-    return createAnalysisResult(url, null, null) as AnalysisResult;
+    const result = createAnalysisResult(url, null, null);
+    return result;
   }
 }
 

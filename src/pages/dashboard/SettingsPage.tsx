@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import UserManagement from '@/components/dashboard/UserManagement';
@@ -51,6 +50,7 @@ type NotificationsFormValues = z.infer<typeof notificationsFormSchema>;
 const apiIntegrationsFormSchema = z.object({
   googlePageInsightsKey: z.string().min(1, "A chave da API é obrigatória"),
   chatGptApiKey: z.string().min(1, "A chave da API é obrigatória"),
+  logoApiKey: z.string().min(1, "A chave da API é obrigatória"),
 });
 
 type ApiIntegrationsFormValues = z.infer<typeof apiIntegrationsFormSchema>;
@@ -96,6 +96,7 @@ const SettingsPage = () => {
     defaultValues: {
       googlePageInsightsKey: "",
       chatGptApiKey: "",
+      logoApiKey: "",
     },
   });
 
@@ -105,10 +106,12 @@ const SettingsPage = () => {
       try {
         const googleKey = await getApiKey('googlePageInsightsKey');
         const chatGptKey = await getApiKey('chatGptApiKey');
+        const logoKey = await getApiKey('logoApiKey');
         
         // Atualizar o formulário com as chaves obtidas
         apiIntegrationsForm.setValue('googlePageInsightsKey', googleKey || '');
         apiIntegrationsForm.setValue('chatGptApiKey', chatGptKey || '');
+        apiIntegrationsForm.setValue('logoApiKey', logoKey || 'sk_RM22KfReRJ2LjotDAYgcxA');
       } catch (error) {
         console.error('Erro ao carregar as chaves de API:', error);
         toast({
@@ -146,6 +149,7 @@ const SettingsPage = () => {
       // Salvar as chaves de API no Supabase
       await storeApiKey('googlePageInsightsKey', data.googlePageInsightsKey);
       await storeApiKey('chatGptApiKey', data.chatGptApiKey);
+      await storeApiKey('logoApiKey', data.logoApiKey);
       
       toast({
         title: "APIs configuradas",
@@ -330,7 +334,7 @@ const SettingsPage = () => {
               </CardContent>
             </Card>
           </TabsContent>
-
+          
           {/* User Management */}
           <TabsContent value="users">
             <UserManagement />
@@ -492,6 +496,34 @@ const SettingsPage = () => {
                             Esta API é usada para análise de AIO dos conteúdos dos sites.
                             <a 
                               href="https://platform.openai.com/api-keys" 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-primary ml-1 hover:underline"
+                            >
+                              Obter chave
+                            </a>
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={apiIntegrationsForm.control}
+                      name="logoApiKey"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Logo.dev API Key</FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              type="password" 
+                              placeholder="Insira a chave da API do Logo.dev"
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Esta API é usada para obter os logos dos sites analisados.
+                            <a 
+                              href="https://logo.dev/" 
                               target="_blank" 
                               rel="noopener noreferrer"
                               className="text-primary ml-1 hover:underline"
