@@ -1,4 +1,3 @@
-
 export interface AnalysisResult {
   url: string;
   timestamp: string;
@@ -19,11 +18,12 @@ export interface SeoAnalysisResult {
   mobileFriendly: boolean;
   security: boolean;
   imageOptimization: number;
-  headingsStructure: number;
-  metaTags: number;
-  lcp: number;
-  fid: number;
-  cls: number;
+  headingsStructure?: number;
+  metaTags?: number;
+  lcp?: number;
+  fid?: number;
+  cls?: number;
+  companyName?: string; // Added for company information
   [key: string]: any;
 }
 

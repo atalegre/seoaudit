@@ -1,4 +1,3 @@
-
 import { AnalysisResult, SeoAnalysisResult, AioAnalysisResult, Recommendation, StatusClassification } from './api/types';
 
 // Determine status based on scores using a more efficient approach
@@ -156,7 +155,8 @@ export function createAnalysisResult(
     metaTags: 60,
     lcp: 3.5,
     fid: 120,
-    cls: 0.15
+    cls: 0.15,
+    companyName: extractCompanyName(url) // Extract company name from URL
   };
 
   const defaultAioData: AioAnalysisResult = {
@@ -170,6 +170,12 @@ export function createAnalysisResult(
   
   // Use provided data or defaults
   const seo = seoData || defaultSeoData;
+  
+  // Ensure company name is set
+  if (seoData && !seoData.companyName) {
+    seoData.companyName = extractCompanyName(url);
+  }
+  
   const aio = aioData || defaultAioData;
   
   const status = determineStatus(seo.score, aio.score);
@@ -184,4 +190,25 @@ export function createAnalysisResult(
     overallStatus: status,
     logoUrl: null
   };
+}
+
+// Helper function to extract company name from URL
+function extractCompanyName(url: string): string {
+  try {
+    const domain = url.replace(/^https?:\/\//, '').split('/')[0];
+    const parts = domain.split('.');
+    
+    if (parts.length >= 2) {
+      // Remove common TLDs and www
+      const name = parts[0] === 'www' ? parts[1] : parts[0];
+      
+      // Format the company name (capitalize first letter)
+      return name.charAt(0).toUpperCase() + name.slice(1);
+    }
+    
+    return domain;
+  } catch (error) {
+    console.error('Error extracting company name:', error);
+    return '';
+  }
 }

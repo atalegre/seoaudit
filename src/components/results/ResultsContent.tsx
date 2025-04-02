@@ -1,4 +1,3 @@
-
 import React, { useRef, lazy, Suspense } from 'react';
 import { AnalysisResult } from '@/utils/api/types';
 import { AlertCircle, Loader2 } from 'lucide-react';
@@ -24,6 +23,10 @@ const AioAnalysisPanel = lazy(() =>
 
 const LLMPresenceAudit = lazy(() => 
   import('@/components/LLMPresenceAudit')
+);
+
+const LocalDirectoryPresence = lazy(() =>
+  import('@/components/LocalDirectoryPresence')
 );
 
 // Componente de fallback otimizado para carregamentos lazy
@@ -129,6 +132,13 @@ const ResultsContent: React.FC<ResultsContentProps> = ({
               
               <Suspense fallback={<LazyLoadingFallback />}>
                 <LLMPresenceAudit url={analysisData.url} autoStart={false} />
+              </Suspense>
+              
+              <Suspense fallback={<LazyLoadingFallback />}>
+                <LocalDirectoryPresence 
+                  url={analysisData.url} 
+                  companyName={analysisData.seo.companyName} 
+                />
               </Suspense>
             </TabsContent>
             
