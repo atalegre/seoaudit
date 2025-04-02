@@ -24,7 +24,7 @@ export async function signInWithEmail(email: string, password: string) {
         console.log("Demo account login failed, attempting to create account first");
         
         // Create a demo account with these credentials
-        await supabase.auth.signUp({
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -33,6 +33,11 @@ export async function signInWithEmail(email: string, password: string) {
             }
           }
         });
+        
+        if (signUpError) {
+          console.error("Error creating demo account:", signUpError);
+          return { data: null, error: signUpError };
+        }
         
         // Try login again
         const secondAttempt = await supabase.auth.signInWithPassword({
@@ -51,12 +56,17 @@ export async function signInWithEmail(email: string, password: string) {
           const name = email === 'atalegre@me.com' ? 'Admin User' : 'SEO Client';
           
           try {
-            await ensureUserInDatabase(
-              secondAttempt.data.user.id,
-              email,
-              name,
-              role
-            );
+            // Create or update user in the database
+            await supabase.from('users').upsert([
+              {
+                id: secondAttempt.data.user.id,
+                name: name,
+                email: email,
+                role: role
+              }
+            ], { onConflict: 'id' });
+            
+            console.log(`User record created/updated for ${email} with role ${role}`);
           } catch (dbError) {
             console.error("Error ensuring user in database:", dbError);
             // Continue with the successful login even if database update fails
@@ -75,12 +85,17 @@ export async function signInWithEmail(email: string, password: string) {
       const name = email === 'atalegre@me.com' ? 'Admin User' : 'SEO Client';
       
       try {
-        await ensureUserInDatabase(
-          data.user.id,
-          email,
-          name,
-          role
-        );
+        // Create or update user in the database
+        await supabase.from('users').upsert([
+          {
+            id: data.user.id,
+            name: name,
+            email: email,
+            role: role
+          }
+        ], { onConflict: 'id' });
+        
+        console.log(`User record created/updated for ${email} with role ${role}`);
       } catch (dbError) {
         console.error("Error ensuring user in database:", dbError);
         // Continue with the successful login even if database update fails
@@ -92,40 +107,5 @@ export async function signInWithEmail(email: string, password: string) {
   } catch (error: any) {
     console.error("Exception during login:", error);
     return { data: null, error };
-  }
-}
-
-// Helper function to ensure user exists in database with proper role
-async function ensureUserInDatabase(
-  userId: string,
-  email: string,
-  name: string,
-  role: string
-) {
-  // Check if the user already exists in our database
-  const { data } = await supabase
-    .from('users')
-    .select('*')
-    .eq('id', userId)
-    .maybeSingle();
-  
-  if (!data) {
-    // Create the user record
-    await supabase
-      .from('users')
-      .insert([
-        {
-          id: userId,
-          name: name,
-          email: email,
-          role: role
-        }
-      ]);
-  } else if (data.role !== role) {
-    // Update the role if necessary
-    await supabase
-      .from('users')
-      .update({ role: role })
-      .eq('id', userId);
   }
 }

@@ -52,7 +52,7 @@ const SignInPage = () => {
             console.log(`Created user record for ${session.user.email} with role ${role}`);
           }
           
-          // Always redirect to dashboard - it will handle proper routing based on role
+          // Redirect to dashboard - proper routing based on role will be handled there
           navigate('/dashboard');
         }
       } catch (error) {

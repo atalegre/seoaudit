@@ -71,7 +71,7 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
           description: "Bem-vindo de volta!",
         });
         
-        // Always redirect to dashboard - the proper view (admin or client) will be determined by the dashboard itself
+        // Navigate to dashboard after successful login
         navigate('/dashboard');
       } else {
         setAuthError("Unknown error during authentication");
