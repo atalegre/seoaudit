@@ -10,7 +10,6 @@ export const signupFormSchema = z.object({
   password: z
     .string()
     .min(8, { message: 'Password deve ter pelo menos 8 caracteres' })
-    .regex(/[A-Z]/, { message: 'Password deve conter pelo menos uma letra maiúscula' })
     .regex(/[0-9]/, { message: 'Password deve conter pelo menos um número' }),
   acceptTerms: z.boolean().refine(val => val, {
     message: 'Deve aceitar os termos e condições',
