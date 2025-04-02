@@ -9,34 +9,26 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-// Componentes carregados de forma lazy para reduzir o JavaScript inicial
+// Componentes carregados com lazy loading e fronteiras de suspense para otimizar o LCP
 const EnhancedRecommendations = lazy(() => 
-  import('@/components/EnhancedRecommendations').then(module => ({
-    default: module.default
-  }))
+  import('@/components/EnhancedRecommendations')
 );
 
 const TechnicalHealthPanel = lazy(() => 
-  import('@/components/TechnicalHealthPanel').then(module => ({
-    default: module.default
-  }))
+  import('@/components/TechnicalHealthPanel')
 );
 
 const AioAnalysisPanel = lazy(() => 
-  import('@/components/AioAnalysisPanel').then(module => ({
-    default: module.default
-  }))
+  import('@/components/AioAnalysisPanel')
 );
 
 const LLMPresenceAudit = lazy(() => 
-  import('@/components/LLMPresenceAudit').then(module => ({
-    default: module.default
-  }))
+  import('@/components/LLMPresenceAudit')
 );
 
-// Componente de fallback para carregamento lazy
+// Componente de fallback otimizado para carregamentos lazy
 const LazyLoadingFallback = () => (
-  <div className="flex justify-center items-center p-6">
+  <div className="flex justify-center items-center h-32 w-full">
     <Loader2 className="h-6 w-6 animate-spin text-primary" />
   </div>
 );
@@ -81,7 +73,7 @@ const ResultsContent: React.FC<ResultsContentProps> = ({
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         <div className="lg:col-span-2 space-y-4 md:space-y-6">
-          {/* ScoreDisplay is the most important component for LCP */}
+          {/* ScoreDisplay mantido fora do lazy loading por ser crítico para LCP */}
           <ScoreDisplay
             seoScore={analysisData?.seo?.score || 0}
             aioScore={analysisData?.aio?.score || 0}
@@ -136,7 +128,7 @@ const ResultsContent: React.FC<ResultsContentProps> = ({
               </Suspense>
               
               <Suspense fallback={<LazyLoadingFallback />}>
-                <LLMPresenceAudit url={analysisData.url} autoStart={true} />
+                <LLMPresenceAudit url={analysisData.url} autoStart={false} />
               </Suspense>
             </TabsContent>
             

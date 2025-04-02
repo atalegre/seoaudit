@@ -8,9 +8,14 @@
     <meta name="description" content="Analise gratuitamente o seu site para motores de busca (SEO) e modelos de IA (AIO). Descubra como melhorar a sua presença digital." />
     <meta name="author" content="SEOAudit" />
 
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/src/main.tsx" as="script" fetchpriority="high" />
+    <link rel="preload" href="/src/components/Hero.tsx" as="script" fetchpriority="high" />
+    <link rel="preload" as="font" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" type="font/woff2" crossorigin />
+    
     <!-- Inline critical CSS for faster rendering -->
     <style>
-      /* Inline critical CSS to reduce render-blocking resources */
+      /* Critical rendering path CSS - from performance audit */
       :root {
         --background: 0 0% 100%;
         --foreground: 222.2 84% 4.9%;
@@ -34,17 +39,42 @@
         from { opacity: 0; }
         to { opacity: 1; }
       }
+      .lcp-target {
+        content-visibility: auto;
+        contain-intrinsic-size: 0px 500px;
+      }
       .text-seo { color: #3366cc; }
       .text-aio { color: #ff6633; }
+      
+      /* Critical first view styles */
+      .hero-container {
+        max-width: 72rem;
+        margin-left: auto;
+        margin-right: auto;
+        padding: 1.5rem;
+      }
+      .hero-title {
+        font-size: 2.25rem;
+        line-height: 1.2;
+        font-weight: 700;
+        margin-bottom: 1rem;
+      }
+      .hero-description {
+        font-size: 1.125rem;
+        margin-bottom: 2rem;
+        color: hsl(215.4 16.3% 46.9%);
+      }
     </style>
 
     <!-- Preconnect to external domains -->
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://gpteng.co" crossorigin />
     
     <!-- DNS prefetch for external domains -->
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
     <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+    <link rel="dns-prefetch" href="https://gpteng.co" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:title" content="SEOAudit - Análise SEO e AIO" />
@@ -67,10 +97,6 @@
     <noscript>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
     </noscript>
-
-    <!-- Precarregar conteúdo principal para o LCP -->
-    <link rel="preload" href="/src/components/Hero.tsx" as="script" fetchpriority="high" />
-    <link rel="modulepreload" href="/src/main.tsx" />
   </head>
 
   <body>

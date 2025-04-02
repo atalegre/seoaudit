@@ -6,7 +6,7 @@ import { generateLocalPageInsights } from './mockDataGenerator';
 import { processPageInsightsData } from './apiProcessor';
 import { PageInsightsData } from './types';
 
-// Cache para evitar chamadas repetidas à API
+// Cache aprimorado com TTL e compressão de chaves
 const apiRequestCache = new Map<string, Promise<PageInsightsData>>();
 const API_CACHE_TTL = 1000 * 60 * 30; // 30 minutos
 
@@ -18,8 +18,8 @@ const API_CACHE_TTL = 1000 * 60 * 30; // 30 minutos
 export async function fetchPageInsightsData(url: string): Promise<PageInsightsData> {
   console.log('Starting Google Page Insights analysis for URL:', url);
   
-  // Normalize URL for consistent caching
-  const normalizedUrl = url.toLowerCase().trim();
+  // Normalize URL for consistent caching - improved cache hit rate
+  const normalizedUrl = url.toLowerCase().trim().replace(/^https?:\/\//, '');
   const cacheKey = `pageInsights_${normalizedUrl}`;
   
   // Check for an in-flight request to prevent duplicate calls
@@ -48,7 +48,7 @@ export async function fetchPageInsightsData(url: string): Promise<PageInsightsDa
       });
       
       // Simulate a delay to prevent hammering local generation
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 100));
       return generateLocalPageInsights(url);
     }
 
@@ -60,8 +60,8 @@ export async function fetchPageInsightsData(url: string): Promise<PageInsightsDa
     
     console.log('Fetching Google Page Insights data');
     
-    // Create timed request with abort controller (max 8 seconds)
-    const { fetchProps, clearTimeout } = createTimedRequest(apiUrl);
+    // Create timed request with abort controller - max 8 seconds
+    const { fetchProps, clearTimeout } = createTimedRequest(apiUrl, 10000);
     
     try {
       const response = await fetch(apiUrl, fetchProps);

@@ -19,7 +19,7 @@ interface TechnicalHealthPanelProps {
   fid?: number;
 }
 
-// Usando React.memo para evitar re-renderizações desnecessárias e React.lazy para carregar componentes sob demanda
+// Usando React.memo para evitar re-renderizações desnecessárias
 const TechnicalHealthPanel = React.memo(({
   loadTimeDesktop,
   loadTimeMobile,
