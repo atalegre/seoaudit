@@ -16,10 +16,7 @@ export async function signInWithEmail(email: string, password: string) {
     if (isDemoAdmin || isDemoClient) {
       console.log(`Processing demo user login: ${email}`);
       
-      // For demo accounts, try to create the account first
-      console.log("Creating/Ensuring demo account exists");
-      
-      // First attempt to sign up - this will fail if user already exists
+      // For demo accounts, first create the account if it doesn't exist
       const { error: signUpError } = await supabase.auth.signUp({
         email, 
         password,
@@ -31,14 +28,15 @@ export async function signInWithEmail(email: string, password: string) {
         }
       });
       
+      // If signup returned an error that's not "user already exists", log it
       if (signUpError && signUpError.message !== 'User already registered') {
-        console.error("Failed to create demo account:", signUpError);
+        console.error("Demo account creation error:", signUpError);
+        // Continue to login attempt even if signup failed
       } else {
         console.log("Demo account created or already exists");
       }
       
-      // Now try to login
-      console.log("Attempting login with demo credentials");
+      // Now attempt to login with credentials
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -46,7 +44,7 @@ export async function signInWithEmail(email: string, password: string) {
       
       if (error) {
         console.error("Demo user login failed:", error);
-        throw error;
+        return { data: null, error };
       }
       
       if (data?.user) {
@@ -66,7 +64,7 @@ export async function signInWithEmail(email: string, password: string) {
         
         return { data, error: null };
       } else {
-        throw new Error("Failed to authenticate demo user");
+        return { data: null, error: new Error("Failed to authenticate demo user") };
       }
     } 
     else {
@@ -78,7 +76,7 @@ export async function signInWithEmail(email: string, password: string) {
       
       if (error) {
         console.error("Login failed:", error);
-        throw error;
+        return { data: null, error };
       }
       
       if (data?.user) {
@@ -99,7 +97,7 @@ export async function signInWithEmail(email: string, password: string) {
         
         return { data, error: null };
       } else {
-        throw new Error("User data not available after login");
+        return { data: null, error: new Error("User data not available after login") };
       }
     }
   } catch (error: any) {

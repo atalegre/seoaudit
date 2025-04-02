@@ -10,7 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import EmailField from './EmailField';
 import PasswordField from './PasswordField';
-import { signInWithEmail, checkUserRole } from '@/utils/auth/authService';
+import { signInWithEmail } from '@/utils/auth/authService';
+import { checkUserRole } from '@/utils/auth/userProfileService';
 
 const formSchema = z.object({
   email: z
@@ -60,6 +61,7 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
           title: "Erro de autenticação",
           description: `${error.message || "Email ou password incorretos"}. Tente as credenciais de demonstração listadas abaixo.`,
         });
+        setIsLoggingIn(false);
       } else if (data?.user) {
         console.log("Login successful:", data);
         toast({
@@ -89,6 +91,7 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
           title: "Erro",
           description: "Ocorreu um erro desconhecido durante a autenticação.",
         });
+        setIsLoggingIn(false);
       }
     } catch (error: any) {
       console.error("Exception during login:", error);
@@ -99,7 +102,6 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
         title: "Erro",
         description: "Falha na autenticação. Tente novamente com as credenciais de demonstração.",
       });
-    } finally {
       setIsLoggingIn(false);
     }
   }
