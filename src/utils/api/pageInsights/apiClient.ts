@@ -6,110 +6,125 @@ import { generateLocalPageInsights } from './mockDataGenerator';
 import { processPageInsightsData } from './apiProcessor';
 import { PageInsightsData } from './types';
 
+// Cache para evitar chamadas repetidas à API
+const apiRequestCache = new Map<string, Promise<PageInsightsData>>();
+const API_CACHE_TTL = 1000 * 60 * 30; // 30 minutos
+
 /**
- * Get Google Page Insights data for a URL
+ * Get Google Page Insights data for a URL with improved optimization
  * @param url URL to analyze
  * @returns Page Insights data
  */
 export async function fetchPageInsightsData(url: string): Promise<PageInsightsData> {
   console.log('Starting Google Page Insights analysis for URL:', url);
   
-  // Try to get API key from Supabase
-  let apiKey = await getApiKey('googlePageInsightsKey');
-  console.log('API key from Supabase:', apiKey ? 'Found' : 'Not found');
+  // Normalize URL for consistent caching
+  const normalizedUrl = url.toLowerCase().trim();
+  const cacheKey = `pageInsights_${normalizedUrl}`;
   
-  // Fall back to localStorage if not found in Supabase
-  if (!apiKey) {
-    apiKey = localStorage.getItem('googlePageInsightsKey');
-    console.log('API key from localStorage:', apiKey ? 'Found' : 'Not found');
+  // Check for an in-flight request to prevent duplicate calls
+  const cachedRequest = apiRequestCache.get(cacheKey);
+  if (cachedRequest) {
+    console.log('Using in-flight request for', normalizedUrl);
+    return cachedRequest;
   }
   
-  // Use local analyzer if no API key is available
-  if (!apiKey) {
-    console.error('Google Page Insights API key not found in Supabase or localStorage');
-    toast.warning('Chave da API Google Page Insights não encontrada', {
-      description: 'Usando analisador local para dados de SEO.',
-    });
+  // Create a new promise and store it in the cache
+  const fetchPromise = (async () => {
+    // Try to get API key from Supabase first
+    let apiKey = await getApiKey('googlePageInsightsKey');
     
-    return generateLocalPageInsights(url);
-  }
-
-  toast('Analisando SEO com Google Page Insights...', {
-    description: 'Isso pode levar alguns segundos.',
-  });
-
-  const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&strategy=mobile&category=performance&category=seo&category=best-practices`;
-  
-  console.log('Fetching Google Page Insights data from:', apiUrl.replace(apiKey, '[API_KEY_HIDDEN]'));
-  
-  // Create timed request with abort controller
-  const { fetchProps, clearTimeout } = createTimedRequest(apiUrl);
-  
-  try {
-    const response = await fetch(apiUrl, fetchProps);
+    // Fall back to localStorage if not found in Supabase
+    if (!apiKey) {
+      apiKey = localStorage.getItem('googlePageInsightsKey');
+      console.log('API key from localStorage:', apiKey ? 'Found' : 'Not found');
+    }
     
-    clearTimeout();
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      let errorMessage = `HTTP Status: ${response.status} ${response.statusText}`;
+    // Use local analyzer if no API key is available
+    if (!apiKey) {
+      console.log('No API key, using local analyzer');
+      toast.warning('Chave da API Google Page Insights não encontrada', {
+        description: 'Usando analisador local para dados de SEO.',
+      });
       
-      try {
-        const errorData = JSON.parse(errorText);
-        console.error('Google Page Insights API error:', errorData);
+      // Simulate a delay to prevent hammering local generation
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return generateLocalPageInsights(url);
+    }
+
+    toast('Analisando SEO com Google Page Insights...', {
+      description: 'Isso pode levar alguns segundos.',
+    });
+
+    const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&strategy=mobile&category=performance&category=seo&category=best-practices`;
+    
+    console.log('Fetching Google Page Insights data');
+    
+    // Create timed request with abort controller (max 8 seconds)
+    const { fetchProps, clearTimeout } = createTimedRequest(apiUrl);
+    
+    try {
+      const response = await fetch(apiUrl, fetchProps);
+      
+      clearTimeout();
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorMessage = `HTTP Status: ${response.status} ${response.statusText}`;
         
-        // Check for specific errors
-        if (errorData.error?.status === 'INVALID_ARGUMENT') {
-          errorMessage = 'URL inválida ou não acessível pelo Google';
-        } else if (errorData.error?.status === 'PERMISSION_DENIED') {
-          errorMessage = 'Chave API Google Page Insights inválida ou expirada';
-          toast.error('Erro de API Google', {
-            description: 'Sua chave API pode estar inválida ou expirada. Verifique as configurações.',
-          });
-        } else if (errorData.error?.message) {
-          errorMessage = errorData.error.message;
+        try {
+          const errorData = JSON.parse(errorText);
+          
+          // Check for specific errors
+          if (errorData.error?.status === 'INVALID_ARGUMENT') {
+            errorMessage = 'URL inválida ou não acessível pelo Google';
+          } else if (errorData.error?.status === 'PERMISSION_DENIED') {
+            errorMessage = 'Chave API Google Page Insights inválida ou expirada';
+            toast.error('Erro de API Google', {
+              description: 'Sua chave API pode estar inválida ou expirada.',
+            });
+          } else if (errorData.error?.message) {
+            errorMessage = errorData.error.message;
+          }
+        } catch (e) {
+          console.error('Failed to parse error response');
         }
-      } catch (e) {
-        console.error('Failed to parse error response:', errorText);
+        
+        console.error(errorMessage);
+        toast.warning('Falha na API do Google', {
+          description: 'Usando analisador local para dados de SEO.',
+        });
+        return generateLocalPageInsights(url);
       }
       
-      console.error(errorMessage);
-      toast.warning('Falha na API do Google', {
-        description: 'Usando analisador local para dados de SEO.',
-      });
-      return generateLocalPageInsights(url);
+      const data = await response.json();
+      
+      return processPageInsightsData(data, url);
+    } catch (fetchError) {
+      clearTimeout();
+      if (fetchError.name === 'AbortError') {
+        console.error('Google Page Insights API request timed out');
+        toast.warning('Tempo limite excedido', {
+          description: 'Usando analisador local para dados de SEO.'
+        });
+        return generateLocalPageInsights(url);
+      } else {
+        console.error('Fetch error:', fetchError.message);
+        toast.warning('Falha na API do Google', {
+          description: 'Usando analisador local para dados de SEO.',
+        });
+        return generateLocalPageInsights(url);
+      }
+    } finally {
+      // Remove in-flight request after a delay to prevent immediate re-fetching
+      setTimeout(() => {
+        apiRequestCache.delete(cacheKey);
+      }, API_CACHE_TTL);
     }
-    
-    const data = await response.json();
-    console.log('Google Page Insights API response received successfully');
-    
-    // Log a small portion of the response to avoid flooding the console
-    if (data) {
-      console.log('API response preview:', 
-        JSON.stringify({
-          kind: data.kind,
-          id: data.id,
-          responseCode: data.responseCode,
-          analysisUTCTimestamp: data.analysisUTCTimestamp
-        })
-      );
-    }
-    
-    return processPageInsightsData(data, url);
-  } catch (fetchError) {
-    clearTimeout();
-    if (fetchError.name === 'AbortError') {
-      console.error('Google Page Insights API request timed out after 8 seconds');
-      toast.warning('Tempo limite excedido', {
-        description: 'Usando analisador local para dados de SEO.'
-      });
-      return generateLocalPageInsights(url);
-    } else {
-      console.error('Fetch error:', fetchError.message);
-      toast.warning('Falha na API do Google', {
-        description: 'Usando analisador local para dados de SEO.',
-      });
-      return generateLocalPageInsights(url);
-    }
-  }
+  })();
+  
+  // Store the promise in the cache
+  apiRequestCache.set(cacheKey, fetchPromise);
+  
+  return fetchPromise;
 }

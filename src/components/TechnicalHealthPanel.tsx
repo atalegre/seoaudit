@@ -19,8 +19,8 @@ interface TechnicalHealthPanelProps {
   fid?: number;
 }
 
-// Usando React.memo para evitar re-renderizações desnecessárias
-const TechnicalHealthPanel: React.FC<TechnicalHealthPanelProps> = React.memo(({
+// Usando React.memo para evitar re-renderizações desnecessárias e React.lazy para carregar componentes sob demanda
+const TechnicalHealthPanel = React.memo(({
   loadTimeDesktop,
   loadTimeMobile,
   mobileFriendly,
@@ -30,7 +30,7 @@ const TechnicalHealthPanel: React.FC<TechnicalHealthPanelProps> = React.memo(({
   lcp = 2.5,
   cls = 0.25,
   fid = 100
-}) => {
+}: TechnicalHealthPanelProps) => {
   // Helper functions para status
   const getSpeedStatus = (seconds: number) => 
     seconds <= 2 ? 'success' : seconds <= 4 ? 'warning' : 'error';
@@ -42,7 +42,7 @@ const TechnicalHealthPanel: React.FC<TechnicalHealthPanelProps> = React.memo(({
     <Card>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-medium flex items-center gap-2 lcp-target">
+          <CardTitle className="text-lg font-medium flex items-center gap-2">
             <Zap className="h-5 w-5 text-orange-500" />
             Saúde Técnica do Site
           </CardTitle>
@@ -66,7 +66,7 @@ const TechnicalHealthPanel: React.FC<TechnicalHealthPanelProps> = React.memo(({
             value={`${loadTimeDesktop.toFixed(1)}s`}
             status={getSpeedStatus(loadTimeDesktop)}
             icon={<Zap className={cn("h-4 w-4", loadTimeDesktop <= 2 ? "text-green-500" : 
-                                           loadTimeDesktop <= 4 ? "text-amber-500" : "text-red-500")} />}
+                                         loadTimeDesktop <= 4 ? "text-amber-500" : "text-red-500")} />}
             description={loadTimeDesktop <= 2 ? "Excelente tempo de resposta" : 
                        loadTimeDesktop <= 4 ? "Tempo de resposta aceitável" : "Tempo de resposta lento"}
           />
@@ -75,7 +75,7 @@ const TechnicalHealthPanel: React.FC<TechnicalHealthPanelProps> = React.memo(({
             value={`${loadTimeMobile.toFixed(1)}s`}
             status={getSpeedStatus(loadTimeMobile)}
             icon={<Smartphone className={cn("h-4 w-4", loadTimeMobile <= 2 ? "text-green-500" : 
-                                             loadTimeMobile <= 4 ? "text-amber-500" : "text-red-500")} />}
+                                           loadTimeMobile <= 4 ? "text-amber-500" : "text-red-500")} />}
             description={loadTimeMobile <= 2 ? "Rápido em dispositivos móveis" : 
                        loadTimeMobile <= 4 ? "Aceitável em dispositivos móveis" : "Lento em dispositivos móveis"}
           />
@@ -103,8 +103,8 @@ const TechnicalHealthPanel: React.FC<TechnicalHealthPanelProps> = React.memo(({
           value={`${imageOptimization}%`}
           status={imageOptimization >= 70 ? 'success' : imageOptimization >= 40 ? 'warning' : 'error'}
           icon={<Image className={cn("h-4 w-4", 
-                                    imageOptimization >= 70 ? "text-green-500" : 
-                                    imageOptimization >= 40 ? "text-amber-500" : "text-red-500")} />}
+                                  imageOptimization >= 70 ? "text-green-500" : 
+                                  imageOptimization >= 40 ? "text-amber-500" : "text-red-500")} />}
           description={imageOptimization >= 70 ? "Imagens bem otimizadas" : 
                     imageOptimization >= 40 ? "Otimização parcial de imagens" : "Imagens sem otimização adequada"}
         />

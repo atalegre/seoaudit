@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -9,14 +9,22 @@ import { getChatGptAnalysis } from '@/utils/api/chatGptService';
 import { toast } from 'sonner';
 import { formatUrl, createAnalysisResult } from '@/utils/resultsPageHelpers';
 
-// Import new components
-import LoadingState from '@/components/results/LoadingState';
-import ErrorState from '@/components/results/ErrorState';
-import MissingUrlState from '@/components/results/MissingUrlState';
-import ResultsContent from '@/components/results/ResultsContent';
+// Import components lazily to improve initial load time
+const LoadingState = lazy(() => import('@/components/results/LoadingState'));
+const ErrorState = lazy(() => import('@/components/results/ErrorState'));
+const MissingUrlState = lazy(() => import('@/components/results/MissingUrlState'));
+const ResultsContent = lazy(() => import('@/components/results/ResultsContent'));
+
+// Simple fallback for lazy components
+const LazyFallback = () => (
+  <div className="flex flex-col min-h-screen items-center justify-center">
+    <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+  </div>
+);
 
 const ANALYSIS_STORAGE_KEY = 'web_analysis_results';
 const ANALYSIS_URL_KEY = 'web_analysis_url';
+const CACHE_TTL = 1000 * 60 * 30; // 30 min cache
 
 const ResultsPage = () => {
   const location = useLocation();
@@ -49,20 +57,29 @@ const ResultsPage = () => {
 
     const storedUrl = localStorage.getItem(ANALYSIS_URL_KEY);
     const storedAnalysis = localStorage.getItem(ANALYSIS_STORAGE_KEY);
+    const storedTimestamp = localStorage.getItem(ANALYSIS_STORAGE_KEY + '_time');
     
-    if (storedUrl === urlParam && storedAnalysis) {
-      try {
-        console.log('Usando análise em cache para URL:', urlParam);
-        const parsedAnalysis = JSON.parse(storedAnalysis) as AnalysisResult;
-        setAnalysisData(parsedAnalysis);
-        setIsLoading(false);
-        toast('Usando análise em cache', {
-          description: 'Mostrando resultados da análise anterior',
-          duration: 3000
-        });
-        return;
-      } catch (parseError) {
-        console.error('Erro ao analisar dados em cache:', parseError);
+    // Check if we have valid cached data
+    if (storedUrl === urlParam && storedAnalysis && storedTimestamp) {
+      const timestamp = parseInt(storedTimestamp);
+      
+      // Use cache if it's not expired
+      if (Date.now() - timestamp < CACHE_TTL) {
+        try {
+          console.log('Usando análise em cache para URL:', urlParam);
+          const parsedAnalysis = JSON.parse(storedAnalysis) as AnalysisResult;
+          setAnalysisData(parsedAnalysis);
+          setIsLoading(false);
+          toast('Usando análise em cache', {
+            description: 'Mostrando resultados da análise anterior',
+            duration: 3000
+          });
+          return;
+        } catch (parseError) {
+          console.error('Erro ao analisar dados em cache:', parseError);
+        }
+      } else {
+        console.log('Cache expirado, obterá novos dados');
       }
     }
     
@@ -71,12 +88,12 @@ const ResultsPage = () => {
     setSeoError(null);
     setAioError(null);
     
+    // Usar requestIdleCallback quando disponível para não bloquear a renderização
     const performAnalysis = async () => {
       try {
         let normalizedUrl = urlParam;
         if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
           normalizedUrl = 'https://' + normalizedUrl;
-          console.log('URL normalizada para:', normalizedUrl);
         }
         
         toast('Análise em andamento...', {
@@ -84,29 +101,30 @@ const ResultsPage = () => {
           duration: 3000
         });
         
-        const seoDataPromise = (async () => {
-          try {
-            console.log('Iniciando análise SEO com Page Insights');
-            return await getPageInsightsData(normalizedUrl);
-          } catch (error) {
-            setSeoError(error instanceof Error ? error.message : 'Erro desconhecido na análise SEO');
-            console.error('Error fetching Page Insights data:', error);
+        // Iniciar as análises em paralelo
+        const seoPromise = getPageInsightsData(normalizedUrl)
+          .catch(err => {
+            setSeoError(err instanceof Error ? err.message : 'Erro desconhecido na análise SEO');
+            console.error('Error fetching Page Insights data:', err);
             return null;
-          }
-        })();
+          });
         
-        const aioDataPromise = (async () => {
-          try {
-            console.log('Iniciando análise AIO com OpenAI');
-            return await getChatGptAnalysis(normalizedUrl);
-          } catch (error) {
-            setAioError(error instanceof Error ? error.message : 'Erro desconhecido na análise AIO');
-            console.error('Error fetching AIO data:', error);
-            return null;
-          }
-        })();
+        // Pequeno intervalo para dar prioridade ao SEO primeiro
+        const aioPromise = new Promise<any>(resolve => {
+          setTimeout(async () => {
+            try {
+              const data = await getChatGptAnalysis(normalizedUrl);
+              resolve(data);
+            } catch (err) {
+              setAioError(err instanceof Error ? err.message : 'Erro desconhecido na análise AIO');
+              console.error('Error fetching AIO data:', err);
+              resolve(null);
+            }
+          }, 300);
+        });
         
-        const [seoData, aioData] = await Promise.all([seoDataPromise, aioDataPromise]);
+        // Resolver análises
+        const [seoData, aioData] = await Promise.all([seoPromise, aioPromise]);
         
         if (!seoData && !aioData) {
           setError('Falha em ambas as análises. Por favor, verifique suas configurações de API.');
@@ -115,10 +133,11 @@ const ResultsPage = () => {
         }
         
         const results = createAnalysisResult(normalizedUrl, seoData, aioData);
-        console.log('Resultado da análise criado:', results);
         
+        // Guardar no cache com timestamp
         localStorage.setItem(ANALYSIS_URL_KEY, urlParam);
         localStorage.setItem(ANALYSIS_STORAGE_KEY, JSON.stringify(results));
+        localStorage.setItem(ANALYSIS_STORAGE_KEY + '_time', Date.now().toString());
         
         setAnalysisData(results);
       } catch (error) {
@@ -132,39 +151,46 @@ const ResultsPage = () => {
       }
     };
     
-    performAnalysis();
+    // Usar requestIdleCallback se disponível
+    if ('requestIdleCallback' in window) {
+      (window as any).requestIdleCallback(() => {
+        performAnalysis();
+      });
+    } else {
+      // Fallback para setTimeout
+      setTimeout(performAnalysis, 10);
+    }
   }, [location.search]);
-  
-  // Render appropriate component based on state
-  if (isLoading) {
-    return <LoadingState />;
-  }
-  
-  if (error) {
-    return (
-      <ErrorState 
-        error={error} 
-        onReturnHome={handleReturnHome} 
-        onReanalyze={handleReanalyze} 
-      />
-    );
-  }
-  
-  if (!analysisData) {
-    return <MissingUrlState onReturnHome={handleReturnHome} />;
-  }
   
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
       
       <main className="flex-1 container py-6 px-4 md:py-8 md:px-4">
-        <ResultsContent
-          analysisData={analysisData}
-          seoError={seoError}
-          aioError={aioError}
-          onReanalyze={handleReanalyze}
-        />
+        <Suspense fallback={<LazyFallback />}>
+          {isLoading && <LoadingState />}
+          
+          {!isLoading && error && (
+            <ErrorState 
+              error={error} 
+              onReturnHome={handleReturnHome} 
+              onReanalyze={handleReanalyze} 
+            />
+          )}
+          
+          {!isLoading && !error && !analysisData && (
+            <MissingUrlState onReturnHome={handleReturnHome} />
+          )}
+          
+          {!isLoading && !error && analysisData && (
+            <ResultsContent
+              analysisData={analysisData}
+              seoError={seoError}
+              aioError={aioError}
+              onReanalyze={handleReanalyze}
+            />
+          )}
+        </Suspense>
       </main>
       
       <Footer />

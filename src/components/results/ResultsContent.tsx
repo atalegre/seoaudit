@@ -1,17 +1,45 @@
 
-import React, { useRef } from 'react';
+import React, { useRef, lazy, Suspense } from 'react';
 import { AnalysisResult } from '@/utils/api/types';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import ScoreDisplay from '@/components/ScoreDisplay';
 import ReportForm from '@/components/ReportForm';
-import EnhancedRecommendations from '@/components/EnhancedRecommendations';
-import TechnicalHealthPanel from '@/components/TechnicalHealthPanel';
-import AioAnalysisPanel from '@/components/AioAnalysisPanel';
-import LLMPresenceAudit from '@/components/LLMPresenceAudit';
 import { formatUrl } from '@/utils/resultsPageHelpers';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+// Componentes carregados de forma lazy para reduzir o JavaScript inicial
+const EnhancedRecommendations = lazy(() => 
+  import('@/components/EnhancedRecommendations').then(module => ({
+    default: module.default
+  }))
+);
+
+const TechnicalHealthPanel = lazy(() => 
+  import('@/components/TechnicalHealthPanel').then(module => ({
+    default: module.default
+  }))
+);
+
+const AioAnalysisPanel = lazy(() => 
+  import('@/components/AioAnalysisPanel').then(module => ({
+    default: module.default
+  }))
+);
+
+const LLMPresenceAudit = lazy(() => 
+  import('@/components/LLMPresenceAudit').then(module => ({
+    default: module.default
+  }))
+);
+
+// Componente de fallback para carregamento lazy
+const LazyLoadingFallback = () => (
+  <div className="flex justify-center items-center p-6">
+    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+  </div>
+);
 
 interface ResultsContentProps {
   analysisData: AnalysisResult;
@@ -35,7 +63,7 @@ const ResultsContent: React.FC<ResultsContentProps> = ({
 
   return (
     <div className="max-w-6xl mx-auto">
-      <h1 className="text-xl md:text-3xl font-bold mb-4 md:mb-8 animate-fade-in">
+      <h1 className="text-xl md:text-3xl font-bold mb-4 md:mb-8 animate-fade-in lcp-target">
         Resultados da análise
       </h1>
       
@@ -53,6 +81,7 @@ const ResultsContent: React.FC<ResultsContentProps> = ({
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         <div className="lg:col-span-2 space-y-4 md:space-y-6">
+          {/* ScoreDisplay is the most important component for LCP */}
           <ScoreDisplay
             seoScore={analysisData?.seo?.score || 0}
             aioScore={analysisData?.aio?.score || 0}
@@ -81,33 +110,41 @@ const ResultsContent: React.FC<ResultsContentProps> = ({
             </TabsList>
             
             <TabsContent value="analysis" className="space-y-6">
-              <TechnicalHealthPanel
-                loadTimeDesktop={analysisData.seo.loadTimeDesktop || 3.2}
-                loadTimeMobile={analysisData.seo.loadTimeMobile || 5.1}
-                mobileFriendly={analysisData.seo.mobileFriendly || false}
-                security={analysisData.seo.security || false}
-                imageOptimization={analysisData.seo.imageOptimization || 60}
-                performanceScore={analysisData.seo.performanceScore || 65}
-                lcp={analysisData.seo.lcp}
-                cls={analysisData.seo.cls}
-                fid={analysisData.seo.fid}
-              />
+              <Suspense fallback={<LazyLoadingFallback />}>
+                <TechnicalHealthPanel
+                  loadTimeDesktop={analysisData.seo.loadTimeDesktop || 3.2}
+                  loadTimeMobile={analysisData.seo.loadTimeMobile || 5.1}
+                  mobileFriendly={analysisData.seo.mobileFriendly || false}
+                  security={analysisData.seo.security || false}
+                  imageOptimization={analysisData.seo.imageOptimization || 60}
+                  performanceScore={analysisData.seo.performanceScore || 65}
+                  lcp={analysisData.seo.lcp}
+                  cls={analysisData.seo.cls}
+                  fid={analysisData.seo.fid}
+                />
+              </Suspense>
               
-              <AioAnalysisPanel
-                aioScore={analysisData.aio.score}
-                contentClarity={analysisData.aio.contentClarity}
-                logicalStructure={analysisData.aio.logicalStructure}
-                naturalLanguage={analysisData.aio.naturalLanguage}
-                topicsDetected={analysisData.aio.topicsDetected || []}
-                confusingParts={analysisData.aio.confusingParts || []}
-              />
+              <Suspense fallback={<LazyLoadingFallback />}>
+                <AioAnalysisPanel
+                  aioScore={analysisData.aio.score}
+                  contentClarity={analysisData.aio.contentClarity}
+                  logicalStructure={analysisData.aio.logicalStructure}
+                  naturalLanguage={analysisData.aio.naturalLanguage}
+                  topicsDetected={analysisData.aio.topicsDetected || []}
+                  confusingParts={analysisData.aio.confusingParts || []}
+                />
+              </Suspense>
               
-              <LLMPresenceAudit url={analysisData.url} autoStart={true} />
+              <Suspense fallback={<LazyLoadingFallback />}>
+                <LLMPresenceAudit url={analysisData.url} autoStart={true} />
+              </Suspense>
             </TabsContent>
             
             <TabsContent value="recommendations">
               <div ref={recommendationsRef}>
-                <EnhancedRecommendations recommendations={analysisData.recommendations || []} />
+                <Suspense fallback={<LazyLoadingFallback />}>
+                  <EnhancedRecommendations recommendations={analysisData.recommendations || []} />
+                </Suspense>
               </div>
             </TabsContent>
           </Tabs>

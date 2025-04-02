@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from "@/lib/utils";
 import { BarChart, Users, Settings, Bell, Search, Upload, FileText, Menu } from "lucide-react";
@@ -28,6 +28,27 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  
+  // Precarregar rotas quando o usuário passa o mouse sobre os links (para desktop)
+  useEffect(() => {
+    // Preload function only for desktop
+    if (isMobile) return;
+    
+    const preloadRoutes = () => {
+      // Preload routes based on current page
+      const currentPathParts = location.pathname.split('/');
+      const basePath = currentPathParts[1] || 'dashboard';
+      
+      // Dynamically import neighbor routes
+      import(`../../pages/${basePath === 'dashboard' ? 'dashboard/DashboardPage' : 'Index'}.tsx`)
+        .catch(error => console.log('Preloading routes in background'));
+    };
+    
+    // Delay preloading to not interfere with initial render
+    const timer = setTimeout(preloadRoutes, 2000);
+    
+    return () => clearTimeout(timer);
+  }, [location.pathname, isMobile]);
   
   const SidebarContent = () => (
     <nav className="p-4 space-y-1">
