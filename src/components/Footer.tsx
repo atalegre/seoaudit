@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -14,7 +13,7 @@ const Footer = () => {
               <img 
                 src="/lovable-uploads/d5a32965-2a6a-49a6-8474-6efb96afd0f7.png" 
                 alt="SEOAudit Logo" 
-                className="h-16" 
+                className="h-32" 
               />
             </div>
             <p className="text-sm text-muted-foreground">
