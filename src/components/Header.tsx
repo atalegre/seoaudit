@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from './ui/button';
@@ -89,7 +88,7 @@ const Header = () => {
             <NavigationMenuItem>
               <NavigationMenuTrigger>Recursos</NavigationMenuTrigger>
               <NavigationMenuContent>
-                <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] bg-white dark:bg-gray-900">
+                <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                   <li className="row-span-3">
                     <NavigationMenuLink asChild>
                       <Link
