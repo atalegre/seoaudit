@@ -1,3 +1,4 @@
+
 import { getApiKey } from './supabaseClient';
 import { toast } from 'sonner';
 
@@ -36,7 +37,7 @@ export async function getPageInsightsData(url: string): Promise<any> {
     
     // Add a timeout to the fetch request to prevent hanging
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // Reduced to 15 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
     try {
       const response = await fetch(apiUrl, { 
@@ -94,7 +95,7 @@ export async function getPageInsightsData(url: string): Promise<any> {
     } catch (fetchError) {
       clearTimeout(timeoutId);
       if (fetchError.name === 'AbortError') {
-        console.error('Google Page Insights API request timed out after 15 seconds');
+        console.error('Google Page Insights API request timed out after 10 seconds');
         toast.warning('Tempo limite excedido', {
           description: 'Usando analisador local para dados de SEO.'
         });
@@ -323,8 +324,8 @@ function processPageInsightsData(data: any, url: string): any {
     };
   } catch (error) {
     console.error('Error processing Page Insights data:', error);
-    // Instead of calling analyzeSite, throw the error to be handled by the caller
-    throw new Error('Failed to process PageInsights data');
+    // Em caso de erro no processamento, gerar dados locais
+    return generateLocalPageInsights(url);
   }
 }
 

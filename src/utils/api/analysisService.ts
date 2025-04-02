@@ -1,3 +1,4 @@
+
 import { AnalysisResult, Client } from './types';
 import { getPageInsightsData } from './pageInsightsService';
 import { getChatGptAnalysis } from './chatGptService';
@@ -38,7 +39,8 @@ export async function getFullAnalysis(url: string): Promise<AnalysisResult> {
     const [seoResult, aioResult] = await Promise.all([seoPromise, aioPromise]);
     
     // Create result with available data
-    return createAnalysisResult(url, seoResult, aioResult);
+    const result = createAnalysisResult(url, seoResult || null, aioResult || null);
+    return result;
   } catch (error) {
     console.error('Error in full analysis:', error);
     toast.warning('Utilizando análise simulada', {
