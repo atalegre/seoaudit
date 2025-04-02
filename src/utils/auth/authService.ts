@@ -55,6 +55,9 @@ export async function signUpWithEmail(data: SignUpData) {
 }
 
 export async function signInWithEmail(email: string, password: string) {
+  // Create default users if they don't exist (for demo purposes)
+  await createDefaultUsers();
+  
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
@@ -101,5 +104,70 @@ export async function checkUserRole(userId: string): Promise<string> {
   } catch (error) {
     console.error('Error checking user role:', error);
     return 'user'; // Default to user role if there's an error
+  }
+}
+
+// Function to create default admin and client users if they don't exist
+async function createDefaultUsers() {
+  try {
+    // Check if admin user exists
+    const { data: adminData, error: adminError } = await supabase.auth.signInWithPassword({
+      email: 'seoadmin@exemplo.com',
+      password: 'admin',
+    });
+
+    // If admin doesn't exist, create it
+    if (adminError && adminError.message.includes('Invalid login credentials')) {
+      const { data: newAdmin, error: createError } = await supabase.auth.signUp({
+        email: 'seoadmin@exemplo.com',
+        password: 'admin',
+        options: {
+          data: {
+            full_name: 'Admin User',
+            role: 'admin',
+          },
+        },
+      });
+      
+      if (newAdmin.user) {
+        await supabase.from('users').insert([{
+          id: newAdmin.user.id,
+          name: 'Admin User',
+          email: 'seoadmin@exemplo.com',
+          role: 'admin'
+        }]);
+      }
+    }
+
+    // Check if client user exists
+    const { data: clientData, error: clientError } = await supabase.auth.signInWithPassword({
+      email: 'seoclient@exemplo.com',
+      password: 'client',
+    });
+
+    // If client doesn't exist, create it
+    if (clientError && clientError.message.includes('Invalid login credentials')) {
+      const { data: newClient, error: createError } = await supabase.auth.signUp({
+        email: 'seoclient@exemplo.com',
+        password: 'client',
+        options: {
+          data: {
+            full_name: 'Client User',
+            role: 'user',
+          },
+        },
+      });
+      
+      if (newClient.user) {
+        await supabase.from('users').insert([{
+          id: newClient.user.id,
+          name: 'Client User',
+          email: 'seoclient@exemplo.com',
+          role: 'user'
+        }]);
+      }
+    }
+  } catch (error) {
+    console.error('Error creating default users:', error);
   }
 }
