@@ -57,6 +57,19 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
       if (error) {
         console.error("Login error:", error);
         setAuthError(error.message);
+        
+        // Special handling for unconfirmed email
+        if (error.message.includes("Email not confirmed")) {
+          localStorage.setItem('pendingVerificationEmail', values.email);
+          toast({
+            variant: "destructive",
+            title: "Email não confirmado",
+            description: "Por favor verifique o seu email para confirmar a conta.",
+          });
+          navigate('/verification', { state: { email: values.email } });
+          return;
+        }
+        
         toast({
           variant: "destructive",
           title: "Erro de autenticação",

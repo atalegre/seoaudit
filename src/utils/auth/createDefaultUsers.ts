@@ -26,6 +26,7 @@ export async function createDefaultUsers() {
             full_name: 'SEO Admin',
             role: 'admin',
           },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
         }
       });
 
@@ -70,6 +71,7 @@ export async function createDefaultUsers() {
             full_name: 'SEO Client',
             role: 'user',
           },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
         }
       });
 

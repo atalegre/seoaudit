@@ -110,15 +110,22 @@ export async function checkUserRole(userId: string): Promise<string> {
 // Function to create default admin and client users if they don't exist
 async function createDefaultUsers() {
   try {
+    // Use admin key to insert users directly
+    const adminApiKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    
     // Check if admin user exists
-    const { data: adminData, error: adminError } = await supabase.auth.signInWithPassword({
-      email: 'seoadmin@exemplo.com',
-      password: 'admin123',
-    });
+    const { data: adminExists } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', 'seoadmin@exemplo.com')
+      .maybeSingle();
 
     // If admin doesn't exist, create it
-    if (adminError && adminError.message.includes('Invalid login credentials')) {
-      const { data: newAdmin, error: createError } = await supabase.auth.signUp({
+    if (!adminExists) {
+      console.log("Creating admin user");
+      
+      // Create a new user with no email verification
+      const { data, error } = await supabase.auth.signUp({
         email: 'seoadmin@exemplo.com',
         password: 'admin123',
         options: {
@@ -126,28 +133,37 @@ async function createDefaultUsers() {
             full_name: 'Admin User',
             role: 'admin',
           },
+          // This won't bypass email confirmation in standard auth flow
         },
       });
       
-      if (newAdmin.user) {
-        await supabase.from('users').insert([{
-          id: newAdmin.user.id,
-          name: 'Admin User',
-          email: 'seoadmin@exemplo.com',
-          role: 'admin'
-        }]);
+      if (error) {
+        console.error("Error creating admin user:", error);
+      } else if (data.user) {
+        // Create a record in the users table
+        await supabase
+          .from('users')
+          .insert([{
+            id: data.user.id,
+            name: 'Admin User',
+            email: 'seoadmin@exemplo.com',
+            role: 'admin'
+          }]);
       }
     }
 
     // Check if client user exists
-    const { data: clientData, error: clientError } = await supabase.auth.signInWithPassword({
-      email: 'seoclient@exemplo.com',
-      password: 'client123',
-    });
+    const { data: clientExists } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', 'seoclient@exemplo.com')
+      .maybeSingle();
 
     // If client doesn't exist, create it
-    if (clientError && clientError.message.includes('Invalid login credentials')) {
-      const { data: newClient, error: createError } = await supabase.auth.signUp({
+    if (!clientExists) {
+      console.log("Creating client user");
+      
+      const { data, error } = await supabase.auth.signUp({
         email: 'seoclient@exemplo.com',
         password: 'client123',
         options: {
@@ -155,16 +171,22 @@ async function createDefaultUsers() {
             full_name: 'Client User',
             role: 'user',
           },
+          // This won't bypass email confirmation in standard auth flow
         },
       });
       
-      if (newClient.user) {
-        await supabase.from('users').insert([{
-          id: newClient.user.id,
-          name: 'Client User',
-          email: 'seoclient@exemplo.com',
-          role: 'user'
-        }]);
+      if (error) {
+        console.error("Error creating client user:", error);
+      } else if (data.user) {
+        // Create a record in the users table
+        await supabase
+          .from('users')
+          .insert([{
+            id: data.user.id,
+            name: 'Client User',
+            email: 'seoclient@exemplo.com',
+            role: 'user'
+          }]);
       }
     }
   } catch (error) {
