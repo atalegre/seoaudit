@@ -35,8 +35,10 @@ export async function signInWithEmail(email: string, password: string) {
         });
         
         if (signUpError) {
-          console.error("Error creating demo account:", signUpError);
-          return { data: null, error: signUpError };
+          if (!signUpError.message.includes("User already registered")) {
+            console.error("Error creating demo account:", signUpError);
+            return { data: null, error: signUpError };
+          }
         }
         
         // Try login again after account creation
