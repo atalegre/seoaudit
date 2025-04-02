@@ -24,7 +24,10 @@ const formSchema = z.object({
     .email({ message: 'Email inválido' }),
   password: z
     .string()
-    .min(8, { message: 'Password deve ter pelo menos 8 caracteres' }),
+    .min(8, { message: 'Password deve ter pelo menos 8 caracteres' })
+    .regex(/[A-Z]/, { message: 'Password deve conter pelo menos uma letra maiúscula' })
+    .regex(/[0-9]/, { message: 'Password deve conter pelo menos um número' })
+    .regex(/[^a-zA-Z0-9]/, { message: 'Password deve conter pelo menos um caractere especial' }),
   acceptTerms: z.boolean().refine(val => val, {
     message: 'Deve aceitar os termos e condições',
   }),
@@ -155,6 +158,15 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
         />
         <EmailField form={form} />
         <PasswordField form={form} name="password" />
+        <div className="text-xs text-muted-foreground space-y-1">
+          <p>A senha deve conter:</p>
+          <ul className="list-disc pl-4 space-y-0.5">
+            <li>Pelo menos 8 caracteres</li>
+            <li>Pelo menos uma letra maiúscula</li>
+            <li>Pelo menos um número</li>
+            <li>Pelo menos um caractere especial</li>
+          </ul>
+        </div>
         <FormField
           control={form.control}
           name="acceptTerms"
