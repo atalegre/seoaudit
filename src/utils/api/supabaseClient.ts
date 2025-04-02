@@ -74,17 +74,23 @@ export async function getClientAnalysisHistory(clientId: number): Promise<Analys
         ? JSON.parse(item.aio_data)
         : item.aio_data;
       
+      // Handle recommendations - may not exist in older records
+      let recommendations = [];
+      
+      // Check if recommendations exist in the record
+      if ('recommendations' in item && item.recommendations) {
+        recommendations = typeof item.recommendations === 'string' 
+          ? JSON.parse(item.recommendations) 
+          : item.recommendations;
+      }
+      
       // Create a proper AnalysisResult object
       return {
         url: item.url,
         timestamp: item.timestamp,
         seo: seoData as SeoAnalysisResult,
         aio: aioData as AioAnalysisResult,
-        recommendations: item.recommendations 
-          ? (typeof item.recommendations === 'string' 
-              ? JSON.parse(item.recommendations) 
-              : item.recommendations)
-          : [],
+        recommendations: recommendations,
         overallStatus: item.overall_status as StatusClassification
       } as AnalysisResult;
     });
