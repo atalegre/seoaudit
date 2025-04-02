@@ -74,7 +74,8 @@ export async function getClientAnalysisHistory(clientId: number): Promise<Analys
         ? JSON.parse(item.aio_data)
         : item.aio_data;
       
-      const recommendations = item.recommendations 
+      // Verify if recommendations exists and parse it if it's a string
+      const recommendationsData = item.recommendations 
         ? (typeof item.recommendations === 'string' 
             ? JSON.parse(item.recommendations) 
             : item.recommendations) 
@@ -86,7 +87,7 @@ export async function getClientAnalysisHistory(clientId: number): Promise<Analys
         timestamp: item.timestamp,
         seo: seoData as SeoAnalysisResult,
         aio: aioData as AioAnalysisResult,
-        recommendations: recommendations,
+        recommendations: recommendationsData,
         overallStatus: item.overall_status as StatusClassification
       } as AnalysisResult;
     });

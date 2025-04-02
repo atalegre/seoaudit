@@ -3,7 +3,6 @@ import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import ContentLayout from '@/components/content/ContentLayout';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Search, ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { glossaryTerms } from '@/data/glossary-data';
@@ -13,38 +12,33 @@ const GlossaryPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const letters = '#ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
   
-  // Agrupe termos por letra inicial
-  const groupedTerms = useMemo(() => {
-    const filtered = glossaryTerms.filter(term => 
+  // Filtra termos baseado na pesquisa
+  const filteredTerms = useMemo(() => {
+    return glossaryTerms.filter(term => 
       term.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       term.shortDefinition.toLowerCase().includes(searchQuery.toLowerCase())
     );
-    
+  }, [searchQuery]);
+  
+  // Agrupa termos por letra inicial
+  const groupedTerms = useMemo(() => {
     return letters.reduce((acc, letter) => {
       if (letter === '#') {
         // Termos que começam com números ou caracteres especiais
-        acc[letter] = filtered.filter(term => /^[^a-zA-Z]/.test(term.title));
+        acc[letter] = filteredTerms.filter(term => /^[^a-zA-Z]/.test(term.title));
       } else {
-        acc[letter] = filtered.filter(term => 
+        acc[letter] = filteredTerms.filter(term => 
           term.title.toLowerCase().startsWith(letter.toLowerCase())
         );
       }
       return acc;
     }, {} as Record<string, typeof glossaryTerms>);
-  }, [searchQuery]);
-
-  // Determina quais letras têm termos
-  const hasTermsForLetter = useMemo(() => {
-    return letters.reduce((acc, letter) => {
-      acc[letter] = (groupedTerms[letter]?.length || 0) > 0;
-      return acc;
-    }, {} as Record<string, boolean>);
-  }, [groupedTerms]);
+  }, [filteredTerms, letters]);
 
   // Verifica se há resultados da pesquisa
   const hasResults = useMemo(() => {
-    return Object.values(groupedTerms).some(terms => terms.length > 0);
-  }, [groupedTerms]);
+    return filteredTerms.length > 0;
+  }, [filteredTerms]);
 
   return (
     <ContentLayout className="bg-secondary/30">
@@ -65,28 +59,6 @@ const GlossaryPage = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)} 
           />
-        </div>
-
-        <div className="flex flex-wrap gap-2 mb-8">
-          {letters.map(letter => (
-            <Button
-              key={letter}
-              variant={hasTermsForLetter[letter] ? "outline" : "ghost"}
-              size="sm"
-              disabled={!hasTermsForLetter[letter]}
-              className={hasTermsForLetter[letter] ? "" : "opacity-40"}
-              onClick={() => {
-                if (hasTermsForLetter[letter]) {
-                  const element = document.getElementById(`letter-${letter}`);
-                  if (element) {
-                    element.scrollIntoView({ behavior: 'smooth' });
-                  }
-                }
-              }}
-            >
-              {letter}
-            </Button>
-          ))}
         </div>
 
         {!hasResults && (
