@@ -10,8 +10,9 @@ import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import EmailField from './EmailField';
 import PasswordField from './PasswordField';
-import { signInWithEmail } from '@/utils/auth/authService';
+import { signInWithEmail } from '@/utils/auth/signinService';
 import { checkUserRole } from '@/utils/auth/userProfileService';
+import { createOrUpdateAdmin, createOrUpdateClient } from '@/utils/auth/createDefaultUsers';
 
 const formSchema = z.object({
   email: z
@@ -48,6 +49,13 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
     
     try {
       console.log("Login attempt with:", values.email);
+      
+      // Pre-setup demo accounts if that's what we're trying to log in with
+      if (values.email === 'atalegre@me.com') {
+        await createOrUpdateAdmin();
+      } else if (values.email === 'seoclient@exemplo.com') {
+        await createOrUpdateClient();
+      }
       
       // Attempt to sign in with email and password
       const { data, error } = await signInWithEmail(values.email, values.password);
