@@ -1,13 +1,21 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
+
 const Footer = () => {
   const currentYear = new Date().getFullYear();
-  return <footer className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 mt-auto">
+  
+  return (
+    <footer className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 mt-auto">
       <div className="container py-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-3">
-            <div className="flex items-center gap-2 font-bold text-xl rounded-sm">
-              <img src="/lovable-uploads/d5a32965-2a6a-49a6-8474-6efb96afd0f7.png" alt="SEOAudit Logo" className="h-40" />
+            <div className="flex items-center gap-2">
+              <img 
+                src="/lovable-uploads/d5a32965-2a6a-49a6-8474-6efb96afd0f7.png" 
+                alt="SEOAudit Logo" 
+                className="h-16" 
+              />
             </div>
             <p className="text-sm text-muted-foreground">
               Otimize o seu site para motores de busca e modelos de IA.
@@ -92,6 +100,8 @@ const Footer = () => {
           </div>
         </div>
       </div>
-    </footer>;
+    </footer>
+  );
 };
+
 export default Footer;

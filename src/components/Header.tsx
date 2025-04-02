@@ -74,7 +74,7 @@ const Header = () => {
           <img 
             src="/lovable-uploads/d5a32965-2a6a-49a6-8474-6efb96afd0f7.png" 
             alt="SEOAudit Logo" 
-            className="h-40" 
+            className="h-16" 
           />
         </Link>
         
