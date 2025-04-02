@@ -17,7 +17,7 @@ export {
 } from './supabaseClient';
 
 // Analysis services
-export { getPageInsightsData } from './pageInsightsService';
+export { getPageInsightsData } from './pageInsights';
 export { getChatGptAnalysis } from './chatGptService';
 export { processBulkImport } from './bulkImportService';
 export { getFullAnalysis, analyzeBulkClients } from './analysisService';
