@@ -2,24 +2,13 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
 import { User } from '@/utils/api/userService';
-
-// Form schema
-export const userFormSchema = z.object({
-  name: z.string().min(2, { message: 'O nome deve ter pelo menos 2 caracteres' }),
-  email: z.string().email({ message: 'Email inválido' }),
-  role: z.enum(['admin', 'editor', 'user'], {
-    required_error: 'Por favor, selecione uma função',
-  }),
-});
-
-export type UserFormValues = z.infer<typeof userFormSchema>;
+import { userFormSchema, UserFormValues } from './schemas/userFormSchema';
 
 interface UserFormProps {
   currentUser: User | null;

@@ -2,7 +2,8 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { User } from '@/utils/api/userService';
-import UserForm, { UserFormValues } from './UserForm';
+import UserForm from './UserForm';
+import { UserFormValues } from './schemas/userFormSchema';
 
 interface UserFormDialogProps {
   open: boolean;

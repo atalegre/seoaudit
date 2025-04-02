@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { UserPlus } from 'lucide-react';
-import { UserFormValues } from './UserForm';
+import { UserFormValues } from './schemas/userFormSchema';
 import UserTable from './UserTable';
 import UserFormDialog from './UserFormDialog';
 import { User, getAllUsers, createUser, updateUser, deleteUser } from '@/utils/api/userService';
