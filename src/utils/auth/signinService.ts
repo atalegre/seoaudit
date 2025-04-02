@@ -9,7 +9,7 @@ export async function signInWithEmail(email: string, password: string) {
   console.log("Attempting to sign in with email:", email);
   
   try {
-    // Demo user login handling - using type safe comparison
+    // Demo user login handling
     const isDemoAdmin = email === 'atalegre@me.com' && password === 'admin123';
     const isDemoClient = email === 'seoclient@exemplo.com' && password === 'client123';
     
@@ -17,16 +17,16 @@ export async function signInWithEmail(email: string, password: string) {
       console.log(`Processing demo user login: ${email}`);
       
       // First try direct login
-      const { data, error } = await supabase.auth.signInWithPassword({
+      let authResult = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
       // If login fails, try to create the account
-      if (error) {
+      if (authResult.error) {
         console.log("Demo user login failed, attempting to create account");
         
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        const { error: signUpError } = await supabase.auth.signUp({
           email, 
           password,
           options: {
@@ -43,33 +43,31 @@ export async function signInWithEmail(email: string, password: string) {
         }
         
         // Try logging in again after signup
-        const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+        authResult = await supabase.auth.signInWithPassword({
           email,
           password,
         });
         
-        if (loginError) {
-          console.error("Demo user login failed after signup:", loginError);
-          throw loginError;
+        if (authResult.error) {
+          console.error("Demo user login failed after signup:", authResult.error);
+          throw authResult.error;
         }
-        
-        data = loginData;
       }
       
       // Ensure user exists in database with proper role
-      if (data?.user) {
+      if (authResult.data?.user) {
         if (isDemoAdmin) {
-          await ensureAdminUserInDb(data.user.id, email);
+          await ensureAdminUserInDb(authResult.data.user.id, email);
         } else {
           await ensureUserInDb(
-            data.user.id,
+            authResult.data.user.id,
             email,
             'SEO Client',
             'user'
           );
         }
         
-        return { data, error: null };
+        return { data: authResult.data, error: null };
       } else {
         throw new Error("Failed to authenticate demo user");
       }
