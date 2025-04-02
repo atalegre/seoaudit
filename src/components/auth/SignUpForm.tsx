@@ -39,7 +39,13 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
     setAuthError(null);
     
     try {
-      const data = await signUpWithEmail(values);
+      // Make sure we're passing all required fields from the form values
+      const data = await signUpWithEmail({
+        name: values.name,
+        email: values.email,
+        password: values.password,
+        acceptTerms: values.acceptTerms
+      });
       
       if (data?.session) {
         // User was signed in automatically

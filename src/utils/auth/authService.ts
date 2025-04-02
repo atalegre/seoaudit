@@ -1,23 +1,23 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { createUser } from '@/utils/api/userService';
 
-export interface SignUpData {
+export type SignUpData = {
   name: string;
   email: string;
   password: string;
-}
+  acceptTerms: boolean;
+};
 
-export const signUpWithEmail = async (values: SignUpData) => {
-  const { data, error } = await supabase.auth.signUp({
-    email: values.email,
-    password: values.password,
+export async function signUpWithEmail(data: SignUpData) {
+  const { name, email, password } = data;
+
+  const { data: authData, error } = await supabase.auth.signUp({
+    email,
+    password,
     options: {
       data: {
-        name: values.name,
-        role: 'user', // Default role for new users
+        full_name: name,
       },
-      emailRedirectTo: `${window.location.origin}/auth/callback`,
     },
   });
 
@@ -25,20 +25,38 @@ export const signUpWithEmail = async (values: SignUpData) => {
     throw error;
   }
 
-  // Create a user record if signup was successful and we have a user ID
-  if (data?.user) {
-    try {
-      await createUser({
-        id: data.user.id,
-        name: values.name,
-        email: values.email,
-        role: 'user'
-      });
-    } catch (usersError) {
-      console.error("User record creation error:", usersError);
-      // Don't block signup if this fails
-    }
+  return authData;
+}
+
+export async function signInWithEmail(email: string, password: string) {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    throw error;
   }
 
   return data;
-};
+}
+
+export async function resetPassword(email: string) {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/reset-password`,
+  });
+
+  if (error) {
+    throw error;
+  }
+}
+
+export async function updatePassword(password: string) {
+  const { error } = await supabase.auth.updateUser({
+    password,
+  });
+
+  if (error) {
+    throw error;
+  }
+}
