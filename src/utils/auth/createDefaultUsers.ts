@@ -32,8 +32,8 @@ export async function createOrUpdateAdmin() {
       // Check if user already exists first
       const { data } = await supabase.auth.admin.listUsers();
       
-      // Check if admin exists by filtering the users array
-      const adminExists = data?.users ? data.users.some(user => user.email === adminEmail) : false;
+      // Check if admin exists by filtering the users array, with proper type checking
+      const adminExists = data?.users ? data.users.some(user => user.email && user.email === adminEmail) : false;
       
       if (!adminExists) {
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
@@ -124,8 +124,8 @@ export async function createOrUpdateClient() {
       // Check if user already exists first
       const { data } = await supabase.auth.admin.listUsers();
       
-      // Check if client exists by filtering the users array
-      const clientExists = data?.users ? data.users.some(user => user.email === clientEmail) : false;
+      // Check if client exists by filtering the users array, with proper type checking
+      const clientExists = data?.users ? data.users.some(user => user.email && user.email === clientEmail) : false;
       
       if (!clientExists) {
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
