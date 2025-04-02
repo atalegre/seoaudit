@@ -63,6 +63,16 @@
   }
 }
 
+/* Navigation Menu Z-Index Override */
+.radix-navigation-menu {
+  z-index: 1000 !important;
+}
+
+/* Ensures navigation menus appear above other content */
+[data-radix-popper-content-wrapper] {
+  z-index: 9999 !important; 
+}
+
 /* Otimizações para Core Web Vitals - LCP e CLS */
 .lcp-target {
   content-visibility: auto;
