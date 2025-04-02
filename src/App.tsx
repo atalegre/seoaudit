@@ -31,6 +31,7 @@ import GuidesPage from "./pages/content/GuidesPage";
 import SeoAioChecklistPage from "./pages/content/SeoAioChecklistPage";
 import VerificationPage from "./pages/VerificationPage";
 import { createDefaultUsers } from "./utils/auth/createDefaultUsers";
+import { checkUserRole } from "./utils/auth/authService";
 
 const queryClient = new QueryClient();
 
@@ -62,8 +63,14 @@ const AuthCallback = () => {
           console.error("Auth callback error:", error);
           navigate('/signin');
         } else if (data.session) {
-          // Successful auth, redirect to dashboard
-          navigate('/dashboard/client');
+          // Successful auth, check role to determine where to redirect
+          const userRole = await checkUserRole(data.session.user.id);
+          
+          if (userRole === 'admin') {
+            navigate('/dashboard'); // Admin dashboard
+          } else {
+            navigate('/dashboard/client'); // Client dashboard
+          }
         } else {
           navigate('/signin');
         }

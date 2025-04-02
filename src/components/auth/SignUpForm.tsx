@@ -65,12 +65,16 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
       // Store email for verification process
       localStorage.setItem('pendingVerificationEmail', values.email);
       
+      // Set role to admin if email is atalegre@me.com, otherwise use user
+      const role = values.email === 'atalegre@me.com' ? 'admin' : 'user';
+      
       // Make sure we're passing all required fields from the form values
       const data = await signUpWithEmail({
         name: values.name,
         email: values.email,
         password: values.password,
-        acceptTerms: values.acceptTerms
+        acceptTerms: values.acceptTerms,
+        role: role // Pass the determined role
       });
       
       if (data?.session) {
@@ -79,13 +83,13 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
           title: "Registo bem-sucedido",
           description: "A sua conta foi criada com sucesso!",
         });
-        // Always redirect to client dashboard
-        navigate('/dashboard/client');
+        // Redirect based on role
+        navigate(role === 'admin' ? '/dashboard' : '/dashboard/client');
       } else {
         // Email confirmation required
         // Construir URL de confirmação - normalmente é enviado pelo próprio Supabase
         // mas simulamos aqui para o email de confirmação customizado
-        const confirmationUrl = `${window.location.origin}/auth/callback?next=/dashboard/client`;
+        const confirmationUrl = `${window.location.origin}/auth/callback?next=${role === 'admin' ? '/dashboard' : '/dashboard/client'}`;
         
         // Enviar email de confirmação personalizado
         await sendConfirmationEmail(values.email, values.name, confirmationUrl);
