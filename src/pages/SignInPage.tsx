@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -33,11 +34,6 @@ const formSchema = z.object({
     .min(6, { message: 'Password deve ter pelo menos 6 caracteres' }),
 });
 
-// Mock admin users - in a real app, this would come from a database
-const ADMIN_USERS = [
-  { email: 'admin@exemplo.com', password: 'admin123' }
-];
-
 const SignInPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -59,13 +55,17 @@ const SignInPage = () => {
     // Setup auth listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log("Auth state change event:", event);
+        console.log("Session:", session);
         setSession(session);
         if (session) {
-          // If admin user, redirect to admin dashboard
-          if (ADMIN_USERS.some(admin => admin.email === session.user.email)) {
+          // Check user role for redirection
+          const userRole = session.user.user_metadata?.role;
+          console.log("User role:", userRole);
+          
+          if (userRole === 'admin') {
             navigate('/dashboard');
           } else {
-            // Otherwise redirect to client dashboard
             navigate('/dashboard/client');
           }
         }
@@ -74,7 +74,6 @@ const SignInPage = () => {
 
     // Auto-preencher email se vier do fluxo de análise
     if (locationState?.email) {
-      // Encontre o input de email e preencha-o
       const emailInput = document.getElementById('email') as HTMLInputElement;
       if (emailInput) {
         emailInput.value = locationState.email;
@@ -87,7 +86,7 @@ const SignInPage = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: '',
+      email: locationState?.email || '',
       password: '',
     },
   });
@@ -97,13 +96,15 @@ const SignInPage = () => {
     setAuthError(null);
     
     try {
+      console.log("Login attempt with:", values.email);
       // Try to log in with Supabase Auth
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: values.email,
         password: values.password,
       });
 
       if (error) {
+        console.error("Login error:", error);
         setAuthError(error.message);
         toast({
           variant: "destructive",
@@ -111,13 +112,17 @@ const SignInPage = () => {
           description: error.message,
         });
       } else {
-        // Successfully logged in, the onAuthStateChange listener will handle the redirection
+        // Successfully logged in
+        console.log("Login successful:", data);
         toast({
           title: "Login bem-sucedido",
           description: "Bem-vindo de volta!",
         });
+        
+        // User will be redirected by the auth state change listener
       }
     } catch (error: any) {
+      console.error("Exception during login:", error);
       setAuthError(error.message);
       toast({
         variant: "destructive",

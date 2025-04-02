@@ -76,12 +76,14 @@ const SignUpPage = () => {
         options: {
           data: {
             name: values.name,
+            role: 'user', // Default role for new users
           },
           emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 
       if (error) {
+        console.error("Registration error:", error);
         setAuthError(error.message);
         toast({
           variant: "destructive",
@@ -89,6 +91,26 @@ const SignUpPage = () => {
           description: error.message,
         });
       } else {
+        // Also create a record in the public.users table
+        const { error: usersError } = await supabase
+          .from('users')
+          .insert([{ 
+            id: data?.user?.id,
+            name: values.name, 
+            email: values.email, 
+            role: 'user'
+          }]);
+            
+        if (usersError) {
+          console.error("User record creation error:", usersError);
+          // Don't block the signup process if this fails
+          toast({
+            variant: "warning",
+            title: "Aviso",
+            description: "Conta criada, mas alguns dados do perfil podem estar incompletos.",
+          });
+        }
+
         // Check if email confirmation is required
         if (data?.user && data?.session) {
           // User was signed in automatically, redirect to dashboard
@@ -106,6 +128,7 @@ const SignUpPage = () => {
         }
       }
     } catch (error: any) {
+      console.error("Exception during registration:", error);
       setAuthError(error.message);
       toast({
         variant: "destructive",
