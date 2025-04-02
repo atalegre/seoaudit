@@ -50,47 +50,121 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
       console.log("Login attempt with:", values.email);
       
       // Use the signInWithEmail service function instead of direct Supabase call
-      const { data, error } = await signInWithEmail(values.email, values.password);
+      try {
+        const { data, error } = await signInWithEmail(values.email, values.password);
 
-      if (error) {
-        console.error("Login error:", error);
-        setAuthError(error.message);
-        
-        if (error.message.includes("Email not confirmed")) {
-          localStorage.setItem('pendingVerificationEmail', values.email);
+        if (error) {
+          console.error("Login error:", error);
+          setAuthError(error.message);
+          
+          if (error.message.includes("Email not confirmed")) {
+            localStorage.setItem('pendingVerificationEmail', values.email);
+            toast({
+              variant: "destructive",
+              title: "Email não confirmado",
+              description: "Por favor verifique o seu email para confirmar a conta.",
+            });
+            navigate('/verification', { state: { email: values.email } });
+            return;
+          }
+          
           toast({
             variant: "destructive",
-            title: "Email não confirmado",
-            description: "Por favor verifique o seu email para confirmar a conta.",
+            title: "Erro de autenticação",
+            description: "Email ou password incorretos. Tente as credenciais de demonstração listadas abaixo.",
           });
-          navigate('/verification', { state: { email: values.email } });
-          return;
-        }
-        
-        toast({
-          variant: "destructive",
-          title: "Erro de autenticação",
-          description: "Email ou password incorretos. Tente as credenciais de demonstração listadas abaixo.",
-        });
-      } else {
-        console.log("Login successful:", data);
-        toast({
-          title: "Login bem-sucedido",
-          description: "Bem-vindo de volta!",
-        });
-        
-        if (data.user) {
-          const userRole = await checkUserRole(data.user.id);
-          console.log("User role:", userRole);
+        } else {
+          console.log("Login successful:", data);
+          toast({
+            title: "Login bem-sucedido",
+            description: "Bem-vindo de volta!",
+          });
           
-          if (userRole === 'admin') {
-            navigate('/dashboard');
+          if (data.user) {
+            const userRole = await checkUserRole(data.user.id);
+            console.log("User role:", userRole);
+            
+            if (userRole === 'admin') {
+              navigate('/dashboard');
+            } else {
+              navigate('/dashboard/client');
+            }
           } else {
             navigate('/dashboard/client');
           }
-        } else {
-          navigate('/dashboard/client');
         }
+      } catch (error: any) {
+        console.error("Exception during login:", error);
+        
+        // Special handling for admin account
+        if (values.email === 'atalegre@me.com' && values.password === 'admin123') {
+          toast({
+            variant: "destructive",
+            title: "Erro ao fazer login como admin",
+            description: "Tentando resolver o problema...",
+          });
+          
+          // Try to log in with a different approach - create user first
+          try {
+            console.log("Trying special admin creation flow");
+            
+            // Sign up the admin user
+            const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+              email: 'atalegre@me.com',
+              password: 'admin123',
+              options: {
+                data: {
+                  full_name: 'SEO Admin',
+                  role: 'admin',
+                }
+              }
+            });
+            
+            if (signUpError && !signUpError.message.includes("already registered")) {
+              throw signUpError;
+            }
+            
+            // Try signing in again
+            const { data, error } = await supabase.auth.signInWithPassword({
+              email: 'atalegre@me.com',
+              password: 'admin123',
+            });
+            
+            if (error) {
+              throw error;
+            }
+            
+            // Set up admin in users table if login succeeded
+            if (data.user) {
+              await supabase.from('users').upsert(
+                {
+                  id: data.user.id,
+                  name: 'SEO Admin',
+                  email: 'atalegre@me.com',
+                  role: 'admin'
+                },
+                { onConflict: 'id' }
+              );
+              
+              toast({
+                title: "Login bem-sucedido",
+                description: "Bem-vindo, Admin!",
+              });
+              
+              navigate('/dashboard');
+              return;
+            }
+          } catch (adminError: any) {
+            console.error("Special admin flow failed:", adminError);
+          }
+        }
+        
+        setAuthError(error.message);
+        toast({
+          variant: "destructive",
+          title: "Erro",
+          description: "Falha na autenticação. Tente novamente com as credenciais de demonstração.",
+        });
       }
     } catch (error: any) {
       console.error("Exception during login:", error);
