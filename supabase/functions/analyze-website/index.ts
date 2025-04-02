@@ -14,12 +14,29 @@ serve(async (req) => {
   }
 
   try {
+    // Verificar autorização - agora com melhor tratamento
+    const authHeader = req.headers.get('authorization');
+    // Tornar a autorização opcional para desenvolvimento
+    const authRequired = Deno.env.get('REQUIRE_AUTH') === 'true';
+    
+    if (authRequired && (!authHeader || !authHeader.startsWith('Bearer '))) {
+      console.error('Missing or invalid authorization header');
+      return new Response(JSON.stringify({ 
+        code: 401, 
+        message: "Missing or invalid authorization header",
+        error: "Authorization required" 
+      }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
     
     // Se não houver API key, simular análise em vez de dar erro
     if (!OPENAI_API_KEY) {
       console.log('OPENAI_API_KEY não está configurada - usando análise simulada');
-      const { url, content } = await req.json();
+      const { url, content } = await req.json().catch(() => ({ url: '', content: '' }));
       
       if (!url) {
         throw new Error('URL é obrigatória');
@@ -90,7 +107,8 @@ serve(async (req) => {
         ...generateConsistentResult(url),
         apiUsed: false,
         requestId: crypto.randomUUID(),
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        message: "Análise simulada (API key OpenAI não configurada)"
       };
       
       return new Response(JSON.stringify(result), {
@@ -102,7 +120,7 @@ serve(async (req) => {
     console.log('Edge function foi chamada - API Key OpenAI encontrada');
 
     // Pegar URL e conteúdo da requisição
-    const { url, content, timestamp } = await req.json();
+    const { url, content, timestamp } = await req.json().catch(() => ({ url: '', content: '', timestamp: '' }));
     
     if (!url) {
       throw new Error('URL é obrigatória');
@@ -254,7 +272,8 @@ Não inclua mais nada além do JSON acima. Não forneça introduções, conclus�
       confusingParts: ["Seção 'Sobre Nós' com informações insuficientes"],
       analysis: "Análise de fallback devido a erro na API.",
       apiUsed: false,
-      error: error.message || 'Erro interno ao analisar website'
+      error: error.message || 'Erro interno ao analisar website',
+      generated: true
     };
     
     return new Response(JSON.stringify(fallbackData), {

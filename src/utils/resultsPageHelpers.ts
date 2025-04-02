@@ -12,14 +12,20 @@ export function formatUrl(url: string): string {
   return url.replace(/^https?:\/\//, '');
 }
 
-// Generate recommendations with improved efficiency
+// Generate recommendations with improved efficiency and null safety
 export function generateRecommendations(seo: any, aio: any) {
   const recommendations = [];
 
+  // Skip if both seo and aio are null
+  if (!seo && !aio) {
+    return [];
+  }
+
   // Use threshold-based checks for better performance
+  // Adding null safety throughout
   const checks = [
     {
-      condition: seo?.loadTimeDesktop > 3,
+      condition: seo && seo.loadTimeDesktop > 3,
       recommendation: {
         suggestion: 'Otimize o tempo de carregamento da página para desktop',
         seoImpact: 'Alto',
@@ -29,7 +35,7 @@ export function generateRecommendations(seo: any, aio: any) {
       }
     },
     {
-      condition: seo?.loadTimeMobile > 5,
+      condition: seo && seo.loadTimeMobile > 5,
       recommendation: {
         suggestion: 'Otimize o tempo de carregamento da página para mobile',
         seoImpact: 'Alto',
@@ -39,7 +45,7 @@ export function generateRecommendations(seo: any, aio: any) {
       }
     },
     {
-      condition: seo?.mobileFriendly === false,
+      condition: seo && seo.mobileFriendly === false,
       recommendation: {
         suggestion: 'Torne o site mobile-friendly',
         seoImpact: 'Alto',
@@ -49,7 +55,7 @@ export function generateRecommendations(seo: any, aio: any) {
       }
     },
     {
-      condition: seo?.security === false,
+      condition: seo && seo.security === false,
       recommendation: {
         suggestion: 'Implemente HTTPS no seu site',
         seoImpact: 'Alto',
@@ -59,7 +65,7 @@ export function generateRecommendations(seo: any, aio: any) {
       }
     },
     {
-      condition: seo?.imageOptimization < 60,
+      condition: seo && seo.imageOptimization < 60,
       recommendation: {
         suggestion: 'Otimize as imagens do site',
         seoImpact: 'Médio',
@@ -69,7 +75,7 @@ export function generateRecommendations(seo: any, aio: any) {
       }
     },
     {
-      condition: seo?.headingsStructure < 60,
+      condition: seo && seo.headingsStructure < 60,
       recommendation: {
         suggestion: 'Melhore a estrutura de headings do site',
         seoImpact: 'Médio',
@@ -79,7 +85,7 @@ export function generateRecommendations(seo: any, aio: any) {
       }
     },
     {
-      condition: seo?.metaTags < 60,
+      condition: seo && seo.metaTags < 60,
       recommendation: {
         suggestion: 'Otimize as meta tags do site',
         seoImpact: 'Médio',
@@ -89,7 +95,7 @@ export function generateRecommendations(seo: any, aio: any) {
       }
     },
     {
-      condition: aio?.contentClarity < 60,
+      condition: aio && aio.contentClarity < 60,
       recommendation: {
         suggestion: 'Melhore a clareza do conteúdo do site',
         seoImpact: 'Baixo',
@@ -99,7 +105,7 @@ export function generateRecommendations(seo: any, aio: any) {
       }
     },
     {
-      condition: aio?.logicalStructure < 60,
+      condition: aio && aio.logicalStructure < 60,
       recommendation: {
         suggestion: 'Melhore a estrutura lógica do site',
         seoImpact: 'Baixo',
@@ -109,7 +115,7 @@ export function generateRecommendations(seo: any, aio: any) {
       }
     },
     {
-      condition: aio?.naturalLanguage < 60,
+      condition: aio && aio.naturalLanguage < 60,
       recommendation: {
         suggestion: 'Melhore a linguagem natural do site',
         seoImpact: 'Baixo',
@@ -121,22 +127,20 @@ export function generateRecommendations(seo: any, aio: any) {
   ];
 
   // Add recommendations based on conditions, safely handle possible null values
-  if (seo && aio) {
-    checks.forEach(check => {
-      if (check.condition) {
-        recommendations.push(check.recommendation);
-      }
-    });
-  }
+  checks.forEach(check => {
+    if (check.condition) {
+      recommendations.push(check.recommendation);
+    }
+  });
   
   return recommendations;
 }
 
-// Create analysis result with proper types - made more concise
+// Create analysis result with proper types and null safety
 export function createAnalysisResult(
   url: string, 
-  seoData: any, 
-  aioData: any
+  seoData: any | null, 
+  aioData: any | null
 ): AnalysisResult {
   // Create default data for null inputs
   const defaultSeoData = {

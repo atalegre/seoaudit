@@ -16,7 +16,7 @@ export async function getFullAnalysis(url: string): Promise<AnalysisResult> {
       url = 'https://' + url;
     }
     
-    // Get SEO and AIO data concurrently
+    // Get SEO and AIO data concurrently with improved error handling
     const seoPromise = getPageInsightsData(url)
       .catch(error => {
         console.error('SEO API failed:', error);
@@ -38,8 +38,8 @@ export async function getFullAnalysis(url: string): Promise<AnalysisResult> {
     // Wait for both promises to settle
     const [seoResult, aioResult] = await Promise.all([seoPromise, aioPromise]);
     
-    // Create result with available data
-    const result = createAnalysisResult(url, seoResult || null, aioResult || null);
+    // Create result with available data - now guaranteed to have data even in failure cases
+    const result = createAnalysisResult(url, seoResult, aioResult);
     return result;
   } catch (error) {
     console.error('Error in full analysis:', error);

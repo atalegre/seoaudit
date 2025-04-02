@@ -17,13 +17,13 @@ export async function getPageInsightsData(url: string): Promise<any> {
       console.log('API key from localStorage:', apiKey ? 'Found' : 'Not found');
     }
     
+    // Usar analisador local se não houver chave de API
     if (!apiKey) {
       console.error('Google Page Insights API key not found in Supabase or localStorage');
       toast.warning('Chave da API Google Page Insights não encontrada', {
         description: 'Usando analisador local para dados de SEO.',
       });
       
-      // Usar analisador local em vez de falhar
       return generateLocalPageInsights(url);
     }
 
@@ -37,7 +37,7 @@ export async function getPageInsightsData(url: string): Promise<any> {
     
     // Add a timeout to the fetch request to prevent hanging
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // Reduzido para 8 segundos
     
     try {
       const response = await fetch(apiUrl, { 
@@ -73,7 +73,10 @@ export async function getPageInsightsData(url: string): Promise<any> {
         }
         
         console.error(errorMessage);
-        throw new Error(errorMessage);
+        toast.warning('Falha na API do Google', {
+          description: 'Usando analisador local para dados de SEO.',
+        });
+        return generateLocalPageInsights(url);
       }
       
       const data = await response.json();
@@ -95,15 +98,13 @@ export async function getPageInsightsData(url: string): Promise<any> {
     } catch (fetchError) {
       clearTimeout(timeoutId);
       if (fetchError.name === 'AbortError') {
-        console.error('Google Page Insights API request timed out after 10 seconds');
+        console.error('Google Page Insights API request timed out after 8 seconds');
         toast.warning('Tempo limite excedido', {
           description: 'Usando analisador local para dados de SEO.'
         });
         return generateLocalPageInsights(url);
       } else {
         console.error('Fetch error:', fetchError.message);
-        
-        // Usar analisador local em caso de erro, em vez de falhar
         toast.warning('Falha na API do Google', {
           description: 'Usando analisador local para dados de SEO.',
         });
@@ -116,7 +117,6 @@ export async function getPageInsightsData(url: string): Promise<any> {
       description: 'Usando analisador local para dados de SEO.',
     });
     
-    // Usar analisador local em vez de falhar
     return generateLocalPageInsights(url);
   }
 }
@@ -245,7 +245,8 @@ function generateLocalPageInsights(url: string): any {
     // Mobile usability details
     tapTargetsScore: Math.abs((hash >> 24) % 50) + 50, // 50-100
     tapTargetsIssues: hash % 5, // 0-4 issues
-    recommendations: recommendations
+    recommendations: recommendations,
+    generated: true
   };
 }
 
