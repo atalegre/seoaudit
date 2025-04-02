@@ -2,59 +2,74 @@
 import { GooglePageInsightsResponse, PageInsightsData } from './types';
 import { generateLocalPageInsights } from './mockDataGenerator';
 
+// Cache implementado para evitar processamento repetido
+const resultsCache = new Map<string, PageInsightsData>();
+
 /**
- * Process raw data from Google Page Insights API
+ * Process raw data from Google Page Insights API - com otimizações
  * @param data Google API response data
  * @param url The URL being analyzed
  * @returns Processed page insights data
  */
 export function processPageInsightsData(data: GooglePageInsightsResponse, url: string): PageInsightsData {
+  // Verificar cache primeiro
+  const cacheKey = `${url}_${new Date().toDateString()}`; // Cache válido por um dia
+  if (resultsCache.has(cacheKey)) {
+    return resultsCache.get(cacheKey)!;
+  }
+  
   try {
-    // Extract SEO score
-    const seoScore = Math.round(data.lighthouseResult?.categories?.seo?.score * 100) || 70;
+    // Extrair dados com proteção contra valores undefined
+    const getAuditScore = (auditName: string) => {
+      return data?.lighthouseResult?.audits?.[auditName]?.score ?? 0;
+    };
     
-    // Extract performance information
-    const performanceScore = Math.round(data.lighthouseResult?.categories?.performance?.score * 100) || 65;
+    const getNumericValue = (auditName: string) => {
+      return data?.lighthouseResult?.audits?.[auditName]?.numericValue;
+    };
     
-    // Extract best practices information
-    const bestPracticesScore = Math.round(data.lighthouseResult?.categories?.['best-practices']?.score * 100) || 75;
+    // Extrair scores - otimizado para evitar cálculos repetidos
+    const seoScore = Math.round((data?.lighthouseResult?.categories?.seo?.score ?? 0.7) * 100);
+    const performanceScore = Math.round((data?.lighthouseResult?.categories?.performance?.score ?? 0.65) * 100);
+    const bestPracticesScore = Math.round((data?.lighthouseResult?.categories?.['best-practices']?.score ?? 0.75) * 100);
     
-    // Extract Core Web Vitals
-    const lcpValue = data.lighthouseResult?.audits?.['largest-contentful-paint']?.numericValue;
-    const lcp = lcpValue ? Math.round(lcpValue / 10) / 100 : 3.5; // Convert to seconds and round
+    // Extrair Core Web Vitals - com valores padrão sensatos
+    const lcpValue = getNumericValue('largest-contentful-paint');
+    const lcp = lcpValue ? Math.round(lcpValue / 10) / 100 : 3.5;
     
-    const fidValue = data.lighthouseResult?.audits?.['max-potential-fid']?.numericValue;
-    const fid = fidValue ? Math.round(fidValue) : 120; // Round to ms
+    const fidValue = getNumericValue('max-potential-fid');
+    const fid = fidValue ? Math.round(fidValue) : 120;
     
-    const clsValue = data.lighthouseResult?.audits?.['cumulative-layout-shift']?.numericValue;
-    const cls = clsValue ? Math.round(clsValue * 100) / 100 : 0.15; // Round to two decimal places
+    const clsValue = getNumericValue('cumulative-layout-shift');
+    const cls = clsValue ? Math.round(clsValue * 100) / 100 : 0.15;
     
-    // Extract loading times
-    const loadTimeDesktop = data.loadingExperience?.metrics?.FIRST_CONTENTFUL_PAINT_MS?.percentile / 1000 || 3.5;
-    const loadTimeMobile = data.loadingExperience?.metrics?.FIRST_CONTENTFUL_PAINT_MS?.percentile / 1000 || 5.2;
+    // Extrair loading times
+    const loadTimeDesktop = data?.loadingExperience?.metrics?.FIRST_CONTENTFUL_PAINT_MS?.percentile / 1000 || 3.5;
+    const loadTimeMobile = data?.loadingExperience?.metrics?.FIRST_CONTENTFUL_PAINT_MS?.percentile / 1000 || 5.2;
     
-    // Extract mobile usability information
-    const mobileFriendly = data.lighthouseResult?.audits?.['viewport']?.score === 1;
-    const tapTargetsAudit = data.lighthouseResult?.audits?.['tap-targets'];
+    // Extrair mobile usability information
+    const mobileFriendly = getAuditScore('viewport') === 1;
+    const tapTargetsAudit = data?.lighthouseResult?.audits?.['tap-targets'];
     const tapTargetsScore = tapTargetsAudit?.score || 0;
     const tapTargetsDetails = tapTargetsAudit?.details?.items || [];
     
-    // Extract audits for recommendations
-    const audits = data.lighthouseResult?.audits || {};
-    const auditItems = Object.keys(audits)
-      .filter(key => !audits[key].score || audits[key].score < 0.9)
-      .map(key => ({
+    // Extrair audits para recommendations - limitar processamento
+    const audits = data?.lighthouseResult?.audits || {};
+    const auditItems = Object.entries(audits)
+      .filter(([_, audit]) => !audit.score || audit.score < 0.9)
+      .slice(0, 20) // Limitar a 20 itens para processamento mais rápido
+      .map(([key, audit]) => ({
         id: key,
-        title: audits[key].title,
-        description: audits[key].description,
-        score: audits[key].score || 0,
+        title: audit.title || '',
+        description: audit.description || '',
+        score: audit.score || 0,
         importance: getAuditImportance(key)
       }))
       .sort((a, b) => b.importance - a.importance)
       .slice(0, 10);
     
-    // Build data structure for the application
-    return {
+    // Construir resultado
+    const result: PageInsightsData = {
       score: seoScore,
       performanceScore: performanceScore,
       bestPracticesScore: bestPracticesScore,
@@ -62,10 +77,10 @@ export function processPageInsightsData(data: GooglePageInsightsResponse, url: s
       loadTimeDesktop: loadTimeDesktop,
       loadTimeMobile: loadTimeMobile,
       mobileFriendly: mobileFriendly,
-      security: audits['is-on-https']?.score === 1,
-      imageOptimization: Math.round((audits['uses-optimized-images']?.score || 0.6) * 100),
-      headingsStructure: Math.round((audits['document-title']?.score || 0.7) * 100),
-      metaTags: Math.round((audits['meta-description']?.score || 0.5) * 100),
+      security: getAuditScore('is-on-https') === 1,
+      imageOptimization: Math.round((getAuditScore('uses-optimized-images') || 0.6) * 100),
+      headingsStructure: Math.round((getAuditScore('document-title') || 0.7) * 100),
+      metaTags: Math.round((getAuditScore('meta-description') || 0.5) * 100),
       // Core Web Vitals
       lcp: lcp,
       fid: fid,
@@ -80,42 +95,43 @@ export function processPageInsightsData(data: GooglePageInsightsResponse, url: s
         importance: item.importance
       }))
     };
+    
+    // Salvar no cache
+    resultsCache.set(cacheKey, result);
+    
+    return result;
   } catch (error) {
     console.error('Error processing Page Insights data:', error);
-    // Generate local data in case of processing error
+    // Gerar dados locais em caso de erro de processamento
     return generateLocalPageInsights(url);
   }
 }
 
+// Memoized lookup table para importância de auditorias
+const auditImportanceLookup: Record<string, number> = {
+  'is-on-https': 3,
+  'viewport': 3,
+  'document-title': 3,
+  'meta-description': 3,
+  'link-text': 3,
+  'crawlable-anchors': 3,
+  'largest-contentful-paint': 3,
+  'cumulative-layout-shift': 3,
+  'total-blocking-time': 3,
+  'uses-optimized-images': 2,
+  'tap-targets': 2,
+  'structured-data': 2,
+  'hreflang': 2,
+  'plugins': 2,
+  'first-contentful-paint': 2,
+  'interactive': 2
+};
+
 /**
- * Determine the importance of each audit
- * @param auditId The audit ID from Google Page Insights
- * @returns Importance level (1-3)
+ * Determine a importância de cada auditoria - otimizado com lookup table
+ * @param auditId O ID da auditoria do Google Page Insights
+ * @returns Nível de importância (1-3)
  */
 export function getAuditImportance(auditId: string): number {
-  const highImportanceAudits = [
-    'is-on-https', 
-    'viewport', 
-    'document-title', 
-    'meta-description', 
-    'link-text', 
-    'crawlable-anchors',
-    'largest-contentful-paint',
-    'cumulative-layout-shift',
-    'total-blocking-time'
-  ];
-  
-  const mediumImportanceAudits = [
-    'uses-optimized-images',
-    'tap-targets',
-    'structured-data',
-    'hreflang',
-    'plugins',
-    'first-contentful-paint',
-    'interactive'
-  ];
-  
-  if (highImportanceAudits.includes(auditId)) return 3;
-  if (mediumImportanceAudits.includes(auditId)) return 2;
-  return 1;
+  return auditImportanceLookup[auditId] || 1;
 }

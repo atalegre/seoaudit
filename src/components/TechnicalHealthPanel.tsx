@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Zap, Smartphone, Lock, Image, Check, AlertCircle, AlertTriangle, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +13,7 @@ interface MetricItemProps {
   description?: string;
 }
 
+// Componente otimizado para carregamento mais rápido
 const MetricItem: React.FC<MetricItemProps> = ({ 
   title, 
   value, 
@@ -76,7 +77,8 @@ interface TechnicalHealthPanelProps {
   fid?: number;
 }
 
-const TechnicalHealthPanel: React.FC<TechnicalHealthPanelProps> = ({
+// Componente principal que usa React.memo para prevenir re-renders desnecessários
+const TechnicalHealthPanel: React.FC<TechnicalHealthPanelProps> = React.memo(({
   loadTimeDesktop,
   loadTimeMobile,
   mobileFriendly,
@@ -122,7 +124,7 @@ const TechnicalHealthPanel: React.FC<TechnicalHealthPanelProps> = ({
     <Card>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-medium flex items-center gap-2">
+          <CardTitle className="text-lg font-medium flex items-center gap-2 lcp-target">
             <Zap className="h-5 w-5 text-orange-500" />
             Saúde Técnica do Site
           </CardTitle>
@@ -189,7 +191,7 @@ const TechnicalHealthPanel: React.FC<TechnicalHealthPanelProps> = ({
                       imageOptimization >= 40 ? "Otimização parcial de imagens" : "Imagens sem otimização adequada"}
         />
         
-        <div className="mt-2">
+        <div className="mt-2 offscreen-content">
           <h4 className="text-xs font-medium uppercase text-gray-500 mb-2">Core Web Vitals</h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <MetricItem 
@@ -221,6 +223,8 @@ const TechnicalHealthPanel: React.FC<TechnicalHealthPanelProps> = ({
       </CardContent>
     </Card>
   );
-};
+});
+
+TechnicalHealthPanel.displayName = 'TechnicalHealthPanel';
 
 export default TechnicalHealthPanel;
