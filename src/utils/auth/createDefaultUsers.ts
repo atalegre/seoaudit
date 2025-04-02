@@ -20,7 +20,7 @@ export async function createDefaultUsers() {
       // First create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: 'seoadmin@exemplo.com',
-        password: 'admin',
+        password: 'admin123',
         options: {
           data: {
             full_name: 'SEO Admin',
@@ -64,7 +64,7 @@ export async function createDefaultUsers() {
       // First create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: 'seoclient@exemplo.com',
-        password: 'client',
+        password: 'client123',
         options: {
           data: {
             full_name: 'SEO Client',

@@ -113,14 +113,14 @@ async function createDefaultUsers() {
     // Check if admin user exists
     const { data: adminData, error: adminError } = await supabase.auth.signInWithPassword({
       email: 'seoadmin@exemplo.com',
-      password: 'admin',
+      password: 'admin123',
     });
 
     // If admin doesn't exist, create it
     if (adminError && adminError.message.includes('Invalid login credentials')) {
       const { data: newAdmin, error: createError } = await supabase.auth.signUp({
         email: 'seoadmin@exemplo.com',
-        password: 'admin',
+        password: 'admin123',
         options: {
           data: {
             full_name: 'Admin User',
@@ -142,14 +142,14 @@ async function createDefaultUsers() {
     // Check if client user exists
     const { data: clientData, error: clientError } = await supabase.auth.signInWithPassword({
       email: 'seoclient@exemplo.com',
-      password: 'client',
+      password: 'client123',
     });
 
     // If client doesn't exist, create it
     if (clientError && clientError.message.includes('Invalid login credentials')) {
       const { data: newClient, error: createError } = await supabase.auth.signUp({
         email: 'seoclient@exemplo.com',
-        password: 'client',
+        password: 'client123',
         options: {
           data: {
             full_name: 'Client User',

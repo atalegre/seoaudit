@@ -104,10 +104,10 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
         <div className="text-sm text-muted-foreground">
           <p>Para entrar como admin, use:</p>
           <p>Email: seoadmin@exemplo.com</p>
-          <p>Password: admin</p>
+          <p>Password: admin123</p>
           <p className="mt-2">Para entrar como cliente, use:</p>
           <p>Email: seoclient@exemplo.com</p>
-          <p>Password: client</p>
+          <p>Password: client123</p>
         </div>
         <Button 
           type="submit" 
