@@ -88,7 +88,7 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <EmailField form={form} />
-        <PasswordField form={form} />
+        <PasswordField form={form} name="password" />
         <div className="text-sm text-muted-foreground">
           <p>Para entrar como admin, use:</p>
           <p>Email: admin@exemplo.com</p>

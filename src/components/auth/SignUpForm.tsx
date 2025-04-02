@@ -154,7 +154,7 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
           )}
         />
         <EmailField form={form} />
-        <PasswordField form={form} />
+        <PasswordField form={form} name="password" />
         <FormField
           control={form.control}
           name="acceptTerms"
