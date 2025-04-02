@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
@@ -129,28 +130,33 @@ serve(async (req) => {
     const requestId = crypto.randomUUID();
     console.log(`[${requestId}] Analisando URL: ${url} - Timestamp: ${timestamp || 'não fornecido'}`);
 
-    // Criar prompts mais específicos com formato JSON para melhorar a análise
-    const systemPrompt = `
-Você é um analisador especializado em websites. 
-Analise o site com base no URL e conteúdo fornecido.
-Avalie também como o site se comporta para algoritmos de IA.
-VOCÊ DEVE RESPONDER NO SEGUINTE FORMATO JSON:
+    // Prompt atualizado conforme solicitado
+    const systemPrompt = `You are an analyzer specialized in websites.
 
+Your task is to analyze the site based on the URL and content provided.
+
+You must evaluate how the site behaves for AI algorithms (LLMs), considering objective clarity, structure, and use of natural language. Always be consistent.
+
+If the URL and content are the same as a previous input, your response MUST be exactly the same. Avoid any variation in wording, scoring, or interpretation unless the input changed.
+
+Do not speculate. Base all scores strictly on what is presented. Be deterministic.
+
+YOU MUST RESPOND IN THE FOLLOWING JSON FORMAT:
 {
   "score": [0-100],
   "contentClarity": [0-100],
   "logicalStructure": [0-100],
   "naturalLanguage": [0-100],
-  "topicsDetected": ["tópico1", "tópico2", "tópico3"],
-  "confusingParts": ["parte confusa 1", "parte confusa 2"],
-  "analysis": "Sua análise textual detalhada aqui"
+  "topicsDetected": ["topic1", "topic2", "topic3"],
+  "confusingParts": ["confusing part 1", "confusing part 2"],
+  "analysis": "Your detailed textual analysis here"
 }
 
-Não inclua mais nada além do JSON acima. Não forneça introduções, conclusões ou qualquer outro texto.`;
+Don't include anything beyond the JSON above. Don't provide introductions, conclusions, or any other text.`;
     
     const userPrompt = content 
-      ? `Analise este site: ${url}\n\nConteúdo: ${content}\n\nForneça sua análise no formato JSON especificado.`
-      : `Analise este site: ${url}\n\nForneça sua análise no formato JSON especificado.`;
+      ? `Analyze this site: ${url}\n\nContent: ${content}\n\nProvide your analysis in the specified JSON format.`
+      : `Analyze this site: ${url}\n\nProvide your analysis in the specified JSON format.`;
 
     console.log(`[${requestId}] System prompt:`, systemPrompt);
     console.log(`[${requestId}] User prompt:`, userPrompt);
@@ -177,6 +183,7 @@ Não inclua mais nada além do JSON acima. Não forneça introduções, conclus�
               content: userPrompt
             }
           ],
+          temperature: 0.0,
           response_format: { type: "json_object" },
           max_tokens: 1000
         })
