@@ -4,7 +4,7 @@ export type SignUpData = {
   email: string;
   password: string;
   acceptTerms: boolean;
-  role?: 'admin' | 'editor' | 'user';
+  role?: 'admin' | 'user';
 };
 
-export type UserRole = 'admin' | 'editor' | 'user';
+export type UserRole = 'admin' | 'user';
