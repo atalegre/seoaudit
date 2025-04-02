@@ -52,32 +52,35 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
       
       if (error) {
         console.error("Login error:", error);
-        setAuthError(error.message);
+        setAuthError(error.message || "Authentication failed");
         
         toast({
           variant: "destructive",
           title: "Erro de autenticação",
           description: "Email ou password incorretos. Tente as credenciais de demonstração listadas abaixo.",
         });
-      } else {
+      } else if (data?.user) {
         console.log("Login successful:", data);
         toast({
           title: "Login bem-sucedido",
           description: "Bem-vindo de volta!",
         });
         
-        if (data.user) {
-          const userRole = await checkUserRole(data.user.id);
-          console.log("User role:", userRole);
-          
-          if (userRole === 'admin') {
-            navigate('/dashboard');
-          } else {
-            navigate('/dashboard/client');
-          }
+        const userRole = await checkUserRole(data.user.id);
+        console.log("User role:", userRole);
+        
+        if (userRole === 'admin') {
+          navigate('/dashboard');
         } else {
           navigate('/dashboard/client');
         }
+      } else {
+        setAuthError("Unknown error during authentication");
+        toast({
+          variant: "destructive",
+          title: "Erro",
+          description: "Ocorreu um erro desconhecido durante a autenticação.",
+        });
       }
     } catch (error: any) {
       console.error("Exception during login:", error);

@@ -9,36 +9,56 @@ export async function signInWithEmail(email: string, password: string) {
   console.log("Attempting to sign in with email:", email);
   
   try {
-    // For demo users, use a simplified approach
-    if ((email === 'atalegre@me.com' && password === 'admin123') || 
-        (email === 'seoclient@exemplo.com' && password === 'client123')) {
+    // Demo user login handling - using type safe comparison
+    const isDemoAdmin = email === 'atalegre@me.com' && password === 'admin123';
+    const isDemoClient = email === 'seoclient@exemplo.com' && password === 'client123';
+    
+    if (isDemoAdmin || isDemoClient) {
+      console.log(`Processing demo user login: ${email}`);
       
-      const isAdmin = email === 'atalegre@me.com';
-      console.log(`Special handling for demo user: ${email}`);
-      
-      // Try to create the account first (will fail if exists, but that's ok)
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email, 
-        password,
-        options: {
-          data: {
-            full_name: isAdmin ? 'SEO Admin' : 'SEO Client',
-            role: isAdmin ? 'admin' : 'user',
-          }
-        }
-      });
-      
-      // Now try to sign in regardless of whether signup succeeded
+      // First try direct login
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
-      if (!error && data.user) {
-        console.log("Demo user login successful");
+      // If login fails, try to create the account
+      if (error) {
+        console.log("Demo user login failed, attempting to create account");
         
-        // Ensure user exists in database with proper role
-        if (isAdmin) {
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email, 
+          password,
+          options: {
+            data: {
+              full_name: isDemoAdmin ? 'SEO Admin' : 'SEO Client',
+              role: isDemoAdmin ? 'admin' : 'user',
+            }
+          }
+        });
+        
+        if (signUpError) {
+          console.error("Failed to create demo account:", signUpError);
+          throw signUpError;
+        }
+        
+        // Try logging in again after signup
+        const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        
+        if (loginError) {
+          console.error("Demo user login failed after signup:", loginError);
+          throw loginError;
+        }
+        
+        data = loginData;
+      }
+      
+      // Ensure user exists in database with proper role
+      if (data?.user) {
+        if (isDemoAdmin) {
           await ensureAdminUserInDb(data.user.id, email);
         } else {
           await ensureUserInDb(
@@ -51,8 +71,7 @@ export async function signInWithEmail(email: string, password: string) {
         
         return { data, error: null };
       } else {
-        console.error("Demo user login failed:", error);
-        throw error || new Error("Failed to authenticate");
+        throw new Error("Failed to authenticate demo user");
       }
     } 
     else {
@@ -62,7 +81,12 @@ export async function signInWithEmail(email: string, password: string) {
         password,
       });
       
-      if (!error && data.user) {
+      if (error) {
+        console.error("Login failed:", error);
+        throw error;
+      }
+      
+      if (data?.user) {
         console.log("Standard login successful");
         
         // Ensure user profile exists in database
@@ -80,12 +104,11 @@ export async function signInWithEmail(email: string, password: string) {
         
         return { data, error: null };
       } else {
-        console.error("Standard login failed:", error);
-        throw error || new Error("Failed to authenticate");
+        throw new Error("User data not available after login");
       }
     }
   } catch (error: any) {
     console.error("Exception during login:", error);
-    throw error;
+    return { data: null, error };
   }
 }
