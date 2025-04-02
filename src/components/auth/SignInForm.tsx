@@ -72,14 +72,15 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
           description: "Bem-vindo de volta!",
         });
         
-        // Check user role to determine redirect path
+        // Check if user exists in users table to determine role
         const { data: userData } = await supabase
           .from('users')
           .select('role')
           .eq('id', data.user.id)
           .maybeSingle();
         
-        const role = userData?.role || 'user';
+        // Special case for admin email
+        const role = values.email === 'atalegre@me.com' ? 'admin' : (userData?.role || 'user');
         
         // Navigate based on role
         if (role === 'admin') {

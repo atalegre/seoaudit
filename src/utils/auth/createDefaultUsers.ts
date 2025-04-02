@@ -7,10 +7,10 @@ export async function createDefaultUsers() {
   try {
     console.log("Setting up default users...");
     
-    // Create admin user
+    // Try to create admin user (this will only create if it doesn't exist)
     await createOrUpdateAdmin();
     
-    // Create client user
+    // Try to create client user (this will only create if it doesn't exist)
     await createOrUpdateClient();
     
     console.log('Default users setup complete');
