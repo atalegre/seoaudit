@@ -2,10 +2,9 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Loader2, Search, AlertTriangle, MessageSquare, PenLine, CheckCircle, XCircle } from "lucide-react";
+import { Loader2, AlertTriangle, MessageSquare, PenLine, CheckCircle, XCircle } from "lucide-react";
 
 interface LLMPresenceAuditProps {
   url?: string;
@@ -13,7 +12,6 @@ interface LLMPresenceAuditProps {
 }
 
 const LLMPresenceAudit: React.FC<LLMPresenceAuditProps> = ({ url = "", autoStart = false }) => {
-  const [inputUrl, setInputUrl] = useState(url);
   const [domain, setDomain] = useState("");
   const [report, setReport] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,7 +28,6 @@ const LLMPresenceAudit: React.FC<LLMPresenceAuditProps> = ({ url = "", autoStart
 
   useEffect(() => {
     if (url && autoStart) {
-      setInputUrl(url);
       const extractedDomain = extractDomainFromUrl(url);
       if (extractedDomain) {
         setDomain(extractedDomain);
@@ -40,9 +37,11 @@ const LLMPresenceAudit: React.FC<LLMPresenceAuditProps> = ({ url = "", autoStart
   }, [url, autoStart]);
 
   const handleCheckPresence = async () => {
+    if (!domain && !url) return;
+    
     setLoading(true);
     
-    const domainToUse = domain || extractDomainFromUrl(inputUrl);
+    const domainToUse = domain || extractDomainFromUrl(url);
     
     // Simulação de chamada à API do ChatGPT
     const simulatedResponse = `
@@ -78,87 +77,46 @@ Recomendações:
             Presença em LLMs
           </CardTitle>
           <CardDescription>
-            Analise como a sua marca aparece em modelos de linguagem grandes
+            Análise de como a sua marca aparece em modelos de linguagem grandes
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {presenceScore !== null && (
-            <div className="mb-6 flex justify-center">
-              <div className="w-32 h-32 relative flex items-center justify-center">
-                <svg className="w-full h-full" viewBox="0 0 100 100">
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="45"
-                    fill="transparent"
-                    stroke="#e2e8f0"
-                    strokeWidth="8"
-                  />
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="45"
-                    fill="transparent"
-                    stroke={presenceScore > 70 ? '#8B5CF6' : presenceScore > 40 ? '#f59e0b' : '#ef4444'}
-                    strokeWidth="8"
-                    strokeDasharray={`${presenceScore * 2.83} ${283 - presenceScore * 2.83}`}
-                    strokeLinecap="round"
-                    transform="rotate(-90 50 50)"
-                  />
-                </svg>
-                <span className="absolute text-3xl font-bold">{presenceScore}%</span>
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="flex flex-col items-center gap-3">
+                <Loader2 className="h-8 w-8 animate-spin text-aio" />
+                <p className="text-muted-foreground">Analisando presença em LLMs...</p>
               </div>
             </div>
-          )}
-
-          <div className="space-y-4">
-            <div className="flex flex-col space-y-2">
-              <label htmlFor="url" className="text-sm font-medium">URL ou domínio para análise</label>
-              <div className="flex gap-2">
-                <Input 
-                  id="url"
-                  placeholder="https://www.exemplo.pt" 
-                  value={inputUrl} 
-                  onChange={(e) => {
-                    setInputUrl(e.target.value);
-                    if (!domain) {
-                      const extractedDomain = extractDomainFromUrl(e.target.value);
-                      if (extractedDomain) setDomain(extractedDomain);
-                    }
-                  }} 
-                />
-                <Button 
-                  onClick={handleCheckPresence} 
-                  disabled={loading || (!inputUrl && !domain)}
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      A analisar...
-                    </>
-                  ) : (
-                    <>
-                      <Search className="mr-2 h-4 w-4" />
-                      Analisar
-                    </>
-                  )}
-                </Button>
+          ) : presenceScore !== null ? (
+            <>
+              <div className="mb-6 flex justify-center">
+                <div className="w-32 h-32 relative flex items-center justify-center">
+                  <svg className="w-full h-full" viewBox="0 0 100 100">
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="45"
+                      fill="transparent"
+                      stroke="#e2e8f0"
+                      strokeWidth="8"
+                    />
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="45"
+                      fill="transparent"
+                      stroke={presenceScore > 70 ? '#8B5CF6' : presenceScore > 40 ? '#f59e0b' : '#ef4444'}
+                      strokeWidth="8"
+                      strokeDasharray={`${presenceScore * 2.83} ${283 - presenceScore * 2.83}`}
+                      strokeLinecap="round"
+                      transform="rotate(-90 50 50)"
+                    />
+                  </svg>
+                  <span className="absolute text-3xl font-bold">{presenceScore}%</span>
+                </div>
               </div>
-            </div>
-            
-            <div className="flex flex-col space-y-2">
-              <label htmlFor="domain" className="text-sm font-medium">Nome da marca ou domínio</label>
-              <Input 
-                id="domain"
-                placeholder="Nome do domínio ou marca (ex: Exemplo.pt)" 
-                value={domain} 
-                onChange={(e) => setDomain(e.target.value)} 
-              />
-            </div>
-          </div>
 
-          {report && (
-            <div className="mt-6">
               <div className="bg-muted/50 p-4 rounded-md mb-4">
                 <div className="flex items-start gap-3">
                   <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5" />
@@ -224,7 +182,7 @@ Recomendações:
                   <SheetHeader>
                     <SheetTitle>Relatório de Presença LLM</SheetTitle>
                     <SheetDescription>
-                      Análise completa da presença do domínio {domain || extractDomainFromUrl(inputUrl)} em modelos LLM.
+                      Análise completa da presença do domínio {domain || extractDomainFromUrl(url)} em modelos LLM.
                     </SheetDescription>
                   </SheetHeader>
                   <div className="mt-6">
@@ -237,6 +195,14 @@ Recomendações:
                   </div>
                 </SheetContent>
               </Sheet>
+            </>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-8 gap-3">
+              <AlertTriangle className="h-10 w-10 text-amber-500" />
+              <p className="text-center text-muted-foreground">Não foi possível analisar a presença em LLMs para este domínio.</p>
+              <Button onClick={handleCheckPresence}>
+                Tentar novamente
+              </Button>
             </div>
           )}
         </CardContent>
