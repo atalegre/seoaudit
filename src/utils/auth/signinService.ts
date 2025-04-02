@@ -8,89 +8,89 @@ import { ensureAdminUserInDb, ensureUserInDb } from './userProfileService';
 export async function signInWithEmail(email: string, password: string) {
   console.log("Attempting to sign in with email:", email);
   
-  // Special case for admin user with known credentials
-  if (email === 'atalegre@me.com' && password === 'admin123') {
-    // First check if this user exists - if not, create it
-    try {
-      // Try to sign in first
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+  try {
+    // First try a direct signin
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    
+    if (!error) {
+      console.log("Standard signin successful");
       
-      if (!error) {
-        console.log("Admin user exists and signed in successfully");
-        
-        // Make sure they're marked as admin in the users table
-        if (data.user) {
+      // Ensure user exists in users table with proper role
+      if (data.user) {
+        if (email === 'atalegre@me.com') {
           await ensureAdminUserInDb(data.user.id, email);
+        } else {
+          await ensureUserInDb(
+            data.user.id, 
+            data.user.email || '', 
+            data.user.user_metadata?.full_name || 'User',
+            data.user.email === 'atalegre@me.com' ? 'admin' : 'user'
+          );
         }
-        return { data, error: null };
       }
       
-      // If error, user might not exist or has wrong password, try to create/update
-      console.log("Admin user sign-in failed, attempting to create:", error);
+      return { data, error: null };
+    }
+    
+    // Special handling for our demo users
+    if (
+      (email === 'atalegre@me.com' && password === 'admin123') ||
+      (email === 'seoclient@exemplo.com' && password === 'client123')
+    ) {
+      console.log(`Special handling for demo user: ${email}`);
       
-      // Create admin user with signup
+      // Try to create the user if they don't exist
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email, 
         password,
         options: {
           data: {
-            full_name: 'SEO Admin',
-            role: 'admin',
+            full_name: email === 'atalegre@me.com' ? 'SEO Admin' : 'SEO Client',
+            role: email === 'atalegre@me.com' ? 'admin' : 'user',
           }
         }
       });
       
-      if (signUpError) {
-        // If cannot create, try to update password instead
-        console.error("Admin signup failed:", signUpError);
-        throw signUpError;
-      }
-      
-      if (signUpData.user) {
-        // Ensure user exists in users table
-        await ensureAdminUserInDb(signUpData.user.id, email);
-        
-        // Try signing in again
-        return supabase.auth.signInWithPassword({
+      if (!signUpError || signUpError.message.includes('already registered')) {
+        // Now try logging in again
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
+        
+        if (!signInError) {
+          console.log("Demo user signin successful after account creation/update");
+          
+          // Ensure user exists in users table with proper role
+          if (signInData.user) {
+            if (email === 'atalegre@me.com') {
+              await ensureAdminUserInDb(signInData.user.id, email);
+            } else {
+              await ensureUserInDb(
+                signInData.user.id,
+                email,
+                email === 'atalegre@me.com' ? 'SEO Admin' : 'SEO Client',
+                email === 'atalegre@me.com' ? 'admin' : 'user'
+              );
+            }
+          }
+          
+          return { data: signInData, error: null };
+        } else {
+          console.error("Demo user still failed to login:", signInError);
+          throw signInError;
+        }
       }
-      
-      throw new Error("Failed to create admin user");
-    } catch (error) {
-      console.error("Admin user creation failed:", error);
-      throw error;
     }
-  }
-  
-  // Standard login for non-admin users
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (error) {
-    console.error("SignIn error:", error);
+    
+    // If we get here, signin failed and we couldn't fix it
+    console.error("Signin failed with error:", error);
+    throw error;
+  } catch (error: any) {
+    console.error("Exception during signin:", error);
     throw error;
   }
-
-  // Try to ensure the user exists in the users table
-  if (data.user) {
-    try {
-      await ensureUserInDb(
-        data.user.id, 
-        data.user.email || '', 
-        data.user.user_metadata?.full_name || 'User',
-        data.user.email === 'atalegre@me.com' ? 'admin' : 'user'
-      );
-    } catch (err) {
-      console.error("Error ensuring user in users table:", err);
-    }
-  }
-
-  return { data, error: null };
 }
