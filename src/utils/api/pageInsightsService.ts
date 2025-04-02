@@ -1,9 +1,8 @@
-
 import { analyzeSite } from '../analyzerUtils';
 import { getApiKey } from './supabaseClient';
 import { toast } from 'sonner';
 
-// Função para obter os dados do Google Page Insights
+// Função para obter os dados do Google Page Insights com melhor tratamento de erros
 export async function getPageInsightsData(url: string): Promise<any> {
   try {
     console.log('Starting Google Page Insights analysis for URL:', url);
@@ -52,10 +51,30 @@ export async function getPageInsightsData(url: string): Promise<any> {
       clearTimeout(timeoutId);
       
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: { message: response.statusText } }));
-        console.error('Google Page Insights API error:', errorData);
-        console.error('HTTP Status:', response.status, response.statusText);
-        throw new Error(`Erro ao acessar API do Google Page Insights: ${errorData.error?.message || response.statusText}`);
+        const errorText = await response.text();
+        let errorMessage = `HTTP Status: ${response.status} ${response.statusText}`;
+        
+        try {
+          const errorData = JSON.parse(errorText);
+          console.error('Google Page Insights API error:', errorData);
+          
+          // Verificar erros específicos
+          if (errorData.error?.status === 'INVALID_ARGUMENT') {
+            errorMessage = 'URL inválida ou não acessível pelo Google';
+          } else if (errorData.error?.status === 'PERMISSION_DENIED') {
+            errorMessage = 'Chave API Google Page Insights inválida ou expirada';
+            toast.error('Erro de API Google', {
+              description: 'Sua chave API pode estar inválida ou expirada. Verifique as configurações.',
+            });
+          } else if (errorData.error?.message) {
+            errorMessage = errorData.error.message;
+          }
+        } catch (e) {
+          console.error('Failed to parse error response:', errorText);
+        }
+        
+        console.error(errorMessage);
+        throw new Error(errorMessage);
       }
       
       const data = await response.json();
@@ -78,7 +97,27 @@ export async function getPageInsightsData(url: string): Promise<any> {
       clearTimeout(timeoutId);
       if (fetchError.name === 'AbortError') {
         console.error('Google Page Insights API request timed out after 30 seconds');
-        throw new Error('A requisição para o Google Page Insights atingiu o tempo limite.');
+        toast.error('Tempo limite excedido', {
+          description: 'A API do Google demorou muito para responder. Usando análise local.'
+        });
+      } else {
+        console.error('Fetch error:', fetchError.message);
+        
+        // Tratamento para diferentes tipos de erros
+        if (fetchError.message.includes('PERMISSION_DENIED') || 
+            fetchError.message.includes('API key')) {
+          toast.error('Erro na chave da API Google', {
+            description: 'Por favor, verifique sua chave API nas configurações.',
+          });
+        } else if (fetchError.message.includes('INVALID_ARGUMENT')) {
+          toast.error('URL inválida ou inacessível', {
+            description: 'O Google não conseguiu acessar este site.',
+          });
+        } else {
+          toast.error('Erro na API do Google', {
+            description: 'Utilizando análise local como alternativa.',
+          });
+        }
       }
       throw fetchError;
     }

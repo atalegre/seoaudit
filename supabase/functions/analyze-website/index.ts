@@ -19,7 +19,15 @@ serve(async (req) => {
     
     if (!OPENAI_API_KEY) {
       console.error('OPENAI_API_KEY não está configurada nas variáveis de ambiente');
-      throw new Error('OPENAI_API_KEY não está configurada');
+      return new Response(JSON.stringify({
+        error: 'API Key OpenAI não configurada no servidor',
+        apiUsed: false,
+        fallbackAnalysisProvided: true,
+        message: 'Configure a chave da API OpenAI nas configurações para obter análises mais precisas'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400
+      });
     }
 
     console.log('Edge function foi chamada - API Key OpenAI encontrada');
@@ -62,119 +70,152 @@ Não inclua mais nada além do JSON acima. Não forneça introduções, conclus�
     console.log(`[${requestId}] Enviando requisição para API OpenAI com modelo gpt-4o-mini`);
     
     const startTime = Date.now();
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: systemPrompt
-          },
-          {
-            role: "user",
-            content: userPrompt
-          }
-        ],
-        response_format: { type: "json_object" },
-        max_tokens: 1000
-      })
-    });
-    
-    const responseTime = Date.now() - startTime;
-    console.log(`[${requestId}] Tempo de resposta da API OpenAI: ${responseTime}ms`);
-    
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error(`[${requestId}] Erro na API OpenAI: ${response.status} ${response.statusText}`, errorData);
-      throw new Error(`Erro na API OpenAI: ${response.status} ${response.statusText}`);
-    }
-    
-    console.log(`[${requestId}] Resposta da API OpenAI recebida`);
-    const data = await response.json();
-    
-    if (!data.choices || data.choices.length === 0) {
-      console.error(`[${requestId}] Resposta da OpenAI não contém choices:`, data);
-      throw new Error('Resposta inválida da API OpenAI');
-    }
-    
-    const analysisText = data.choices[0]?.message?.content || '';
-    console.log(`[${requestId}] Resposta da API OpenAI:`, analysisText.substring(0, 300) + '...');
     
     try {
-      // Tentar fazer parse do JSON da resposta
-      const jsonResult = JSON.parse(analysisText);
-      console.log(`[${requestId}] JSON extraído com sucesso:`, jsonResult);
-      
-      // Adicionar informações de identificação e tracking
-      const result = {
-        ...jsonResult,
-        apiUsed: true,
-        requestId: requestId,
-        timestamp: new Date().toISOString(),
-        rawAnalysis: analysisText
-      };
-      
-      return new Response(JSON.stringify(result), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${OPENAI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content: systemPrompt
+            },
+            {
+              role: "user",
+              content: userPrompt
+            }
+          ],
+          response_format: { type: "json_object" },
+          max_tokens: 1000
+        })
       });
       
-    } catch (parseError) {
-      console.error(`[${requestId}] Erro ao analisar o JSON da resposta:`, parseError);
-      console.log(`[${requestId}] Tentando extrair dados da resposta em texto:`, analysisText);
+      const responseTime = Date.now() - startTime;
+      console.log(`[${requestId}] Tempo de resposta da API OpenAI: ${responseTime}ms`);
       
-      // Extrair dados da resposta do OpenAI como fallback usando regex
-      const scoreMatch = analysisText.match(/"score":\s*(\d+)/i) || analysisText.match(/pontuação geral.*?(\d+)/i) || analysisText.match(/overall score.*?(\d+)/i);
-      const clarityMatch = analysisText.match(/"contentClarity":\s*(\d+)/i) || analysisText.match(/clareza de conteúdo.*?(\d+)/i) || analysisText.match(/content clarity.*?(\d+)/i);
-      const structureMatch = analysisText.match(/"logicalStructure":\s*(\d+)/i) || analysisText.match(/estrutura lógica.*?(\d+)/i) || analysisText.match(/logical structure.*?(\d+)/i);
-      const languageMatch = analysisText.match(/"naturalLanguage":\s*(\d+)/i) || analysisText.match(/linguagem natural.*?(\d+)/i) || analysisText.match(/natural language.*?(\d+)/i);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error(`[${requestId}] Erro na API OpenAI: ${response.status} ${response.statusText}`, errorData);
+        
+        // Verificar se é um erro de chave API e fornecer uma mensagem mais específica
+        const isApiKeyError = errorData.error?.code === "invalid_api_key" || 
+                             errorData.error?.message?.includes("API key");
+        
+        return new Response(JSON.stringify({
+          error: isApiKeyError 
+            ? 'Chave API OpenAI inválida ou desatualizada' 
+            : `Erro na API OpenAI: ${response.status} ${response.statusText}`,
+          apiUsed: false,
+          fallbackAnalysisProvided: true,
+          details: errorData,
+          message: isApiKeyError 
+            ? 'Por favor, atualize sua chave API nas configurações' 
+            : 'Usando análise local como alternativa'
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 502
+        });
+      }
       
-      console.log(`[${requestId}] Matches encontrados:`, {
-        score: scoreMatch?.[1],
-        clarity: clarityMatch?.[1],
-        structure: structureMatch?.[1],
-        language: languageMatch?.[1]
-      });
+      console.log(`[${requestId}] Resposta da API OpenAI recebida`);
+      const data = await response.json();
       
-      // Extrair tópicos usando regex
-      const topicsMatch = analysisText.match(/"topicsDetected":\s*\[(.*?)\]/i);
-      const topics = topicsMatch ? 
-        topicsMatch[1].split(',').map(t => t.trim().replace(/"/g, '').trim()).filter(Boolean) : 
-        ['Marketing Digital', 'SEO', 'Presença Online'];
+      if (!data.choices || data.choices.length === 0) {
+        console.error(`[${requestId}] Resposta da OpenAI não contém choices:`, data);
+        throw new Error('Resposta inválida da API OpenAI');
+      }
       
-      // Extrair partes confusas usando regex
-      const confusingMatch = analysisText.match(/"confusingParts":\s*\[(.*?)\]/i);
-      const confusingParts = confusingMatch ?
-        confusingMatch[1].split(',').map(t => t.trim().replace(/"/g, '').trim()).filter(Boolean) :
-        ['Parágrafos muito longos', 'Informação técnica sem explicação'];
+      const analysisText = data.choices[0]?.message?.content || '';
+      console.log(`[${requestId}] Resposta da API OpenAI:`, analysisText.substring(0, 300) + '...');
       
-      const analysisMatch = analysisText.match(/"analysis":\s*"(.*?)"/i);
-      const analysis = analysisMatch ? analysisMatch[1] : '';
-      
-      const result = {
-        score: parseInt(scoreMatch?.[1] || '70'),
-        contentClarity: parseInt(clarityMatch?.[1] || '65'),
-        logicalStructure: parseInt(structureMatch?.[1] || '75'),
-        naturalLanguage: parseInt(languageMatch?.[1] || '80'),
-        topicsDetected: topics,
-        confusingParts: confusingParts,
-        analysis: analysis,
-        rawAnalysis: analysisText,
-        apiUsed: true,
-        requestId: requestId,
-        timestamp: new Date().toISOString()
-      };
+      try {
+        // Tentar fazer parse do JSON da resposta
+        const jsonResult = JSON.parse(analysisText);
+        console.log(`[${requestId}] JSON extraído com sucesso:`, jsonResult);
+        
+        // Adicionar informações de identificação e tracking
+        const result = {
+          ...jsonResult,
+          apiUsed: true,
+          requestId: requestId,
+          timestamp: new Date().toISOString(),
+          rawAnalysis: analysisText
+        };
+        
+        return new Response(JSON.stringify(result), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200
+        });
+        
+      } catch (parseError) {
+        console.error(`[${requestId}] Erro ao analisar o JSON da resposta:`, parseError);
+        console.log(`[${requestId}] Tentando extrair dados da resposta em texto:`, analysisText);
+        
+        // Extrair dados da resposta do OpenAI como fallback usando regex
+        const scoreMatch = analysisText.match(/"score":\s*(\d+)/i) || analysisText.match(/pontuação geral.*?(\d+)/i) || analysisText.match(/overall score.*?(\d+)/i);
+        const clarityMatch = analysisText.match(/"contentClarity":\s*(\d+)/i) || analysisText.match(/clareza de conteúdo.*?(\d+)/i) || analysisText.match(/content clarity.*?(\d+)/i);
+        const structureMatch = analysisText.match(/"logicalStructure":\s*(\d+)/i) || analysisText.match(/estrutura lógica.*?(\d+)/i) || analysisText.match(/logical structure.*?(\d+)/i);
+        const languageMatch = analysisText.match(/"naturalLanguage":\s*(\d+)/i) || analysisText.match(/linguagem natural.*?(\d+)/i) || analysisText.match(/natural language.*?(\d+)/i);
+        
+        console.log(`[${requestId}] Matches encontrados:`, {
+          score: scoreMatch?.[1],
+          clarity: clarityMatch?.[1],
+          structure: structureMatch?.[1],
+          language: languageMatch?.[1]
+        });
+        
+        // Extrair tópicos usando regex
+        const topicsMatch = analysisText.match(/"topicsDetected":\s*\[(.*?)\]/i);
+        const topics = topicsMatch ? 
+          topicsMatch[1].split(',').map(t => t.trim().replace(/"/g, '').trim()).filter(Boolean) : 
+          ['Marketing Digital', 'SEO', 'Presença Online'];
+        
+        // Extrair partes confusas usando regex
+        const confusingMatch = analysisText.match(/"confusingParts":\s*\[(.*?)\]/i);
+        const confusingParts = confusingMatch ?
+          confusingMatch[1].split(',').map(t => t.trim().replace(/"/g, '').trim()).filter(Boolean) :
+          ['Parágrafos muito longos', 'Informação técnica sem explicação'];
+        
+        const analysisMatch = analysisText.match(/"analysis":\s*"(.*?)"/i);
+        const analysis = analysisMatch ? analysisMatch[1] : '';
+        
+        const result = {
+          score: parseInt(scoreMatch?.[1] || '70'),
+          contentClarity: parseInt(clarityMatch?.[1] || '65'),
+          logicalStructure: parseInt(structureMatch?.[1] || '75'),
+          naturalLanguage: parseInt(languageMatch?.[1] || '80'),
+          topicsDetected: topics,
+          confusingParts: confusingParts,
+          analysis: analysis,
+          rawAnalysis: analysisText,
+          apiUsed: true,
+          requestId: requestId,
+          timestamp: new Date().toISOString()
+        };
 
-      console.log(`[${requestId}] Análise extraída com sucesso:`, JSON.stringify(result).substring(0, 300) + "...");
+        console.log(`[${requestId}] Análise extraída com sucesso:`, JSON.stringify(result).substring(0, 300) + "...");
 
-      return new Response(JSON.stringify(result), {
+        return new Response(JSON.stringify(result), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200
+        });
+      }
+    } catch (fetchError) {
+      console.error(`[${requestId}] Erro ao chamar a API OpenAI:`, fetchError);
+      
+      return new Response(JSON.stringify({
+        error: `Falha na conexão com a API OpenAI: ${fetchError.message}`,
+        apiUsed: false,
+        fallbackAnalysisProvided: true,
+        message: 'Usando análise local como alternativa'
+      }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200
+        status: 503
       });
     }
   } catch (error) {
@@ -182,7 +223,9 @@ Não inclua mais nada além do JSON acima. Não forneça introduções, conclus�
     
     return new Response(JSON.stringify({
       error: error.message || 'Erro interno ao analisar website',
-      apiUsed: false
+      apiUsed: false,
+      fallbackAnalysisProvided: true,
+      message: 'Usando análise local como alternativa devido a erro no servidor'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500
