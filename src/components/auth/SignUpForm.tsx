@@ -62,6 +62,9 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
     setAuthError(null);
     
     try {
+      // Store email for verification process
+      localStorage.setItem('pendingVerificationEmail', values.email);
+      
       // Make sure we're passing all required fields from the form values
       const data = await signUpWithEmail({
         name: values.name,
@@ -91,6 +94,9 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
           title: "Registo iniciado",
           description: "Por favor verifique o seu email para confirmar a sua conta.",
         });
+        
+        // Navigate to verification page
+        navigate('/verification', { state: { email: values.email } });
       }
     } catch (error: any) {
       console.error("Exception during registration:", error);

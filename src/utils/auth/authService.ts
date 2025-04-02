@@ -24,6 +24,9 @@ export async function signUpWithEmail(data: SignUpData) {
   if (error) {
     throw error;
   }
+  
+  // Store email for verification
+  localStorage.setItem('pendingVerificationEmail', email);
 
   return authData;
 }
@@ -54,6 +57,19 @@ export async function resetPassword(email: string) {
 export async function updatePassword(password: string) {
   const { error } = await supabase.auth.updateUser({
     password,
+  });
+
+  if (error) {
+    throw error;
+  }
+}
+
+export async function verifyOTP(email: string, token: string) {
+  // Use the verifyOTP method to verify the email with the provided token
+  const { error } = await supabase.auth.verifyOtp({
+    email,
+    token,
+    type: 'email'
   });
 
   if (error) {
