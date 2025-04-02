@@ -16,11 +16,10 @@ export interface User {
  */
 export async function getAllUsers(): Promise<User[]> {
   try {
-    // Use type assertion to bypass TypeScript's type checking
-    const { data, error } = await (supabase
-      .from('users' as any)
+    const { data, error } = await supabase
+      .from('users')
       .select('*')
-      .order('created_at', { ascending: false })) as { data: User[], error: any };
+      .order('created_at', { ascending: false });
     
     if (error) throw error;
     return data || [];
@@ -35,12 +34,11 @@ export async function getAllUsers(): Promise<User[]> {
  */
 export async function getUserById(userId: string): Promise<User | null> {
   try {
-    // Use type assertion to bypass TypeScript's type checking
-    const { data, error } = await (supabase
-      .from('users' as any)
+    const { data, error } = await supabase
+      .from('users')
       .select('*')
       .eq('id', userId)
-      .single()) as { data: User, error: any };
+      .single();
     
     if (error) throw error;
     return data;
@@ -60,11 +58,10 @@ export async function createUser(userData: { name: string, email: string, role: 
       throw new Error('Todos os campos obrigatórios devem ser fornecidos');
     }
     
-    // Use type assertion to bypass TypeScript's type checking
-    const { data, error } = await (supabase
-      .from('users' as any)
+    const { data, error } = await supabase
+      .from('users')
       .insert([userData])
-      .select()) as { data: User[], error: any };
+      .select();
     
     if (error) throw error;
     return data?.[0] || null;
@@ -84,12 +81,11 @@ export async function updateUser(userId: string, userData: { name?: string, emai
       throw new Error('Pelo menos um campo deve ser fornecido para atualização');
     }
     
-    // Use type assertion to bypass TypeScript's type checking
-    const { data, error } = await (supabase
-      .from('users' as any)
+    const { data, error } = await supabase
+      .from('users')
       .update(userData)
       .eq('id', userId)
-      .select()) as { data: User[], error: any };
+      .select();
     
     if (error) throw error;
     return data?.[0] || null;
@@ -104,11 +100,10 @@ export async function updateUser(userId: string, userData: { name?: string, emai
  */
 export async function deleteUser(userId: string): Promise<boolean> {
   try {
-    // Use type assertion to bypass TypeScript's type checking
-    const { error } = await (supabase
-      .from('users' as any)
+    const { error } = await supabase
+      .from('users')
       .delete()
-      .eq('id', userId)) as { error: any };
+      .eq('id', userId);
     
     if (error) throw error;
     return true;
