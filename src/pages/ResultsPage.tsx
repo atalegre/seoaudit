@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -76,7 +75,6 @@ const ResultsPage = () => {
           duration: 3000
         });
         
-        // Iniciar análises em paralelo
         const seoDataPromise = (async () => {
           try {
             console.log('Iniciando análise SEO com Page Insights');
@@ -99,17 +97,14 @@ const ResultsPage = () => {
           }
         })();
         
-        // Aguardar os resultados
         const [seoData, aioData] = await Promise.all([seoDataPromise, aioDataPromise]);
         
-        // Verificar se ambas as análises falharam
         if (!seoData && !aioData) {
           setError('Falha em ambas as análises. Por favor, verifique suas configurações de API.');
           setIsLoading(false);
           return;
         }
         
-        // Criar resultado com os dados disponíveis
         const results = createAnalysisResult(normalizedUrl, seoData, aioData);
         console.log('Resultado da análise criado:', results);
         

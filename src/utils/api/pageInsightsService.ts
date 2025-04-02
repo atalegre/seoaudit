@@ -1,3 +1,4 @@
+
 import { getApiKey } from './supabaseClient';
 import { toast } from 'sonner';
 
@@ -205,7 +206,8 @@ function processPageInsightsData(data: any, url: string): any {
     };
   } catch (error) {
     console.error('Error processing Page Insights data:', error);
-    return analyzeSite(url).seo;
+    // Instead of calling analyzeSite, throw the error to be handled by the caller
+    throw new Error('Failed to process PageInsights data');
   }
 }
 
