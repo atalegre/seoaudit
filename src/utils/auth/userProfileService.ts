@@ -12,35 +12,55 @@ export async function ensureUserInDb(
 ) {
   try {
     // Check if user already exists in the users table
-    const { data: userInTable } = await supabase
+    const { data: existingUser, error: queryError } = await supabase
       .from('users')
-      .select('*')
+      .select('id, role')
       .eq('id', userId)
       .maybeSingle();
       
-    if (!userInTable) {
-      // Create entry in users table
-      await supabase.from('users').insert([
-        {
+    if (queryError) {
+      console.error("Error querying user:", queryError);
+      return false;
+    }
+    
+    // Ensure admin email always gets admin role
+    const finalRole = email === 'atalegre@me.com' ? 'admin' : role;
+    
+    if (!existingUser) {
+      // Create new user record
+      const { error: insertError } = await supabase
+        .from('users')
+        .insert([{
           id: userId,
           name: name,
           email: email,
-          role: email === 'atalegre@me.com' ? 'admin' : role
-        }
-      ]);
-      console.log(`Created user entry in users table for ${email}`);
+          role: finalRole
+        }]);
+        
+      if (insertError) {
+        console.error("Error creating user entry:", insertError);
+        return false;
+      }
+      
+      console.log(`Created user entry in users table for ${email} with role ${finalRole}`);
       return true;
-    } else if (email === 'atalegre@me.com' && userInTable.role !== 'admin') {
-      // Ensure this email always has admin role
-      await supabase
+    } else if (existingUser.role !== finalRole) {
+      // Update role if needed
+      const { error: updateError } = await supabase
         .from('users')
-        .update({ role: 'admin' })
+        .update({ role: finalRole })
         .eq('id', userId);
-      console.log(`Updated user ${email} to admin role`);
+        
+      if (updateError) {
+        console.error("Error updating user role:", updateError);
+        return false;
+      }
+      
+      console.log(`Updated user ${email} to ${finalRole} role`);
       return true;
     }
     
-    return false; // No change needed
+    return true; // User exists with correct role
   } catch (error) {
     console.error("Error ensuring user in users table:", error);
     return false;
@@ -51,38 +71,7 @@ export async function ensureUserInDb(
  * Ensures the admin user exists in the users table
  */
 export async function ensureAdminUserInDb(userId: string, email: string) {
-  try {
-    const { data: userInTable } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .maybeSingle();
-      
-    if (!userInTable) {
-      // Create entry in users table
-      await supabase.from('users').insert([
-        {
-          id: userId,
-          name: 'SEO Admin',
-          email: email,
-          role: 'admin'
-        }
-      ]);
-      console.log("Created admin user entry in users table");
-    } else if (userInTable.role !== 'admin') {
-      // Ensure role is admin
-      await supabase
-        .from('users')
-        .update({ role: 'admin' })
-        .eq('id', userId);
-      console.log("Updated user to admin role");
-    }
-    
-    return true;
-  } catch (error) {
-    console.error("Error ensuring admin user in DB:", error);
-    return false;
-  }
+  return ensureUserInDb(userId, email, 'SEO Admin', 'admin');
 }
 
 /**
@@ -103,12 +92,13 @@ export async function checkUserRole(userId: string): Promise<string> {
       .from('users')
       .select('role')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
     
     if (error) {
       console.error("Error checking user role:", error);
       throw error;
     }
+    
     return data?.role || 'user';
   } catch (error) {
     console.error('Error checking user role:', error);

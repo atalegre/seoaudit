@@ -62,7 +62,10 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
           description: `${error.message || "Email ou password incorretos"}. Tente as credenciais de demonstração listadas abaixo.`,
         });
         setIsLoggingIn(false);
-      } else if (data?.user) {
+        return;
+      } 
+      
+      if (data?.user) {
         console.log("Login successful:", data);
         toast({
           title: "Login bem-sucedido",
