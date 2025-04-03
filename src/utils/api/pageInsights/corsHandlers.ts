@@ -15,7 +15,7 @@ export function getDefaultHeaders() {
  * @param timeout Timeout in milliseconds
  * @returns Object with fetch properties and clear timeout function
  */
-export function createTimedRequest(apiUrl: string, timeout: number = 8000) {
+export function createTimedRequest(apiUrl: string, timeout: number = 60000) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
   

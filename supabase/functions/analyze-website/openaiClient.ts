@@ -25,12 +25,17 @@ export async function requestOpenAiAnalysis(url: string, content: string, reques
   
   const startTime = Date.now();
   
+  // Set timeout to 60 seconds (60000ms)
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 60000);
+  
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${OPENAI_API_KEY}`
     },
+    signal: controller.signal,
     body: JSON.stringify({
       model: "gpt-4o-search-preview",
       messages: [
@@ -48,6 +53,9 @@ export async function requestOpenAiAnalysis(url: string, content: string, reques
       }
     })
   });
+  
+  // Clear the timeout since we got a response
+  clearTimeout(timeoutId);
   
   const responseTime = Date.now() - startTime;
   console.log(`[${requestId}] Tempo de resposta da API OpenAI: ${responseTime}ms`);
