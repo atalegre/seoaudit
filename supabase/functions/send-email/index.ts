@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 
@@ -42,7 +43,7 @@ type EmailRequest = ContactRequest | ConfirmationEmailRequest | ReportEmailReque
 
 // Main request handler
 const handler = async (req: Request): Promise<Response> => {
-  console.log("Email function called");
+  console.log("Email function called with method:", req.method);
   
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -52,7 +53,7 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     // Parse request body
     const requestData = await req.json();
-    console.log("Request data:", requestData);
+    console.log("Request data received:", JSON.stringify(requestData));
     
     // Determine the type of email to send
     if (requestData.type === 'confirmation') {
@@ -134,44 +135,67 @@ async function sendConfirmationEmail(data: ConfirmationEmailRequest): Promise<Re
 
   console.log(`Sending confirmation email to ${email} with URL ${confirmationUrl}`);
 
-  // Send confirmation email using Resend
-  const emailResponse = await resend.emails.send({
-    from: "SEOAudit <no-reply@seoaudit.pt>", // Make sure to use a verified domain
-    to: [email],
-    subject: "Confirme a sua conta SEOAudit",
-    html: `
-      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2>Bem-vindo à SEOAudit${name ? ', ' + name : ''}!</h2>
-        <p>Obrigado por se registar na nossa plataforma. Para começar a utilizar todos os nossos serviços, confirme a sua conta clicando no botão abaixo:</p>
-        
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="${confirmationUrl}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">
-            Confirmar a minha conta
-          </a>
+  try {
+    // Try sending with different subjects to avoid spam filters
+    const subjectOptions = [
+      "Confirme a sua conta SEOAudit",
+      "Verificação da sua conta SEOAudit",
+      "Complete o seu registo SEOAudit"
+    ];
+    
+    const selectedSubject = subjectOptions[Math.floor(Math.random() * subjectOptions.length)];
+    
+    // Send confirmation email using Resend with more robust formatting
+    const emailResponse = await resend.emails.send({
+      from: "SEOAudit <no-reply@seoaudit.pt>", // Make sure to use a verified domain
+      to: [email],
+      subject: selectedSubject,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+          <div style="background-color: #4F46E5; padding: 20px; text-align: center;">
+            <h1 style="color: white; margin: 0;">SEOAudit</h1>
+          </div>
+          
+          <div style="padding: 20px; border: 1px solid #e1e1e1; border-top: none; background-color: #ffffff;">
+            <h2 style="color: #4F46E5;">Bem-vindo à SEOAudit${name ? ', ' + name : ''}!</h2>
+            
+            <p>Obrigado por se registar na nossa plataforma. Para começar a utilizar todos os nossos serviços, confirme a sua conta clicando no botão abaixo:</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${confirmationUrl}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">
+                Confirmar a minha conta
+              </a>
+            </div>
+            
+            <p>Se o botão acima não funcionar, pode copiar e colar o seguinte link no seu navegador:</p>
+            <p style="word-break: break-all; background-color: #f5f5f5; padding: 10px; border-radius: 4px;"><a href="${confirmationUrl}">${confirmationUrl}</a></p>
+            
+            <p>Este link expira em 24 horas.</p>
+            
+            <p style="margin-top: 30px;">Cumprimentos,<br>A equipa SEOAudit</p>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e1e1e1; font-size: 12px; color: #888;">
+              <p>Se não solicitou a criação de uma conta, ignore este email.</p>
+              <p>Não responda a este email. Foi enviado a partir de um endereço que não é monitorizado.</p>
+              <p>© SEOAudit 2025. Todos os direitos reservados.</p>
+            </div>
+          </div>
         </div>
-        
-        <p>Se o botão acima não funcionar, pode copiar e colar o seguinte link no seu navegador:</p>
-        <p><a href="${confirmationUrl}">${confirmationUrl}</a></p>
-        
-        <p>Este link expira em 24 horas.</p>
-        
-        <p style="margin-top: 30px;">Cumprimentos,<br>A equipa SEOAudit</p>
-        
-        <p style="color: #888; margin-top: 30px; font-size: 12px; border-top: 1px solid #eee; padding-top: 15px;">
-          Se não solicitou a criação de uma conta, ignore este email.
-        </p>
-      </div>
-    `,
-  });
+      `,
+    });
 
-  console.log("Confirmation email sent successfully:", emailResponse);
-  return new Response(
-    JSON.stringify({ success: true, message: "Email de confirmação enviado com sucesso" }),
-    {
-      status: 200,
-      headers: { "Content-Type": "application/json", ...corsHeaders },
-    }
-  );
+    console.log("Confirmation email sent successfully:", emailResponse);
+    return new Response(
+      JSON.stringify({ success: true, message: "Email de confirmação enviado com sucesso" }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
+  } catch (error) {
+    console.error("Error sending confirmation email:", error);
+    throw error;
+  }
 }
 
 // Handle report emails
@@ -185,7 +209,7 @@ async function sendReportEmail(data: ReportEmailRequest): Promise<Response> {
 
   // Send report email using Resend
   const emailResponse = await resend.emails.send({
-    from: "SEOAudit <no-reply@seoaudit.pt>", // Certifique-se de atualizar com o domínio verificado no Resend
+    from: "SEOAudit <no-reply@seoaudit.pt>", // Make sure to use a verified domain
     to: [email],
     subject: `O seu relatório SEO para ${websiteUrl} está pronto!`,
     html: `

@@ -70,7 +70,8 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
         
         toast({
           title: "Registo iniciado",
-          description: "Por favor verifique o seu email para confirmar a sua conta.",
+          description: "Verifique o seu email para confirmar a sua conta. Se não receber um email em breve, use a opção para reenviar o email de verificação.",
+          duration: 8000,
         });
         
         // Navigate to verification page with email in state
