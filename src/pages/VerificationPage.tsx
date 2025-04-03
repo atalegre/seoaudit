@@ -6,8 +6,8 @@ import AuthCard from '@/components/auth/AuthCard';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Mail, ExternalLink } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Mail, ExternalLink, RefreshCw } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const VerificationPage = () => {
   const navigate = useNavigate();
@@ -16,6 +16,7 @@ const VerificationPage = () => {
   const [email, setEmail] = useState<string>('');
   const [isResending, setIsResending] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [verificationAttempts, setVerificationAttempts] = useState(0);
   
   useEffect(() => {
     // Get email from location state, query params, or localStorage
@@ -93,13 +94,12 @@ const VerificationPage = () => {
         return;
       }
 
-      // First try the standard Supabase resend
-      await supabase.auth.resend({
-        type: 'signup',
-        email,
-      });
+      setVerificationAttempts(prev => prev + 1);
+      console.log(`Resending verification email attempt #${verificationAttempts + 1}`);
+
+      // Try both methods to maximize chances of email delivery
       
-      // Also try our custom email function as fallback
+      // 1. First try our custom email function
       try {
         console.log('Sending custom verification email');
         await supabase.functions.invoke('send-email', {
@@ -110,8 +110,25 @@ const VerificationPage = () => {
             confirmationUrl: `${window.location.origin}/verification?email=${encodeURIComponent(email)}`
           }
         });
+        console.log('Custom email sent successfully');
       } catch (err) {
         console.error('Error sending custom verification email:', err);
+        // Continue with standard Supabase email as fallback
+      }
+      
+      // 2. Try standard Supabase resend
+      try {
+        console.log('Sending standard Supabase verification email');
+        await supabase.auth.resend({
+          type: 'signup',
+          email,
+          options: {
+            emailRedirectTo: `${window.location.origin}/verification?email=${encodeURIComponent(email)}`
+          }
+        });
+        console.log('Standard verification email sent successfully');
+      } catch (err) {
+        console.error('Error sending standard verification email:', err);
       }
       
       setEmailSent(true);
@@ -131,6 +148,17 @@ const VerificationPage = () => {
     }
   };
 
+  const checkSpamInstructions = (
+    <div className="text-sm text-muted-foreground mt-4">
+      <p className="font-medium">Não recebeu o email?</p>
+      <ul className="list-disc pl-5 mt-2 space-y-1">
+        <li>Verifique a sua pasta de spam ou lixo eletrónico</li>
+        <li>Adicione no-reply@seoaudit.pt aos seus contactos</li>
+        <li>Aguarde alguns minutos, pois os emails podem demorar a chegar</li>
+      </ul>
+    </div>
+  );
+
   return (
     <AuthLayout>
       <AuthCard 
@@ -145,8 +173,9 @@ const VerificationPage = () => {
         <div className="space-y-6">
           {emailSent && (
             <Alert className="mb-6 border-green-500/50 bg-green-500/10">
+              <AlertTitle>Email Enviado</AlertTitle>
               <AlertDescription>
-                Email reenviado com sucesso. Por favor verifique a sua caixa de entrada.
+                Email reenviado com sucesso. Por favor verifique a sua caixa de entrada e pasta de spam.
               </AlertDescription>
             </Alert>
           )}
@@ -180,13 +209,21 @@ const VerificationPage = () => {
             </ol>
           </div>
           
+          {checkSpamInstructions}
+          
           <Button 
-            variant="ghost" 
-            className="w-full" 
+            variant="default" 
+            className="w-full"
             onClick={handleResendVerification}
             disabled={isResending}
           >
-            {isResending ? "A reenviar..." : "Não recebeu o email? Reenviar"}
+            {isResending ? (
+              <>
+                <RefreshCw className="h-4 w-4 animate-spin mr-2" /> A reenviar...
+              </>
+            ) : (
+              <>Reenviar email de verificação</>
+            )}
           </Button>
         </div>
       </AuthCard>

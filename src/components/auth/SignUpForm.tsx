@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import { signUpWithEmail } from '@/utils/auth/authService';
@@ -42,6 +42,8 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
       // Set role to admin if email is atalegre@me.com, otherwise use user
       const role = values.email === 'atalegre@me.com' ? 'admin' : 'user';
       
+      console.log('Submitting signup form with email:', values.email);
+      
       // Make sure we're passing all required fields from the form values
       const result = await signUpWithEmail({
         name: values.name,
@@ -53,6 +55,8 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
       
       if (result?.session) {
         // User was signed in automatically
+        console.log('User signed in automatically:', result.user?.email);
+        
         toast({
           title: "Registo bem-sucedido",
           description: "A sua conta foi criada com sucesso!",
@@ -62,15 +66,22 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
         navigate(role === 'admin' ? '/dashboard' : '/dashboard/client');
       } else if (result?.user) {
         // Email confirmation may be required
+        console.log('Email confirmation required for:', result.user?.email);
+        
         toast({
           title: "Registo iniciado",
           description: "Por favor verifique o seu email para confirmar a sua conta.",
         });
         
-        // Navigate to verification page
-        navigate('/verification', { state: { email: values.email } });
+        // Navigate to verification page with email in state
+        navigate('/verification', { 
+          state: { email: values.email },
+          replace: true
+        });
       } else {
         // Unexpected result
+        console.error('Unexpected signup result:', result);
+        
         toast({
           variant: "destructive",
           title: "Erro no registo",
@@ -105,7 +116,9 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
           disabled={isRegistering}
         >
           {isRegistering ? (
-            <>Registando...</>
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Registando...
+            </>
           ) : (
             <>
               <UserPlus className="mr-2 h-4 w-4" /> Registrar

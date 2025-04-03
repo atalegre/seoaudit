@@ -63,7 +63,8 @@ export async function signUpWithEmail(data: SignUpData) {
       // We continue with auth flow even if this fails
     }
 
-    // Call the send-email edge function to send a custom confirmation email
+    // Always try both methods to send verification email
+    // 1. First try our custom email function
     try {
       console.log('Sending custom verification email');
       const confirmationUrl = `${window.location.origin}/verification?email=${encodeURIComponent(email)}`;
@@ -73,14 +74,30 @@ export async function signUpWithEmail(data: SignUpData) {
           type: 'confirmation',
           email,
           name,
-          confirmationUrl: `${window.location.origin}/verification?email=${encodeURIComponent(email)}`
+          confirmationUrl
         }
       });
       
       console.log('Custom email function response:', response);
     } catch (err) {
       console.error('Error sending custom verification email:', err);
-      // Continue with auth flow even if custom email fails
+      // Continue with default Supabase email as fallback
+    }
+
+    // 2. Try to resend using standard Supabase method as well (belt and suspenders approach)
+    try {
+      console.log('Sending standard Supabase verification email');
+      await supabase.auth.resend({
+        type: 'signup',
+        email: email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/verification?email=${encodeURIComponent(email)}`
+        }
+      });
+      console.log('Standard verification email sent successfully');
+    } catch (err) {
+      console.error('Error sending standard verification email:', err);
+      // Continue with auth flow even if this fails
     }
   }
   
