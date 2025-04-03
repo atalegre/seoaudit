@@ -33,6 +33,8 @@ export async function signUpWithEmail(data: SignUpData) {
         full_name: name,
         role: email === 'atalegre@me.com' ? 'admin' : role,
       },
+      // Send a custom email using our edge function
+      emailRedirectTo: `${window.location.origin}/verification`,
     },
   });
 
@@ -59,6 +61,26 @@ export async function signUpWithEmail(data: SignUpData) {
     } catch (err) {
       console.error('Error creating user record in database:', err);
       // We continue with auth flow even if this fails
+    }
+
+    // Call the send-email edge function to send a custom confirmation email
+    try {
+      console.log('Sending custom verification email');
+      const confirmationUrl = `${window.location.origin}/verification?email=${encodeURIComponent(email)}`;
+      
+      const response = await supabase.functions.invoke('send-email', {
+        body: {
+          type: 'confirmation',
+          email,
+          name,
+          confirmationUrl: `${window.location.origin}/verification?email=${encodeURIComponent(email)}`
+        }
+      });
+      
+      console.log('Custom email function response:', response);
+    } catch (err) {
+      console.error('Error sending custom verification email:', err);
+      // Continue with auth flow even if custom email fails
     }
   }
   

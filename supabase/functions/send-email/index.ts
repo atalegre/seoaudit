@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 
@@ -94,8 +93,8 @@ async function sendContactEmail(data: ContactRequest): Promise<Response> {
 
   // Send email using Resend
   const emailResponse = await resend.emails.send({
-    from: "SEOAudit <no-reply@seoaudit.pt>", // Certifique-se de atualizar com o domínio verificado no Resend
-    to: ["contacto@seoaudit.pt"], // Atualize com o email real da empresa
+    from: "SEOAudit <no-reply@seoaudit.pt>", // Make sure to use a verified domain
+    to: ["contacto@seoaudit.pt"], // Update with the real company email
     subject: subject,
     html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
@@ -133,9 +132,11 @@ async function sendConfirmationEmail(data: ConfirmationEmailRequest): Promise<Re
     throw new Error("Missing required fields: email and confirmationUrl are required");
   }
 
+  console.log(`Sending confirmation email to ${email} with URL ${confirmationUrl}`);
+
   // Send confirmation email using Resend
   const emailResponse = await resend.emails.send({
-    from: "SEOAudit <no-reply@seoaudit.pt>", // Certifique-se de atualizar com o domínio verificado no Resend
+    from: "SEOAudit <no-reply@seoaudit.pt>", // Make sure to use a verified domain
     to: [email],
     subject: "Confirme a sua conta SEOAudit",
     html: `
