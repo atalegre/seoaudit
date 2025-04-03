@@ -23,8 +23,8 @@ export function createTimedRequest(apiUrl: string, timeout: number = 8000) {
     fetchProps: { 
       signal: controller.signal,
       headers: getDefaultHeaders(),
-      mode: 'cors',
-      cache: 'no-cache'
+      mode: 'cors' as RequestMode,
+      cache: 'no-cache' as RequestCache
     },
     clearTimeout: () => clearTimeout(timeoutId)
   };
