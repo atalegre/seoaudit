@@ -6,8 +6,7 @@ import AuthCard from '@/components/auth/AuthCard';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Mail, ExternalLink, RefreshCw } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import VerificationContent from '@/components/verification/VerificationContent';
 
 const VerificationPage = () => {
   const navigate = useNavigate();
@@ -148,17 +147,6 @@ const VerificationPage = () => {
     }
   };
 
-  const checkSpamInstructions = (
-    <div className="text-sm text-muted-foreground mt-4">
-      <p className="font-medium">Não recebeu o email?</p>
-      <ul className="list-disc pl-5 mt-2 space-y-1">
-        <li>Verifique a sua pasta de spam ou lixo eletrónico</li>
-        <li>Adicione no-reply@seoaudit.pt aos seus contactos</li>
-        <li>Aguarde alguns minutos, pois os emails podem demorar a chegar</li>
-      </ul>
-    </div>
-  );
-
   return (
     <AuthLayout>
       <AuthCard 
@@ -170,62 +158,12 @@ const VerificationPage = () => {
           </Button>
         }
       >
-        <div className="space-y-6">
-          {emailSent && (
-            <Alert className="mb-6 border-green-500/50 bg-green-500/10">
-              <AlertTitle>Email Enviado</AlertTitle>
-              <AlertDescription>
-                Email reenviado com sucesso. Por favor verifique a sua caixa de entrada e pasta de spam.
-              </AlertDescription>
-            </Alert>
-          )}
-          
-          <div className="flex flex-col items-center justify-center text-center space-y-2">
-            <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
-              <Mail className="h-8 w-8 text-primary" />
-            </div>
-            
-            <h3 className="text-lg font-medium">Verifique o seu email</h3>
-            
-            <p className="text-sm text-muted-foreground">
-              Enviámos um link de verificação para{" "}
-              <span className="font-medium text-foreground">{email}</span>.
-            </p>
-            
-            <p className="text-sm text-muted-foreground mt-2">
-              Por favor clique no link enviado para o email para verificar a sua conta.
-            </p>
-          </div>
-          
-          <div className="border rounded-lg p-4 bg-muted/30">
-            <div className="flex items-center gap-2 mb-2">
-              <ExternalLink size={18} className="text-primary" />
-              <h4 className="font-medium">O que fazer a seguir:</h4>
-            </div>
-            <ol className="list-decimal list-inside space-y-1 text-sm">
-              <li>Verifique a sua caixa de entrada de email (e a pasta de spam)</li>
-              <li>Clique no link "Confirmar conta" no email recebido</li>
-              <li>Você será redirecionado automaticamente após a verificação</li>
-            </ol>
-          </div>
-          
-          {checkSpamInstructions}
-          
-          <Button 
-            variant="default" 
-            className="w-full"
-            onClick={handleResendVerification}
-            disabled={isResending}
-          >
-            {isResending ? (
-              <>
-                <RefreshCw className="h-4 w-4 animate-spin mr-2" /> A reenviar...
-              </>
-            ) : (
-              <>Reenviar email de verificação</>
-            )}
-          </Button>
-        </div>
+        <VerificationContent
+          email={email}
+          emailSent={emailSent}
+          isResending={isResending}
+          handleResendVerification={handleResendVerification}
+        />
       </AuthCard>
     </AuthLayout>
   );
