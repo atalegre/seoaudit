@@ -221,9 +221,13 @@ const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
       <div className="flex flex-col space-y-4">
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-3">
-            {logoUrl && (
+            {logoUrl ? (
               <Avatar className="h-12 w-12 border">
                 <AvatarImage src={logoUrl} alt={`Logo de ${url}`} />
+                <AvatarFallback>{url.charAt(0).toUpperCase()}</AvatarFallback>
+              </Avatar>
+            ) : (
+              <Avatar className="h-12 w-12 border">
                 <AvatarFallback>{url.charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
             )}

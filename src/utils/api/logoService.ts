@@ -48,6 +48,7 @@ export async function fetchSiteLogo(url: string): Promise<string | null> {
       return null;
     }
     
+    console.log('Logo obtido com sucesso:', data.logo_url);
     return data.logo_url;
   } catch (error) {
     console.error('Erro ao buscar o logo do site:', error);

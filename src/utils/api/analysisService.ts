@@ -1,4 +1,3 @@
-
 import { AnalysisResult } from './types';
 import { getPageInsightsData } from './pageInsights'; 
 import { getChatGptAnalysis } from './chatGptService';
@@ -32,9 +31,10 @@ export async function getFullAnalysis(url: string): Promise<AnalysisResult> {
     const startTime = performance.now();
     
     // Usar Promise.allSettled para garantir que uma promessa rejeitada não impede outras
-    const [seoResult, aioResult] = await Promise.allSettled([
+    const [seoResult, aioResult, logoUrl] = await Promise.allSettled([
       getPageInsightsData(url),
-      getChatGptAnalysis(url)
+      getChatGptAnalysis(url),
+      fetchSiteLogo(url)
     ]);
     
     const seoData = seoResult.status === 'fulfilled' ? seoResult.value : null;
@@ -54,16 +54,11 @@ export async function getFullAnalysis(url: string): Promise<AnalysisResult> {
     // Criar resultado com os dados disponíveis
     const result = createAnalysisResult(url, seoData, aioData);
     
-    // Buscar logo em segundo plano após criar o resultado principal
-    fetchSiteLogo(url).then(logoUrl => {
-      if (logoUrl) {
-        result.logoUrl = logoUrl;
-        // Atualizar cache com logo
-        analysisCache.set(cacheKey, {result, timestamp: Date.now()});
-      }
-    }).catch(() => {
-      console.log('Logo fetch failed, continuing with analysis');
-    });
+    // Adicionar logo se disponível
+    if (logoUrl.status === 'fulfilled' && logoUrl.value) {
+      console.log('Logo encontrado:', logoUrl.value);
+      result.logoUrl = logoUrl.value;
+    }
     
     // Guardar no cache
     analysisCache.set(cacheKey, {result, timestamp: Date.now()});
