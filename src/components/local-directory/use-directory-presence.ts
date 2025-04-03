@@ -2,7 +2,11 @@
 import { useState, useEffect } from 'react';
 import { DirectoryPresenceProps, DirectoryPresenceResult } from './types';
 import { PAI_DIRECTORY } from './directory-data';
-import { extractDomainFromUrl, areDomainsRelated } from '@/utils/domainUtils';
+import { 
+  extractDomainFromUrl, 
+  areDomainsRelated,
+  areCompanyNamesSimilar
+} from '@/utils/domainUtils';
 
 export const useDirectoryPresence = ({ url, companyName }: DirectoryPresenceProps) => {
   const [loading, setLoading] = useState(true);
@@ -31,25 +35,16 @@ export const useDirectoryPresence = ({ url, companyName }: DirectoryPresenceProp
           return;
         }
         
-        // Find company in directory
+        // Find company in directory with improved matching
         const foundListing = findCompanyInDirectory(domain);
         
         if (foundListing) {
           console.log("Found PAI listing for:", foundListing.name);
           
-          // Check name match if provided
+          // Check name match with improved name comparison
           let nameMatch = true;
           if (companyName) {
-            const normalizedCompanyName = companyName.toLowerCase();
-            const normalizedListingName = foundListing.name.toLowerCase();
-            
-            nameMatch = 
-              normalizedCompanyName.includes(normalizedListingName) || 
-              normalizedListingName.includes(normalizedCompanyName) ||
-              // Check for common word matches
-              normalizedCompanyName.split(' ').some(word => 
-                word.length > 3 && normalizedListingName.includes(word)
-              );
+            nameMatch = areCompanyNamesSimilar(companyName, foundListing.name);
           }
           
           setPaiPresence({
@@ -84,7 +79,7 @@ export const useDirectoryPresence = ({ url, companyName }: DirectoryPresenceProp
     }
   }, [url, companyName]);
 
-  // Helper function to find company in directory by domain
+  // Helper function to find company in directory by domain with improved matching
   const findCompanyInDirectory = (domain: string) => {
     if (!domain) return null;
     
