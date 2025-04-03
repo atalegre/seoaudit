@@ -11,6 +11,7 @@ import { PageInsightsData } from './types';
  */
 export async function getPageInsightsData(url: string): Promise<PageInsightsData> {
   try {
+    console.log('Getting Page Insights data for:', url);
     return await fetchPageInsightsData(url);
   } catch (error) {
     console.error('Error fetching Page Insights data:', error);

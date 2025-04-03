@@ -4,7 +4,8 @@
  */
 export function getDefaultHeaders() {
   return {
-    'Accept': 'application/json'
+    'Accept': 'application/json',
+    'Origin': window.location.origin
   };
 }
 
@@ -21,7 +22,9 @@ export function createTimedRequest(apiUrl: string, timeout: number = 8000) {
   return {
     fetchProps: { 
       signal: controller.signal,
-      headers: getDefaultHeaders()
+      headers: getDefaultHeaders(),
+      mode: 'cors',
+      cache: 'no-cache'
     },
     clearTimeout: () => clearTimeout(timeoutId)
   };
