@@ -107,7 +107,7 @@ export async function fetchPageInsightsData(url: string): Promise<PageInsightsDa
       console.log('Google Page Insights API response received:', data.lighthouseResult ? 'Valid data' : 'Invalid data');
       
       return processPageInsightsData(data, url);
-    } catch (fetchError) {
+    } catch (fetchError: any) {
       clearTimeout();
       if (fetchError.name === 'AbortError') {
         console.error('Google Page Insights API request timed out');

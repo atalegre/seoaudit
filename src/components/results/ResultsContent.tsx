@@ -1,6 +1,7 @@
+
 import React, { useRef, lazy, Suspense } from 'react';
 import { AnalysisResult } from '@/utils/api/types';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2, FileText } from 'lucide-react';
 import ScoreDisplay from '@/components/ScoreDisplay';
 import ReportForm from '@/components/ReportForm';
 import { formatUrl } from '@/utils/resultsPageHelpers';
@@ -8,7 +9,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-// Componentes carregados com lazy loading e fronteiras de suspense para otimizar o LCP
+// Componentes carregados com lazy loading
 const EnhancedRecommendations = lazy(() => 
   import('@/components/EnhancedRecommendations')
 );
@@ -29,7 +30,7 @@ const LocalDirectoryPresence = lazy(() =>
   import('@/components/LocalDirectoryPresence')
 );
 
-// Componente de fallback otimizado para carregamentos lazy
+// Componente de fallback para carregamentos lazy
 const LazyLoadingFallback = () => (
   <div className="flex justify-center items-center h-32 w-full">
     <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -76,7 +77,7 @@ const ResultsContent: React.FC<ResultsContentProps> = ({
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         <div className="lg:col-span-2 space-y-4 md:space-y-6">
-          {/* ScoreDisplay mantido fora do lazy loading por ser crítico para LCP */}
+          {/* 1. 🧠 Resumo Geral no Topo */}
           <ScoreDisplay
             seoScore={analysisData?.seo?.score || 0}
             aioScore={analysisData?.aio?.score || 0}
@@ -98,38 +99,37 @@ const ResultsContent: React.FC<ResultsContentProps> = ({
             </button>
           </div>
           
-          <Tabs defaultValue="analysis">
-            <TabsList className="mb-4">
-              <TabsTrigger value="analysis">Análise Detalhada</TabsTrigger>
-              <TabsTrigger value="recommendations">Recomendações</TabsTrigger>
-            </TabsList>
+          {/* Blocos de análise estruturados */}
+          <div className="space-y-6">
+            {/* 2. 📊 Bloco 1 - SEO Técnico e Performance */}
+            <Suspense fallback={<LazyLoadingFallback />}>
+              <TechnicalHealthPanel
+                loadTimeDesktop={analysisData.seo.loadTimeDesktop || 3.2}
+                loadTimeMobile={analysisData.seo.loadTimeMobile || 5.1}
+                mobileFriendly={analysisData.seo.mobileFriendly || false}
+                security={analysisData.seo.security || false}
+                imageOptimization={analysisData.seo.imageOptimization || 60}
+                performanceScore={analysisData.seo.performanceScore || 65}
+                lcp={analysisData.seo.lcp}
+                cls={analysisData.seo.cls}
+                fid={analysisData.seo.fid}
+              />
+            </Suspense>
             
-            <TabsContent value="analysis" className="space-y-6">
-              <Suspense fallback={<LazyLoadingFallback />}>
-                <TechnicalHealthPanel
-                  loadTimeDesktop={analysisData.seo.loadTimeDesktop || 3.2}
-                  loadTimeMobile={analysisData.seo.loadTimeMobile || 5.1}
-                  mobileFriendly={analysisData.seo.mobileFriendly || false}
-                  security={analysisData.seo.security || false}
-                  imageOptimization={analysisData.seo.imageOptimization || 60}
-                  performanceScore={analysisData.seo.performanceScore || 65}
-                  lcp={analysisData.seo.lcp}
-                  cls={analysisData.seo.cls}
-                  fid={analysisData.seo.fid}
-                />
-              </Suspense>
-              
-              <Suspense fallback={<LazyLoadingFallback />}>
-                <AioAnalysisPanel
-                  aioScore={analysisData.aio.score}
-                  contentClarity={analysisData.aio.contentClarity}
-                  logicalStructure={analysisData.aio.logicalStructure}
-                  naturalLanguage={analysisData.aio.naturalLanguage}
-                  topicsDetected={analysisData.aio.topicsDetected || []}
-                  confusingParts={analysisData.aio.confusingParts || []}
-                />
-              </Suspense>
-              
+            {/* 3. 🤖 Bloco 2 - Clareza para Inteligência Artificial */}
+            <Suspense fallback={<LazyLoadingFallback />}>
+              <AioAnalysisPanel
+                aioScore={analysisData.aio.score}
+                contentClarity={analysisData.aio.contentClarity}
+                logicalStructure={analysisData.aio.logicalStructure}
+                naturalLanguage={analysisData.aio.naturalLanguage}
+                topicsDetected={analysisData.aio.topicsDetected || []}
+                confusingParts={analysisData.aio.confusingParts || []}
+              />
+            </Suspense>
+            
+            {/* 4. 🌍 Bloco 3 - Presença Local e IA */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Suspense fallback={<LazyLoadingFallback />}>
                 <LLMPresenceAudit url={analysisData.url} autoStart={false} />
               </Suspense>
@@ -140,39 +140,45 @@ const ResultsContent: React.FC<ResultsContentProps> = ({
                   companyName={analysisData.seo.companyName} 
                 />
               </Suspense>
-            </TabsContent>
+            </div>
             
-            <TabsContent value="recommendations">
-              <div ref={recommendationsRef}>
-                <Suspense fallback={<LazyLoadingFallback />}>
-                  <EnhancedRecommendations recommendations={analysisData.recommendations || []} />
-                </Suspense>
-              </div>
-            </TabsContent>
-          </Tabs>
+            {/* 5. 🔧 Bloco 4 - Recomendações com impacto */}
+            <div ref={recommendationsRef} id="recommendations" className="pt-4 scroll-mt-16">
+              <Suspense fallback={<LazyLoadingFallback />}>
+                <EnhancedRecommendations recommendations={analysisData.recommendations || []} />
+              </Suspense>
+            </div>
+          </div>
         </div>
         
-        {!isMobile && (
-          <div className="lg:col-span-1">
+        {/* 7. 📩 Call-to-Action final */}
+        <div className={`lg:col-span-1 ${isMobile ? 'mt-6' : ''}`}>
+          <div className="bg-white rounded-lg border shadow-sm p-6 sticky top-4">
+            <h3 className="text-lg font-semibold mb-4">Já sabe o que pode melhorar?</h3>
+            <p className="text-gray-600 mb-6">A nossa equipa de especialistas pode ajudar a implementar estas melhorias e elevar a presença digital do seu negócio.</p>
+            
             <ReportForm 
               url={analysisData?.url || ''} 
               seoScore={analysisData?.seo?.score || 0}
               aioScore={analysisData?.aio?.score || 0}
+              compact={isMobile}
             />
+            
+            <div className="mt-6 pt-4 border-t">
+              <button 
+                className="w-full flex items-center justify-center gap-2 text-gray-600 hover:text-gray-800"
+                onClick={() => {
+                  // Simular clique em "Exportar PDF" - futura implementação
+                  alert("Funcionalidade de exportar PDF em desenvolvimento");
+                }}
+              >
+                <FileText className="h-4 w-4" />
+                <span>Exportar PDF do relatório</span>
+              </button>
+            </div>
           </div>
-        )}
-      </div>
-      
-      {isMobile && (
-        <div className="mt-6">
-          <ReportForm 
-            url={analysisData?.url || ''} 
-            seoScore={analysisData?.seo?.score || 0}
-            aioScore={analysisData?.aio?.score || 0}
-            compact={true}
-          />
         </div>
-      )}
+      </div>
     </div>
   );
 };

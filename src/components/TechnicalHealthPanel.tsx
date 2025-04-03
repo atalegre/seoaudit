@@ -1,11 +1,12 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Zap, Smartphone, Lock, Image } from 'lucide-react';
+import { Zap, Smartphone, Lock, Image, AlertTriangle, Check } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import MetricItem from './metrics/MetricItem';
 import CoreWebVitalsSection from './metrics/CoreWebVitalsSection';
+import { Alert, AlertDescription } from './ui/alert';
 
 interface TechnicalHealthPanelProps {
   loadTimeDesktop: number;
@@ -18,6 +19,33 @@ interface TechnicalHealthPanelProps {
   cls?: number;
   fid?: number;
 }
+
+const AlertBanner = ({ condition, message, type }: { condition: boolean, message: string, type: 'warning' | 'success' }) => {
+  if (!condition && type === 'warning') return null;
+  if (condition && type === 'warning') {
+    return (
+      <Alert variant="warning" className="mt-3">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertDescription>
+          {message}
+        </AlertDescription>
+      </Alert>
+    );
+  }
+  
+  if (condition && type === 'success') {
+    return (
+      <Alert variant="success" className="mt-3 bg-green-50 border-green-200 text-green-800">
+        <Check className="h-4 w-4 text-green-600" />
+        <AlertDescription>
+          {message}
+        </AlertDescription>
+      </Alert>
+    );
+  }
+  
+  return null;
+};
 
 // Usando React.memo para evitar re-renderizações desnecessárias
 const TechnicalHealthPanel = React.memo(({
@@ -39,11 +67,11 @@ const TechnicalHealthPanel = React.memo(({
   const mobileFriendlyText = mobileFriendly ? 'Sim' : 'Não';
   
   return (
-    <Card>
-      <CardHeader className="pb-2">
+    <Card className="border-blue-100">
+      <CardHeader className="pb-2 border-b border-blue-50">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-medium flex items-center gap-2">
-            <Zap className="h-5 w-5 text-orange-500" />
+            <Zap className="h-5 w-5 text-blue-500" />
             Saúde Técnica do Site
           </CardTitle>
           <Badge 
@@ -107,6 +135,19 @@ const TechnicalHealthPanel = React.memo(({
                                   imageOptimization >= 40 ? "text-amber-500" : "text-red-500")} />}
           description={imageOptimization >= 70 ? "Imagens bem otimizadas" : 
                     imageOptimization >= 40 ? "Otimização parcial de imagens" : "Imagens sem otimização adequada"}
+        />
+        
+        {/* Alertas visuais conforme solicitado */}
+        <AlertBanner 
+          condition={loadTimeMobile > 4}
+          message="Tempo de carregamento acima de 4s em mobile"
+          type="warning"
+        />
+        
+        <AlertBanner 
+          condition={security && mobileFriendly}
+          message="Estrutura HTML válida e segura"
+          type="success"
         />
         
         <CoreWebVitalsSection lcp={lcp} cls={cls} fid={fid} />
