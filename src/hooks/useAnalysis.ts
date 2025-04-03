@@ -78,8 +78,8 @@ export function useAnalysis(urlParam: string | null) {
             return null;
           });
         
-        // Pequeno intervalo para dar prioridade ao SEO primeiro
-        const aioPromise = new Promise<any>(resolve => {
+        // AIO Promise - now using a small delay to avoid conflicts
+        const aioPromise = new Promise(resolve => {
           setTimeout(async () => {
             try {
               const data = await getChatGptAnalysis(normalizedUrl);
@@ -89,7 +89,7 @@ export function useAnalysis(urlParam: string | null) {
               console.error('Error fetching AIO data:', err);
               resolve(null);
             }
-          }, 300);
+          }, 500);
         });
         
         // Resolver análises
@@ -101,7 +101,7 @@ export function useAnalysis(urlParam: string | null) {
           return;
         }
         
-        const results = createAnalysisResult(normalizedUrl, seoData, aioData);
+        const results = createAnalysisResult(normalizedUrl, seoData, aioData as any);
         
         // Guardar no cache com timestamp
         localStorage.setItem(ANALYSIS_URL_KEY, urlParam);
@@ -109,6 +109,8 @@ export function useAnalysis(urlParam: string | null) {
         localStorage.setItem(ANALYSIS_STORAGE_KEY + '_time', Date.now().toString());
         
         setAnalysisData(results);
+        
+        console.log('Analysis completed:', results);
       } catch (error) {
         console.error('Error performing analysis:', error);
         toast.error('Erro ao analisar site', {
@@ -121,7 +123,7 @@ export function useAnalysis(urlParam: string | null) {
     };
     
     // Usar requestIdleCallback se disponível
-    if ('requestIdleCallback' in window) {
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
       (window as any).requestIdleCallback(() => {
         performAnalysis();
       });
