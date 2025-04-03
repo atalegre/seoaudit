@@ -1,10 +1,22 @@
 
-export type SignUpData = {
+// User roles
+export type UserRole = 'admin' | 'editor' | 'user';
+
+// Signup data interface
+export interface SignUpData {
   name: string;
   email: string;
   password: string;
-  acceptTerms: boolean;
-  role?: 'admin' | 'user';
-};
+  acceptTerms?: boolean;
+  role?: UserRole;
+}
 
-export type UserRole = 'admin' | 'user';
+// User profile interface
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  created_at?: string;
+  updated_at?: string;
+}

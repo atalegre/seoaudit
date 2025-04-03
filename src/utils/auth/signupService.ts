@@ -8,25 +8,30 @@ import { ensureUserInDb } from './userProfileService';
  */
 export async function signUpWithEmail(data: SignUpData) {
   const { name, email, password, role = 'user' } = data;
+  
+  console.log('Starting signup process for:', email);
 
-  // Check if user already exists
-  const { data: existingUsers } = await supabase
-    .from('users')
-    .select('*')
-    .eq('email', email);
+  // Check if user already exists in auth
+  const { data: existingUser } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
 
-  if (existingUsers && existingUsers.length > 0) {
-    console.log("User already exists in users table:", existingUsers);
+  if (existingUser?.user) {
+    console.log('User already exists in auth system:', existingUser.user.email);
+    return { user: existingUser.user, session: existingUser.session, isNewUser: false };
   }
 
-  // Try normal registration
+  console.log('Creating new user in auth system');
+  
+  // Create new user in auth
   const { data: authData, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: {
         full_name: name,
-        role: role, // Add role to user metadata
+        role: email === 'atalegre@me.com' ? 'admin' : role,
       },
     },
   });
@@ -38,21 +43,27 @@ export async function signUpWithEmail(data: SignUpData) {
   
   // Create a record in the users table
   if (authData.user) {
+    console.log('Auth user created, now creating user record in database');
+    
     try {
+      const userRole = email === 'atalegre@me.com' ? 'admin' : role;
+      
       await ensureUserInDb(
         authData.user.id,
         email,
         name,
-        email === 'atalegre@me.com' ? 'admin' : role
+        userRole
       );
+      
+      console.log('User record created successfully in database');
     } catch (err) {
-      console.error('Error creating user record:', err);
-      // Continue with auth flow even if this fails
+      console.error('Error creating user record in database:', err);
+      // We continue with auth flow even if this fails
     }
   }
   
-  // Store email for verification
+  // Store email for verification (if needed)
   localStorage.setItem('pendingVerificationEmail', email);
 
-  return authData;
+  return { user: authData.user, session: authData.session, isNewUser: true };
 }
