@@ -21,7 +21,7 @@ export async function requestOpenAiAnalysis(url: string, content: string, reques
 
   console.log(`[${requestId}] System prompt:`, systemPrompt);
   console.log(`[${requestId}] User prompt:`, userPrompt);
-  console.log(`[${requestId}] Enviando requisição para API OpenAI com modelo gpt-4o-mini`);
+  console.log(`[${requestId}] Enviando requisição para API OpenAI com modelo gpt-4o-search-preview`);
   
   const startTime = Date.now();
   
@@ -32,7 +32,7 @@ export async function requestOpenAiAnalysis(url: string, content: string, reques
       'Authorization': `Bearer ${OPENAI_API_KEY}`
     },
     body: JSON.stringify({
-      model: "gpt-4o-mini",
+      model: "gpt-4o-search-preview",
       messages: [
         {
           role: "system",
