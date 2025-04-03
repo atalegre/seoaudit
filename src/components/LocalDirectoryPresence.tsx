@@ -51,6 +51,42 @@ const PAI_DIRECTORY = [
   }
 ];
 
+// Helper function to extract domain from URL
+const extractDomainFromUrl = (url: string): string => {
+  let normalizedUrl = url.toLowerCase().trim();
+  
+  // Add protocol if missing
+  if (!normalizedUrl.startsWith('http')) {
+    normalizedUrl = 'https://' + normalizedUrl;
+  }
+  
+  try {
+    const urlObj = new URL(normalizedUrl);
+    return urlObj.hostname;
+  } catch (error) {
+    console.error('Invalid URL format:', normalizedUrl);
+    // Fallback to regex matching if URL parsing fails
+    const domainMatch = normalizedUrl.match(/^https?:\/\/([^\/]+)/i);
+    return domainMatch ? domainMatch[1].toLowerCase() : '';
+  }
+};
+
+// Helper function to find company in directory by domain
+const findCompanyByDomain = (domain: string): any | null => {
+  if (!domain) return null;
+  
+  const cleanDomain = domain.toLowerCase().replace(/^www\./, '');
+  
+  return PAI_DIRECTORY.find(listing => 
+    listing.domains.some(d => {
+      const cleanListingDomain = d.toLowerCase().replace(/^www\./, '');
+      return cleanDomain === cleanListingDomain || 
+             cleanDomain.includes(cleanListingDomain) || 
+             cleanListingDomain.includes(cleanDomain);
+    })
+  );
+};
+
 export const LocalDirectoryPresence: React.FC<LocalDirectoryPresenceProps> = ({ 
   url, 
   companyName 
@@ -77,42 +113,41 @@ export const LocalDirectoryPresence: React.FC<LocalDirectoryPresenceProps> = ({
         // Simulate API call with a timeout
         await new Promise(resolve => setTimeout(resolve, 800));
         
-        // Normalize and extract domain for comparison
         if (!url) {
           setPaiPresence({ found: false });
           return;
         }
         
-        // Clean and normalize the input URL for better matching
-        let normalizedUrl = url.toLowerCase().trim();
-        if (!normalizedUrl.startsWith('http')) {
-          normalizedUrl = 'https://' + normalizedUrl;
-        }
+        // Extract domain from URL using the helper function
+        const domain = extractDomainFromUrl(url);
+        console.log("Checking PAI presence for domain:", domain);
         
-        // Extract the domain for comparison
-        const domainMatch = normalizedUrl.match(/^https?:\/\/([^\/]+)/i);
-        if (!domainMatch) {
+        if (!domain) {
           setPaiPresence({ found: false });
           return;
         }
         
-        const domain = domainMatch[1].toLowerCase();
-        console.log("Checking PAI presence for domain:", domain);
-        
-        // Find match in our directory
-        const foundListing = PAI_DIRECTORY.find(listing => 
-          listing.domains.some(d => domain.includes(d))
-        );
+        // Find company in directory
+        const foundListing = findCompanyByDomain(domain);
         
         if (foundListing) {
           console.log("Found PAI listing for:", foundListing.name);
           
           // Check name match if provided
-          const nameMatch = !companyName || 
-            (companyName.toLowerCase().includes(foundListing.name.toLowerCase()) || 
-             foundListing.name.toLowerCase().includes(companyName.toLowerCase()));
+          let nameMatch = true;
+          if (companyName) {
+            const normalizedCompanyName = companyName.toLowerCase();
+            const normalizedListingName = foundListing.name.toLowerCase();
+            
+            nameMatch = 
+              normalizedCompanyName.includes(normalizedListingName) || 
+              normalizedListingName.includes(normalizedCompanyName) ||
+              // Check for common word matches
+              normalizedCompanyName.split(' ').some(word => 
+                word.length > 3 && normalizedListingName.includes(word)
+              );
+          }
           
-          // In real implementation, you'd compare extracted data from the website
           setPaiPresence({
             found: true,
             name: foundListing.name,
@@ -131,7 +166,7 @@ export const LocalDirectoryPresence: React.FC<LocalDirectoryPresenceProps> = ({
         }
       } catch (error) {
         console.error('Error checking PAI presence:', error);
-        setPaiPresence(null);
+        setPaiPresence({ found: false });
       } finally {
         setLoading(false);
       }
@@ -139,6 +174,9 @@ export const LocalDirectoryPresence: React.FC<LocalDirectoryPresenceProps> = ({
     
     if (url) {
       checkPaiPresence();
+    } else {
+      setLoading(false);
+      setPaiPresence({ found: false });
     }
   }, [url, companyName]);
   

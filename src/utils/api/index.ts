@@ -23,3 +23,5 @@ export { getPageInsightsData } from './pageInsights';
 export { getChatGptAnalysis } from './chatGptService';
 export { getFullAnalysis } from './analysisService';
 
+// Utility functions
+export { extractDomainFromUrl } from '../domainUtils';
