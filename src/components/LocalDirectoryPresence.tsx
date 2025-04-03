@@ -41,8 +41,9 @@ export const LocalDirectoryPresence: React.FC<LocalDirectoryPresenceProps> = ({
         
         // Mock data based on the URL for demonstration
         const domain = url.replace(/^https?:\/\//, '').split('/')[0];
+        const normalizedDomain = domain.toLowerCase();
         
-        if (domain.includes('futuria.pt')) {
+        if (normalizedDomain.includes('futuria.pt')) {
           setPaiPresence({
             found: true,
             name: "Futuria",
@@ -53,13 +54,24 @@ export const LocalDirectoryPresence: React.FC<LocalDirectoryPresenceProps> = ({
             phoneMatch: true,
             urlMatch: true
           });
-        } else if (domain.includes('coolingrent.pt')) {
+        } else if (normalizedDomain.includes('coolingrent.pt')) {
           setPaiPresence({
             found: true,
             name: "Cooling Rent",
             phone: "218 248 200",
             url: "www.coolingrent.pt",
             paiUrl: "https://pai.pt/p/cooling-rent",
+            nameMatch: true,
+            phoneMatch: true,
+            urlMatch: true
+          });
+        } else if (normalizedDomain.includes('viata.pt')) {
+          setPaiPresence({
+            found: true,
+            name: "Viata",
+            phone: "211 451 489",
+            url: "www.viata.pt",
+            paiUrl: "https://pai.pt/p/viata",
             nameMatch: true,
             phoneMatch: true,
             urlMatch: true
