@@ -15,13 +15,25 @@ const AuthButtons = () => {
     navigate('/');
   };
 
-  // Always show the button to access the dashboard
   return (
     <div className="flex items-center gap-4">
+      {!user ? (
+        <>
+          <Button variant="outline" onClick={() => navigate('/signin')}>
+            Entrar
+          </Button>
+          <Button variant="outline" onClick={() => navigate('/signup')}>
+            Registar
+          </Button>
+        </>
+      ) : (
+        <Button variant="ghost" onClick={handleSignOut}>Sair</Button>
+      )}
+      
+      {/* Always show the button to access the dashboard */}
       <Button variant="default" onClick={() => navigate('/dashboard')}>
         Acessar Dashboard
       </Button>
-      {user && <Button variant="ghost" onClick={handleSignOut}>Sair</Button>}
     </div>
   );
 };
