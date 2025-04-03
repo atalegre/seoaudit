@@ -45,10 +45,7 @@ export async function requestOpenAiAnalysis(url: string, content: string, reques
       ],
       web_search_options: {
         search_context_size: 'high'
-      },
-      temperature: 0.0,
-      response_format: { type: "json_object" },
-      max_tokens: 1000
+      }
     })
   });
   
