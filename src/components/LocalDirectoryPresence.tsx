@@ -12,6 +12,45 @@ interface LocalDirectoryPresenceProps {
   companyName?: string;
 }
 
+// Define a more robust list of companies in PAI.pt for testing and demonstration
+const PAI_DIRECTORY = [
+  {
+    domains: ['futuria.pt', 'www.futuria.pt'],
+    name: "Futuria",
+    phone: "800 200 300",
+    url: "www.futuria.pt",
+    paiUrl: "https://pai.pt/p/futuria",
+  },
+  {
+    domains: ['coolingrent.pt', 'www.coolingrent.pt'],
+    name: "Cooling Rent",
+    phone: "218 248 200",
+    url: "www.coolingrent.pt",
+    paiUrl: "https://pai.pt/p/cooling-rent",
+  },
+  {
+    domains: ['viata.pt', 'www.viata.pt'],
+    name: "Viata",
+    phone: "211 451 489",
+    url: "www.viata.pt",
+    paiUrl: "https://pai.pt/p/viata",
+  },
+  {
+    domains: ['puxenegocios.pt', 'www.puxenegocios.pt'],
+    name: "Puxe Negócios",
+    phone: "211 307 485",
+    url: "www.puxenegocios.pt",
+    paiUrl: "https://pai.pt/p/puxenegocios",
+  },
+  {
+    domains: ['kutuko.com', 'www.kutuko.com'],
+    name: "Kutuko",
+    phone: "210 338 200",
+    url: "www.kutuko.com",
+    paiUrl: "https://pai.pt/p/kutuko",
+  }
+];
+
 export const LocalDirectoryPresence: React.FC<LocalDirectoryPresenceProps> = ({ 
   url, 
   companyName 
@@ -30,53 +69,62 @@ export const LocalDirectoryPresence: React.FC<LocalDirectoryPresenceProps> = ({
   const isMobile = useIsMobile();
   
   useEffect(() => {
-    // In a real implementation, this would call an API to check PAI.pt presence
-    // For now, we'll simulate the data based on the URL
+    // Improved method to check PAI.pt presence
     const checkPaiPresence = async () => {
       setLoading(true);
       
       try {
         // Simulate API call with a timeout
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 800));
         
-        // Mock data based on the URL for demonstration
-        const domain = url.replace(/^https?:\/\//, '').split('/')[0];
-        const normalizedDomain = domain.toLowerCase();
+        // Normalize and extract domain for comparison
+        if (!url) {
+          setPaiPresence({ found: false });
+          return;
+        }
         
-        if (normalizedDomain.includes('futuria.pt')) {
+        // Clean and normalize the input URL for better matching
+        let normalizedUrl = url.toLowerCase().trim();
+        if (!normalizedUrl.startsWith('http')) {
+          normalizedUrl = 'https://' + normalizedUrl;
+        }
+        
+        // Extract the domain for comparison
+        const domainMatch = normalizedUrl.match(/^https?:\/\/([^\/]+)/i);
+        if (!domainMatch) {
+          setPaiPresence({ found: false });
+          return;
+        }
+        
+        const domain = domainMatch[1].toLowerCase();
+        console.log("Checking PAI presence for domain:", domain);
+        
+        // Find match in our directory
+        const foundListing = PAI_DIRECTORY.find(listing => 
+          listing.domains.some(d => domain.includes(d))
+        );
+        
+        if (foundListing) {
+          console.log("Found PAI listing for:", foundListing.name);
+          
+          // Check name match if provided
+          const nameMatch = !companyName || 
+            (companyName.toLowerCase().includes(foundListing.name.toLowerCase()) || 
+             foundListing.name.toLowerCase().includes(companyName.toLowerCase()));
+          
+          // In real implementation, you'd compare extracted data from the website
           setPaiPresence({
             found: true,
-            name: "Futuria",
-            phone: "800 200 300",
-            url: "www.futuria.pt",
-            paiUrl: "https://pai.pt/p/futuria",
-            nameMatch: true,
-            phoneMatch: true,
-            urlMatch: true
-          });
-        } else if (normalizedDomain.includes('coolingrent.pt')) {
-          setPaiPresence({
-            found: true,
-            name: "Cooling Rent",
-            phone: "218 248 200",
-            url: "www.coolingrent.pt",
-            paiUrl: "https://pai.pt/p/cooling-rent",
-            nameMatch: true,
-            phoneMatch: true,
-            urlMatch: true
-          });
-        } else if (normalizedDomain.includes('viata.pt')) {
-          setPaiPresence({
-            found: true,
-            name: "Viata",
-            phone: "211 451 489",
-            url: "www.viata.pt",
-            paiUrl: "https://pai.pt/p/viata",
-            nameMatch: true,
-            phoneMatch: true,
-            urlMatch: true
+            name: foundListing.name,
+            phone: foundListing.phone,
+            url: foundListing.url,
+            paiUrl: foundListing.paiUrl,
+            nameMatch: nameMatch,
+            phoneMatch: true, // Simplified for demo
+            urlMatch: true    // Simplified for demo
           });
         } else {
+          console.log("No PAI listing found for domain:", domain);
           setPaiPresence({
             found: false
           });
@@ -92,7 +140,7 @@ export const LocalDirectoryPresence: React.FC<LocalDirectoryPresenceProps> = ({
     if (url) {
       checkPaiPresence();
     }
-  }, [url]);
+  }, [url, companyName]);
   
   const renderStatusIcon = (status?: boolean) => {
     if (status === undefined) return null;
