@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import UserManagement from '@/components/dashboard/UserManagement';
@@ -51,6 +52,7 @@ const apiIntegrationsFormSchema = z.object({
   googlePageInsightsKey: z.string().min(1, "A chave da API é obrigatória"),
   chatGptApiKey: z.string().min(1, "A chave da API é obrigatória"),
   logoApiKey: z.string().min(1, "A chave da API é obrigatória"),
+  googleSearchConsoleToken: z.string().optional(),
 });
 
 type ApiIntegrationsFormValues = z.infer<typeof apiIntegrationsFormSchema>;
@@ -97,6 +99,7 @@ const SettingsPage = () => {
       googlePageInsightsKey: "",
       chatGptApiKey: "",
       logoApiKey: "",
+      googleSearchConsoleToken: "",
     },
   });
 
@@ -107,11 +110,13 @@ const SettingsPage = () => {
         const googleKey = await getApiKey('googlePageInsightsKey');
         const chatGptKey = await getApiKey('chatGptApiKey');
         const logoKey = await getApiKey('logoApiKey');
+        const searchConsoleToken = await getApiKey('googleSearchConsoleToken');
         
         // Atualizar o formulário com as chaves obtidas
         apiIntegrationsForm.setValue('googlePageInsightsKey', googleKey || '');
         apiIntegrationsForm.setValue('chatGptApiKey', chatGptKey || '');
         apiIntegrationsForm.setValue('logoApiKey', logoKey || 'sk_RM22KfReRJ2LjotDAYgcxA');
+        apiIntegrationsForm.setValue('googleSearchConsoleToken', searchConsoleToken || '');
       } catch (error) {
         console.error('Erro ao carregar as chaves de API:', error);
         toast({
@@ -150,6 +155,11 @@ const SettingsPage = () => {
       await storeApiKey('googlePageInsightsKey', data.googlePageInsightsKey);
       await storeApiKey('chatGptApiKey', data.chatGptApiKey);
       await storeApiKey('logoApiKey', data.logoApiKey);
+      
+      // Salvar o token do Google Search Console
+      if (data.googleSearchConsoleToken) {
+        await storeApiKey('googleSearchConsoleToken', data.googleSearchConsoleToken);
+      }
       
       toast({
         title: "APIs configuradas",
@@ -529,6 +539,34 @@ const SettingsPage = () => {
                               className="text-primary ml-1 hover:underline"
                             >
                               Obter chave
+                            </a>
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={apiIntegrationsForm.control}
+                      name="googleSearchConsoleToken"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Google Search Console Token</FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              type="password" 
+                              placeholder="Insira o token de acesso do Google Search Console"
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Este token é usado para acessar dados de tráfego do Google Search Console.
+                            <a 
+                              href="https://developers.google.com/webmaster-tools/search-console-api-original/v3/how-tos/authorizing" 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-primary ml-1 hover:underline"
+                            >
+                              Obter token
                             </a>
                           </FormDescription>
                           <FormMessage />

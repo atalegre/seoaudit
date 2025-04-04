@@ -9,6 +9,7 @@ export * from './userService';
 export * from './clientService';
 export * from './logoService';
 export * from './bulkImportService';
+export * from './searchConsoleService';
 
 // Supabase Client
 export { 

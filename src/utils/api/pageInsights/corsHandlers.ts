@@ -29,3 +29,15 @@ export function createTimedRequest(apiUrl: string, timeout: number = 60000) {
     clearTimeout: () => clearTimeout(timeoutId)
   };
 }
+
+/**
+ * Gets CORS headers for Google Search Console API
+ */
+export function getGoogleApiHeaders(authToken: string) {
+  return {
+    'Authorization': `Bearer ${authToken}`,
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+    'Origin': window.location.origin
+  };
+}
