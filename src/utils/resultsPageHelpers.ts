@@ -1,5 +1,13 @@
-import { AnalysisResult, AccessibilityAnalysisResult } from './api/types';
+
+import { AnalysisResult, AccessibilityAnalysisResult, SeoAnalysisResult } from './api/types';
 import { PageInsightsData } from './api/pageInsights/types';
+
+/**
+ * Format URL for display by removing protocol
+ */
+export function formatUrl(url: string): string {
+  return url.replace(/^https?:\/\//, '');
+}
 
 // Create analysis result from SEO and AIO data
 export function createAnalysisResult(
@@ -9,9 +17,21 @@ export function createAnalysisResult(
   accessibilityData: AccessibilityAnalysisResult | null = null
 ): AnalysisResult {
   // Create a default SEO object with simulated data if we don't have real data
-  const seo = seoData ? {
+  const seo: SeoAnalysisResult = seoData ? {
     ...seoData,
-    score: seoData.score || 65
+    score: seoData.score || 65,
+    bestPracticesScore: seoData.bestPracticesScore || 75,
+    performanceScore: seoData.performanceScore || 70,
+    loadTimeDesktop: seoData.loadTimeDesktop || 3.2,
+    loadTimeMobile: seoData.loadTimeMobile || 5.1,
+    mobileFriendly: seoData.mobileFriendly !== undefined ? seoData.mobileFriendly : true,
+    security: seoData.security !== undefined ? seoData.security : true,
+    imageOptimization: seoData.imageOptimization || 60,
+    headingsStructure: seoData.headingsStructure || 65,
+    metaTags: seoData.metaTags || 70,
+    lcp: seoData.lcp || 3.5,
+    fid: seoData.fid || 120,
+    cls: seoData.cls || 0.15
   } : {
     score: 65,
     performanceScore: 70,

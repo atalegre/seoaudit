@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { CheckCircle2, XCircle, AlertTriangle, Info } from 'lucide-react';
 import { AccessibilityAnalysisResult, AccessibilityViolation } from '@/utils/api/types';
-import { ScoreCircle } from '@/components/metrics/ScoreCircle';
+import ScoreCircle from '@/components/metrics/ScoreCircle';
 
 interface AccessibilityPanelProps {
   data: AccessibilityAnalysisResult;
@@ -36,7 +36,12 @@ const AccessibilityPanel = ({ data, className = '' }: AccessibilityPanelProps) =
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <div className="flex flex-col items-center justify-center">
-            <ScoreCircle score={data.score} label="Pontuação de Acessibilidade" />
+            <ScoreCircle 
+              score={data.score} 
+              label="Pontuação de Acessibilidade" 
+              colorClass={getScoreColorClass(data.score)}
+              size="lg"
+            />
             <p className="text-sm text-muted-foreground mt-2">
               {getScoreDescription(data.score)}
             </p>
@@ -170,6 +175,16 @@ const IssueCounter = ({ count, label, icon }: { count: number, label: string, ic
       <span className="text-xs text-muted-foreground">{label}</span>
     </div>
   );
+};
+
+// Helper to get score color class
+const getScoreColorClass = (score: number): string => {
+  if (score >= 90) return "text-green-500";
+  if (score >= 80) return "text-green-500";
+  if (score >= 70) return "text-yellow-500";
+  if (score >= 60) return "text-amber-500";
+  if (score >= 50) return "text-orange-500";
+  return "text-red-500";
 };
 
 // Helper to get score description

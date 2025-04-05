@@ -1,8 +1,9 @@
+
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AnalysisResult } from '@/utils/api/types';
-import { TechnicalHealthPanel } from './TechnicalHealthPanel';
-import { AioAnalysisPanel } from './AioAnalysisPanel';
+import TechnicalHealthPanel from './TechnicalHealthPanel';
+import AioAnalysisPanel from './AioAnalysisPanel';
 import AccessibilityPanel from './AccessibilityPanel';
 
 interface AnalysisTabsProps {
