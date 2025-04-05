@@ -2,7 +2,7 @@
 import { google } from 'googleapis';
 import type { PageInsightsData } from './types';
 import { processPageInsightsData } from './apiProcessor';
-import { generateLocalPageInsights } from './mockDataGenerator';
+import { generateMockData, generateLocalPageInsights } from './mockDataGenerator';
 
 // PageSpeed Insights API client
 const pagespeedApi = google.pagespeedonline('v5');
@@ -20,7 +20,7 @@ export async function getPageInsightsData(url: string): Promise<PageInsightsData
     // If mock data is enabled, return generated data
     if (USE_MOCK_DATA) {
       console.log('Using mock PageSpeed Insights data');
-      return generateLocalPageInsights(url);
+      return generateMockData(url);
     }
     
     console.log('Fetching PageSpeed Insights data for:', url);
@@ -35,7 +35,7 @@ export async function getPageInsightsData(url: string): Promise<PageInsightsData
       
       if (response.status === 200 && response.data) {
         console.log('PageSpeed Insights API response received directly');
-        return processPageInsightsData(response.data, url);
+        return processPageInsightsData(response.data as any, url);
       }
     } catch (directApiError) {
       console.warn('Direct API call failed:', directApiError);

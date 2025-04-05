@@ -1,26 +1,47 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import AddWebsiteDialog from '@/components/dashboard/AddWebsiteDialog';
 
-interface DashboardHeaderProps {
-  handleLogout: () => void;
-  onWebsiteAdded: () => void;
-  userEmail?: string;
+export interface DashboardHeaderProps {
+  clientName: string;
+  clientWebsite: string;
+  clientStatus: string;
+  clientLastUpdate: string;
 }
 
-const DashboardHeader = ({ handleLogout, onWebsiteAdded, userEmail }: DashboardHeaderProps) => {
+const DashboardHeader: React.FC<DashboardHeaderProps> = ({
+  clientName,
+  clientWebsite,
+  clientStatus,
+  clientLastUpdate
+}) => {
   return (
-    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+    <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
       <div>
-        <h1 className="text-3xl font-bold">Dashboard do Cliente</h1>
-        <p className="text-muted-foreground mt-1">Bem-vindo à sua área de cliente</p>
+        <h1 className="text-3xl font-bold">{clientName}</h1>
+        <a 
+          href={clientWebsite} 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="text-blue-500 hover:underline mt-1 block"
+        >
+          {clientWebsite}
+        </a>
       </div>
-      <div className="flex gap-4">
-        <AddWebsiteDialog onWebsiteAdded={onWebsiteAdded} userId={userEmail} />
-        <Button variant="outline" onClick={handleLogout}>
-          Sair
-        </Button>
+      <div className="flex flex-col md:flex-row items-start md:items-center gap-4 mt-4 md:mt-0">
+        <div className="flex items-center">
+          <span className="font-medium mr-2">Status:</span>
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+            clientStatus === 'active' ? 'bg-green-100 text-green-800' : 
+            clientStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+            'bg-gray-100 text-gray-800'
+          }`}>
+            {clientStatus}
+          </span>
+        </div>
+        <div>
+          <span className="font-medium mr-2">Última análise:</span>
+          <span className="text-gray-600">{clientLastUpdate}</span>
+        </div>
       </div>
     </div>
   );

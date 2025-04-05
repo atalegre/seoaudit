@@ -6,19 +6,21 @@ import ImplementationCard from './ImplementationCard';
 interface ScoreOverviewProps {
   seoScore: number;
   aioScore: number;
-  scoreDiff: { seo: number; aio: number };
-  lastUpdate: string;
-  implementedRecommendations: number;
-  totalRecommendations: number;
+  accessibilityScore?: number;
+  scoreDiff?: { seo: number; aio: number };
+  lastUpdate?: string;
+  implementedRecommendations?: number;
+  totalRecommendations?: number;
 }
 
 const ScoreOverview = ({
   seoScore,
   aioScore,
-  scoreDiff,
-  lastUpdate,
-  implementedRecommendations,
-  totalRecommendations
+  accessibilityScore = 0,
+  scoreDiff = { seo: 0, aio: 0 },
+  lastUpdate = '',
+  implementedRecommendations = 0,
+  totalRecommendations = 0
 }: ScoreOverviewProps) => {
   return (
     <div className="grid gap-6 grid-cols-1 md:grid-cols-3 mb-6">

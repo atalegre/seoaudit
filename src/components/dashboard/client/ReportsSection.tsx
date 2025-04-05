@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { BarChart2, FileText, ExternalLink } from 'lucide-react';
+import { Download, Calendar } from 'lucide-react';
 
-interface Report {
+export interface Report {
   id: number;
   name: string;
   date: string;
@@ -12,56 +12,51 @@ interface Report {
   type: string;
 }
 
-interface ReportsSectionProps {
+export interface ReportsSectionProps {
   reports: Report[];
 }
 
-const ReportsSection = ({ reports }: ReportsSectionProps) => {
+const ReportsSection: React.FC<ReportsSectionProps> = ({ reports }) => {
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Relatórios</CardTitle>
-        <CardDescription>
-          Lista de relatórios disponíveis para o seu site
-        </CardDescription>
+        <Button variant="outline" className="h-8 gap-1">
+          <Calendar className="h-4 w-4" />
+          <span>Gerar relatório</span>
+        </Button>
       </CardHeader>
       <CardContent>
-        {reports.length > 0 ? (
-          <ul className="space-y-4">
-            {reports.map((report: any) => (
-              <li key={report.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  {report.type === 'SEO' ? (
-                    <BarChart2 className="h-5 w-5 text-primary" />
-                  ) : (
-                    <FileText className="h-5 w-5 text-purple-500" />
-                  )}
-                  <div>
-                    <p className="font-medium">{report.name}</p>
-                    <p className="text-sm text-muted-foreground">{report.date}</p>
-                  </div>
-                </div>
-                <Button variant="ghost" size="sm">
-                  <ExternalLink className="h-4 w-4 mr-1" />
-                  Visualizar
-                </Button>
-              </li>
-            ))}
-          </ul>
+        {reports.length === 0 ? (
+          <p className="text-center text-muted-foreground py-6">
+            Nenhum relatório disponível.
+          </p>
         ) : (
-          <div className="text-center py-12 text-muted-foreground">
-            <p>Ainda não há relatórios disponíveis.</p>
-            <p className="mt-2">Faça sua primeira análise para ver os resultados aqui.</p>
+          <div className="space-y-4">
+            {reports.map((report) => (
+              <div key={report.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-medium">{report.name}</h3>
+                    <span className={`px-2 py-0.5 rounded text-xs ${
+                      report.type === 'SEO' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
+                    }`}>
+                      {report.type}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Gerado em: {report.date}
+                  </p>
+                </div>
+                <Button variant="ghost" size="sm" className="h-8 gap-1">
+                  <Download className="h-4 w-4" />
+                  <span>Download</span>
+                </Button>
+              </div>
+            ))}
           </div>
         )}
       </CardContent>
-      {reports.length > 0 && (
-        <CardFooter>
-          <Button variant="outline" className="w-full">
-            Ver todos os relatórios
-          </Button>
-        </CardFooter>
-      )}
     </Card>
   );
 };

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Client } from '@/utils/api/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -13,13 +13,23 @@ import GoogleAuthSection from './GoogleAuthSection';
 import WebsiteIndexationSection from './WebsiteIndexationSection';
 import SearchConsoleDisplay from './SearchConsoleDisplay';
 import AddWebsiteDialog from '@/components/dashboard/AddWebsiteDialog';
-import { useState } from 'react';
 
 interface ClientPageContentProps {
   client: Client;
   analysisHistory: any[];
   onWebsiteAdded: () => void;
 }
+
+// Mock data for components that need it
+const mockReports = [
+  { id: 1, name: 'SEO Report', date: '2023-05-15', status: 'completed', type: 'SEO' },
+  { id: 2, name: 'AIO Report', date: '2023-05-10', status: 'completed', type: 'AIO' }
+];
+
+const mockNotifications = [
+  { id: 1, title: 'SEO Score Alert', description: 'Your SEO score has improved', date: '2023-05-15', read: false, urgent: false },
+  { id: 2, title: 'New Recommendations', description: '3 new recommendations available', date: '2023-05-10', read: true, urgent: true }
+];
 
 const ClientPageContent: React.FC<ClientPageContentProps> = ({ 
   client, 
@@ -28,9 +38,19 @@ const ClientPageContent: React.FC<ClientPageContentProps> = ({
 }) => {
   const [showAddWebsiteDialog, setShowAddWebsiteDialog] = useState(false);
 
+  // Define the handleMarkAsRead function
+  const handleMarkAsRead = (notificationId: number) => {
+    console.log('Marking notification as read:', notificationId);
+  };
+
   return (
     <div className="space-y-6">
-      <DashboardHeader client={client} />
+      <DashboardHeader 
+        clientName={client.name}
+        clientWebsite={client.website}
+        clientStatus={client.status}
+        clientLastUpdate={client.lastAnalysis || 'Never'}
+      />
       
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Dashboard</h2>
@@ -55,9 +75,9 @@ const ClientPageContent: React.FC<ClientPageContentProps> = ({
         </TabsList>
         
         <TabsContent value="overview" className="space-y-4">
-          <WebsitesSection client={client} />
+          <WebsitesSection websites={client.websites || []} />
           <GoogleAuthSection clientId={client.id} />
-          <WebsiteIndexationSection client={client} />
+          <WebsiteIndexationSection websites={client.websites || []} />
         </TabsContent>
         
         <TabsContent value="search-console">
@@ -65,18 +85,21 @@ const ClientPageContent: React.FC<ClientPageContentProps> = ({
         </TabsContent>
         
         <TabsContent value="reports">
-          <ReportsSection />
+          <ReportsSection reports={mockReports} />
         </TabsContent>
         
         <TabsContent value="notifications">
-          <NotificationsSection />
+          <NotificationsSection 
+            notifications={mockNotifications} 
+            onMarkAsRead={handleMarkAsRead} 
+          />
         </TabsContent>
       </Tabs>
       
       {/* Add Website Dialog */}
       {showAddWebsiteDialog && (
         <AddWebsiteDialog 
-          open={showAddWebsiteDialog}
+          isOpen={showAddWebsiteDialog}
           onClose={() => setShowAddWebsiteDialog(false)}
           onAddWebsite={onWebsiteAdded}
         />

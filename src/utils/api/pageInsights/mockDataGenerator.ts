@@ -36,7 +36,7 @@ export function generateMockData(url: string): PageInsightsData {
  * @returns Formatted error object
  */
 export function generateLocalPageInsights(url: string): PageInsightsData {
-  console.error('Tentativa de obter dados SEO sem API configurada para:', url);
+  console.error('Using local page insights fallback for:', url);
   
   // Return a formatted object with all required properties
   return {
@@ -52,7 +52,7 @@ export function generateLocalPageInsights(url: string): PageInsightsData {
     lcp: 0,
     cls: 0,
     fid: 0,
-    errorMessage: 'Dados SEO não disponíveis. Configure uma chave API válida do Google Page Insights nas Configurações.',
+    errorMessage: 'Page Insights data not available. Please configure a valid Google API key in Settings.',
     isError: true
   };
 }

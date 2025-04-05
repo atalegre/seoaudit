@@ -1,25 +1,52 @@
 
 import React from 'react';
-import WebsitesList from '@/components/dashboard/WebsitesList';
-import AddWebsiteDialog from '@/components/dashboard/AddWebsiteDialog';
-import { Client } from '@/utils/api/types';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ExternalLink } from 'lucide-react';
 
-interface WebsitesSectionProps {
-  websites: Client[];
-  isLoading: boolean;
-  onWebsiteAdded: () => void;
-  userEmail?: string;
+export interface WebsiteData {
+  url: string;
+  status?: string;
+  lastAnalyzed?: string;
 }
 
-const WebsitesSection = ({ websites, isLoading, onWebsiteAdded, userEmail }: WebsitesSectionProps) => {
+export interface WebsitesSectionProps {
+  websites: WebsiteData[];
+}
+
+const WebsitesSection: React.FC<WebsitesSectionProps> = ({ websites }) => {
   return (
-    <div className="mt-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold">Seus Websites</h2>
-        <AddWebsiteDialog onWebsiteAdded={onWebsiteAdded} userId={userEmail} />
-      </div>
-      <WebsitesList websites={websites} isLoading={isLoading} />
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Websites</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {websites.length === 0 ? (
+          <p className="text-muted-foreground">Nenhum website adicionado.</p>
+        ) : (
+          <div className="space-y-4">
+            {websites.map((website, index) => (
+              <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-md">
+                <div>
+                  <h3 className="font-medium">{website.url}</h3>
+                  <div className="flex gap-4 text-sm text-muted-foreground mt-1">
+                    <span>Status: {website.status || 'Ativo'}</span>
+                    <span>Última análise: {website.lastAnalyzed || 'Nunca'}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" className="flex items-center gap-1">
+                    <ExternalLink size={14} />
+                    Visitar
+                  </Button>
+                  <Button variant="outline" size="sm">Analisar</Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
