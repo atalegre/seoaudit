@@ -5,7 +5,8 @@ import { PAI_DIRECTORY } from './directory-data';
 import { 
   extractDomainFromUrl, 
   areDomainsRelated,
-  areCompanyNamesSimilar
+  areCompanyNamesSimilar,
+  normalizeDomain
 } from '@/utils/domainUtils';
 
 export const useDirectoryPresence = ({ url, companyName }: DirectoryPresenceProps) => {
@@ -35,8 +36,12 @@ export const useDirectoryPresence = ({ url, companyName }: DirectoryPresenceProp
           return;
         }
         
-        // Encontrar empresa no diretório com correspondência exata do domínio
-        const foundListing = findCompanyInDirectory(domain);
+        // Normalizar o domínio para melhorar a comparação
+        const normalizedDomain = normalizeDomain(domain);
+        console.log("Domínio normalizado para busca:", normalizedDomain);
+        
+        // Encontrar empresa no diretório com qualquer tipo de correspondência
+        const foundListing = findCompanyInDirectory(normalizedDomain);
         
         if (foundListing) {
           console.log("Encontrada listagem PAI para:", foundListing.name, "com URL:", foundListing.paiUrl);
@@ -58,7 +63,7 @@ export const useDirectoryPresence = ({ url, companyName }: DirectoryPresenceProp
             urlMatch: true    // Simplificado para demo
           });
         } else {
-          console.log("Nenhuma listagem PAI encontrada para o domínio:", domain);
+          console.log("Nenhuma listagem PAI encontrada para o domínio:", normalizedDomain);
           setPaiPresence({
             found: false
           });
@@ -83,24 +88,48 @@ export const useDirectoryPresence = ({ url, companyName }: DirectoryPresenceProp
   const findCompanyInDirectory = (domain: string) => {
     if (!domain) return null;
     
+    const normalizedInput = normalizeDomain(domain);
+    
     // Log para debug
-    console.log("Buscando domínio exato:", domain);
-    console.log("Domínios disponíveis:", PAI_DIRECTORY.map(item => item.domains).flat());
+    console.log("Buscando domínio normalizado:", normalizedInput);
+    
+    // Matriz de todos os domínios normalizados para comparação
+    const allDomains = PAI_DIRECTORY.map(item => ({
+      listing: item,
+      domains: item.domains.map(d => normalizeDomain(d))
+    }));
+    
+    console.log("Todos os domínios normalizados:", allDomains.map(item => item.domains).flat());
     
     // Primeiro tenta encontrar correspondência exata
     const exactMatch = PAI_DIRECTORY.find(listing => 
       listing.domains.some(listingDomain => 
-        listingDomain.toLowerCase() === domain.toLowerCase()
+        normalizeDomain(listingDomain) === normalizedInput
       )
     );
     
     if (exactMatch) {
-      console.log("Encontrada correspondência exata para:", domain);
+      console.log("Encontrada correspondência exata para:", normalizedInput);
       return exactMatch;
     }
     
-    // Se não houver correspondência exata, tenta correspondência similar
-    console.log("Tentando correspondência similar para:", domain);
+    // Verifica se o domínio de entrada está contido em algum dos domínios do diretório
+    // ou se algum domínio do diretório está contido no domínio de entrada
+    const partialMatch = PAI_DIRECTORY.find(listing => 
+      listing.domains.some(listingDomain => {
+        const normalizedListingDomain = normalizeDomain(listingDomain);
+        return normalizedInput.includes(normalizedListingDomain) || 
+               normalizedListingDomain.includes(normalizedInput);
+      })
+    );
+    
+    if (partialMatch) {
+      console.log("Encontrada correspondência parcial para:", normalizedInput);
+      return partialMatch;
+    }
+    
+    // Se não houver correspondência exata ou parcial, tenta correspondência similar
+    console.log("Tentando correspondência de similaridade para:", normalizedInput);
     return PAI_DIRECTORY.find(listing => 
       listing.domains.some(listingDomain => 
         areDomainsRelated(domain, listingDomain)

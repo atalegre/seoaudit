@@ -117,6 +117,14 @@ export const PAI_DIRECTORY: DirectoryListing[] = [
     url: "www.restauranteopatio.pt",
     paiUrl: "https://pai.pt/empresas/restaurante-o-patio",
   },
+  // Climag
+  {
+    domains: ['climag.pt', 'www.climag.pt'],
+    name: "Climag - Comércio de Climatização",
+    phone: "211 383 315",
+    url: "www.climag.pt",
+    paiUrl: "https://pai.pt/empresas/climag",
+  },
   // Adicionar qualquer site atual aqui para testes
   {
     domains: ['lovable.dev', 'www.lovable.dev'],
