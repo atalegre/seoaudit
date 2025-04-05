@@ -19,7 +19,9 @@ const SignUpPage = () => {
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate('/dashboard/client');
+        // Check user role from metadata and redirect accordingly
+        const role = session.user.user_metadata.role || 'user';
+        navigate(role === 'admin' ? '/dashboard' : '/dashboard/client');
       }
     });
   }, [navigate]);

@@ -44,7 +44,6 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
       
       console.log('Submitting signup form with email:', values.email);
       
-      // Make sure we're passing all required fields from the form values
       const result = await signUpWithEmail({
         name: values.name,
         email: values.email,
@@ -66,16 +65,16 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
         navigate(role === 'admin' ? '/dashboard' : '/dashboard/client');
       } else if (result?.user) {
         // Email confirmation may be required
-        console.log('Email confirmation required for:', result.user?.email);
+        console.log('Email confirmation may be required for:', result.user?.email);
         
         toast({
-          title: "Registo iniciado",
-          description: "Verifique o seu email para confirmar a sua conta. Se não receber um email em breve, use a opção para reenviar o email de verificação.",
+          title: "Registo bem-sucedido",
+          description: "A sua conta foi criada. Pode entrar imediatamente com suas credenciais.",
           duration: 8000,
         });
         
-        // Navigate to verification page with email in state
-        navigate('/verification', { 
+        // Navigate to sign in page
+        navigate('/signin', { 
           state: { email: values.email },
           replace: true
         });
@@ -91,12 +90,25 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
       }
     } catch (error: any) {
       console.error("Exception during registration:", error);
-      setAuthError(error.message);
-      toast({
-        variant: "destructive",
-        title: "Erro",
-        description: error.message || "Ocorreu um erro durante o registo.",
-      });
+      
+      // Handle user already registered error
+      if (error.message?.includes('User already registered')) {
+        toast({
+          title: "Usuário já registrado",
+          description: "Este email já está registrado. Por favor, faça login.",
+        });
+        navigate('/signin', { 
+          state: { email: form.getValues().email },
+          replace: true
+        });
+      } else {
+        setAuthError(error.message);
+        toast({
+          variant: "destructive",
+          title: "Erro",
+          description: error.message || "Ocorreu um erro durante o registo.",
+        });
+      }
     } finally {
       setIsRegistering(false);
     }
