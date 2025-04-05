@@ -22,7 +22,7 @@ export function processPageInsightsData(data: GooglePageInsightsResponse, url: s
   try {
     // Extratores simplificados para reduzir complexidade
     const getScore = (category: string) => 
-      Math.round(((data?.lighthouseResult?.categories?.[category]?.score) || 0) * 100);
+      Math.round(((data?.lighthouseResult?.categories?.[category as keyof typeof data.lighthouseResult.categories]?.score) || 0) * 100);
     
     const getAuditScore = (audit: string) => 
       data?.lighthouseResult?.audits?.[audit]?.score || 0;
@@ -34,18 +34,22 @@ export function processPageInsightsData(data: GooglePageInsightsResponse, url: s
     
     // Core Web Vitals simplificados
     const lcpRaw = data?.lighthouseResult?.audits?.['largest-contentful-paint']?.numericValue;
-    const lcp = lcpRaw ? Math.round(lcpRaw / 10) / 100 : undefined;
+    const lcp = lcpRaw ? Math.round(lcpRaw / 10) / 100 : 0;
     
     const fidRaw = data?.lighthouseResult?.audits?.['max-potential-fid']?.numericValue;
-    const fid = fidRaw ? Math.round(fidRaw) : undefined;
+    const fid = fidRaw ? Math.round(fidRaw) : 0;
     
     const clsRaw = data?.lighthouseResult?.audits?.['cumulative-layout-shift']?.numericValue;
-    const cls = clsRaw ? Math.round(clsRaw * 100) / 100 : undefined;
+    const cls = clsRaw ? Math.round(clsRaw * 100) / 100 : 0;
     
     // Tempos de carregamento
     const fcpMs = data?.loadingExperience?.metrics?.FIRST_CONTENTFUL_PAINT_MS?.percentile || 0;
-    const loadTimeDesktop = fcpMs ? fcpMs / 1000 : undefined;
-    const loadTimeMobile = fcpMs ? (fcpMs * 1.5) / 1000 : undefined;
+    const loadTimeDesktop = fcpMs ? fcpMs / 1000 : 0;
+    const loadTimeMobile = fcpMs ? (fcpMs * 1.5) / 1000 : 0;
+    
+    // Calculate headings structure and meta tags scores
+    const headingsStructure = Math.round(getAuditScore('document-title') * 100);
+    const metaTags = Math.round(getAuditScore('meta-description') * 100);
     
     // Core de dados simplificado
     const result: PageInsightsData = {
@@ -58,14 +62,13 @@ export function processPageInsightsData(data: GooglePageInsightsResponse, url: s
       mobileFriendly: getAuditScore('viewport') > 0.9,
       security: getAuditScore('is-on-https') > 0.9,
       imageOptimization: Math.round(getAuditScore('uses-optimized-images') * 100),
-      headingsStructure: Math.round(getAuditScore('document-title') * 100),
-      metaTags: Math.round(getAuditScore('meta-description') * 100),
+      headingsStructure,
+      metaTags,
       lcp,
       fid, 
       cls,
       tapTargetsScore: getAuditScore('tap-targets') * 100,
-      tapTargetsIssues: 0,
-      recommendations: []
+      tapTargetsIssues: 0
     };
     
     // Extrair recomendações apenas para os itens mais críticos (limitado para mobile)

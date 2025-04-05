@@ -38,8 +38,8 @@ export async function getFullAnalysis(url: string): Promise<AnalysisResult> {
       fetchSiteLogo(url)
     ]);
     
-    // Corrigindo a conversão de tipo para garantir que o SeoAnalysisResult tenha todos os campos obrigatórios
-    const seoData = seoResult.status === 'fulfilled' ? seoResult.value as SeoAnalysisResult : null;
+    // Safely convert PageInsightsData to SeoAnalysisResult
+    const seoData = seoResult.status === 'fulfilled' ? seoResult.value as unknown as SeoAnalysisResult : null;
     const aioData = aioResult.status === 'fulfilled' ? aioResult.value : null;
     
     // Verificar se temos dados SEO, mas com erro (não lançamos mais exceção)
