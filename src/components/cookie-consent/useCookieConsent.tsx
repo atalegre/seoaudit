@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
-import CookieConsentManager from '@/utils/cookieConsentManager';
-import { CookieSettings } from './types';
+import CookieConsentManager from '@/utils/cookie-consent';
+import { CookieSettings } from '@/utils/cookie-consent';
 
 export function useCookieConsent() {
   const [showBanner, setShowBanner] = useState<boolean>(false);
