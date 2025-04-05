@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { StatusClassification } from '@/utils/api/types';
 import { Globe, BrainCircuit, Zap, MessageSquare, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -31,6 +31,9 @@ const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
   logoUrl,
   onScrollToRecommendations
 }) => {
+  const [logoLoaded, setLogoLoaded] = useState(false);
+  const [logoError, setLogoError] = useState(false);
+  
   const overallScore = Math.round(
     (seoScore * 0.4) + 
     (aioScore * 0.3) + 
@@ -38,24 +41,47 @@ const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
     (llmPresenceScore * 0.1)
   );
   
-  // Log para debug
-  console.log('Rendering ScoreDisplay with logoUrl:', logoUrl);
+  // Logs detalhados para depuração
+  console.log('ScoreDisplay - Rendering with URL:', url);
+  console.log('ScoreDisplay - Logo URL:', logoUrl);
+  
+  // Reset logo state when URL changes
+  useEffect(() => {
+    setLogoLoaded(false);
+    setLogoError(false);
+  }, [logoUrl]);
+  
+  // Se não temos URL do logo mas temos URL do site, tentar gerar logo URL diretamente
+  const fallbackLogoUrl = !logoUrl && url ? `https://logo.clearbit.com/${url.replace(/^(https?:\/\/)?(www\.)?/, '')}` : null;
+  
+  console.log('ScoreDisplay - Fallback Logo URL:', fallbackLogoUrl);
+  
+  const handleLogoLoad = () => {
+    console.log('Logo carregado com sucesso');
+    setLogoLoaded(true);
+  };
+  
+  const handleLogoError = () => {
+    console.log('Erro ao carregar logo');
+    setLogoError(true);
+  };
   
   return (
     <div className="p-6 bg-white rounded-lg shadow-sm border animate-scale-in">
       {/* Header com URL e Status */}
       <div className="flex justify-between items-start mb-4">
         <div className="flex items-center gap-3">
-          {logoUrl ? (
-            <Avatar className="h-12 w-12 border">
-              <AvatarImage src={logoUrl} alt={`Logo de ${url}`} />
-              <AvatarFallback>{url.charAt(0).toUpperCase()}</AvatarFallback>
-            </Avatar>
-          ) : (
-            <Avatar className="h-12 w-12 border">
-              <AvatarFallback>{url.charAt(0).toUpperCase()}</AvatarFallback>
-            </Avatar>
-          )}
+          <Avatar className="h-12 w-12 border">
+            {(logoUrl || fallbackLogoUrl) && !logoError ? (
+              <AvatarImage 
+                src={logoUrl || fallbackLogoUrl || ''} 
+                alt={`Logo de ${url}`}
+                onLoad={handleLogoLoad}
+                onError={handleLogoError}
+              />
+            ) : null}
+            <AvatarFallback>{url.charAt(0).toUpperCase()}</AvatarFallback>
+          </Avatar>
           <div>
             <h2 className="text-xl font-semibold">Análise Digital</h2>
             <p className="text-sm text-gray-600 break-all">

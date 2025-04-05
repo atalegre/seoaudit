@@ -1,9 +1,11 @@
+
 import { AnalysisResult, SeoAnalysisResult } from './types';
 import { getPageInsightsData } from './pageInsights'; 
 import { getChatGptAnalysis } from './chatGptService';
 import { fetchSiteLogo } from './logoService';
 import { createAnalysisResult } from '../resultsPageHelpers';
 import { toast } from 'sonner';
+import { extractDomainFromUrl } from '../domainUtils';
 
 // Cache com TTL para versão otimizada
 const analysisCache = new Map<string, {result: AnalysisResult, timestamp: number}>();
@@ -30,17 +32,27 @@ export async function getFullAnalysis(url: string): Promise<AnalysisResult> {
     console.log('Iniciando análise para', url);
     const startTime = performance.now();
     
+    // Extrair domínio para o logo primeiro
+    const domain = extractDomainFromUrl(url);
+    console.log('Domínio extraído para logo:', domain);
+    
+    // Logo URL diretamente - nem sempre vamos precisar do Promise.allSettled
+    let logoUrl = null;
+    if (domain) {
+      // Tentar obter logo diretamente
+      logoUrl = `https://logo.clearbit.com/${domain}`;
+      console.log('Logo URL definido diretamente:', logoUrl);
+    }
+    
     // Usar Promise.allSettled para garantir que uma promessa rejeitada não impede outras
-    const [seoResult, aioResult, logoResult] = await Promise.allSettled([
+    const [seoResult, aioResult] = await Promise.allSettled([
       getPageInsightsData(url),
-      getChatGptAnalysis(url),
-      fetchSiteLogo(url)
+      getChatGptAnalysis(url)
     ]);
     
     // Safely convert PageInsightsData to SeoAnalysisResult
     const seoData = seoResult.status === 'fulfilled' ? seoResult.value as unknown as SeoAnalysisResult : null;
     const aioData = aioResult.status === 'fulfilled' ? aioResult.value : null;
-    const logoUrl = logoResult.status === 'fulfilled' ? logoResult.value : null;
     
     // Verificar se temos dados SEO, mas com erro (não lançamos mais exceção)
     if (seoResult.status === 'fulfilled' && seoData && seoData.isError) {
@@ -65,12 +77,10 @@ export async function getFullAnalysis(url: string): Promise<AnalysisResult> {
     // Criar resultado com os dados disponíveis
     const result = createAnalysisResult(url, seoData, aioData);
     
-    // Adicionar logo se disponível
+    // Adicionar logo URL diretamente sem precisar de uma chamada API adicional
     if (logoUrl) {
-      console.log('Logo encontrado:', logoUrl);
+      console.log('Definindo logo URL no resultado:', logoUrl);
       result.logoUrl = logoUrl;
-    } else {
-      console.log('Logo não encontrado para:', url);
     }
     
     // Guardar no cache

@@ -40,8 +40,9 @@ const AnalysisContent: React.FC<AnalysisContentProps> = ({
   const hasAioData = analysisData?.aio?.score > 0;
   const seoHasError = analysisData?.seo?.isError === true;
   
-  // Para debug - verificar se temos a URL do logo
-  console.log('Logo URL from analysis data:', analysisData?.logoUrl);
+  // Log mais detalhado para depuração
+  console.log('AnalysisContent - Dados completos:', analysisData);
+  console.log('AnalysisContent - Logo URL:', analysisData?.logoUrl);
   
   const scrollToRecommendations = () => {
     recommendationsRef.current?.scrollIntoView({ behavior: 'smooth' });
