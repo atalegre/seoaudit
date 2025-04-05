@@ -109,6 +109,14 @@ export const PAI_DIRECTORY: DirectoryListing[] = [
     url: "www.galp.com",
     paiUrl: "https://pai.pt/empresas/galp-energia",
   },
+  // Restaurant O Patio
+  {
+    domains: ['restauranteopatio.pt', 'www.restauranteopatio.pt'],
+    name: "Restaurante O Pátio",
+    phone: "219 456 789",
+    url: "www.restauranteopatio.pt",
+    paiUrl: "https://pai.pt/empresas/restaurante-o-patio",
+  },
   // Adicionar qualquer site atual aqui para testes
   {
     domains: ['lovable.dev', 'www.lovable.dev'],

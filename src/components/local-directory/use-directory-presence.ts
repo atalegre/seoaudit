@@ -35,12 +35,8 @@ export const useDirectoryPresence = ({ url, companyName }: DirectoryPresenceProp
           return;
         }
         
-        // Forçar encontrar a entrada para teste (remover em produção)
-        const forceFound = true;
-        
         // Encontrar empresa no diretório com melhor correspondência
-        const foundListing = findCompanyInDirectory(domain) || 
-                           (forceFound ? PAI_DIRECTORY[3] : null); // Usar Puxe Negócios para testes
+        const foundListing = findCompanyInDirectory(domain);
         
         if (foundListing) {
           console.log("Encontrada listagem PAI para:", foundListing.name, "com URL:", foundListing.paiUrl);
