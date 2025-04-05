@@ -28,4 +28,16 @@ interface GA4MeasurementOptions {
   cookie_flags?: string;
   cookie_update?: boolean;
   cookie_expires?: number;
+  linker?: {
+    domains: string[];
+    accept_incoming?: boolean;
+    urls?: string[];
+    decorate_forms?: boolean;
+  };
+}
+
+// Cross-domain configuration
+interface CrossDomainConfig {
+  domains: string[];
+  enabled?: boolean;
 }

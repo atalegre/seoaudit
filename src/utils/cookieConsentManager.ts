@@ -10,6 +10,13 @@ interface CookieSettings {
 
 const CONSENT_KEY = 'cookieConsent';
 
+// List of domains for cross-domain tracking
+const CROSS_DOMAIN_SITES = [
+  'seoaudit.pt',
+  'd6620331-1d39-4571-9d7c-1ad62798af11.lovableproject.com',
+  'id-preview-5c8dd228--d6620331-1d39-4571-9d7c-1ad62798af11.lovable.app'
+];
+
 /**
  * Cookie consent utility to manage user consent preferences
  */
@@ -172,6 +179,27 @@ export const CookieConsentManager = {
           'security_storage': 'granted', // Always needed for security purposes
         });
         
+        // Configure cross-domain tracking if analytics is enabled
+        if (settings.analytics) {
+          console.log('Setting up cross-domain tracking for:', CROSS_DOMAIN_SITES);
+          window.gtag('config', 'G-33EYX0JZM1', {
+            'linker': {
+              'domains': CROSS_DOMAIN_SITES,
+              'accept_incoming': true,
+              'decorate_forms': true
+            }
+          });
+          
+          // Also push cross-domain config to dataLayer
+          window.dataLayer.push({
+            'event': 'configure_cross_domain',
+            'cross_domain_config': {
+              'domains': CROSS_DOMAIN_SITES,
+              'enabled': true
+            }
+          });
+        }
+        
         // Also push the consent update directly to dataLayer for GTM
         window.dataLayer.push({
           'event': 'cookie_consent_update',
@@ -236,6 +264,10 @@ export const CookieConsentManager = {
             const idMatch = src.match(/[?&]id=([^&]+)/);
             if (idMatch) {
               console.log('GA4 ID found in script:', idMatch[1]);
+              
+              // Also check cross-domain configuration
+              console.log('Verifying cross-domain configuration for', idMatch[1]);
+              this.verifyCrossDomainTracking();
             }
           });
         } else {
@@ -244,6 +276,36 @@ export const CookieConsentManager = {
       }
     } catch (error) {
       console.error('Error validating tags presence:', error);
+    }
+  },
+  
+  /**
+   * Verify cross-domain tracking is properly set up
+   */
+  verifyCrossDomainTracking(): void {
+    try {
+      console.log('Cross-domain domains that should be configured:', CROSS_DOMAIN_SITES);
+      
+      // Push a test event to verify cross-domain tracking
+      window.dataLayer.push({
+        'event': 'test_cross_domain',
+        'cross_domain_test': {
+          'timestamp': new Date().toISOString(),
+          'domains': CROSS_DOMAIN_SITES
+        }
+      });
+      
+      console.log('Cross-domain test event pushed to dataLayer');
+      
+      // If we're on a cross-domain site, log that
+      const currentDomain = window.location.hostname;
+      if (CROSS_DOMAIN_SITES.includes(currentDomain)) {
+        console.log('Current site is in the cross-domain list:', currentDomain);
+      } else {
+        console.log('Current site is not in the cross-domain list:', currentDomain);
+      }
+    } catch (error) {
+      console.error('Error verifying cross-domain tracking:', error);
     }
   }
 };

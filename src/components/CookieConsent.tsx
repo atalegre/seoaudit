@@ -50,6 +50,7 @@ const CookieConsent: React.FC = () => {
     // Run the validation as soon as component mounts
     setTimeout(() => {
       CookieConsentManager.validateTagsPresence();
+      CookieConsentManager.verifyCrossDomainTracking();
     }, 1000);
   }, []);
 
@@ -116,6 +117,7 @@ const CookieConsent: React.FC = () => {
       
       // Also trigger a tag validation
       CookieConsentManager.validateTagsPresence();
+      CookieConsentManager.verifyCrossDomainTracking();
       
       return consent;
     };
@@ -142,7 +144,8 @@ const CookieConsent: React.FC = () => {
         
         <p className="text-sm mb-4">
           Utilizamos cookies para melhorar a sua experiência, fornecer funcionalidades de redes sociais e analisar o nosso tráfego. 
-          Pode escolher as suas preferências de cookies. Alguns cookies são necessários para o funcionamento do site.
+          Pode escolher as suas preferências de cookies. Alguns cookies são necessários para o funcionamento do site e para rastrear
+          visitas entre os nossos domínios (seoaudit.pt e outros domínios relacionados).
         </p>
 
         {showPreferences && (
