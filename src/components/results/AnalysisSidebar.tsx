@@ -1,8 +1,12 @@
 
-import React from 'react';
-import { FileText } from 'lucide-react';
-import ReportForm from '@/components/ReportForm';
-import { useIsMobile } from '@/hooks/use-mobile';
+import React, { Suspense, lazy } from 'react';
+import { Card } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { extractDomainFromUrl } from '@/utils/domainUtils';
+
+// Lazy loaded components para melhorar performance
+const LLMPresenceAudit = lazy(() => import('@/components/LLMPresenceAudit'));
+const LocalDirectoryPresence = lazy(() => import('@/components/LocalDirectoryPresence'));
 
 interface AnalysisSidebarProps {
   url: string;
@@ -12,36 +16,34 @@ interface AnalysisSidebarProps {
 
 const AnalysisSidebar: React.FC<AnalysisSidebarProps> = ({ 
   url, 
-  seoScore, 
+  seoScore,
   aioScore 
 }) => {
-  const isMobile = useIsMobile();
+  // Extrair nome da empresa do domínio para diretório local
+  const domain = extractDomainFromUrl(url);
+  const companyName = domain?.split('.')[0] || '';
   
   return (
-    <div className="bg-white rounded-lg border shadow-sm p-6 sticky top-4">
-      <h3 className="text-lg font-semibold mb-4">Já sabe o que pode melhorar?</h3>
-      <p className="text-gray-600 mb-6">A nossa equipa de especialistas pode ajudar a implementar estas melhorias e elevar a presença digital do seu negócio.</p>
-      
-      <ReportForm 
-        url={url} 
-        seoScore={seoScore}
-        aioScore={aioScore}
-        compact={isMobile}
-      />
-      
-      <div className="mt-6 pt-4 border-t">
-        <button 
-          className="w-full flex items-center justify-center gap-2 text-gray-600 hover:text-gray-800"
-          onClick={() => {
-            alert("Funcionalidade de exportar PDF em desenvolvimento");
-          }}
-        >
-          <FileText className="h-4 w-4" />
-          <span>Exportar PDF do relatório</span>
-        </button>
-      </div>
+    <div className="space-y-6">
+      <Card className="p-4 shadow-sm">
+        <h3 className="text-lg font-semibold mb-2">Verificações adicionais</h3>
+        <Separator className="my-3" />
+        
+        <div className="space-y-6">
+          <Suspense fallback={<div className="h-32 flex items-center justify-center">Carregando verificação LLM...</div>}>
+            <LLMPresenceAudit url={url} autoStart={true} />
+          </Suspense>
+          
+          <Separator className="my-3" />
+          
+          <Suspense fallback={<div className="h-32 flex items-center justify-center">Carregando verificação PAI.pt...</div>}>
+            <LocalDirectoryPresence url={url} companyName={companyName} />
+          </Suspense>
+        </div>
+      </Card>
     </div>
   );
 };
 
 export default AnalysisSidebar;
+
