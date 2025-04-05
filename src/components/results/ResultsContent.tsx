@@ -1,4 +1,3 @@
-
 import React, { useRef, lazy, Suspense } from 'react';
 import { AnalysisResult } from '@/utils/api/types';
 import { AlertCircle, Loader2, FileText } from 'lucide-react';
