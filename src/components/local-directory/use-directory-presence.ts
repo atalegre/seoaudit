@@ -35,7 +35,7 @@ export const useDirectoryPresence = ({ url, companyName }: DirectoryPresenceProp
           return;
         }
         
-        // Encontrar empresa no diretório com melhor correspondência
+        // Encontrar empresa no diretório com correspondência exata do domínio
         const foundListing = findCompanyInDirectory(domain);
         
         if (foundListing) {
@@ -79,10 +79,28 @@ export const useDirectoryPresence = ({ url, companyName }: DirectoryPresenceProp
     }
   }, [url, companyName]);
 
-  // Função auxiliar para encontrar empresas no diretório por domínio com correspondência melhorada
+  // Função auxiliar para encontrar empresas no diretório por domínio
   const findCompanyInDirectory = (domain: string) => {
     if (!domain) return null;
     
+    // Log para debug
+    console.log("Buscando domínio exato:", domain);
+    console.log("Domínios disponíveis:", PAI_DIRECTORY.map(item => item.domains).flat());
+    
+    // Primeiro tenta encontrar correspondência exata
+    const exactMatch = PAI_DIRECTORY.find(listing => 
+      listing.domains.some(listingDomain => 
+        listingDomain.toLowerCase() === domain.toLowerCase()
+      )
+    );
+    
+    if (exactMatch) {
+      console.log("Encontrada correspondência exata para:", domain);
+      return exactMatch;
+    }
+    
+    // Se não houver correspondência exata, tenta correspondência similar
+    console.log("Tentando correspondência similar para:", domain);
     return PAI_DIRECTORY.find(listing => 
       listing.domains.some(listingDomain => 
         areDomainsRelated(domain, listingDomain)
