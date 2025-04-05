@@ -57,8 +57,8 @@ export function useAnalysis(urlParam: string | null) {
     setSeoError(null);
     setAioError(null);
     
-    // Usar requestIdleCallback quando disponível para não bloquear a renderização
-    const performAnalysis = async () => {
+    // Usar setTimeout para não bloquear a renderização
+    setTimeout(async () => {
       try {
         let normalizedUrl = urlParam;
         if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
@@ -120,17 +120,7 @@ export function useAnalysis(urlParam: string | null) {
       } finally {
         setIsLoading(false);
       }
-    };
-    
-    // Usar requestIdleCallback se disponível
-    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-      (window as any).requestIdleCallback(() => {
-        performAnalysis();
-      });
-    } else {
-      // Fallback para setTimeout
-      setTimeout(performAnalysis, 10);
-    }
+    }, 0);
   }, [urlParam]);
 
   const handleReanalyze = () => {
