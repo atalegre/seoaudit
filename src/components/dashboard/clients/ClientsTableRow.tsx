@@ -4,6 +4,7 @@ import { TableRow, TableCell } from '@/components/ui/table';
 import { Client } from '@/utils/api/types';
 import ClientActionsMenu from './ClientActionsMenu';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { formatDate as globalFormatDate } from '@/utils/formatUtils';
 
 interface ClientsTableRowProps {
   client: Client;
@@ -17,14 +18,22 @@ const ClientsTableRow: React.FC<ClientsTableRowProps> = ({
   const { t, language } = useLanguage();
   
   // Format the date according to the current language
-  const formatDate = (dateString: string | undefined | null) => {
-    if (!dateString) return t('never');
+  const formatDate = (date: string | Date | undefined | null) => {
+    if (!date) return t('never');
     
     try {
-      const date = new Date(dateString);
+      // Convert the date parameter to a Date object if it's a string
+      const dateObj = typeof date === 'string' ? new Date(date) : date;
+      
+      // Check if the date is valid
+      if (isNaN(dateObj.getTime())) {
+        return t('never');
+      }
+      
+      // Format based on language
       return language === 'pt' 
-        ? date.toLocaleDateString('pt-BR')
-        : date.toLocaleDateString('en-US');
+        ? dateObj.toLocaleDateString('pt-BR')
+        : dateObj.toLocaleDateString('en-US');
     } catch (error) {
       console.error('Error formatting date:', error);
       return t('never');
