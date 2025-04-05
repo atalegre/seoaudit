@@ -39,7 +39,7 @@ export const useDirectoryPresence = ({ url, companyName }: DirectoryPresenceProp
         const foundListing = findCompanyInDirectory(domain);
         
         if (foundListing) {
-          console.log("Found PAI listing for:", foundListing.name);
+          console.log("Found PAI listing for:", foundListing.name, "with URL:", foundListing.paiUrl);
           
           // Check name match with improved name comparison
           let nameMatch = true;
