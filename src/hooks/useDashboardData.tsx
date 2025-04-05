@@ -49,6 +49,9 @@ export const useDashboardData = (
   const fetchClientData = async () => {
     try {
       setIsLoading(true);
+      console.log("=== Dashboard Data Fetch Started ===");
+      console.log("Target URL:", targetUrl);
+      console.log("User email:", userEmail);
       
       // Get client ID from URL params or fetch all client websites
       const clientId = id ? parseInt(id) : null;
@@ -57,10 +60,11 @@ export const useDashboardData = (
       
       // Filter clients by user account if available
       let userClients = userEmail 
-        ? clientsData.filter((client: Client) => client.account === userEmail)
+        ? clientsData.filter((client: Client) => 
+            client.account === userEmail || 
+            client.contactEmail === userEmail)
         : clientsData;
       
-      console.log("User email:", userEmail);
       console.log("Filtered clients for user:", userClients);
       
       // If no clients found for this user but we have a targetUrl,
@@ -70,16 +74,21 @@ export const useDashboardData = (
         
         // Normalize URLs for comparison
         const normalizeUrl = (url: string) => {
+          if (!url) return '';
           return url.replace(/^https?:\/\//, '')
                    .replace(/\/$/, '')
+                   .replace(/^www\./, '')
                    .toLowerCase();
         };
         
         const normalizedTargetUrl = normalizeUrl(targetUrl);
+        console.log("Normalized target URL:", normalizedTargetUrl);
         
         const matchingClient = clientsData.find((client: Client) => {
           const clientUrl = client.website || '';
-          return normalizeUrl(clientUrl) === normalizedTargetUrl;
+          const normalizedClientUrl = normalizeUrl(clientUrl);
+          console.log(`Comparing: "${normalizedClientUrl}" with "${normalizedTargetUrl}"`);
+          return normalizedClientUrl === normalizedTargetUrl;
         });
         
         if (matchingClient) {
@@ -87,7 +96,7 @@ export const useDashboardData = (
           // If we found a matching client by URL, update its account to associate with current user
           if (userEmail && matchingClient.account !== userEmail) {
             try {
-              // This would need a proper API call to update the client's account
+              // Associate with current user
               console.log("Updating client account to associate with current user");
               matchingClient.account = userEmail;
               // Ideally update this in the database too
@@ -149,92 +158,122 @@ export const useDashboardData = (
       }
       
       // Fetch analysis history for this client
-      const history = await getClientAnalysisHistory(targetClientId);
-      console.log("Analysis history:", history);
-      
-      if (history && history.length > 0) {
-        // Ordenar do mais recente para o mais antigo
-        const sortedHistory = [...history].sort((a, b) => 
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        );
+      try {
+        const history = await getClientAnalysisHistory(targetClientId);
+        console.log("Analysis history:", history);
         
-        // Pegar o mais recente
-        const latestReport = sortedHistory[0];
-        console.log("Latest report:", latestReport);
-        
-        // Atualizar scores
-        setSeoScore(latestReport.seo?.score || 0);
-        setAioScore(latestReport.aio?.score || 0);
-        
-        // Atualizar última atualização
-        setLastUpdate(new Date(latestReport.timestamp).toLocaleDateString());
-        
-        // Calcular diferença se houver pelo menos 2 relatórios
-        if (sortedHistory.length > 1) {
-          const previousReport = sortedHistory[1];
-          setScoreDiff({
-            seo: (latestReport.seo?.score || 0) - (previousReport.seo?.score || 0),
-            aio: (latestReport.aio?.score || 0) - (previousReport.aio?.score || 0)
-          });
-        }
-        
-        // Contar recomendações
-        if (latestReport.recommendations) {
-          setTotalRecommendations(latestReport.recommendations.length);
-          const implemented = latestReport.recommendations.filter((r: any) => r.status === 'done').length;
-          setImplementedRecommendations(implemented);
-        }
-        
-        // Formatar relatórios para exibição
-        const formattedReports = sortedHistory.slice(0, 4).map((report, index) => ({
-          id: index + 1,
-          name: `Relatório ${(report.seo?.score || 0) > (report.aio?.score || 0) ? 'SEO' : 'AIO'} ${new Date(report.timestamp).toLocaleDateString()}`,
-          date: new Date(report.timestamp).toLocaleDateString(),
-          status: 'completed',
-          type: (report.seo?.score || 0) > (report.aio?.score || 0) ? 'SEO' : 'AIO'
-        }));
-        
-        setClientReports(formattedReports);
-        
-        // Notificações baseadas em análise real
-        const newNotifications = [];
-        if ((latestReport.seo?.score || 0) < 60) {
-          newNotifications.push({
-            id: 1,
-            title: 'Score SEO baixo',
-            description: 'Seu site precisa de melhorias urgentes de SEO.',
-            date: new Date(latestReport.timestamp).toLocaleDateString(),
-            read: false,
-            urgent: true
-          });
-        }
-        
-        if (latestReport.recommendations && latestReport.recommendations.length > 0) {
-          newNotifications.push({
-            id: 2,
-            title: 'Novas recomendações disponíveis',
-            description: `${latestReport.recommendations.length} recomendações para melhorar seu site.`,
-            date: new Date(latestReport.timestamp).toLocaleDateString(),
-            read: false,
-            urgent: false
-          });
-        }
-        
-        if (newNotifications.length > 0) {
-          setNotifications(newNotifications);
+        if (history && history.length > 0) {
+          // Ordenar do mais recente para o mais antigo
+          const sortedHistory = [...history].sort((a, b) => 
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+          );
+          
+          // Pegar o mais recente
+          const latestReport = sortedHistory[0];
+          console.log("Latest report:", latestReport);
+          
+          // Atualizar scores
+          setSeoScore(latestReport.seo?.score || clientData.seoScore || 0);
+          setAioScore(latestReport.aio?.score || clientData.aioScore || 0);
+          
+          // Atualizar última atualização
+          setLastUpdate(new Date(latestReport.timestamp).toLocaleDateString());
+          
+          // Calcular diferença se houver pelo menos 2 relatórios
+          if (sortedHistory.length > 1) {
+            const previousReport = sortedHistory[1];
+            setScoreDiff({
+              seo: (latestReport.seo?.score || 0) - (previousReport.seo?.score || 0),
+              aio: (latestReport.aio?.score || 0) - (previousReport.aio?.score || 0)
+            });
+          }
+          
+          // Contar recomendações
+          if (latestReport.recommendations) {
+            setTotalRecommendations(latestReport.recommendations.length);
+            const implemented = latestReport.recommendations.filter((r: any) => r.status === 'done').length;
+            setImplementedRecommendations(implemented);
+          }
+          
+          // Formatar relatórios para exibição
+          const formattedReports = sortedHistory.slice(0, 4).map((report, index) => ({
+            id: index + 1,
+            name: `Relatório ${(report.seo?.score || 0) > (report.aio?.score || 0) ? 'SEO' : 'AIO'} ${new Date(report.timestamp).toLocaleDateString()}`,
+            date: new Date(report.timestamp).toLocaleDateString(),
+            status: 'completed',
+            type: (report.seo?.score || 0) > (report.aio?.score || 0) ? 'SEO' : 'AIO'
+          }));
+          
+          setClientReports(formattedReports);
+          
+          // Notificações baseadas em análise real
+          const newNotifications = [];
+          if ((latestReport.seo?.score || 0) < 60) {
+            newNotifications.push({
+              id: 1,
+              title: 'Score SEO baixo',
+              description: 'Seu site precisa de melhorias urgentes de SEO.',
+              date: new Date(latestReport.timestamp).toLocaleDateString(),
+              read: false,
+              urgent: true
+            });
+          }
+          
+          if (latestReport.recommendations && latestReport.recommendations.length > 0) {
+            newNotifications.push({
+              id: 2,
+              title: 'Novas recomendações disponíveis',
+              description: `${latestReport.recommendations.length} recomendações para melhorar seu site.`,
+              date: new Date(latestReport.timestamp).toLocaleDateString(),
+              read: false,
+              urgent: false
+            });
+          }
+          
+          if (newNotifications.length > 0) {
+            setNotifications(newNotifications);
+          } else {
+            setNotifications([{
+              id: 1,
+              title: 'Bem-vindo ao Dashboard',
+              description: 'Aqui você pode acompanhar o desempenho do seu site.',
+              date: new Date().toLocaleDateString(),
+              read: false,
+              urgent: false
+            }]);
+          }
         } else {
+          console.log("No history for this client");
+          // Default notifications if no history
           setNotifications([{
             id: 1,
             title: 'Bem-vindo ao Dashboard',
-            description: 'Aqui você pode acompanhar o desempenho do seu site.',
+            description: 'Seu site foi analisado. Confira os resultados acima.',
             date: new Date().toLocaleDateString(),
             read: false,
             urgent: false
           }]);
+          
+          // Create a basic report entry
+          setClientReports([{
+            id: 1,
+            name: `Análise inicial ${new Date().toLocaleDateString()}`,
+            date: new Date().toLocaleDateString(),
+            status: 'completed',
+            type: clientData.seoScore > clientData.aioScore ? 'SEO' : 'AIO'
+          }]);
         }
-      } else {
-        console.log("No history for this client");
-        // Default notifications if no history
+      } catch (error) {
+        console.error("Error fetching analysis history:", error);
+        // Create a basic report entry from client data
+        setClientReports([{
+          id: 1,
+          name: `Análise inicial ${new Date().toLocaleDateString()}`,
+          date: new Date().toLocaleDateString(),
+          status: 'completed',
+          type: clientData.seoScore > clientData.aioScore ? 'SEO' : 'AIO'
+        }]);
+        
         setNotifications([{
           id: 1,
           title: 'Bem-vindo ao Dashboard',
@@ -242,15 +281,6 @@ export const useDashboardData = (
           date: new Date().toLocaleDateString(),
           read: false,
           urgent: false
-        }]);
-        
-        // Create a basic report entry
-        setClientReports([{
-          id: 1,
-          name: `Análise inicial ${new Date().toLocaleDateString()}`,
-          date: new Date().toLocaleDateString(),
-          status: 'completed',
-          type: clientData.seoScore > clientData.aioScore ? 'SEO' : 'AIO'
         }]);
       }
 

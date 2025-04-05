@@ -29,19 +29,29 @@ const ClientDashboardPage = () => {
     
     // Check auth state when component mounts
     const checkAuth = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (!data.session) {
-        console.log("No active session, redirecting to signin");
-        navigate('/signin', { 
-          state: { 
-            returnTo: location.pathname + location.search,
-            message: "Faça login para acessar o dashboard"
-          }
-        });
-      } else {
-        setIsAuthChecked(true);
-        toast.success("Dashboard carregado", {
-          description: "Os seus dados foram carregados com sucesso."
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (!data.session) {
+          console.log("No active session, redirecting to signin");
+          // Save URL parameter in the redirect state
+          const redirectUrl = location.pathname + (urlParam ? `?url=${encodeURIComponent(urlParam)}` : location.search);
+          navigate('/signin', { 
+            state: { 
+              returnTo: redirectUrl,
+              message: "Faça login para acessar o dashboard"
+            }
+          });
+        } else {
+          setIsAuthChecked(true);
+          console.log("Auth checked, user is logged in:", data.session.user.email);
+          toast.success("Dashboard carregado", {
+            description: "Os seus dados foram carregados com sucesso."
+          });
+        }
+      } catch (error) {
+        console.error("Error checking auth:", error);
+        toast.error("Erro de autenticação", {
+          description: "Ocorreu um erro ao verificar a sua sessão."
         });
       }
     };
@@ -88,7 +98,7 @@ const ClientDashboardPage = () => {
         </div>
         
         <DashboardContent 
-          isLoading={isLoading}
+          isLoading={isLoading || !isAuthChecked}
           clients={clients}
           selectedClientId={selectedClientId}
           seoScore={seoScore}

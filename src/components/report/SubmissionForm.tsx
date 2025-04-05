@@ -67,6 +67,12 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
     }
     
     setIsSubmitting(true);
+    console.log("=== Submission Form - Submit Started ===");
+    console.log("Name:", name);
+    console.log("Email:", email);
+    console.log("URL:", url);
+    console.log("SEO Score:", seoScore);
+    console.log("AIO Score:", aioScore);
     
     try {
       // Store URL in local storage to ensure it's available after redirect
@@ -92,7 +98,7 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
       
       console.log('Auth data:', authData);
       
-      // Criar cliente no sistema
+      // Criar cliente no sistema com informações completas
       const newClient: Client = {
         id: Date.now(), // Temporário, será substituído pelo ID do Supabase
         name,
@@ -100,7 +106,7 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
         contactEmail: email,
         website: url,
         status: 'active',
-        account: email, // This is critical - use email as account to link the client to this user
+        account: email, // Critical - use email as account to link the client to this user
         seoScore: seoScore,
         aioScore: aioScore,
         lastAnalysis: new Date(),
@@ -129,18 +135,24 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
       
       // Sucesso
       setIsSubmitted(true);
+      toast.success('Conta criada com sucesso!');
       
       // Autenticar o usuário
       if (!authData?.user) {
         console.log('Attempting to sign in user with email:', email);
-        // Redirecionar para a página de login
+        // Redirecionar para a página de login com URL como parâmetro
         setTimeout(() => {
-          navigate('/signin', { state: { email, returnTo: `/dashboard/client?url=${encodeURIComponent(url)}` } });
+          navigate('/signin', { 
+            state: { 
+              email, 
+              returnTo: `/dashboard/client?url=${encodeURIComponent(url)}` 
+            } 
+          });
         }, 2000);
         return;
       }
       
-      console.log('Auth successful, redirecting to dashboard');
+      console.log('Auth successful, redirecting to dashboard with URL parameter');
       // Redirecionar para o dashboard após 2 segundos
       setTimeout(() => {
         navigate(`/dashboard/client?url=${encodeURIComponent(url)}`);
