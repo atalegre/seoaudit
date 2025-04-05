@@ -15,10 +15,13 @@ export async function getPageInsightsData(url: string): Promise<PageInsightsData
     return await fetchPageInsightsData(url);
   } catch (error) {
     console.error('Error fetching Page Insights data:', error);
-    toast.warning('Erro na análise externa', {
-      description: 'Usando analisador local para dados de SEO.',
+    
+    // Mostrar toast com mensagem de erro
+    toast.error('Erro na análise SEO', {
+      description: error instanceof Error ? error.message : 'Não foi possível obter dados de SEO. Configure sua chave API.',
     });
     
+    // Retornar objeto formatado de erro em vez de lançar exceção
     return generateLocalPageInsights(url);
   }
 }

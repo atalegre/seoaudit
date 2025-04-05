@@ -1,67 +1,31 @@
-
-/**
- * Types for Page Insights service
- */
-
-// Single recommendation item
-export interface PageInsightsRecommendation {
+export interface AuditResultItem {
   id: string;
   title: string;
   description: string;
-  importance: number;
+  score: number | null;
+  scoreDisplayMode: string;
+  explanation?: string;
+  warnings?: string;
+  details?: {
+    type: string;
+    headings: { key: string; itemType: string; text: string }[];
+    items: Record<string, any>[];
+  };
 }
 
-// Complete Page Insights data structure
 export interface PageInsightsData {
+  url: string;
   score: number;
   performanceScore: number;
-  bestPracticesScore?: number;
-  url: string;
   loadTimeDesktop: number;
   loadTimeMobile: number;
   mobileFriendly: boolean;
   security: boolean;
   imageOptimization: number;
-  headingsStructure?: number;
-  metaTags?: number;
-  // Core Web Vitals
   lcp: number;
-  fid: number;
   cls: number;
-  // Mobile usability details
-  tapTargetsScore?: number;
-  tapTargetsIssues?: number;
-  recommendations: PageInsightsRecommendation[];
-  generated?: boolean;
-}
-
-// Google Page Insights API response
-export interface GooglePageInsightsResponse {
-  kind?: string;
-  id?: string;
-  responseCode?: number;
-  analysisUTCTimestamp?: string;
-  lighthouseResult?: {
-    categories?: {
-      seo?: { score: number };
-      performance?: { score: number };
-      'best-practices'?: { score: number };
-    };
-    audits?: Record<string, {
-      score?: number;
-      numericValue?: number;
-      title?: string;
-      description?: string;
-      details?: {
-        items?: any[];
-      };
-    }>;
-  };
-  loadingExperience?: {
-    metrics?: {
-      FIRST_CONTENTFUL_PAINT_MS?: {
-        percentile: number;
-      };
-    };
-  };
+  fid: number;
+  auditResults?: AuditResultItem[];
+  errorMessage?: string;
+  isError?: boolean;
 }

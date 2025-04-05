@@ -1,4 +1,3 @@
-
 import React, { useRef, lazy, Suspense } from 'react';
 import { AnalysisResult } from '@/utils/api/types';
 import { AlertCircle, Loader2, FileText, AlertTriangle } from 'lucide-react';
@@ -9,7 +8,6 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-// Componentes carregados com lazy loading
 const EnhancedRecommendations = lazy(() => 
   import('@/components/EnhancedRecommendations')
 );
@@ -30,7 +28,6 @@ const LocalDirectoryPresence = lazy(() =>
   import('@/components/LocalDirectoryPresence')
 );
 
-// Componente de fallback para carregamentos lazy
 const LazyLoadingFallback = () => (
   <div className="flex justify-center items-center h-32 w-full">
     <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -57,13 +54,12 @@ const ResultsContent: React.FC<ResultsContentProps> = ({
     recommendationsRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Check if we have real SEO data
   const hasSeoData = analysisData?.seo?.score > 0;
   
-  // Check if we have real AIO data
   const hasAioData = analysisData?.aio?.score > 0;
   
-  // Se não temos nenhum dado, mostrar mensagem de erro
+  const seoHasError = analysisData?.seo?.isError === true;
+  
   if (!hasSeoData && !hasAioData) {
     return (
       <div className="max-w-6xl mx-auto">
@@ -101,12 +97,13 @@ const ResultsContent: React.FC<ResultsContentProps> = ({
         Resultados da análise
       </h1>
       
-      {(seoError || aioError) && (
+      {(seoError || aioError || seoHasError) && (
         <Alert variant="warning" className="mb-6">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Dados parciais disponíveis</AlertTitle>
           <AlertDescription className="space-y-2">
             {seoError && <p><strong>Análise SEO:</strong> {seoError}</p>}
+            {seoHasError && <p><strong>Análise SEO:</strong> {analysisData?.seo?.errorMessage || "Erro ao obter dados SEO"}</p>}
             {aioError && <p><strong>Análise AIO:</strong> {aioError}</p>}
             <p>Os resultados mostrados são baseados apenas nos dados que pudemos obter.</p>
           </AlertDescription>
@@ -115,7 +112,6 @@ const ResultsContent: React.FC<ResultsContentProps> = ({
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         <div className="lg:col-span-2 space-y-4 md:space-y-6">
-          {/* 1. 🧠 Resumo Geral no Topo */}
           <ScoreDisplay
             seoScore={analysisData?.seo?.score || 0}
             aioScore={analysisData?.aio?.score || 0}
@@ -137,9 +133,7 @@ const ResultsContent: React.FC<ResultsContentProps> = ({
             </button>
           </div>
           
-          {/* Blocos de análise estruturados */}
           <div className="space-y-6">
-            {/* 2. 📊 Bloco 1 - SEO Técnico e Performance */}
             {hasSeoData ? (
               <Suspense fallback={<LazyLoadingFallback />}>
                 <TechnicalHealthPanel
@@ -159,12 +153,11 @@ const ResultsContent: React.FC<ResultsContentProps> = ({
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Dados SEO não disponíveis</AlertTitle>
                 <AlertDescription>
-                  {seoError || "Não foi possível obter dados SEO reais. Configure uma chave API válida."}
+                  {seoError || analysisData?.seo?.errorMessage || "Não foi possível obter dados SEO reais. Configure uma chave API válida nas Configurações."}
                 </AlertDescription>
               </Alert>
             )}
             
-            {/* 3. 🤖 Bloco 2 - Clareza para Inteligência Artificial */}
             {hasAioData ? (
               <Suspense fallback={<LazyLoadingFallback />}>
                 <AioAnalysisPanel
@@ -186,7 +179,6 @@ const ResultsContent: React.FC<ResultsContentProps> = ({
               </Alert>
             )}
             
-            {/* 5. 🔧 Bloco 4 - Recomendações com impacto */}
             {analysisData.recommendations && analysisData.recommendations.length > 0 ? (
               <div ref={recommendationsRef} id="recommendations" className="pt-4 scroll-mt-16">
                 <Suspense fallback={<LazyLoadingFallback />}>
@@ -205,7 +197,6 @@ const ResultsContent: React.FC<ResultsContentProps> = ({
           </div>
         </div>
         
-        {/* 7. 📩 Call-to-Action final */}
         <div className={`lg:col-span-1 ${isMobile ? 'mt-6' : ''}`}>
           <div className="bg-white rounded-lg border shadow-sm p-6 sticky top-4">
             <h3 className="text-lg font-semibold mb-4">Já sabe o que pode melhorar?</h3>
@@ -222,7 +213,6 @@ const ResultsContent: React.FC<ResultsContentProps> = ({
               <button 
                 className="w-full flex items-center justify-center gap-2 text-gray-600 hover:text-gray-800"
                 onClick={() => {
-                  // Simular clique em "Exportar PDF" - futura implementação
                   alert("Funcionalidade de exportar PDF em desenvolvimento");
                 }}
               >

@@ -2,12 +2,29 @@
 import { PageInsightsData } from './types';
 
 /**
- * Esta função anteriormente gerava dados simulados, mas agora apenas lança um erro
- * para evitar a apresentação de dados não reais
+ * Esta função retorna um objeto de erro formatado em vez de lançar uma exceção,
+ * permitindo que a análise continue com dados parciais
  * @param url URL to analyze
- * @throws Error indicando que não foi possível obter dados reais
+ * @returns Formatted error object
  */
 export function generateLocalPageInsights(url: string): PageInsightsData {
-  console.error('Tentativa de gerar dados simulados para:', url);
-  throw new Error('Dados SEO não disponíveis. Por favor, configure uma chave API válida.');
+  console.error('Tentativa de obter dados SEO sem API configurada para:', url);
+  
+  // Retornar um objeto formatado com todas as propriedades necessárias
+  // mas com valores que indicam claramente que são dados de erro
+  return {
+    url: url,
+    score: 0,
+    performanceScore: 0,
+    loadTimeDesktop: 0,
+    loadTimeMobile: 0,
+    mobileFriendly: false,
+    security: false,
+    imageOptimization: 0,
+    lcp: 0,
+    cls: 0,
+    fid: 0,
+    errorMessage: 'Dados SEO não disponíveis. Configure uma chave API válida do Google Page Insights nas Configurações.',
+    isError: true
+  };
 }

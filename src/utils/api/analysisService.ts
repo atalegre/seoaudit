@@ -42,7 +42,13 @@ export async function getFullAnalysis(url: string): Promise<AnalysisResult> {
     const seoData = seoResult.status === 'fulfilled' ? seoResult.value as SeoAnalysisResult : null;
     const aioData = aioResult.status === 'fulfilled' ? aioResult.value : null;
     
-    if (seoResult.status === 'rejected') {
+    // Verificar se temos dados SEO, mas com erro (não lançamos mais exceção)
+    if (seoResult.status === 'fulfilled' && seoData && seoData.isError) {
+      console.warn('SEO analysis returned with error state:', seoData.errorMessage);
+      toast.warning('Análise SEO com limitações', {
+        description: seoData.errorMessage || 'Dados SEO parciais ou indisponíveis'
+      });
+    } else if (seoResult.status === 'rejected') {
       console.warn('SEO analysis failed:', seoResult.reason);
       toast.warning('Análise SEO falhou', {
         description: 'Usando dados parciais'
@@ -51,6 +57,9 @@ export async function getFullAnalysis(url: string): Promise<AnalysisResult> {
     
     if (aioResult.status === 'rejected') {
       console.warn('AIO analysis failed:', aioResult.reason);
+      toast.warning('Análise AIO falhou', {
+        description: 'Dados de IA indisponíveis'
+      });
     }
     
     // Criar resultado com os dados disponíveis

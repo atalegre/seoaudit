@@ -39,7 +39,7 @@ export async function fetchPageInsightsData(url: string): Promise<PageInsightsDa
       console.log('API key from localStorage:', apiKey ? 'Found' : 'Not found');
     }
     
-    // Rejeitar se não houver chave API
+    // Se não houver chave API, retornar objeto formatado em vez de lançar exceção
     if (!apiKey) {
       console.error('No API key available for Google Page Insights');
       toast.error('Chave da API Google Page Insights necessária', {
@@ -47,7 +47,23 @@ export async function fetchPageInsightsData(url: string): Promise<PageInsightsDa
         duration: 5000,
       });
       
-      throw new Error('Chave API do Google Page Insights não configurada. Configure nas configurações.');
+      const errorData: PageInsightsData = {
+        url: url,
+        score: 0,
+        performanceScore: 0,
+        loadTimeDesktop: 0,
+        loadTimeMobile: 0,
+        mobileFriendly: false,
+        security: false,
+        imageOptimization: 0,
+        lcp: 0,
+        cls: 0,
+        fid: 0,
+        errorMessage: 'Chave API do Google Page Insights não configurada. Configure nas configurações.',
+        isError: true
+      };
+      
+      return errorData;
     }
 
     toast('Analisando SEO com Google Page Insights...', {
@@ -93,25 +109,85 @@ export async function fetchPageInsightsData(url: string): Promise<PageInsightsDa
         }
         
         console.error(errorMessage);
-        throw new Error(`Erro na API do Google: ${errorMessage}`);
+        
+        // Retornar objeto formatado com erro em vez de lançar exceção
+        return {
+          url: url,
+          score: 0,
+          performanceScore: 0,
+          loadTimeDesktop: 0,
+          loadTimeMobile: 0,
+          mobileFriendly: false,
+          security: false,
+          imageOptimization: 0,
+          lcp: 0,
+          cls: 0,
+          fid: 0,
+          errorMessage: `Erro na API do Google: ${errorMessage}`,
+          isError: true
+        };
       }
       
       const data = await response.json();
       console.log('Google Page Insights API response received:', data.lighthouseResult ? 'Valid data' : 'Invalid data');
       
       if (!data.lighthouseResult) {
-        throw new Error('API Google retornou dados incompletos ou inválidos');
+        return {
+          url: url,
+          score: 0,
+          performanceScore: 0,
+          loadTimeDesktop: 0,
+          loadTimeMobile: 0,
+          mobileFriendly: false,
+          security: false,
+          imageOptimization: 0,
+          lcp: 0,
+          cls: 0,
+          fid: 0,
+          errorMessage: 'API Google retornou dados incompletos ou inválidos',
+          isError: true
+        };
       }
       
       return processPageInsightsData(data, url);
     } catch (fetchError: any) {
       clearTimeout();
+      
+      // Retornar objeto formatado com erro em vez de lançar exceção
       if (fetchError.name === 'AbortError') {
         console.error('Google Page Insights API request timed out');
-        throw new Error('Tempo limite da API excedido. Tente novamente mais tarde.');
+        return {
+          url: url,
+          score: 0,
+          performanceScore: 0,
+          loadTimeDesktop: 0,
+          loadTimeMobile: 0,
+          mobileFriendly: false,
+          security: false,
+          imageOptimization: 0,
+          lcp: 0,
+          cls: 0,
+          fid: 0,
+          errorMessage: 'Tempo limite da API excedido. Tente novamente mais tarde.',
+          isError: true
+        };
       } else {
         console.error('Fetch error:', fetchError.message);
-        throw fetchError;
+        return {
+          url: url,
+          score: 0,
+          performanceScore: 0,
+          loadTimeDesktop: 0,
+          loadTimeMobile: 0,
+          mobileFriendly: false,
+          security: false,
+          imageOptimization: 0,
+          lcp: 0,
+          cls: 0,
+          fid: 0,
+          errorMessage: fetchError.message || 'Erro ao acessar a API do Google',
+          isError: true
+        };
       }
     } finally {
       // Remove in-flight request after a delay to prevent immediate re-fetching
