@@ -2,7 +2,7 @@
 import React, { useRef } from 'react';
 import ScoreOverview from './ScoreOverview';
 import WebsitesSection from './WebsitesSection';
-import ReportsSection from '../ReportsSection';
+import ReportsSection from './ReportsSection';
 import NotificationsSection from './NotificationsSection';
 import EnhancedRecommendations from '@/components/EnhancedRecommendations';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

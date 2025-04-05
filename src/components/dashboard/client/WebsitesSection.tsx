@@ -14,6 +14,7 @@ export interface WebsiteData {
   name?: string;
   id?: number;
   website?: string;
+  lastAnalysis?: Date | string | null;
 }
 
 export interface WebsitesSectionProps {
