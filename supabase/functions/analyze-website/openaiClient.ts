@@ -1,8 +1,8 @@
 
 import { corsHeaders } from "./corsHeaders.ts";
 import { getSystemPrompt, getUserPrompt } from "./prompts.ts";
-// Fix the import by using the import map reference instead of a bare import
-import OpenAI from "openai";
+// Using direct ESM import for OpenAI to ensure compatibility with Deno
+import { OpenAI } from "https://esm.sh/openai@4.20.1";
 
 /**
  * Request analysis from OpenAI API
