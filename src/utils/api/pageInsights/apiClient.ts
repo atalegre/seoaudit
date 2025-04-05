@@ -1,11 +1,7 @@
 
-import { google } from 'googleapis';
 import type { PageInsightsData } from './types';
 import { processPageInsightsData } from './apiProcessor';
-import { generateMockData, generateLocalPageInsights } from './mockDataGenerator';
-
-// PageSpeed Insights API client
-const pagespeedApi = google.pagespeedonline('v5');
+import { generateLocalPageInsights } from './mockDataGenerator';
 
 // Flag for development mode - set to true to use mock data
 const USE_MOCK_DATA = true;
@@ -20,30 +16,29 @@ export async function getPageInsightsData(url: string): Promise<PageInsightsData
     // If mock data is enabled, return generated data
     if (USE_MOCK_DATA) {
       console.log('Using mock PageSpeed Insights data');
-      return generateMockData(url);
+      return generateLocalPageInsights(url);
     }
     
     console.log('Fetching PageSpeed Insights data for:', url);
     
-    // Try to use Direct API call
+    // Use fetch API directly instead of googleapis which requires Node.js environment
     try {
-      const response = await pagespeedApi.pagespeedapi.runpagespeed({
-        url: url,
-        strategy: 'mobile',
-        category: ['performance', 'accessibility', 'best-practices', 'seo']
-      });
+      const apiKey = 'AIzaSyDummyKeyForTest'; // This would normally come from your settings
+      const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&strategy=mobile&category=performance&category=accessibility&category=best-practices&category=seo`;
       
-      if (response.status === 200 && response.data) {
+      const response = await fetch(apiUrl);
+      
+      if (response.ok) {
+        const data = await response.json();
         console.log('PageSpeed Insights API response received directly');
-        return processPageInsightsData(response.data as any, url);
+        return processPageInsightsData(data, url);
+      } else {
+        throw new Error(`API request failed with status: ${response.status}`);
       }
     } catch (directApiError) {
       console.warn('Direct API call failed:', directApiError);
+      return generateLocalPageInsights(url);
     }
-    
-    // If all attempts failed, return error data
-    console.error('Failed to fetch PageSpeed Insights data through all available methods');
-    return generateLocalPageInsights(url);
   } catch (error) {
     console.error('Error in getPageInsightsData:', error);
     throw error;

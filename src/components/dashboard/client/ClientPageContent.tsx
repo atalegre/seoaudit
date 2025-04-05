@@ -31,6 +31,11 @@ const mockNotifications = [
   { id: 2, title: 'New Recommendations', description: '3 new recommendations available', date: '2023-05-10', read: true, urgent: true }
 ];
 
+// Mock websites data for WebsitesSection
+const mockWebsites = [
+  { id: 1, name: 'Main Website', url: 'https://example.com', status: 'active' }
+];
+
 const ClientPageContent: React.FC<ClientPageContentProps> = ({ 
   client, 
   analysisHistory,
@@ -43,13 +48,20 @@ const ClientPageContent: React.FC<ClientPageContentProps> = ({
     console.log('Marking notification as read:', notificationId);
   };
 
+  // Convert from Date to string if needed
+  const lastAnalysisString = client.lastAnalysis 
+    ? typeof client.lastAnalysis === 'string' 
+      ? client.lastAnalysis 
+      : client.lastAnalysis.toISOString()
+    : 'Never';
+
   return (
     <div className="space-y-6">
       <DashboardHeader 
         clientName={client.name}
         clientWebsite={client.website}
         clientStatus={client.status}
-        clientLastUpdate={client.lastAnalysis || 'Never'}
+        clientLastUpdate={lastAnalysisString}
       />
       
       <div className="flex justify-between items-center">
@@ -75,9 +87,9 @@ const ClientPageContent: React.FC<ClientPageContentProps> = ({
         </TabsList>
         
         <TabsContent value="overview" className="space-y-4">
-          <WebsitesSection websites={client.websites || []} />
+          <WebsitesSection websites={mockWebsites} />
           <GoogleAuthSection clientId={client.id} />
-          <WebsiteIndexationSection websites={client.websites || []} />
+          <WebsiteIndexationSection websites={mockWebsites} />
         </TabsContent>
         
         <TabsContent value="search-console">

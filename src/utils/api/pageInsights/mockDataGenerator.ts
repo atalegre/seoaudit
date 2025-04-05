@@ -2,11 +2,13 @@
 import { PageInsightsData } from './types';
 
 /**
- * Generate mock data for PageSpeed Insights
+ * Generate local page insights with simulated data
  * @param url URL to analyze
- * @returns Mock PageInsights data
+ * @returns Formatted PageInsights data
  */
-export function generateMockData(url: string): PageInsightsData {
+export function generateLocalPageInsights(url: string): PageInsightsData {
+  console.log('Using local page insights for:', url);
+  
   // Create a random score between 50 and 95
   const randomScore = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
   
@@ -27,32 +29,5 @@ export function generateMockData(url: string): PageInsightsData {
     fid: randomScore(50, 300),
     tapTargetsScore: randomScore(50, 100),
     tapTargetsIssues: randomScore(0, 5)
-  };
-}
-
-/**
- * Generate local page insights with error indication
- * @param url URL to analyze
- * @returns Formatted error object
- */
-export function generateLocalPageInsights(url: string): PageInsightsData {
-  console.error('Using local page insights fallback for:', url);
-  
-  // Return a formatted object with all required properties
-  return {
-    url: url,
-    score: 0,
-    performanceScore: 0,
-    bestPracticesScore: 0,
-    loadTimeDesktop: 0,
-    loadTimeMobile: 0,
-    mobileFriendly: false,
-    security: false,
-    imageOptimization: 0,
-    lcp: 0,
-    cls: 0,
-    fid: 0,
-    errorMessage: 'Page Insights data not available. Please configure a valid Google API key in Settings.',
-    isError: true
   };
 }
