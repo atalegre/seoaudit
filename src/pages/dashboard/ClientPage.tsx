@@ -88,7 +88,8 @@ const ClientPage = () => {
     const loadGoogleAuth = async () => {
       if (user?.email && client?.website) {
         try {
-          const apiKey = await getApiKey(user.email, client.website);
+          // Fixed: Use only user email for getApiKey
+          const apiKey = await getApiKey(user.email);
           if (apiKey) {
             setGoogleAuth({ 
               accessToken: apiKey, 
@@ -142,7 +143,8 @@ const ClientPage = () => {
       
       if (accessToken) {
         setGoogleAuth({ accessToken, refreshToken: null });
-        await storeApiKey(user.email, client.website, accessToken);
+        // Fixed: Use only user email and access token for storeApiKey
+        await storeApiKey(user.email, accessToken);
         toast.success('Google account linked successfully!');
       } else {
         toast.error('No access token provided.');
@@ -161,7 +163,8 @@ const ClientPage = () => {
     
     try {
       setGoogleAuth({ accessToken: null, refreshToken: null });
-      await storeApiKey(user.email, client.website, null);
+      // Fixed: Use only user email and null for storeApiKey
+      await storeApiKey(user.email, null);
       toast.success('Google account disconnected successfully!');
     } catch (error: any) {
       console.error("Google Sign-Out Error:", error);

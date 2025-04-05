@@ -247,12 +247,12 @@ export const CookieConsentTracking = {
   }
 };
 
-// Add GTM types
+// Add GTM types - fixed type definition of gtag to match the expected type
 declare global {
   interface Window {
     dataLayer: any[];
     google_tag_manager: any;
-    gtag: any;
+    gtag: (...args: any[]) => void; // Fixed to match expected type
     ga: any;
   }
 }
