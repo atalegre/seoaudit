@@ -1,4 +1,5 @@
-import { AnalysisResult } from './types';
+
+import { AnalysisResult, SeoAnalysisResult } from './types';
 import { getPageInsightsData } from './pageInsights'; 
 import { getChatGptAnalysis } from './chatGptService';
 import { fetchSiteLogo } from './logoService';
@@ -37,7 +38,8 @@ export async function getFullAnalysis(url: string): Promise<AnalysisResult> {
       fetchSiteLogo(url)
     ]);
     
-    const seoData = seoResult.status === 'fulfilled' ? seoResult.value : null;
+    // Corrigindo a conversão de tipo para garantir que o SeoAnalysisResult tenha todos os campos obrigatórios
+    const seoData = seoResult.status === 'fulfilled' ? seoResult.value as SeoAnalysisResult : null;
     const aioData = aioResult.status === 'fulfilled' ? aioResult.value : null;
     
     if (seoResult.status === 'rejected') {
