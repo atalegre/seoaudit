@@ -1,20 +1,14 @@
 
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import AuthLayout from '@/components/auth/AuthLayout';
 import AuthCard from '@/components/auth/AuthCard';
 import AuthError from '@/components/auth/AuthError';
 import SignInForm from '@/components/auth/SignInForm';
+import { useLocation } from 'react-router-dom';
 
 const SignInPage = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
   const [authError, setAuthError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const location = useLocation();
   const locationState = location.state as { email?: string; returnTo?: string } | null;
 
@@ -42,12 +36,6 @@ const SignInPage = () => {
             returnTo={locationState?.returnTo}
             setAuthError={setAuthError}
           />
-          
-          <div className="mt-4 text-center text-sm">
-            <Link to="/recuperar-password" className="text-primary hover:underline">
-              Esqueceu a password?
-            </Link>
-          </div>
         </AuthCard>
       </div>
     </AuthLayout>
