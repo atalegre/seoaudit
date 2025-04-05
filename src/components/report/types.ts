@@ -17,7 +17,7 @@ export interface SubmissionFormProps extends ReportFormProps {
 
 export interface SuccessViewProps {
   sendByEmail: boolean;
-  compact: boolean;
+  compact?: boolean;
   onDashboardClick: () => void;
 }
 

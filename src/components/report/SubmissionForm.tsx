@@ -10,6 +10,8 @@ import { saveClientsToDatabase } from '@/utils/api/clientService';
 import { Client } from '@/utils/api/types';
 import { SubmissionFormProps } from './types';
 import FormInputs from './FormInputs';
+import SuccessView from './SuccessView';
+import { sendReportByEmail } from './utils/emailService';
 
 const SubmissionForm: React.FC<SubmissionFormProps> = ({ 
   url, 
@@ -26,37 +28,6 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
   const [phone, setPhone] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-  
-  // Função para enviar o relatório por email
-  async function sendReportByEmail(email: string, name: string, seoScore: number, aioScore: number, url: string) {
-    try {
-      // Construir o URL do relatório com os parâmetros
-      const reportUrl = `${window.location.origin}/dashboard/client?url=${encodeURIComponent(url)}`;
-      
-      const { data, error } = await supabase.functions.invoke('send-email', {
-        body: {
-          type: 'report',
-          email,
-          name,
-          reportUrl,
-          seoScore,
-          aioScore,
-          websiteUrl: url
-        }
-      });
-
-      if (error) {
-        console.error("Erro ao enviar email com relatório:", error);
-        return false;
-      } else {
-        console.log("Email com relatório enviado:", data);
-        return true;
-      }
-    } catch (error) {
-      console.error("Exceção ao enviar email com relatório:", error);
-      return false;
-    }
-  }
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
