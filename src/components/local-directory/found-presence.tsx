@@ -4,7 +4,7 @@ import { DirectoryPresenceResult } from './types';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Check, Info, Link, AlertCircle, X } from 'lucide-react';
+import { Check, Info, Link, AlertCircle } from 'lucide-react';
 
 interface FoundPresenceProps {
   presence: DirectoryPresenceResult;

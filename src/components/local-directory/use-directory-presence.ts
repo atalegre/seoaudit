@@ -13,12 +13,12 @@ export const useDirectoryPresence = ({ url, companyName }: DirectoryPresenceProp
   const [paiPresence, setPaiPresence] = useState<DirectoryPresenceResult | null>(null);
 
   useEffect(() => {
-    // Improved method to check PAI.pt presence
+    // Método para verificar presença no PAI.pt
     const checkPaiPresence = async () => {
       setLoading(true);
       
       try {
-        // Simulate API call with a timeout
+        // Simular chamada de API com timeout
         await new Promise(resolve => setTimeout(resolve, 800));
         
         if (!url) {
@@ -26,22 +26,22 @@ export const useDirectoryPresence = ({ url, companyName }: DirectoryPresenceProp
           return;
         }
         
-        // Extract domain from URL using the helper function
+        // Extrair domínio do URL usando a função auxiliar
         const domain = extractDomainFromUrl(url);
-        console.log("Checking PAI presence for domain:", domain);
+        console.log("Verificando presença no PAI.pt para o domínio:", domain);
         
         if (!domain) {
           setPaiPresence({ found: false });
           return;
         }
         
-        // Find company in directory with improved matching
+        // Encontrar empresa no diretório com melhor correspondência
         const foundListing = findCompanyInDirectory(domain);
         
         if (foundListing) {
-          console.log("Found PAI listing for:", foundListing.name, "with URL:", foundListing.paiUrl);
+          console.log("Encontrada listagem PAI para:", foundListing.name, "com URL:", foundListing.paiUrl);
           
-          // Check name match with improved name comparison
+          // Verificar correspondência de nome com comparação melhorada
           let nameMatch = true;
           if (companyName) {
             nameMatch = areCompanyNamesSimilar(companyName, foundListing.name);
@@ -52,19 +52,19 @@ export const useDirectoryPresence = ({ url, companyName }: DirectoryPresenceProp
             name: foundListing.name,
             phone: foundListing.phone,
             url: foundListing.url,
-            paiUrl: foundListing.paiUrl,
+            paiUrl: foundListing.paiUrl, // Usar o URL correto do PAI.pt conforme definido no diretório
             nameMatch: nameMatch,
-            phoneMatch: true, // Simplified for demo
-            urlMatch: true    // Simplified for demo
+            phoneMatch: true, // Simplificado para demo
+            urlMatch: true    // Simplificado para demo
           });
         } else {
-          console.log("No PAI listing found for domain:", domain);
+          console.log("Nenhuma listagem PAI encontrada para o domínio:", domain);
           setPaiPresence({
             found: false
           });
         }
       } catch (error) {
-        console.error('Error checking PAI presence:', error);
+        console.error('Erro ao verificar presença no PAI:', error);
         setPaiPresence({ found: false });
       } finally {
         setLoading(false);
@@ -79,7 +79,7 @@ export const useDirectoryPresence = ({ url, companyName }: DirectoryPresenceProp
     }
   }, [url, companyName]);
 
-  // Helper function to find company in directory by domain with improved matching
+  // Função auxiliar para encontrar empresas no diretório por domínio com correspondência melhorada
   const findCompanyInDirectory = (domain: string) => {
     if (!domain) return null;
     
