@@ -32,6 +32,7 @@ import SeoAioChecklistPage from "./pages/content/SeoAioChecklistPage";
 import VerificationPage from "./pages/VerificationPage";
 import { createDefaultUsers } from "./utils/auth/createDefaultUsers";
 import { UserProvider } from "./contexts/UserContext";
+import CookieConsent from "./components/CookieConsent";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +59,7 @@ const App = () => {
           <TooltipProvider>
             <Toaster />
             <Sonner />
+            <CookieConsent />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/results" element={<ResultsPage />} />
