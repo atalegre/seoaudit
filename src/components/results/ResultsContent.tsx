@@ -1,3 +1,4 @@
+
 import React, { useRef, lazy, Suspense } from 'react';
 import { AnalysisResult } from '@/utils/api/types';
 import { AlertCircle, Loader2, FileText, AlertTriangle } from 'lucide-react';
@@ -59,6 +60,9 @@ const ResultsContent: React.FC<ResultsContentProps> = ({
   const hasAioData = analysisData?.aio?.score > 0;
   
   const seoHasError = analysisData?.seo?.isError === true;
+  
+  // Para debug - verificar se temos a URL do logo
+  console.log('Logo URL from analysis data:', analysisData?.logoUrl);
   
   if (!hasSeoData && !hasAioData) {
     return (

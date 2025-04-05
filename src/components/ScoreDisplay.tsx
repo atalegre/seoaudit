@@ -38,6 +38,9 @@ const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
     (llmPresenceScore * 0.1)
   );
   
+  // Log para debug
+  console.log('Rendering ScoreDisplay with logoUrl:', logoUrl);
+  
   return (
     <div className="p-6 bg-white rounded-lg shadow-sm border animate-scale-in">
       {/* Header com URL e Status */}

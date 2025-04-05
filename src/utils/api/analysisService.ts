@@ -1,4 +1,3 @@
-
 import { AnalysisResult, SeoAnalysisResult } from './types';
 import { getPageInsightsData } from './pageInsights'; 
 import { getChatGptAnalysis } from './chatGptService';
@@ -32,7 +31,7 @@ export async function getFullAnalysis(url: string): Promise<AnalysisResult> {
     const startTime = performance.now();
     
     // Usar Promise.allSettled para garantir que uma promessa rejeitada não impede outras
-    const [seoResult, aioResult, logoUrl] = await Promise.allSettled([
+    const [seoResult, aioResult, logoResult] = await Promise.allSettled([
       getPageInsightsData(url),
       getChatGptAnalysis(url),
       fetchSiteLogo(url)
@@ -41,6 +40,7 @@ export async function getFullAnalysis(url: string): Promise<AnalysisResult> {
     // Safely convert PageInsightsData to SeoAnalysisResult
     const seoData = seoResult.status === 'fulfilled' ? seoResult.value as unknown as SeoAnalysisResult : null;
     const aioData = aioResult.status === 'fulfilled' ? aioResult.value : null;
+    const logoUrl = logoResult.status === 'fulfilled' ? logoResult.value : null;
     
     // Verificar se temos dados SEO, mas com erro (não lançamos mais exceção)
     if (seoResult.status === 'fulfilled' && seoData && seoData.isError) {
@@ -66,9 +66,11 @@ export async function getFullAnalysis(url: string): Promise<AnalysisResult> {
     const result = createAnalysisResult(url, seoData, aioData);
     
     // Adicionar logo se disponível
-    if (logoUrl.status === 'fulfilled' && logoUrl.value) {
-      console.log('Logo encontrado:', logoUrl.value);
-      result.logoUrl = logoUrl.value;
+    if (logoUrl) {
+      console.log('Logo encontrado:', logoUrl);
+      result.logoUrl = logoUrl;
+    } else {
+      console.log('Logo não encontrado para:', url);
     }
     
     // Guardar no cache

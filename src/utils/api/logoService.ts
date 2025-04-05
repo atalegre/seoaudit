@@ -1,9 +1,9 @@
 
 import { extractDomainFromUrl } from '../domainUtils';
-import { getApiKey } from './supabaseClient';
 
 /**
  * Fetches the site logo URL using the Clearbit Logo API
+ * Serviço gratuito que não requer autenticação para uso básico
  */
 export async function fetchSiteLogo(url: string): Promise<string | null> {
   try {
@@ -13,35 +13,24 @@ export async function fetchSiteLogo(url: string): Promise<string | null> {
       return null;
     }
     
-    // Get user email from local storage
-    const userEmail = localStorage.getItem('userEmail');
-    if (!userEmail) {
-      console.warn('User email not found in localStorage');
-      return null;
-    }
-    
-    // Get API key from Supabase
-    const apiKey = await getApiKey(userEmail);
-    if (!apiKey || !apiKey.apiKey) {
-      console.warn('Clearbit API key not found for user:', userEmail);
-      return null;
-    }
-    
+    // Clearbit Logo API não requer autenticação para uso básico
     const apiUrl = `https://logo.clearbit.com/${domain}`;
     
+    // Verificação simples se o logo existe
     const response = await fetch(apiUrl, {
-      method: 'GET',
-      redirect: 'follow' // Important to follow redirects
+      method: 'HEAD',
+      redirect: 'follow'
     });
     
     if (response.ok) {
-      return response.url; // Return the final URL after redirects
+      console.log(`Logo encontrado para ${domain}`);
+      return apiUrl; // Retorna a URL do logo diretamente
     } else {
-      console.warn(`Failed to fetch logo for ${domain}:`, response.status, response.statusText);
+      console.warn(`Logo não encontrado para ${domain}:`, response.status, response.statusText);
       return null;
     }
   } catch (error) {
-    console.error('Error fetching site logo:', error);
+    console.error('Erro ao buscar logo do site:', error);
     return null;
   }
 }
