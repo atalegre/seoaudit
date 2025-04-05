@@ -7,11 +7,13 @@ import { toast } from 'sonner';
 import ClientsHeader from '@/components/dashboard/clients/ClientsHeader';
 import ClientsSearch from '@/components/dashboard/clients/ClientsSearch';
 import ClientsTable from '@/components/dashboard/clients/ClientsTable';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const ClientsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [clients, setClients] = useState<Client[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { t } = useLanguage();
   
   useEffect(() => {
     const fetchClients = async () => {
@@ -22,14 +24,14 @@ const ClientsPage = () => {
         setClients(clientsData);
       } catch (error) {
         console.error('Error fetching clients:', error);
-        toast.error('Erro ao buscar clientes');
+        toast.error(t('language') === 'pt' ? 'Erro ao buscar clientes' : 'Error fetching clients');
       } finally {
         setIsLoading(false);
       }
     };
     
     fetchClients();
-  }, []);
+  }, [t]);
   
   // Filter clients based on search query
   const filteredClients = clients.filter(client => 
@@ -42,8 +44,8 @@ const ClientsPage = () => {
     <DashboardLayout>
       <div className="space-y-6">
         <ClientsHeader 
-          title="Clientes" 
-          description="Gerencie seus clientes e acesse seus relatórios" 
+          title={t('clients')}
+          description={t('manage-clients')}
         />
         
         <ClientsSearch 

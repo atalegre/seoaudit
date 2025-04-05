@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -23,18 +24,19 @@ import {
 const HeaderNavigation = () => {
   const isMobile = useIsMobile();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { t } = useLanguage();
 
   const navigationLinks = [
-    { title: 'Home', path: '/' },
-    { title: 'Como Funciona', path: '/como-funciona' },
-    { title: 'FAQ', path: '/faq' },
-    { title: 'Blog', path: '/blog' },
-    { title: 'Contacto', path: '/contacto' },
+    { title: t('home'), path: '/' },
+    { title: t('how-it-works'), path: '/como-funciona' },
+    { title: t('faq'), path: '/faq' },
+    { title: t('blog'), path: '/blog' },
+    { title: t('contact'), path: '/contacto' },
   ];
 
   const resourcesDropdown = (
     <NavigationMenuItem>
-      <NavigationMenuTrigger>Recursos</NavigationMenuTrigger>
+      <NavigationMenuTrigger>{t('resources')}</NavigationMenuTrigger>
       <NavigationMenuContent>
         <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] bg-white dark:bg-gray-900 shadow-lg">
           <li className="row-span-3">
@@ -44,10 +46,12 @@ const HeaderNavigation = () => {
                 to="/guias/seo-aio-checklist"
               >
                 <div className="mb-2 mt-4 text-lg font-medium">
-                  SEO AIO Checklist
+                  {t('checklist')}
                 </div>
                 <p className="text-sm leading-tight text-white/80">
-                  Lista completa para otimizar o seu site para SEO e AI.
+                  {t('language') === 'pt' 
+                    ? 'Lista completa para otimizar o seu site para SEO e AI.'
+                    : 'Complete list to optimize your website for SEO and AI.'}
                 </p>
               </Link>
             </NavigationMenuLink>
@@ -55,24 +59,36 @@ const HeaderNavigation = () => {
           <li>
             <NavigationMenuLink asChild>
               <Link to="/guias" className={cn("block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-seo/10 hover:text-seo focus:bg-seo/10 focus:text-seo")}>
-                <div className="text-sm font-medium leading-none">Guias</div>
-                <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">Tutoriais e guias detalhados sobre SEO.</p>
+                <div className="text-sm font-medium leading-none">{t('guides')}</div>
+                <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                  {t('language') === 'pt' 
+                    ? 'Tutoriais e guias detalhados sobre SEO.'
+                    : 'Tutorials and detailed guides about SEO.'}
+                </p>
               </Link>
             </NavigationMenuLink>
           </li>
           <li>
             <NavigationMenuLink asChild>
               <Link to="/blog" className={cn("block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-seo/10 hover:text-seo focus:bg-seo/10 focus:text-seo")}>
-                <div className="text-sm font-medium leading-none">Blog</div>
-                <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">Artigos e novidades sobre SEO e AI.</p>
+                <div className="text-sm font-medium leading-none">{t('blog')}</div>
+                <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                  {t('language') === 'pt' 
+                    ? 'Artigos e novidades sobre SEO e AI.'
+                    : 'Articles and news about SEO and AI.'}
+                </p>
               </Link>
             </NavigationMenuLink>
           </li>
           <li>
             <NavigationMenuLink asChild>
               <Link to="/glossario" className={cn("block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-aio/10 hover:text-aio focus:bg-aio/10 focus:text-aio")}>
-                <div className="text-sm font-medium leading-none">Glossário</div>
-                <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">Termos e conceitos de SEO e IA explicados.</p>
+                <div className="text-sm font-medium leading-none">{t('glossary')}</div>
+                <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                  {t('language') === 'pt' 
+                    ? 'Termos e conceitos de SEO e IA explicados.'
+                    : 'SEO and AI terms and concepts explained.'}
+                </p>
               </Link>
             </NavigationMenuLink>
           </li>

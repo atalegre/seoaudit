@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ClientsHeaderProps {
   title: string;
@@ -14,11 +15,12 @@ const ClientsHeader: React.FC<ClientsHeaderProps> = ({
   description 
 }) => {
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const handleAddClient = () => {
     toast({
-      title: "Funcionalidade em desenvolvimento",
-      description: "A adição de clientes será implementada em breve.",
+      title: t('feature-in-dev'),
+      description: t('add-client-soon'),
     });
   };
 
@@ -31,7 +33,7 @@ const ClientsHeader: React.FC<ClientsHeaderProps> = ({
       
       <Button onClick={handleAddClient}>
         <PlusCircle className="mr-2 h-4 w-4" />
-        Adicionar Cliente
+        {t('add-client')}
       </Button>
     </div>
   );

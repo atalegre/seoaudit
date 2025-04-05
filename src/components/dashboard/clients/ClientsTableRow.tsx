@@ -1,9 +1,9 @@
 
 import React from 'react';
 import { TableRow, TableCell } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { Client } from '@/utils/api/types';
 import ClientActionsMenu from './ClientActionsMenu';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ClientsTableRowProps {
   client: Client;
@@ -14,6 +14,18 @@ const ClientsTableRow: React.FC<ClientsTableRowProps> = ({
   client,
   getStatusBadge
 }) => {
+  const { t, language } = useLanguage();
+  
+  // Format the date according to the current language
+  const formatDate = (dateString: string | undefined | null) => {
+    if (!dateString) return t('never');
+    
+    const date = new Date(dateString);
+    return language === 'pt' 
+      ? date.toLocaleDateString('pt-BR')
+      : date.toLocaleDateString('en-US');
+  };
+  
   return (
     <TableRow key={client.id}>
       <TableCell className="font-medium">{client.name}</TableCell>
@@ -25,10 +37,10 @@ const ClientsTableRow: React.FC<ClientsTableRowProps> = ({
         </div>
       </TableCell>
       <TableCell>{client.account}</TableCell>
-      <TableCell>{getStatusBadge(client.status || 'active')}</TableCell>
+      <TableCell>{getStatusBadge(client.status || t('active'))}</TableCell>
       <TableCell>{client.seoScore}</TableCell>
       <TableCell>{client.aioScore}</TableCell>
-      <TableCell>{client.lastAnalysis ? new Date(client.lastAnalysis).toLocaleDateString() : 'N/A'}</TableCell>
+      <TableCell>{formatDate(client.lastAnalysis)}</TableCell>
       <TableCell>
         <ClientActionsMenu clientId={client.id as number} />
       </TableCell>

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { UserProvider } from '@/contexts/UserContext';
 import AuthButtons from './header/AuthButtons';
 import HeaderNavigation from './header/HeaderNavigation';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const Header = () => {
   return (
@@ -20,7 +21,8 @@ const Header = () => {
           
           <HeaderNavigation />
           
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <LanguageSwitcher />
             <AuthButtons />
           </div>
         </div>
