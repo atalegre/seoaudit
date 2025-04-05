@@ -98,7 +98,7 @@ const ClientPageContent: React.FC<ClientPageContentProps> = ({
                 <CardTitle>Presença em Diretórios Locais</CardTitle>
               </CardHeader>
               <CardContent>
-                <LocalDirectoryPresence domain={client.website} />
+                <LocalDirectoryPresence url={client.website} companyName={client.name} />
               </CardContent>
             </Card>
           </TabsContent>
