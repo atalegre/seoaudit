@@ -1,6 +1,7 @@
 
 import { corsHeaders } from "./corsHeaders.ts";
 import { getSystemPrompt, getUserPrompt } from "./prompts.ts";
+// Fix the import by using the import map reference instead of a bare import
 import OpenAI from "openai";
 
 /**
