@@ -1,8 +1,9 @@
 
 import React from 'react';
-import { Globe, Calendar, BarChart, BrainCircuit, Zap, Bot, ChevronDown } from 'lucide-react';
+import { Globe, Calendar, BarChart, BrainCircuit, Zap, Bot, ChevronDown, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useDashboardAccess } from '@/hooks/useDashboardAccess';
+import { useLLMPresence } from '@/components/llm-presence/useLLMPresence';
 
 interface ScoreDisplayProps {
   seoScore: number;
@@ -20,10 +21,11 @@ interface ScoreCardProps {
   score: number;
   description: string;
   icon: React.ReactNode;
-  color?: 'blue' | 'purple' | 'orange' | 'green';
+  color?: 'blue' | 'purple' | 'orange' | 'green' | 'gold';
+  large?: boolean;
 }
 
-const ScoreCard: React.FC<ScoreCardProps> = ({ title, score, description, icon, color = 'blue' }) => {
+const ScoreCard: React.FC<ScoreCardProps> = ({ title, score, description, icon, color = 'blue', large = false }) => {
   const getColorClass = () => {
     switch (color) {
       case 'purple':
@@ -32,13 +34,15 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ title, score, description, icon, 
         return 'bg-orange-50 text-orange-700';
       case 'green':
         return 'bg-green-50 text-green-700';
+      case 'gold':
+        return 'bg-amber-50 text-amber-700';
       default:
         return 'bg-blue-50 text-blue-700';
     }
   };
 
   return (
-    <div className={`rounded-md p-3 ${getColorClass()}`}>
+    <div className={`rounded-md p-3 ${getColorClass()} ${large ? 'col-span-full' : ''}`}>
       <div className="flex items-center gap-2 mb-2">
         {icon}
         <h3 className="text-sm font-medium">{title}</h3>
@@ -75,7 +79,12 @@ const ScoreDisplay = ({
   onScrollToRecommendations,
 }) => {
   const { handleDashboardAccess } = useDashboardAccess();
-  const overallScore = (seoScore * 0.4) + (aioScore * 0.3) + (performanceScore * 0.2) + (llmPresenceScore * 0.1);
+  // Calculate LLM presence score if not provided
+  const { presenceScore } = useLLMPresence({ url, autoStart: !llmPresenceScore });
+  const actualLLMScore = llmPresenceScore || presenceScore || 0;
+  
+  // Calculate overall score
+  const overallScore = Math.round((seoScore * 0.4) + (aioScore * 0.3) + (performanceScore * 0.2) + (actualLLMScore * 0.1));
   
   return (
     <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
@@ -109,6 +118,15 @@ const ScoreDisplay = ({
       <div className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <ScoreCard 
+            title="Score Global" 
+            score={overallScore} 
+            description="Pontuação combinada de todas as métricas" 
+            icon={<Star className="h-5 w-5 text-amber-500" />} 
+            color="gold"
+            large
+          />
+          
+          <ScoreCard 
             title="Score SEO" 
             score={seoScore} 
             description="Pontuação técnica do site" 
@@ -133,7 +151,7 @@ const ScoreDisplay = ({
           
           <ScoreCard 
             title="Presença em IA" 
-            score={llmPresenceScore} 
+            score={actualLLMScore} 
             description="Visibilidade em LLMs" 
             icon={<Bot className="h-5 w-5 text-green-500" />} 
             color="green"
