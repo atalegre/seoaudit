@@ -20,10 +20,15 @@ const ClientsTableRow: React.FC<ClientsTableRowProps> = ({
   const formatDate = (dateString: string | undefined | null) => {
     if (!dateString) return t('never');
     
-    const date = new Date(dateString);
-    return language === 'pt' 
-      ? date.toLocaleDateString('pt-BR')
-      : date.toLocaleDateString('en-US');
+    try {
+      const date = new Date(dateString);
+      return language === 'pt' 
+        ? date.toLocaleDateString('pt-BR')
+        : date.toLocaleDateString('en-US');
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return t('never');
+    }
   };
   
   return (

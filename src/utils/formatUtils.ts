@@ -1,20 +1,26 @@
 
 /**
- * Formata uma data para exibição
- * @param date Data para ser formatada
- * @returns String formatada da data ou 'Nunca' se não houver data
+ * Formats a date for display
+ * @param date Date to be formatted
+ * @returns Formatted date string or 'Never' if no date
  */
 export const formatDate = (date: Date | string | null | undefined): string => {
-  if (!date) return 'Nunca';
-  
-  if (typeof date === 'string') {
-    return date || 'Nunca';
-  }
+  if (!date) return 'Never';
   
   try {
-    return date.toLocaleDateString() || 'Nunca';
+    if (typeof date === 'string') {
+      const parsedDate = new Date(date);
+      // Check if parsing produced a valid date
+      if (isNaN(parsedDate.getTime())) {
+        return date || 'Never';
+      }
+      return parsedDate.toLocaleDateString();
+    }
+    
+    // If it's already a Date object
+    return date.toLocaleDateString();
   } catch (error) {
-    console.error('Erro ao formatar data:', error);
-    return 'Nunca';
+    console.error('Error formatting date:', error);
+    return 'Never';
   }
 };
