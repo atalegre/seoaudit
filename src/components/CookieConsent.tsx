@@ -28,14 +28,17 @@ const CookieConsent: React.FC = () => {
       const dbConsent = await CookieConsentManager.loadConsentFromDatabase();
       
       if (dbConsent) {
+        console.log('Loaded consent settings from database:', dbConsent);
         setCookieSettings(dbConsent);
         CookieConsentManager.applyConsent(dbConsent);
       } else {
         // Fallback to localStorage
         const storedConsent = CookieConsentManager.getConsent();
         if (!storedConsent) {
+          console.log('No consent settings found, showing banner');
           setShowBanner(true);
         } else {
+          console.log('Loaded consent settings from localStorage:', storedConsent);
           setCookieSettings(storedConsent);
           CookieConsentManager.applyConsent(storedConsent);
         }
@@ -53,6 +56,7 @@ const CookieConsent: React.FC = () => {
       marketing: true,
     };
     
+    console.log('Accepting all cookies:', allAccepted);
     setCookieSettings(allAccepted);
     await CookieConsentManager.saveConsent(allAccepted);
     setShowBanner(false);
@@ -66,12 +70,14 @@ const CookieConsent: React.FC = () => {
       marketing: false,
     };
     
+    console.log('Rejecting non-essential cookies:', allRejected);
     setCookieSettings(allRejected);
     await CookieConsentManager.saveConsent(allRejected);
     setShowBanner(false);
   };
 
   const handleSavePreferences = async () => {
+    console.log('Saving custom cookie preferences:', cookieSettings);
     await CookieConsentManager.saveConsent(cookieSettings);
     setShowBanner(false);
     setShowPreferences(false);
@@ -93,8 +99,16 @@ const CookieConsent: React.FC = () => {
   // Make resetConsent available globally for testing purposes
   useEffect(() => {
     (window as any).resetCookieConsent = async () => {
+      console.log('Resetting cookie consent');
       await CookieConsentManager.resetConsent();
       setShowBanner(true);
+    };
+    
+    // Also expose a function to debug the current consent state
+    (window as any).debugCookieConsent = () => {
+      const consent = CookieConsentManager.getConsent();
+      console.log('Current cookie consent state:', consent);
+      return consent;
     };
   }, []);
 

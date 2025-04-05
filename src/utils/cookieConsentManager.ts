@@ -133,13 +133,38 @@ export const CookieConsentManager = {
    * Apply consent settings to tracking services
    */
   applyConsent(settings: CookieSettings): void {
-    // Update Google's consent mode if gtag is available
+    // Ensure window and dataLayer are defined
+    if (typeof window === 'undefined') return;
+    
+    // Initialize dataLayer if not already defined
+    window.dataLayer = window.dataLayer || [];
+    
+    // Update Google's consent mode
     if (typeof window.gtag === 'function') {
+      console.log('Applying consent settings to Google services:', settings);
+      
+      // Default format for Google Consent Mode v2
       window.gtag('consent', 'update', {
         'analytics_storage': settings.analytics ? 'granted' : 'denied',
         'ad_storage': settings.marketing ? 'granted' : 'denied',
         'functionality_storage': settings.functional ? 'granted' : 'denied',
+        'personalization_storage': settings.functional ? 'granted' : 'denied',
+        'security_storage': 'granted', // Always needed for security purposes
       });
+      
+      // Also push the consent update directly to dataLayer for GTM
+      window.dataLayer.push({
+        'event': 'cookie_consent_update',
+        'cookie_consent': {
+          'analytics': settings.analytics,
+          'functional': settings.functional,
+          'marketing': settings.marketing
+        }
+      });
+      
+      console.log('Consent settings applied successfully');
+    } else {
+      console.warn('Google tag (gtag) not available, consent settings not applied');
     }
   }
 };
