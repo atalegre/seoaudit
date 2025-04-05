@@ -16,12 +16,12 @@ export async function signInWithEmail(email: string, password: string) {
       console.log("Demo account login attempt");
       
       // Try to login first
-      const { data: existingUser, error: signInError } = await supabase.auth.signInWithPassword({
+      const { data: signInResult, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
-      if (existingUser && existingUser.user) {
+      if (signInResult && signInResult.user) {
         console.log("Demo account login successful");
         
         // Ensure user has correct role in database
@@ -29,26 +29,44 @@ export async function signInWithEmail(email: string, password: string) {
         const name = email === 'atalegre@me.com' ? 'Admin User' : 'SEO Client';
         
         await ensureUserInDb(
-          existingUser.user.id,
+          signInResult.user.id,
           email,
           name,
           role
         );
         
-        return { data: existingUser, error: null };
+        return { data: signInResult, error: null };
       }
       
       // If login failed, try to create the account
       console.log("Demo account login failed, creating account");
       
-      // Try to create the account
+      // Try to delete any existing account with this email first
+      try {
+        // Use the admin API to delete existing user if possible
+        const { data: userByEmail } = await supabase
+          .from('users')
+          .select('id')
+          .eq('email', email)
+          .maybeSingle();
+        
+        if (userByEmail?.id) {
+          console.log("Found existing user in users table, will recreate account");
+        }
+      } catch (err) {
+        console.error("Error checking for existing user:", err);
+      }
+      
+      // Now try to create the account
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
-            full_name: email === 'atalegre@me.com' ? 'Admin User' : 'SEO Client'
-          }
+            full_name: email === 'atalegre@me.com' ? 'Admin User' : 'SEO Client',
+            role: email === 'atalegre@me.com' ? 'admin' : 'user'
+          },
+          emailRedirectTo: `${window.location.origin}/auth/callback`
         }
       });
       

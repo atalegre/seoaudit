@@ -12,36 +12,46 @@ export async function createOrUpdateAdmin() {
   try {
     console.log("Setting up admin user...");
     
-    // First try to create the admin account in auth
-    try {
-      console.log("Attempting to create admin account");
+    // First check if admin exists in auth
+    const { data: existingAdminInAuth, error: authCheckError } = await supabase.auth.signInWithPassword({
+      email: ADMIN_EMAIL,
+      password: ADMIN_PASSWORD
+    });
+    
+    let adminUserId = existingAdminInAuth?.user?.id;
+    
+    // If admin doesn't exist in auth or there was an error, try to create it
+    if (!adminUserId || authCheckError) {
+      console.log("Admin account doesn't exist or credentials are invalid, creating/updating...");
       
-      // Try to sign up the admin user
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: ADMIN_EMAIL,
-        password: ADMIN_PASSWORD,
-        options: {
-          data: {
-            full_name: 'Admin User',
-            role: 'admin',
+      try {
+        // Try to sign up the admin user
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: ADMIN_EMAIL,
+          password: ADMIN_PASSWORD,
+          options: {
+            data: {
+              full_name: 'Admin User',
+              role: 'admin',
+            },
+            emailRedirectTo: `${window.location.origin}/auth/callback`
           }
-        }
-      });
-      
-      if (signUpError) {
-        if (signUpError.message.includes("User already registered")) {
-          console.log("Admin account already exists");
-        } else {
+        });
+        
+        if (signUpError && !signUpError.message.includes("User already registered")) {
           console.error("Error creating admin user in auth:", signUpError);
+        } else if (signUpData?.user) {
+          console.log("Admin account created or already exists");
+          adminUserId = signUpData.user.id;
         }
-      } else {
-        console.log("Admin account created");
+      } catch (error) {
+        console.error("Error setting up admin auth account:", error);
       }
-    } catch (error) {
-      console.error("Error setting up admin auth account:", error);
+    } else {
+      console.log("Admin account already exists in auth");
     }
     
-    // Now ensure admin exists in users table
+    // Ensure admin exists in users table regardless of auth status
     try {
       // Check if admin exists in users table
       const { data: existingAdminInTable } = await supabase
@@ -54,6 +64,7 @@ export async function createOrUpdateAdmin() {
         // Create new users table entry with the admin email
         await supabase.from('users').insert([
           {
+            id: adminUserId, // Use ID if we have it
             name: 'Admin User',
             email: ADMIN_EMAIL,
             role: 'admin'

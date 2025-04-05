@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { LogIn } from 'lucide-react';
+import { LogIn, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import EmailField from './EmailField';
@@ -66,28 +66,43 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
       } 
       
       if (data?.user) {
-        console.log("Login successful:", data);
+        console.log("Login successful:", data.user);
         toast({
           title: "Login bem-sucedido",
           description: "Bem-vindo de volta!",
         });
         
-        // Check if user exists in users table to determine role
-        const { data: userData } = await supabase
-          .from('users')
-          .select('role')
-          .eq('id', data.user.id)
-          .maybeSingle();
+        // Check user role to determine where to navigate
+        let role = 'user';
         
         // Special case for admin email
-        const role = values.email === 'atalegre@me.com' ? 'admin' : (userData?.role || 'user');
+        if (values.email === 'atalegre@me.com') {
+          role = 'admin';
+        } else {
+          // Check user metadata first
+          role = data.user.user_metadata?.role || 'user';
+          
+          // If not in metadata, check database
+          if (role !== 'admin') {
+            try {
+              const { data: userData } = await supabase
+                .from('users')
+                .select('role')
+                .eq('id', data.user.id)
+                .maybeSingle();
+              
+              if (userData?.role === 'admin') {
+                role = 'admin';
+              }
+            } catch (err) {
+              console.error("Error checking user role:", err);
+            }
+          }
+        }
         
         // Navigate based on role
-        if (role === 'admin') {
-          navigate('/dashboard');
-        } else {
-          navigate('/dashboard/client');
-        }
+        console.log("Navigating based on role:", role);
+        navigate(role === 'admin' ? '/dashboard' : '/dashboard/client');
       } else {
         setAuthError("Unknown error during authentication");
         toast({
@@ -131,7 +146,7 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
           disabled={isLoggingIn}
         >
           {isLoggingIn ? (
-            <>Entrando...</>
+            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Entrando...</>
           ) : (
             <>
               <LogIn className="mr-2 h-4 w-4" /> Entrar

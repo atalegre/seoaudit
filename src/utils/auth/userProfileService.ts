@@ -62,8 +62,7 @@ export async function ensureUserInDb(
     }
     
     // Use upsert to create or update user
-    // Fixed: Remove 'returning' option which is not valid and ensure proper format
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('users')
       .upsert({
         id: userId,
@@ -78,7 +77,7 @@ export async function ensureUserInDb(
       throw error;
     }
     
-    console.log(`User ${email} successfully created or updated with role ${role}:`, data);
+    console.log(`User ${email} successfully created or updated with role ${role}`);
   } catch (error) {
     console.error("Error ensuring user in DB:", error);
     throw error;
