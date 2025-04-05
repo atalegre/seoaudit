@@ -1,16 +1,36 @@
 
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/Header';
 import { useAuthCheck } from '@/hooks/useAuthCheck';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import DashboardContent from '@/components/dashboard/client/DashboardContent';
+import { supabase } from '@/integrations/supabase/client';
 
 const ClientDashboardPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { user, userEmail } = useAuthCheck();
+  
+  useEffect(() => {
+    // Check auth state when component mounts
+    const checkAuth = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) {
+        console.log("No active session, redirecting to signin");
+        navigate('/signin', { 
+          state: { 
+            returnTo: location.pathname + location.search,
+            message: "Faça login para acessar o dashboard"
+          }
+        });
+      }
+    };
+    
+    checkAuth();
+  }, [navigate, location]);
   
   const {
     clients,

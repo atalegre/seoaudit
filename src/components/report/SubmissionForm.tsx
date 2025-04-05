@@ -96,7 +96,7 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
         contactEmail: email,
         website: url,
         status: 'active',
-        account: 'Sistema',
+        account: email, // Use email as account to link the client to this user
         seoScore: seoScore,
         aioScore: aioScore,
         lastAnalysis: new Date(),
@@ -105,6 +105,9 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
       console.log('Creating client in database:', newClient);
       const savedClientResult = await saveClientsToDatabase([newClient]);
       console.log('Save client result:', savedClientResult);
+      
+      // Store URL in local storage to ensure it's available after redirect
+      localStorage.setItem('lastAnalyzedUrl', url);
       
       // Envio de email com relatório
       if (sendByEmail) {
@@ -131,7 +134,7 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
         console.log('Attempting to sign in user with email:', email);
         // Redirecionar para a página de login
         setTimeout(() => {
-          navigate('/signin', { state: { email, returnTo: '/dashboard/client' } });
+          navigate('/signin', { state: { email, returnTo: `/dashboard/client?url=${encodeURIComponent(url)}` } });
         }, 2000);
         return;
       }
@@ -139,7 +142,7 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
       console.log('Auth successful, redirecting to dashboard');
       // Redirecionar para o dashboard após 2 segundos
       setTimeout(() => {
-        navigate('/dashboard/client');
+        navigate(`/dashboard/client?url=${encodeURIComponent(url)}`);
       }, 2000);
       
     } catch (error) {

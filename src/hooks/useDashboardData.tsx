@@ -37,6 +37,17 @@ export const useDashboardData = (
   const [implementedRecommendations, setImplementedRecommendations] = useState(0);
   const [totalRecommendations, setTotalRecommendations] = useState(0);
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
+
+  // Check URL parameters for a specific website
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlParameter = urlParams.get('url');
+    
+    if (urlParameter) {
+      console.log("Found URL parameter:", urlParameter);
+      localStorage.setItem('lastAnalyzedUrl', urlParameter);
+    }
+  }, []);
   
   const fetchClientData = async () => {
     try {
@@ -47,10 +58,31 @@ export const useDashboardData = (
       const clientsData = await getClientsFromDatabase();
       console.log("Fetched clients:", clientsData);
       
+      // Get the URL from local storage if available
+      const lastAnalyzedUrl = localStorage.getItem('lastAnalyzedUrl');
+      
       // Filter clients by user account if available
-      const userClients = userEmail 
+      let userClients = userEmail 
         ? clientsData.filter((client: Client) => client.account === userEmail)
         : clientsData;
+      
+      console.log("User email:", userEmail);
+      console.log("Filtered clients for user:", userClients);
+      
+      // If no clients found for this user but we have a lastAnalyzedUrl,
+      // try finding it in all clients
+      if ((!userClients || userClients.length === 0) && lastAnalyzedUrl) {
+        console.log("No clients found for user, trying to find by URL:", lastAnalyzedUrl);
+        const matchingClient = clientsData.find((client: Client) => 
+          client.website === lastAnalyzedUrl || 
+          client.website === lastAnalyzedUrl.replace(/^https?:\/\//, '')
+        );
+        
+        if (matchingClient) {
+          console.log("Found matching client by URL:", matchingClient);
+          userClients = [matchingClient];
+        }
+      }
       
       setClients(userClients);
       
@@ -85,6 +117,16 @@ export const useDashboardData = (
       }
       
       console.log("Client found:", clientData);
+      
+      // Use data from the client object if no history is available
+      setSeoScore(clientData.seoScore || 0);
+      setAioScore(clientData.aioScore || 0);
+      
+      // Set last update date from the client if available
+      if (clientData.lastAnalysis) {
+        const lastAnalysisDate = new Date(clientData.lastAnalysis);
+        setLastUpdate(lastAnalysisDate.toLocaleDateString());
+      }
       
       // Fetch analysis history for this client
       const history = await getClientAnalysisHistory(targetClientId);
@@ -172,19 +214,24 @@ export const useDashboardData = (
         }
       } else {
         console.log("No history for this client");
-        // Não há histórico para este cliente
+        // Default notifications if no history
         setNotifications([{
           id: 1,
           title: 'Bem-vindo ao Dashboard',
-          description: 'Faça sua primeira análise para ver os resultados aqui.',
+          description: 'Seu site foi analisado. Confira os resultados acima.',
           date: new Date().toLocaleDateString(),
           read: false,
           urgent: false
         }]);
         
-        // Set scores from client data if available
-        if (clientData.seoScore) setSeoScore(clientData.seoScore);
-        if (clientData.aioScore) setAioScore(clientData.aioScore);
+        // Create a basic report entry
+        setClientReports([{
+          id: 1,
+          name: `Análise inicial ${new Date().toLocaleDateString()}`,
+          date: new Date().toLocaleDateString(),
+          status: 'completed',
+          type: clientData.seoScore > clientData.aioScore ? 'SEO' : 'AIO'
+        }]);
       }
     } catch (error) {
       console.error('Error fetching client data:', error);
@@ -211,7 +258,7 @@ export const useDashboardData = (
   // Initial data fetch
   useEffect(() => {
     fetchClientData();
-  }, [id, selectedClientId]);
+  }, [id, selectedClientId, userEmail]);
   
   return {
     clients,
