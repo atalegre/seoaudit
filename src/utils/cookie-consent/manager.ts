@@ -91,6 +91,23 @@ export const CookieConsentManager = {
    */
   injectGTM(): void {
     CookieConsentTracking.injectGTM();
+  },
+  
+  /**
+   * Verify if Google Search Console is properly configured
+   * Returns a boolean indicating if the site is verified in Google Search Console
+   * This can be used to check if indexation tracking is available
+   */
+  async verifySearchConsole(siteUrl: string, authToken: string): Promise<boolean> {
+    try {
+      console.log('Verificando Search Console para:', siteUrl);
+      
+      // Delegando a implementação real para o CookieConsentTracking
+      return await CookieConsentTracking.verifySearchConsole(siteUrl, authToken);
+    } catch (error) {
+      console.error('Erro ao verificar Search Console:', error);
+      return false;
+    }
   }
 };
 

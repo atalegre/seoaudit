@@ -194,3 +194,138 @@ export async function getGoogleVerificationMeta(siteUrl: string, authToken: stri
     return null;
   }
 }
+
+/**
+ * Verifica se as URLs específicas estão indexadas no Google
+ * @param siteUrl URL do site
+ * @param authToken Token de autenticação do Google
+ * @param pagePaths Array de caminhos de página para verificar (sem o domínio)
+ */
+export async function checkIndexedUrls(
+  siteUrl: string,
+  authToken: string,
+  pagePaths: string[] = []
+): Promise<{[key: string]: boolean}> {
+  try {
+    console.log('Verificando indexação de URLs para:', siteUrl);
+    
+    // Normaliza a URL
+    const normalizedUrl = siteUrl.startsWith('http') 
+      ? siteUrl 
+      : `https://${siteUrl}`;
+    
+    const apiUrl = `${SEARCH_CONSOLE_API}/${encodeURIComponent(normalizedUrl)}/urlInspection/index`;
+    const results: {[key: string]: boolean} = {};
+    
+    // Processa cada URL individualmente para verificar indexação
+    for (const path of pagePaths) {
+      const fullUrl = new URL(path, normalizedUrl).toString();
+      const { fetchProps, clearTimeout } = createTimedRequest(apiUrl, 30000);
+      
+      try {
+        const response = await fetch(apiUrl, {
+          ...fetchProps,
+          method: 'POST',
+          headers: getGoogleApiHeaders(authToken),
+          body: JSON.stringify({
+            inspectionUrl: fullUrl,
+            siteUrl: normalizedUrl
+          })
+        });
+        
+        clearTimeout();
+        
+        if (!response.ok) {
+          console.error(`Erro ao verificar indexação para ${fullUrl}:`, response.statusText);
+          results[path] = false;
+          continue;
+        }
+        
+        const data = await response.json();
+        // Verifica se a URL está indexada com base na resposta
+        results[path] = data.inspectionResult?.indexStatusResult?.verdict === 'PASS';
+      } catch (error) {
+        console.error(`Erro ao verificar indexação para ${fullUrl}:`, error);
+        results[path] = false;
+      }
+    }
+    
+    return results;
+  } catch (error) {
+    console.error('Erro ao verificar indexação de URLs:', error);
+    toast.error('Erro ao verificar indexação de URLs', {
+      description: error instanceof Error ? error.message : 'Erro desconhecido',
+    });
+    return {};
+  }
+}
+
+/**
+ * Obtém uma lista de todas as URLs indexadas para um site
+ * @param siteUrl URL do site
+ * @param authToken Token de autenticação do Google
+ * @param startDate Data inicial opcional (YYYY-MM-DD)
+ * @param endDate Data final opcional (YYYY-MM-DD)
+ */
+export async function getAllIndexedUrls(
+  siteUrl: string,
+  authToken: string,
+  startDate?: string,
+  endDate?: string
+): Promise<string[]> {
+  try {
+    console.log('Obtendo todas as URLs indexadas para:', siteUrl);
+    
+    // Normaliza a URL
+    const normalizedUrl = siteUrl.startsWith('http') 
+      ? siteUrl 
+      : `https://${siteUrl}`;
+    
+    // Usa a API de análise para obter URLs
+    const apiUrl = `${SEARCH_CONSOLE_API}/${encodeURIComponent(normalizedUrl)}/searchAnalytics/query`;
+    const { fetchProps, clearTimeout } = createTimedRequest(apiUrl, 30000);
+    
+    // Define datas se não fornecidas
+    if (!startDate) {
+      startDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    }
+    if (!endDate) {
+      endDate = new Date().toISOString().split('T')[0];
+    }
+    
+    const response = await fetch(apiUrl, {
+      ...fetchProps,
+      method: 'POST',
+      headers: getGoogleApiHeaders(authToken),
+      body: JSON.stringify({
+        startDate,
+        endDate,
+        dimensions: ['page'],
+        rowLimit: 1000 // Solicita o número máximo de resultados
+      })
+    });
+    
+    clearTimeout();
+    
+    if (!response.ok) {
+      const errorData = await response.json() as SearchConsoleError;
+      console.error('Erro ao obter URLs indexadas:', errorData);
+      toast.error('Erro ao obter URLs indexadas', {
+        description: errorData.error?.message || 'Falha na requisição',
+      });
+      return [];
+    }
+    
+    const data = await response.json();
+    
+    // Extrai as URLs da resposta
+    const indexedUrls = data.rows?.map((row: any) => row.keys[0]) || [];
+    return indexedUrls;
+  } catch (error) {
+    console.error('Erro ao obter URLs indexadas:', error);
+    toast.error('Erro ao obter URLs indexadas', {
+      description: error instanceof Error ? error.message : 'Erro desconhecido',
+    });
+    return [];
+  }
+}
