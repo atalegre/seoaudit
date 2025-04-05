@@ -1,11 +1,12 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Zap, Smartphone, Lock, Image, AlertTriangle, Check } from 'lucide-react';
+import { Zap, Smartphone, Lock, Image } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import MetricItem from './metrics/MetricItem';
 import CoreWebVitalsSection from './metrics/CoreWebVitalsSection';
-import { Alert, AlertDescription } from './ui/alert';
+import AlertBanner from './metrics/AlertBanner';
 
 interface TechnicalHealthPanelProps {
   loadTimeDesktop: number;
@@ -19,33 +20,6 @@ interface TechnicalHealthPanelProps {
   fid?: number;
   className?: string;
 }
-
-const AlertBanner = ({ condition, message, type }: { condition: boolean, message: string, type: 'warning' | 'success' }) => {
-  if (!condition && type === 'warning') return null;
-  if (condition && type === 'warning') {
-    return (
-      <Alert variant="warning" className="mt-3">
-        <AlertTriangle className="h-4 w-4" />
-        <AlertDescription>
-          {message}
-        </AlertDescription>
-      </Alert>
-    );
-  }
-  
-  if (condition && type === 'success') {
-    return (
-      <Alert variant="success" className="mt-3 bg-green-50 border-green-200 text-green-800">
-        <Check className="h-4 w-4 text-green-600" />
-        <AlertDescription>
-          {message}
-        </AlertDescription>
-      </Alert>
-    );
-  }
-  
-  return null;
-};
 
 const TechnicalHealthPanel = React.memo(({
   loadTimeDesktop,
