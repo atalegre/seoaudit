@@ -31,6 +31,30 @@ export function createTimedRequest(apiUrl: string, timeout: number = 60000) {
 }
 
 /**
+ * Handle CORS requests for PageSpeed Insights
+ * @param url The URL to analyze
+ * @returns Promise with API response data
+ */
+export async function handleCorsRequest(url: string): Promise<any> {
+  try {
+    const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&strategy=mobile`;
+    const { fetchProps, clearTimeout } = createTimedRequest(apiUrl);
+    
+    const response = await fetch(apiUrl, fetchProps);
+    clearTimeout();
+    
+    if (!response.ok) {
+      throw new Error(`CORS proxy request failed: ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error in handleCorsRequest:', error);
+    return null;
+  }
+}
+
+/**
  * Gets CORS headers for Google Search Console API
  */
 export function getGoogleApiHeaders(authToken: string) {

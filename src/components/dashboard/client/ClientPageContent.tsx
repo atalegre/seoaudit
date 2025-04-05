@@ -1,16 +1,19 @@
 
 import React from 'react';
 import { Client } from '@/utils/api/types';
-import { useUser } from '@/contexts/UserContext';
-import DashboardHeader from '@/components/dashboard/DashboardHeader';
-import ScoreOverview from '@/components/dashboard/ScoreOverview';
-import AnalysisHistory from '@/components/dashboard/AnalysisHistory';
-import WebsitesSection from '@/components/dashboard/client/WebsitesSection';
-import GoogleAuthSection from '@/components/dashboard/client/GoogleAuthSection';
-import SearchConsoleDisplay from '@/components/dashboard/client/SearchConsoleDisplay';
-import WebsiteIndexationSection from '@/components/dashboard/client/WebsiteIndexationSection';
-import { getApiKey } from '@/utils/api/supabaseClient';
-import { useState, useEffect } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import DashboardHeader from './DashboardHeader';
+import ScoreOverview from './ScoreOverview';
+import WebsitesSection from './WebsitesSection';
+import NotificationsSection from './NotificationsSection';
+import ReportsSection from './ReportsSection';
+import GoogleAuthSection from './GoogleAuthSection';
+import WebsiteIndexationSection from './WebsiteIndexationSection';
+import SearchConsoleDisplay from './SearchConsoleDisplay';
+import AddWebsiteDialog from '@/components/dashboard/AddWebsiteDialog';
+import { useState } from 'react';
 
 interface ClientPageContentProps {
   client: Client;
@@ -18,73 +21,68 @@ interface ClientPageContentProps {
   onWebsiteAdded: () => void;
 }
 
-export default function ClientPageContent({
-  client,
+const ClientPageContent: React.FC<ClientPageContentProps> = ({ 
+  client, 
   analysisHistory,
   onWebsiteAdded
-}: ClientPageContentProps) {
-  const { user } = useUser();
-  const [googleAuth, setGoogleAuth] = useState<{ accessToken: string | null; refreshToken: string | null }>({
-    accessToken: null,
-    refreshToken: null
-  });
-
-  // Load Google auth data
-  useEffect(() => {
-    const loadGoogleAuth = async () => {
-      if (user?.email && client?.website) {
-        try {
-          const apiKey = await getApiKey(user.email, client.website);
-          if (apiKey) {
-            setGoogleAuth({
-              accessToken: apiKey.apiKey,
-              refreshToken: apiKey.refreshToken
-            });
-          }
-        } catch (error) {
-          console.error("Error loading API key:", error);
-        }
-      }
-    };
-    
-    loadGoogleAuth();
-  }, [user?.email, client?.website]);
+}) => {
+  const [showAddWebsiteDialog, setShowAddWebsiteDialog] = useState(false);
 
   return (
-    <>
+    <div className="space-y-6">
       <DashboardHeader client={client} />
-      <div className="px-4 py-6 md:px-6 space-y-8">
-        <ScoreOverview client={client} />
-        
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          <div className="xl:col-span-2 space-y-6">
-            <AnalysisHistory history={analysisHistory} />
-            <WebsitesSection
-              websites={[client]}
-              isLoading={false}
-              onWebsiteAdded={onWebsiteAdded}
-              userEmail={user?.email}
-            />
-            
-            <WebsiteIndexationSection 
-              siteUrl={client.website} 
-              authToken={googleAuth?.accessToken}
-              isLoggedIn={!!user}
-            />
-            
-            <SearchConsoleDisplay 
-              website={client.website} 
-              authToken={googleAuth?.accessToken}
-            />
-            
-            <GoogleAuthSection website={client.website} />
-          </div>
-          
-          <div className="space-y-6">
-            {/* Sidebar panels can be added here if needed */}
-          </div>
-        </div>
+      
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Dashboard</h2>
+        <Button onClick={() => setShowAddWebsiteDialog(true)} className="flex items-center">
+          <Plus className="mr-2 h-4 w-4" />
+          Adicionar Website
+        </Button>
       </div>
-    </>
+      
+      <ScoreOverview 
+        seoScore={client.seoScore || 0}
+        aioScore={client.aioScore || 0}
+        accessibilityScore={client.accessibilityScore || 0}
+      />
+      
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+          <TabsTrigger value="search-console">Search Console</TabsTrigger>
+          <TabsTrigger value="reports">Relatórios</TabsTrigger>
+          <TabsTrigger value="notifications">Notificações</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="overview" className="space-y-4">
+          <WebsitesSection client={client} />
+          <GoogleAuthSection clientId={client.id} />
+          <WebsiteIndexationSection client={client} />
+        </TabsContent>
+        
+        <TabsContent value="search-console">
+          <SearchConsoleDisplay clientId={client.id} />
+        </TabsContent>
+        
+        <TabsContent value="reports">
+          <ReportsSection />
+        </TabsContent>
+        
+        <TabsContent value="notifications">
+          <NotificationsSection />
+        </TabsContent>
+      </Tabs>
+      
+      {/* Add Website Dialog */}
+      {showAddWebsiteDialog && (
+        <AddWebsiteDialog 
+          open={showAddWebsiteDialog}
+          onClose={() => setShowAddWebsiteDialog(false)}
+          onAddWebsite={onWebsiteAdded}
+        />
+      )}
+    </div>
   );
-}
+};
+
+export default ClientPageContent;

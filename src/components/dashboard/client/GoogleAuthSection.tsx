@@ -1,94 +1,90 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
-import { storeApiKey, getApiKey } from '@/utils/api/supabaseClient';
-import { useUser } from '@/contexts/UserContext';
-import { useState, useEffect } from 'react';
+import { getApiKey } from '@/utils/api/supabaseClient';
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
-interface GoogleAuthProps {
-  website: string;
+interface GoogleAuthSectionProps {
+  clientId: number;
 }
 
-export default function GoogleAuthSection({ website }: GoogleAuthProps) {
-  const { user } = useUser();
-  const [googleAuth, setGoogleAuth] = useState<{ accessToken: string | null; refreshToken: string | null }>({
-    accessToken: null,
-    refreshToken: null
-  });
-
-  // Load Google auth data
+const GoogleAuthSection: React.FC<GoogleAuthSectionProps> = ({ clientId }) => {
+  const [isConnected, setIsConnected] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  
   useEffect(() => {
-    const loadGoogleAuth = async () => {
-      if (!user?.email || !website) return;
-      
+    const checkApiKeyStatus = async () => {
       try {
-        const apiKey = await getApiKey(user.email, website);
-        if (apiKey) {
-          setGoogleAuth({
-            accessToken: apiKey.apiKey,
-            refreshToken: apiKey.refreshToken
-          });
+        setIsLoading(true);
+        // Get the user email from localStorage
+        const userEmail = localStorage.getItem('userEmail');
+        if (!userEmail) {
+          console.warn('User email not found in localStorage');
+          setIsConnected(false);
+          return;
         }
+        
+        // Check if the API key exists
+        const apiData = await getApiKey(userEmail);
+        setIsConnected(!!apiData?.apiKey);
       } catch (error) {
-        console.error("Error loading API key:", error);
+        console.error('Error checking API key status:', error);
+        setIsConnected(false);
+      } finally {
+        setIsLoading(false);
       }
     };
     
-    loadGoogleAuth();
-  }, [user?.email, website]);
-
-  const handleGoogleSignIn = async () => {
-    if (!user?.email || !website) {
-      toast.error('User email or client website is not available.');
-      return;
-    }
-    
-    try {
-      // For demo purposes, prompt user to manually provide a Google API token
-      const accessToken = prompt('For demonstration purposes, please enter a Google API token:');
-      
-      if (accessToken) {
-        setGoogleAuth({ accessToken, refreshToken: null });
-        await storeApiKey(user.email, website, accessToken);
-        toast.success('Google account linked successfully!');
-      } else {
-        toast.error('No access token provided.');
-      }
-    } catch (error: any) {
-      console.error("Google Sign-In Error:", error);
-      toast.error(`Google Sign-In Error: ${error.message}`);
-    }
+    checkApiKeyStatus();
+  }, [clientId]);
+  
+  const handleConnectGoogle = () => {
+    // Redirect to settings page for API key configuration
+    window.location.href = '/dashboard/settings';
   };
   
-  const handleGoogleSignOut = async () => {
-    if (!user?.email || !website) {
-      toast.error('User email or client website is not available.');
-      return;
-    }
-    
-    try {
-      setGoogleAuth({ accessToken: null, refreshToken: null });
-      await storeApiKey(user.email, website, null);
-      toast.success('Google account disconnected successfully!');
-    } catch (error: any) {
-      console.error("Google Sign-Out Error:", error);
-      toast.error(`Google Sign-Out Error: ${error.message}`);
-    }
-  };
-
   return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold">Autenticação Google</h2>
-      {googleAuth?.accessToken ? (
-        <Button variant="destructive" onClick={handleGoogleSignOut}>
-          Desconectar Google
-        </Button>
-      ) : (
-        <Button onClick={handleGoogleSignIn}>
-          Conectar com Google
-        </Button>
-      )}
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-xl">Integração com Google</CardTitle>
+        <CardDescription>
+          Conecte sua conta Google para acessar dados do Search Console e Analytics
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="flex items-center space-x-2">
+            <div className="h-4 w-4 rounded-full border-2 border-blue-500 border-t-transparent animate-spin"></div>
+            <span>Verificando status da conexão...</span>
+          </div>
+        ) : isConnected ? (
+          <Alert className="bg-green-50 border-green-200">
+            <CheckCircle2 className="h-4 w-4 text-green-600" />
+            <AlertTitle className="text-green-800">Conectado ao Google</AlertTitle>
+            <AlertDescription className="text-green-700">
+              Sua conta Google está conectada e pronta para uso.
+            </AlertDescription>
+          </Alert>
+        ) : (
+          <div className="space-y-4">
+            <Alert variant="destructive" className="bg-red-50 border-red-200">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Não conectado</AlertTitle>
+              <AlertDescription>
+                Você precisa conectar sua conta Google para acessar dados adicionais.
+              </AlertDescription>
+            </Alert>
+            
+            <Button onClick={handleConnectGoogle}>
+              Conectar Google
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
-}
+};
+
+export default GoogleAuthSection;

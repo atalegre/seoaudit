@@ -18,20 +18,20 @@ export interface PageInsightsData {
   url: string;
   score: number;
   performanceScore: number;
-  bestPracticesScore?: number; // Added this property
+  bestPracticesScore?: number;
   loadTimeDesktop: number;
   loadTimeMobile: number;
   mobileFriendly: boolean;
   security: boolean;
   imageOptimization: number;
-  headingsStructure?: number;  // Added optional properties that SeoAnalysisResult expects
+  headingsStructure?: number;
   metaTags?: number;
   lcp: number;
   cls: number;
   fid: number;
   tapTargetsScore?: number;
   tapTargetsIssues?: number;
-  recommendations?: { id: string; title: string; description: string; importance: number }[]; // Added recommendations
+  recommendations?: { id: string; title: string; description: string; importance: number }[];
   auditResults?: AuditResultItem[];
   errorMessage?: string;
   isError?: boolean;
