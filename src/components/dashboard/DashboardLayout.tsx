@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuthCheck } from '@/hooks/useAuthCheck';
 import TopNavbar from './TopNavbar';
@@ -17,13 +17,19 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, userEmail, userName, userRole, isLoading } = useAuthCheck();
   const navigate = useNavigate();
+  const location = useLocation();
   
-  // Redirect to login if not authenticated
+  // Redirect to login if not authenticated, but store the current path to redirect back after login
   useEffect(() => {
     if (!isLoading && !user) {
-      navigate('/signin', { state: { returnTo: window.location.pathname } });
+      // Save the current path to redirect back after login
+      navigate('/signin', { 
+        state: { 
+          returnTo: location.pathname + location.search
+        } 
+      });
     }
-  }, [user, isLoading, navigate]);
+  }, [user, isLoading, navigate, location]);
   
   // Show loading state while checking authentication
   if (isLoading) {

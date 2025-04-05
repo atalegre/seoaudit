@@ -6,6 +6,7 @@ import { ExternalLink, BarChart2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { Client } from '@/utils/api/types';
+import { useUser } from '@/contexts/UserContext';
 
 interface WebsitesListProps {
   websites: Client[];
@@ -13,6 +14,8 @@ interface WebsitesListProps {
 }
 
 const WebsitesList = ({ websites, isLoading }: WebsitesListProps) => {
+  const { user } = useUser();
+  
   if (isLoading) {
     return (
       <Card>

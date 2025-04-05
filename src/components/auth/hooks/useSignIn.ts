@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { signInWithEmail } from '@/utils/auth/signinService';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,6 +8,7 @@ import { SigninFormValues } from '../schemas/signinSchema';
 
 export function useSignIn(setAuthError: (error: string | null) => void) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
@@ -68,9 +69,19 @@ export function useSignIn(setAuthError: (error: string | null) => void) {
           }
         }
         
-        // Navigate based on role
-        console.log("Navigating based on role:", role);
-        navigate(role === 'admin' ? '/dashboard' : '/dashboard/client');
+        // Check if there's a returnTo path in the location state
+        const state = location.state as { returnTo?: string } | null;
+        const returnPath = state?.returnTo;
+        
+        if (returnPath) {
+          // Navigate to the original path the user was trying to access
+          console.log("Navigating to return path:", returnPath);
+          navigate(returnPath);
+        } else {
+          // Navigate based on role
+          console.log("Navigating based on role:", role);
+          navigate(role === 'admin' ? '/dashboard' : '/dashboard/client');
+        }
       } else {
         setAuthError("Unknown error during authentication");
         toast({
