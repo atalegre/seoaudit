@@ -4,7 +4,6 @@ import { AnalysisResult } from '@/utils/api/types';
 import { useIsMobile } from '@/hooks/use-mobile';
 import AnalysisErrorView from './AnalysisErrorView';
 import AnalysisContent from './AnalysisContent';
-import AnalysisSidebar from './AnalysisSidebar';
 
 interface ResultsContentProps {
   analysisData: AnalysisResult;
@@ -38,21 +37,13 @@ const ResultsContent: React.FC<ResultsContentProps> = ({
         Resultados da análise
       </h1>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-        <div className="lg:col-span-2 space-y-4 md:space-y-6">
+      <div className="grid grid-cols-1 gap-4 md:gap-6">
+        <div className="space-y-4 md:space-y-6">
           <AnalysisContent 
             analysisData={analysisData}
             seoError={seoError}
             aioError={aioError}
             onReanalyze={onReanalyze}
-          />
-        </div>
-        
-        <div className={`lg:col-span-1 ${isMobile ? 'mt-6' : ''}`}>
-          <AnalysisSidebar 
-            url={analysisData?.url || ''} 
-            seoScore={analysisData?.seo?.score || 0}
-            aioScore={analysisData?.aio?.score || 0}
           />
         </div>
       </div>

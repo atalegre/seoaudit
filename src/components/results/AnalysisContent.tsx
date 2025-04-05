@@ -1,5 +1,5 @@
 
-import React, { useRef, Suspense } from 'react';
+import React, { useRef } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import ScoreDisplay from '@/components/ScoreDisplay';
@@ -7,21 +7,7 @@ import { formatUrl } from '@/utils/resultsPageHelpers';
 import { AnalysisResult } from '@/utils/api/types';
 import ReanalyzeButton from './ReanalyzeButton';
 import PartialDataAlert from './PartialDataAlert';
-import { LazyLoadingFallback } from './LazyComponents';
 import ReportForm from '@/components/report/ReportForm';
-
-// Lazy loaded components
-const EnhancedRecommendations = React.lazy(() => 
-  import('@/components/EnhancedRecommendations')
-);
-
-const TechnicalHealthPanel = React.lazy(() => 
-  import('@/components/TechnicalHealthPanel')
-);
-
-const AioAnalysisPanel = React.lazy(() => 
-  import('@/components/AioAnalysisPanel')
-);
 
 interface AnalysisContentProps {
   analysisData: AnalysisResult;
