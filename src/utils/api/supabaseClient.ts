@@ -26,7 +26,6 @@ export async function getClientAnalysisHistory(clientId: number): Promise<any[]>
  */
 export async function storeApiKey(
   userEmail: string, 
-  website: string, 
   apiKey: string | null = null,
   refreshToken: string | null = null
 ): Promise<void> {
@@ -71,7 +70,7 @@ export async function storeApiKey(
 /**
  * Get Google API key for a user
  */
-export async function getApiKey(userEmail: string, website: string): Promise<any | null> {
+export async function getApiKey(userEmail: string): Promise<any | null> {
   try {
     if (!userEmail) {
       throw new Error('User email is required to get API key');
@@ -125,22 +124,22 @@ export async function getApiKey(userEmail: string, website: string): Promise<any
  */
 export async function saveAnalysisResult(
   clientId: number,
-  url: string,
-  seoData: any,
-  aioData: any,
-  status: string = 'pending'
+  analysisResult: any
 ): Promise<void> {
   try {
+    // Extract required fields from the analysis result
+    const { url, seo, aio } = analysisResult;
+    
     const { error } = await supabase
       .from('analysis_results')
       .insert({
         client_id: clientId.toString(), // Convert to string as the API expects
         url: url,
-        seo_data: seoData,
-        aio_data: aioData,
-        seo_score: seoData?.score || 0,
-        aio_score: aioData?.score || 0,
-        overall_status: status,
+        seo_data: seo,
+        aio_data: aio,
+        seo_score: seo?.score || 0,
+        aio_score: aio?.score || 0,
+        overall_status: 'completed',
         created_at: new Date().toISOString()
       });
     

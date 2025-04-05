@@ -1,3 +1,4 @@
+
 import { extractDomainFromUrl } from '../domainUtils';
 import { getApiKey } from './supabaseClient';
 
@@ -20,7 +21,7 @@ export async function fetchSiteLogo(url: string): Promise<string | null> {
     }
     
     // Get API key from Supabase
-    const apiKey = await getApiKey(userEmail, 'default');
+    const apiKey = await getApiKey(userEmail);
     if (!apiKey || !apiKey.apiKey) {
       console.warn('Clearbit API key not found for user:', userEmail);
       return null;

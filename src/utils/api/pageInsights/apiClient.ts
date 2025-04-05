@@ -1,57 +1,105 @@
-import { google } from 'googleapis';
-import { getApiKey } from '../supabaseClient';
-import { extractDomainFromUrl } from '../../domainUtils';
 
-const lighthouse = google.lighthouse('v2');
+import { google } from 'googleapis';
+import type { PageInsightsData } from './types';
+import { handleCorsRequest } from './corsHandlers';
+import { generateMockData } from './mockDataGenerator';
+
+// PageSpeed Insights API client
+const pagespeedApi = google.pagespeedonline('v5');
+
+// Flag for development mode - set to true to use mock data
+const USE_MOCK_DATA = true;
 
 /**
- * Fetches PageSpeed Insights data for a given URL.
+ * Fetch data from Google PageSpeed Insights API
+ * @param url The URL to analyze
+ * @returns Promise with PageInsights data
  */
-export async function getPageInsightsData(url: string) {
+export async function getPageInsightsData(url: string): Promise<PageInsightsData> {
   try {
-    // Extract the domain from the URL
-    const domain = extractDomainFromUrl(url);
-    if (!domain) {
-      throw new Error('Invalid URL provided.');
+    // If mock data is enabled, return generated data
+    if (USE_MOCK_DATA) {
+      console.log('Using mock PageSpeed Insights data');
+      return generateMockData(url);
     }
     
-    // Get the user's email from local storage
-    const userEmail = localStorage.getItem('userEmail');
-    if (!userEmail) {
-      throw new Error('User email not found in local storage.');
+    console.log('Fetching PageSpeed Insights data for:', url);
+    
+    // Try to use Direct API call first
+    try {
+      const response = await pagespeedApi.pagespeedapi.runpagespeed({
+        url: url,
+        strategy: 'mobile',
+        category: ['performance', 'accessibility', 'best-practices', 'seo']
+      });
+      
+      if (response.status === 200 && response.data) {
+        console.log('PageSpeed Insights API response received directly');
+        return processApiResponse(response.data, url);
+      }
+    } catch (directApiError) {
+      console.warn('Direct API call failed, trying CORS proxy:', directApiError);
     }
     
-    // Get the API key from Supabase
-    const apiKey = await getApiKey(userEmail, 'default');
-    if (!apiKey?.apiKey) {
-      throw new Error('Google API key not found. Please configure it in the settings.');
+    // If direct call failed, try CORS proxy
+    const corsResponse = await handleCorsRequest(url);
+    
+    if (!corsResponse) {
+      throw new Error('Failed to fetch PageSpeed Insights data through all available methods');
     }
     
-    // Call the PageSpeed Insights API
-    const response = await lighthouse.pagespeedapi.runpagespeed({
-      url: url,
-      key: apiKey.apiKey,
-      strategy: 'desktop',
-      category: ['performance', 'accessibility', 'best-practices', 'seo', 'pwa'],
-    });
-    
-    // Check if the API returned an error
-    if (response.status !== 200) {
-      console.error('Error from PageSpeed Insights API:', response.statusText);
-      throw new Error(`PageSpeed Insights API error: ${response.statusText}`);
-    }
-    
-    // Return the API response data
-    return response.data;
-  } catch (error: any) {
-    console.error('Error fetching PageSpeed Insights data:', error);
-    
-    // Check if the error is due to an invalid API key
-    if (error.message.includes('API key not valid')) {
-      throw new Error('Invalid Google API key. Please check your API key and try again.');
-    }
-    
-    // Re-throw the error
+    return processApiResponse(corsResponse, url);
+  } catch (error) {
+    console.error('Error in getPageInsightsData:', error);
     throw error;
+  }
+}
+
+/**
+ * Process the raw API response into our app's data format
+ */
+function processApiResponse(data: any, url: string): PageInsightsData {
+  // Processing logic here
+  const result: PageInsightsData = {
+    url: url,
+    // Default values
+    performance: { score: 0, metrics: {} },
+    accessibility: { score: 0, metrics: {} },
+    bestPractices: { score: 0, metrics: {} },
+    seo: { score: 0, metrics: {} },
+    mobile: { score: 0, metrics: {} },
+    errors: []
+  };
+  
+  try {
+    // Extract the various scores from the API response
+    if (data.lighthouseResult?.categories) {
+      const categories = data.lighthouseResult.categories;
+      
+      if (categories.performance) {
+        result.performance.score = Math.round(categories.performance.score * 100);
+      }
+      
+      if (categories.accessibility) {
+        result.accessibility.score = Math.round(categories.accessibility.score * 100);
+      }
+      
+      if (categories['best-practices']) {
+        result.bestPractices.score = Math.round(categories['best-practices'].score * 100);
+      }
+      
+      if (categories.seo) {
+        result.seo.score = Math.round(categories.seo.score * 100);
+      }
+    }
+    
+    // Extract other metrics as needed
+    // (This is a simplified implementation)
+    
+    return result;
+  } catch (error) {
+    console.error('Error processing API response:', error);
+    result.errors.push('Failed to process API response: ' + (error as Error).message);
+    return result;
   }
 }
