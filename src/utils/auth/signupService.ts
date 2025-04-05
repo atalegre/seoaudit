@@ -21,6 +21,7 @@ export async function signUpWithEmail(data: SignUpData) {
           full_name: name,
           role: email === 'atalegre@me.com' ? 'admin' : role,
         },
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard/client`
       },
     });
 
@@ -44,6 +45,23 @@ export async function signUpWithEmail(data: SignUpData) {
         );
         
         console.log('User record created successfully in database');
+        
+        // Try sending confirmation email via our custom function
+        try {
+          console.log('Sending custom confirmation email via function');
+          await supabase.functions.invoke('send-email', {
+            body: {
+              type: 'confirmation',
+              email,
+              name,
+              confirmationUrl: `${window.location.origin}/auth/callback?next=/dashboard/client`
+            }
+          });
+          console.log('Custom confirmation email sent successfully');
+        } catch (err) {
+          console.error('Error sending custom confirmation email:', err);
+          // Continue with auth flow even if this fails
+        }
       } catch (err) {
         console.error('Error creating user record in database:', err);
         // We continue with auth flow even if this fails

@@ -63,7 +63,7 @@ const VerificationPage = () => {
         localStorage.removeItem('pendingVerificationEmail');
         
         // Navigate to appropriate dashboard
-        const role = session?.user?.email === 'atalegre@me.com' ? 'admin' : 'user';
+        const role = session?.user?.user_metadata?.role === 'admin' ? 'admin' : 'user';
         navigate(role === 'admin' ? '/dashboard' : '/dashboard/client');
       }
     });
@@ -94,21 +94,28 @@ const VerificationPage = () => {
       }
 
       setVerificationAttempts(prev => prev + 1);
-      console.log(`Resending verification email attempt #${verificationAttempts + 1}`);
+      console.log(`Resending verification email attempt #${verificationAttempts + 1} to ${email}`);
 
       // Try both methods to maximize chances of email delivery
       
       // 1. First try our custom email function
       try {
         console.log('Sending custom verification email');
-        await supabase.functions.invoke('send-email', {
+        const response = await supabase.functions.invoke('send-email', {
           body: {
             type: 'confirmation',
             email,
             name: 'Utilizador',
-            confirmationUrl: `${window.location.origin}/verification?email=${encodeURIComponent(email)}`
+            confirmationUrl: `${window.location.origin}/auth/callback?next=/dashboard/client`
           }
         });
+        
+        console.log('Custom email function response:', response);
+        
+        if (response.error) {
+          throw new Error(`Custom email error: ${response.error.message || JSON.stringify(response.error)}`);
+        }
+        
         console.log('Custom email sent successfully');
       } catch (err) {
         console.error('Error sending custom verification email:', err);
@@ -118,13 +125,19 @@ const VerificationPage = () => {
       // 2. Try standard Supabase resend
       try {
         console.log('Sending standard Supabase verification email');
-        await supabase.auth.resend({
+        const { error } = await supabase.auth.resend({
           type: 'signup',
           email,
           options: {
-            emailRedirectTo: `${window.location.origin}/verification?email=${encodeURIComponent(email)}`
+            emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard/client`
           }
         });
+        
+        if (error) {
+          console.error('Error from Supabase resend:', error);
+          throw error;
+        }
+        
         console.log('Standard verification email sent successfully');
       } catch (err) {
         console.error('Error sending standard verification email:', err);

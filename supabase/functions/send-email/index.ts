@@ -3,7 +3,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 
 // Initialize Resend with the API key from environment variables
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const resendApiKey = Deno.env.get("RESEND_API_KEY");
+const resend = new Resend(resendApiKey);
 
 // Setup CORS headers for browser requests
 const corsHeaders = {
@@ -51,6 +52,24 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Check if RESEND_API_KEY is available
+    if (!resendApiKey) {
+      console.error("RESEND_API_KEY environment variable is not set");
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Resend API key is not configured on the server" 
+        }),
+        {
+          status: 500,
+          headers: { 
+            "Content-Type": "application/json",
+            ...corsHeaders 
+          },
+        }
+      );
+    }
+
     // Parse request body
     const requestData = await req.json();
     console.log("Request data received:", JSON.stringify(requestData));
@@ -92,36 +111,53 @@ async function sendContactEmail(data: ContactRequest): Promise<Response> {
     throw new Error("Missing required fields: name, email and message are required");
   }
 
-  // Send email using Resend
-  const emailResponse = await resend.emails.send({
-    from: "SEOAudit <no-reply@seoaudit.pt>", // Make sure to use a verified domain
-    to: ["contacto@seoaudit.pt"], // Update with the real company email
-    subject: subject,
-    html: `
-      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2>Nova mensagem de contacto</h2>
-        <p><strong>Nome:</strong> ${name}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Mensagem:</strong></p>
-        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 8px;">
-          ${message.replace(/\n/g, '<br>')}
-        </div>
-        <p style="color: #888; margin-top: 30px; font-size: 12px;">
-          Este email foi enviado automaticamente pelo formulário de contacto do SEOAudit.
-        </p>
-      </div>
-    `,
-    reply_to: email,
-  });
+  console.log(`Attempting to send contact email to ${email}`);
 
-  console.log("Contact email sent successfully:", emailResponse);
-  return new Response(
-    JSON.stringify({ success: true, message: "Email enviado com sucesso" }),
-    {
-      status: 200,
-      headers: { "Content-Type": "application/json", ...corsHeaders },
-    }
-  );
+  try {
+    // Send email using Resend
+    const emailResponse = await resend.emails.send({
+      from: "SEOAudit <no-reply@seoaudit.pt>", // Make sure to use a verified domain
+      to: ["contacto@seoaudit.pt"], // Update with the real company email
+      subject: subject,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2>Nova mensagem de contacto</h2>
+          <p><strong>Nome:</strong> ${name}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Mensagem:</strong></p>
+          <div style="background-color: #f5f5f5; padding: 15px; border-radius: 8px;">
+            ${message.replace(/\n/g, '<br>')}
+          </div>
+          <p style="color: #888; margin-top: 30px; font-size: 12px;">
+            Este email foi enviado automaticamente pelo formulário de contacto do SEOAudit.
+          </p>
+        </div>
+      `,
+      reply_to: email,
+    });
+
+    console.log("Contact email sent successfully:", emailResponse);
+    return new Response(
+      JSON.stringify({ success: true, message: "Email enviado com sucesso" }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
+  } catch (error: any) {
+    console.error("Error sending contact email:", error);
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: error.message,
+        details: "Error during contact email sending"
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
+  }
 }
 
 // Handle account confirmation emails
@@ -192,9 +228,19 @@ async function sendConfirmationEmail(data: ConfirmationEmailRequest): Promise<Re
         headers: { "Content-Type": "application/json", ...corsHeaders },
       }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error sending confirmation email:", error);
-    throw error;
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: error.message,
+        details: "Error during confirmation email sending"
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
   }
 }
 
@@ -207,61 +253,78 @@ async function sendReportEmail(data: ReportEmailRequest): Promise<Response> {
     throw new Error("Missing required fields: email, reportUrl, and websiteUrl are required");
   }
 
-  // Send report email using Resend
-  const emailResponse = await resend.emails.send({
-    from: "SEOAudit <no-reply@seoaudit.pt>", // Make sure to use a verified domain
-    to: [email],
-    subject: `O seu relatório SEO para ${websiteUrl} está pronto!`,
-    html: `
-      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2>O seu relatório SEO está pronto!</h2>
-        
-        <p>Olá${name ? ' ' + name : ''},</p>
-        
-        <p>O relatório da análise SEO para o site <strong>${websiteUrl}</strong> já está disponível.</p>
-        
-        <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 25px 0;">
-          <div style="margin-bottom: 15px;">
-            <p style="font-weight: bold; margin-bottom: 5px;">Pontuação SEO</p>
-            <div style="background-color: #e0e0e0; border-radius: 10px; height: 10px; overflow: hidden;">
-              <div style="background-color: ${seoScore > 70 ? '#4CAF50' : seoScore > 40 ? '#FFC107' : '#F44336'}; height: 100%; width: ${seoScore}%;"></div>
+  console.log(`Sending report email to ${email} for ${websiteUrl}`);
+
+  try {
+    // Send report email using Resend
+    const emailResponse = await resend.emails.send({
+      from: "SEOAudit <no-reply@seoaudit.pt>", // Make sure to use a verified domain
+      to: [email],
+      subject: `O seu relatório SEO para ${websiteUrl} está pronto!`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2>O seu relatório SEO está pronto!</h2>
+          
+          <p>Olá${name ? ' ' + name : ''},</p>
+          
+          <p>O relatório da análise SEO para o site <strong>${websiteUrl}</strong> já está disponível.</p>
+          
+          <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 25px 0;">
+            <div style="margin-bottom: 15px;">
+              <p style="font-weight: bold; margin-bottom: 5px;">Pontuação SEO</p>
+              <div style="background-color: #e0e0e0; border-radius: 10px; height: 10px; overflow: hidden;">
+                <div style="background-color: ${seoScore > 70 ? '#4CAF50' : seoScore > 40 ? '#FFC107' : '#F44336'}; height: 100%; width: ${seoScore}%;"></div>
+              </div>
+              <p style="text-align: right; margin-top: 5px;">${seoScore}/100</p>
             </div>
-            <p style="text-align: right; margin-top: 5px;">${seoScore}/100</p>
+            
+            <div>
+              <p style="font-weight: bold; margin-bottom: 5px;">Pontuação AIO</p>
+              <div style="background-color: #e0e0e0; border-radius: 10px; height: 10px; overflow: hidden;">
+                <div style="background-color: ${aioScore > 70 ? '#4CAF50' : aioScore > 40 ? '#FFC107' : '#F44336'}; height: 100%; width: ${aioScore}%;"></div>
+              </div>
+              <p style="text-align: right; margin-top: 5px;">${aioScore}/100</p>
+            </div>
           </div>
           
-          <div>
-            <p style="font-weight: bold; margin-bottom: 5px;">Pontuação AIO</p>
-            <div style="background-color: #e0e0e0; border-radius: 10px; height: 10px; overflow: hidden;">
-              <div style="background-color: ${aioScore > 70 ? '#4CAF50' : aioScore > 40 ? '#FFC107' : '#F44336'}; height: 100%; width: ${aioScore}%;"></div>
-            </div>
-            <p style="text-align: right; margin-top: 5px;">${aioScore}/100</p>
+          <p>Para ver o relatório completo e obter recomendações detalhadas sobre como melhorar o SEO do seu site, clique no botão abaixo:</p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${reportUrl}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">
+              Ver relatório completo
+            </a>
           </div>
+          
+          <p>Se o botão acima não funcionar, pode copiar e colar o seguinte link no seu navegador:</p>
+          <p><a href="${reportUrl}">${reportUrl}</a></p>
+          
+          <p style="margin-top: 30px;">Cumprimentos,<br>A equipa SEOAudit</p>
         </div>
-        
-        <p>Para ver o relatório completo e obter recomendações detalhadas sobre como melhorar o SEO do seu site, clique no botão abaixo:</p>
-        
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="${reportUrl}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">
-            Ver relatório completo
-          </a>
-        </div>
-        
-        <p>Se o botão acima não funcionar, pode copiar e colar o seguinte link no seu navegador:</p>
-        <p><a href="${reportUrl}">${reportUrl}</a></p>
-        
-        <p style="margin-top: 30px;">Cumprimentos,<br>A equipa SEOAudit</p>
-      </div>
-    `,
-  });
+      `,
+    });
 
-  console.log("Report email sent successfully:", emailResponse);
-  return new Response(
-    JSON.stringify({ success: true, message: "Email com relatório enviado com sucesso" }),
-    {
-      status: 200,
-      headers: { "Content-Type": "application/json", ...corsHeaders },
-    }
-  );
+    console.log("Report email sent successfully:", emailResponse);
+    return new Response(
+      JSON.stringify({ success: true, message: "Email com relatório enviado com sucesso" }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
+  } catch (error: any) {
+    console.error("Error sending report email:", error);
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: error.message,
+        details: "Error during report email sending"
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
+  }
 }
 
 // Start the server

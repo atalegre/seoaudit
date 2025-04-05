@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { UserPlus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
-import { signUpWithEmail } from '@/utils/auth/authService';
+import { signUpWithEmail } from '@/utils/auth/signupService';
 import { signupFormSchema, SignUpFormValues } from './schemas/signupSchema';
 import EmailField from './EmailField';
 import PasswordField from './PasswordField';
@@ -69,12 +69,12 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
         
         toast({
           title: "Registo bem-sucedido",
-          description: "A sua conta foi criada. Pode entrar imediatamente com suas credenciais.",
+          description: "Enviamos um email de confirmação. Por favor verifique sua caixa de entrada.",
           duration: 8000,
         });
         
-        // Navigate to sign in page
-        navigate('/signin', { 
+        // Navigate to verification page
+        navigate('/verification', { 
           state: { email: values.email },
           replace: true
         });
