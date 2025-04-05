@@ -17,6 +17,7 @@ export const CookieConsentTracking = {
     
     try {
       console.log('Checking for Google tags...');
+      console.log('GTM ID being used:', GTM_ID);
       console.log('GTM available:', typeof window.dataLayer !== 'undefined');
       console.log('GA4 available:', typeof window.gtag === 'function');
       
@@ -29,10 +30,15 @@ export const CookieConsentTracking = {
           const idMatch = src.match(/[?&]id=([^&]+)/);
           if (idMatch) {
             console.log('GTM ID found in script:', idMatch[1]);
+          } else {
+            console.log('GTM script found but no ID in src:', src);
           }
         });
       } else {
         console.warn('No GTM script tags found in DOM');
+        
+        // Attempt to inject GTM if not found
+        this.injectGTM();
       }
       
       // First update Google's consent mode
@@ -103,6 +109,53 @@ export const CookieConsentTracking = {
   },
   
   /**
+   * Inject Google Tag Manager if not present in the DOM
+   * This is a fallback mechanism in case the tags are removed or blocked
+   */
+  injectGTM(): void {
+    try {
+      console.log('Attempting to inject GTM with ID:', GTM_ID);
+      
+      // Check if already injected first
+      if (document.querySelector(`script[src*="gtm.js?id=${GTM_ID}"]`)) {
+        console.log('GTM script already exists, not injecting again');
+        return;
+      }
+      
+      // Create and inject the GTM script
+      const script = document.createElement('script');
+      script.innerHTML = `
+        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer','${GTM_ID}');
+      `;
+      
+      // Add to head
+      const head = document.getElementsByTagName('head')[0];
+      head.insertBefore(script, head.firstChild);
+      
+      // Also add the noscript iframe as a fallback
+      const noscript = document.createElement('noscript');
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://www.googletagmanager.com/ns.html?id=${GTM_ID}`;
+      iframe.height = '0';
+      iframe.width = '0';
+      iframe.style.display = 'none';
+      iframe.style.visibility = 'hidden';
+      noscript.appendChild(iframe);
+      
+      // Add to body
+      document.body.insertBefore(noscript, document.body.firstChild);
+      
+      console.log('GTM injected successfully');
+    } catch (e) {
+      console.error('Error injecting GTM:', e);
+    }
+  },
+  
+  /**
    * Validate if Google Tags are present and working
    */
   validateTagsPresence(): void {
@@ -110,8 +163,13 @@ export const CookieConsentTracking = {
       // Check for dataLayer
       if (window.dataLayer && Array.isArray(window.dataLayer)) {
         console.log('dataLayer is properly initialized with', window.dataLayer.length, 'events');
+        
+        // Inspect dataLayer content
+        console.log('dataLayer contents:', JSON.stringify(window.dataLayer.slice(0, 5)));
       } else {
         console.warn('dataLayer is not properly initialized');
+        window.dataLayer = window.dataLayer || [];
+        console.log('Created dataLayer');
       }
       
       // Manually test GTM
@@ -142,6 +200,15 @@ export const CookieConsentTracking = {
         } else {
           console.warn('No GA4 script tags found in DOM');
         }
+      }
+      
+      // If GTM is not found, try to inject it
+      const gtmScript = document.querySelector(`script[src*="gtm.js?id=${GTM_ID}"]`);
+      if (!gtmScript) {
+        console.warn('GTM script not found in DOM, attempting to inject');
+        this.injectGTM();
+      } else {
+        console.log('GTM script found in DOM');
       }
     } catch (error) {
       console.error('Error validating tags presence:', error);

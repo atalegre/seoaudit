@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import CookieConsentManager from '@/utils/cookie-consent';
 import { CookieSettings } from '@/utils/cookie-consent';
@@ -39,11 +38,21 @@ export function useCookieConsent() {
     
     checkConsent();
     
-    // Run the validation as soon as component mounts
+    // Run the validation immediately to check for tag presence
+    CookieConsentManager.validateTagsPresence();
+    
+    // Run again after a short delay to ensure everything is loaded
     setTimeout(() => {
       CookieConsentManager.validateTagsPresence();
       CookieConsentManager.verifyCrossDomainTracking();
     }, 1000);
+    
+    // Also run the validation after the window load event
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        CookieConsentManager.validateTagsPresence();
+      }, 500);
+    });
   }, []);
 
   // Handle accepting all cookies
@@ -59,6 +68,11 @@ export function useCookieConsent() {
     setCookieSettings(allAccepted);
     await CookieConsentManager.saveConsent(allAccepted);
     setShowBanner(false);
+    
+    // Re-validate tags after consent is given
+    setTimeout(() => {
+      CookieConsentManager.validateTagsPresence();
+    }, 500);
   };
 
   // Handle rejecting all non-essential cookies
@@ -122,6 +136,12 @@ export function useCookieConsent() {
     // Add a function to force show the banner for testing
     (window as any).showCookieConsent = () => {
       setShowBanner(true);
+    };
+    
+    // Add a function to manually inject GTM
+    (window as any).injectGTM = () => {
+      console.log('Manually injecting GTM');
+      CookieConsentManager.injectGTM();
     };
   }, []);
 

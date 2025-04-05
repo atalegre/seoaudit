@@ -84,6 +84,13 @@ export const CookieConsentManager = {
    */
   verifyCrossDomainTracking(): void {
     CookieConsentTracking.verifyCrossDomainTracking();
+  },
+  
+  /**
+   * Manually inject Google Tag Manager 
+   */
+  injectGTM(): void {
+    CookieConsentTracking.injectGTM();
   }
 };
 
