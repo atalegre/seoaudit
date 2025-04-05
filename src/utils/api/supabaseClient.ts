@@ -6,9 +6,8 @@ import { supabase } from '@/integrations/supabase/client';
  */
 export async function getClientAnalysisHistory(clientId: number): Promise<any[]> {
   try {
-    // @ts-ignore - This is necessary because the generated types don't include this table yet
     const { data, error } = await supabase
-      .from('analysis_history')
+      .from('analysis_results')
       .select('*')
       .eq('client_id', clientId)
       .order('created_at', { ascending: false });
@@ -24,23 +23,23 @@ export async function getClientAnalysisHistory(clientId: number): Promise<any[]>
 
 /**
  * Store Google API key for a user
- * Simplified to take only user email and api key
  */
-export async function storeApiKey(userEmail: string, apiKey: string | null): Promise<void> {
+export async function storeApiKey(userEmail: string, website: string, apiKey: string | null = null, refreshToken: string | null = null): Promise<void> {
   try {
     if (!userEmail) {
       throw new Error('User email is required to store API key');
     }
     
-    // @ts-ignore - This is necessary because the generated types don't include this table yet
     const { error } = await supabase
-      .from('user_api_keys')
+      .from('api_keys')
       .upsert({
         user_email: userEmail,
+        website: website,
         api_key: apiKey,
+        refresh_token: refreshToken,
         updated_at: new Date().toISOString()
       }, {
-        onConflict: 'user_email'
+        onConflict: 'user_email,website'
       });
     
     if (error) throw error;
@@ -52,19 +51,18 @@ export async function storeApiKey(userEmail: string, apiKey: string | null): Pro
 
 /**
  * Get Google API key for a user
- * Simplified to take only user email
  */
-export async function getApiKey(userEmail: string): Promise<string | null> {
+export async function getApiKey(userEmail: string, website: string): Promise<any | null> {
   try {
     if (!userEmail) {
       throw new Error('User email is required to get API key');
     }
     
-    // @ts-ignore - This is necessary because the generated types don't include this table yet
     const { data, error } = await supabase
-      .from('user_api_keys')
-      .select('api_key')
+      .from('api_keys')
+      .select('api_key, refresh_token')
       .eq('user_email', userEmail)
+      .eq('website', website)
       .single();
     
     if (error) {
@@ -75,7 +73,10 @@ export async function getApiKey(userEmail: string): Promise<string | null> {
       throw error;
     }
     
-    return data?.api_key || null;
+    return {
+      apiKey: data.api_key,
+      refreshToken: data.refresh_token
+    };
   } catch (error) {
     console.error('Error getting API key:', error);
     return null;
