@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import SubmissionForm from './SubmissionForm';
 import SuccessView from './SuccessView';
 import { ReportFormProps } from './types';
@@ -16,6 +17,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
   const [sendByEmail, setSendByEmail] = useState(true);
   const navigate = useNavigate();
   const { user } = useUser();
+  const { t } = useLanguage();
   
   return (
     <div className="w-full animate-scale-in">

@@ -56,6 +56,47 @@ const translations: Record<Language, Record<string, string>> = {
     'critical': 'Crítico',
     'improved': 'Melhorou',
     'healthy': 'Saudável',
+    
+    // FAQ
+    'faq-title': 'Perguntas Frequentes',
+    'faq-description': 'Encontre respostas para as dúvidas mais comuns sobre o SEO AI Checker e otimização para motores de busca e IA.',
+    'faq-summary': 'Resumo Rápido',
+    'faq-more-questions': 'Ainda tem questões?',
+    'faq-help-text': 'A nossa equipe está disponível para o ajudar com qualquer dúvida adicional.',
+    'faq-contact-us': 'Contacte-nos',
+    'faq-analyze-site': 'Analisar site',
+    
+    // Glossary
+    'glossary-title': 'Glossário SEO+AI',
+    'glossary-description': 'Definições e explicações dos principais termos de SEO e Inteligência Artificial',
+    'glossary-search': 'Procurar por termo...',
+    'glossary-terms-found': 'termos encontrados',
+    'glossary-term-found': 'termo encontrado',
+    'glossary-no-terms': 'Nenhum termo encontrado',
+    'glossary-try-again': 'Tente outra pesquisa',
+    'glossary-by-letter': 'Navegar por letra',
+    'glossary-popular': 'Termos populares',
+    'glossary-numbers': 'Números e Símbolos',
+    'glossary-about': 'Sobre este Glossário',
+    'glossary-about-text': 'Este glossário foi criado para ajudar profissionais de marketing, criadores de conteúdo e empresários a entender os termos técnicos relacionados ao SEO e à otimização para inteligência artificial (AIO).',
+    'glossary-evolution': 'Com a evolução dos motores de busca e o crescente papel dos LLMs (Large Language Models) como intermediários de informação, compreender estes conceitos tornou-se essencial para garantir visibilidade online.',
+    'glossary-suggestion': 'Sugestão de termo faltando? Entre em',
+    'glossary-contact': 'contato',
+    'glossary-with-us': 'conosco.',
+    
+    // Report Form
+    'report-title': 'Relatório de Análise',
+    'report-name': 'Nome',
+    'report-email': 'Email',
+    'report-phone': 'Telefone',
+    'report-send-email': 'Enviar relatório por email',
+    'report-submit': 'Enviar Relatório',
+    'report-seo-score': 'Pontuação SEO',
+    'report-aio-score': 'Pontuação AIO',
+    'report-success': 'Relatório enviado com sucesso!',
+    'report-check-email': 'Verifique seu email para acessar o relatório completo.',
+    'report-dashboard': 'Ver relatório completo',
+    'report-new-analysis': 'Fazer nova análise',
   },
   en: {
     // Navigation
@@ -90,6 +131,47 @@ const translations: Record<Language, Record<string, string>> = {
     'critical': 'Critical',
     'improved': 'Improved',
     'healthy': 'Healthy',
+    
+    // FAQ
+    'faq-title': 'Frequently Asked Questions',
+    'faq-description': 'Find answers to the most common questions about SEO AI Checker and optimization for search engines and AI.',
+    'faq-summary': 'Quick Summary',
+    'faq-more-questions': 'Still have questions?',
+    'faq-help-text': 'Our team is available to help you with any additional questions.',
+    'faq-contact-us': 'Contact Us',
+    'faq-analyze-site': 'Analyze site',
+    
+    // Glossary
+    'glossary-title': 'SEO+AI Glossary',
+    'glossary-description': 'Definitions and explanations of key SEO and Artificial Intelligence terms',
+    'glossary-search': 'Search for term...',
+    'glossary-terms-found': 'terms found',
+    'glossary-term-found': 'term found',
+    'glossary-no-terms': 'No terms found',
+    'glossary-try-again': 'Try another search',
+    'glossary-by-letter': 'Browse by letter',
+    'glossary-popular': 'Popular terms',
+    'glossary-numbers': 'Numbers and Symbols',
+    'glossary-about': 'About this Glossary',
+    'glossary-about-text': 'This glossary was created to help marketing professionals, content creators, and business owners understand the technical terms related to SEO and Artificial Intelligence Optimization (AIO).',
+    'glossary-evolution': 'With the evolution of search engines and the growing role of LLMs (Large Language Models) as information intermediaries, understanding these concepts has become essential to ensure online visibility.',
+    'glossary-suggestion': 'Missing term suggestion? Get in',
+    'glossary-contact': 'contact',
+    'glossary-with-us': 'with us.',
+    
+    // Report Form
+    'report-title': 'Analysis Report',
+    'report-name': 'Name',
+    'report-email': 'Email',
+    'report-phone': 'Phone',
+    'report-send-email': 'Send report by email',
+    'report-submit': 'Submit Report',
+    'report-seo-score': 'SEO Score',
+    'report-aio-score': 'AIO Score',
+    'report-success': 'Report sent successfully!',
+    'report-check-email': 'Check your email to access the full report.',
+    'report-dashboard': 'View full report',
+    'report-new-analysis': 'New analysis',
   }
 };
 
