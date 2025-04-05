@@ -20,3 +20,7 @@ export const CROSS_DOMAIN_SITES = [
 
 // Local storage key for cookie consent
 export const CONSENT_KEY = 'cookieConsent';
+
+// Google Tag Manager ID
+export const GTM_ID = 'GTM-WHKJ76ZT';
+

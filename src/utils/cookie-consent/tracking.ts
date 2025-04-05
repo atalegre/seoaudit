@@ -1,5 +1,5 @@
 
-import { CookieSettings, CROSS_DOMAIN_SITES } from './types';
+import { CookieSettings, CROSS_DOMAIN_SITES, GTM_ID } from './types';
 
 /**
  * Tracking services utilities for cookie consent
@@ -62,6 +62,7 @@ export const CookieConsentTracking = {
           // Also push cross-domain config to dataLayer
           window.dataLayer.push({
             'event': 'configure_cross_domain',
+            'gtm_id': GTM_ID,
             'cross_domain_config': {
               'domains': CROSS_DOMAIN_SITES,
               'enabled': true
@@ -72,6 +73,7 @@ export const CookieConsentTracking = {
         // Also push the consent update directly to dataLayer for GTM
         window.dataLayer.push({
           'event': 'cookie_consent_update',
+          'gtm_id': GTM_ID,
           'cookie_consent': {
             'analytics': settings.analytics,
             'functional': settings.functional,
@@ -87,6 +89,7 @@ export const CookieConsentTracking = {
       // Always push to dataLayer as a fallback even if gtag is not defined
       window.dataLayer.push({
         'event': 'cookie_consent_update',
+        'gtm_id': GTM_ID,
         'cookie_consent': {
           'analytics': settings.analytics,
           'functional': settings.functional,
@@ -114,6 +117,7 @@ export const CookieConsentTracking = {
       // Manually test GTM
       window.dataLayer.push({
         'event': 'debug_event',
+        'gtm_id': GTM_ID,
         'debug_time': new Date().toISOString()
       });
       console.log('Pushed debug event to dataLayer');
@@ -154,6 +158,7 @@ export const CookieConsentTracking = {
       // Push a test event to verify cross-domain tracking
       window.dataLayer.push({
         'event': 'test_cross_domain',
+        'gtm_id': GTM_ID,
         'cross_domain_test': {
           'timestamp': new Date().toISOString(),
           'domains': CROSS_DOMAIN_SITES
