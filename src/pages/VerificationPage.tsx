@@ -79,70 +79,66 @@ const VerificationPage = () => {
   };
 
   const handleResendVerification = async () => {
-    if (isResending) return;
+    if (isResending || !email) return;
     
     setIsResending(true);
     try {
-      if (!email) {
-        toast({
-          variant: "destructive",
-          title: "Erro",
-          description: "Email não encontrado.",
-        });
-        setIsResending(false);
-        return;
-      }
-
       setVerificationAttempts(prev => prev + 1);
       console.log(`Resending verification email attempt #${verificationAttempts + 1} to ${email}`);
-
-      // Try both methods to maximize chances of email delivery
       
-      // 1. First try our custom email function
+      // Create confirmation URL - making sure it's absolute and includes origin
+      const confirmationUrl = `${window.location.origin}/auth/callback?next=/dashboard/client`;
+      console.log('Using confirmation URL:', confirmationUrl);
+
+      // First try our custom email function (this should be more reliable)
       try {
-        console.log('Sending custom verification email');
-        const response = await supabase.functions.invoke('send-email', {
+        console.log('Sending custom verification email via function');
+        const functionResponse = await supabase.functions.invoke('send-email', {
           body: {
             type: 'confirmation',
             email,
-            name: 'Utilizador',
-            confirmationUrl: `${window.location.origin}/auth/callback?next=/dashboard/client`
+            name: 'Utilizador', // Generic name for resend
+            confirmationUrl
           }
         });
         
-        console.log('Custom email function response:', response);
+        console.log('Custom email function response:', functionResponse);
         
-        if (response.error) {
-          throw new Error(`Custom email error: ${response.error.message || JSON.stringify(response.error)}`);
+        if (functionResponse.error) {
+          throw new Error(`Custom email error: ${JSON.stringify(functionResponse.error)}`);
         }
         
-        console.log('Custom email sent successfully');
-      } catch (err) {
-        console.error('Error sending custom verification email:', err);
+        console.log('Custom email function succeeded');
+        setEmailSent(true);
+        toast({
+          title: "Email reenviado",
+          description: "Um novo link de verificação foi enviado para o seu email.",
+        });
+        
+        // If custom email succeeds, we can return early
+        setIsResending(false);
+        return;
+      } catch (customErr) {
+        console.error('Error sending custom verification email:', customErr);
         // Continue with standard Supabase email as fallback
       }
       
-      // 2. Try standard Supabase resend
-      try {
-        console.log('Sending standard Supabase verification email');
-        const { error } = await supabase.auth.resend({
-          type: 'signup',
-          email,
-          options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard/client`
-          }
-        });
-        
-        if (error) {
-          console.error('Error from Supabase resend:', error);
-          throw error;
+      // Fallback to standard Supabase auth resend
+      console.log('Falling back to standard Supabase verification email');
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+        options: {
+          emailRedirectTo: confirmationUrl
         }
-        
-        console.log('Standard verification email sent successfully');
-      } catch (err) {
-        console.error('Error sending standard verification email:', err);
+      });
+      
+      if (error) {
+        console.error('Error from Supabase resend:', error);
+        throw error;
       }
       
+      console.log('Standard verification email sent successfully');
       setEmailSent(true);
       toast({
         title: "Email reenviado",

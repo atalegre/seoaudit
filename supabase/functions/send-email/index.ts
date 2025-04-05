@@ -181,9 +181,14 @@ async function sendConfirmationEmail(data: ConfirmationEmailRequest): Promise<Re
     
     const selectedSubject = subjectOptions[Math.floor(Math.random() * subjectOptions.length)];
     
+    // Modified sender email to use verified domain
+    const fromEmail = Deno.env.get("VERIFIED_EMAIL") || "no-reply@seoaudit.pt";
+    
+    console.log(`Using from email: ${fromEmail} for confirmation email`);
+    
     // Send confirmation email using Resend with more robust formatting
     const emailResponse = await resend.emails.send({
-      from: "SEOAudit <no-reply@seoaudit.pt>", // Make sure to use a verified domain
+      from: `SEOAudit <${fromEmail}>`, // Using verified domain
       to: [email],
       subject: selectedSubject,
       html: `

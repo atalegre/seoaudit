@@ -48,15 +48,27 @@ export async function signUpWithEmail(data: SignUpData) {
         
         // Try sending confirmation email via our custom function
         try {
-          console.log('Sending custom confirmation email via function');
-          await supabase.functions.invoke('send-email', {
+          console.log('Preparing to send custom confirmation email via function');
+          
+          const confirmationUrl = `${window.location.origin}/auth/callback?next=/dashboard/client`;
+          console.log('Confirmation URL:', confirmationUrl);
+          
+          const response = await supabase.functions.invoke('send-email', {
             body: {
               type: 'confirmation',
               email,
               name,
-              confirmationUrl: `${window.location.origin}/auth/callback?next=/dashboard/client`
+              confirmationUrl
             }
           });
+          
+          console.log('Custom confirmation email function response:', response);
+          
+          if (response.error) {
+            console.error('Error from email function:', response.error);
+            throw new Error(`Email function error: ${response.error}`);
+          }
+          
           console.log('Custom confirmation email sent successfully');
         } catch (err) {
           console.error('Error sending custom confirmation email:', err);
