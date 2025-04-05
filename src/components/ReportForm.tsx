@@ -11,6 +11,7 @@ import { saveClientsToDatabase } from '@/utils/api/clientService';
 import { Client } from '@/utils/api/types';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useUser } from '@/contexts/UserContext';
 
 interface ReportFormProps {
   url: string;
@@ -28,6 +29,7 @@ const ReportForm: React.FC<ReportFormProps> = ({ url, seoScore, aioScore, compac
   const [sendByEmail, setSendByEmail] = useState(true);
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const { user } = useUser();
   
   // Função para enviar o relatório por email
   async function sendReportByEmail(email: string, name: string, seoScore: number, aioScore: number, url: string) {
@@ -131,19 +133,11 @@ const ReportForm: React.FC<ReportFormProps> = ({ url, seoScore, aioScore, compac
       // Autenticar o usuário
       if (!authData?.user) {
         console.log('Attempting to sign in user with email:', email);
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password: `${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`, // Isto não funcionará, mas tentamos o login para usuários existentes
-        });
-        
-        // Se não conseguir autenticar, apenas redireciona para a página de login
-        if (signInError) {
-          console.log('Sign in error:', signInError);
-          setTimeout(() => {
-            navigate('/signin', { state: { email, returnTo: '/dashboard/client' } });
-          }, 2000);
-          return;
-        }
+        // Redirecionar para a página de login
+        setTimeout(() => {
+          navigate('/signin', { state: { email, returnTo: '/dashboard/client' } });
+        }, 2000);
+        return;
       }
       
       console.log('Auth successful, redirecting to dashboard');

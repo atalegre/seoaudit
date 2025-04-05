@@ -18,32 +18,9 @@ const SignInPage = () => {
   const location = useLocation();
   const locationState = location.state as { email?: string; returnTo?: string } | null;
 
-  const handleSkipLogin = () => {
-    toast({
-      title: "Login ignorado",
-      description: "A continuar sem autenticação.",
-    });
-    navigate('/dashboard');
-  };
-
-  // Add a prominent button in the main content area to continue without login
   return (
     <AuthLayout>
       <div className="w-full max-w-md flex flex-col items-center gap-6">
-        <Button 
-          onClick={handleSkipLogin}
-          size="lg" 
-          className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3"
-        >
-          Continuar sem Login → Entrar diretamente no Dashboard
-        </Button>
-        
-        <div className="w-full flex items-center justify-between">
-          <div className="w-1/3 border-t border-gray-300"></div>
-          <div className="px-3 text-sm text-gray-500">ou</div>
-          <div className="w-1/3 border-t border-gray-300"></div>
-        </div>
-        
         <AuthCard 
           title="Entrar"
           description="Digite suas credenciais para entrar na sua conta"

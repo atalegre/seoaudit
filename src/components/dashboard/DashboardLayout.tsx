@@ -1,10 +1,12 @@
 
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuthCheck } from '@/hooks/useAuthCheck';
 import TopNavbar from './TopNavbar';
 import SidebarContent, { adminSidebarItems, clientSidebarItems } from './SidebarContent';
+import { useUser } from '@/contexts/UserContext';
+import { Loader2 } from 'lucide-react';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -14,9 +16,34 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const isMobile = useIsMobile();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, userEmail, userName, userRole, isLoading } = useAuthCheck();
+  const navigate = useNavigate();
   
-  // Default to admin sidebar items so users can access all features without login
-  const sidebarItems = adminSidebarItems;
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isLoading && !user) {
+      navigate('/signin', { state: { returnTo: window.location.pathname } });
+    }
+  }, [user, isLoading, navigate]);
+  
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">A verificar autenticação...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  // If not loading and no user, we're redirecting, so don't render the dashboard
+  if (!user) {
+    return null;
+  }
+  
+  // Choose appropriate sidebar items based on user role
+  const sidebarItems = userRole === 'admin' ? adminSidebarItems : clientSidebarItems;
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -25,9 +52,9 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         isMobile={isMobile}
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
-        userRole={userRole || 'admin'}
+        userRole={userRole || 'user'}
         userName={userName}
-        userEmail={userEmail || 'guest@example.com'}
+        userEmail={userEmail || ''}
         user={user}
       />
       

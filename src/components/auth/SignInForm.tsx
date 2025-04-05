@@ -178,7 +178,7 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
         toast({
           variant: "destructive",
           title: "Erro de autenticação",
-          description: `${error.message || "Email ou password incorretos"}. Tente as credenciais de demonstração listadas abaixo.`,
+          description: error.message || "Email ou password incorretos",
         });
         setIsLoggingIn(false);
         return;
@@ -238,7 +238,7 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
       toast({
         variant: "destructive",
         title: "Erro",
-        description: "Falha na autenticação. Tente novamente com as credenciais de demonstração.",
+        description: "Falha na autenticação. Tente novamente.",
       });
       setIsLoggingIn(false);
     }
@@ -249,15 +249,7 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <EmailField form={form} />
         <PasswordField form={form} name="password" />
-        <div className="text-sm text-muted-foreground border-2 border-red-300 bg-red-50 p-3 rounded">
-          <p className="font-bold mb-2">⚠️ Importante: Use exatamente estas credenciais:</p>
-          <p>Para entrar como admin:</p>
-          <p>Email: <span className="font-mono">atalegre@me.com</span></p>
-          <p className="font-semibold mb-2">Password: <span className="font-mono">admin123</span></p>
-          <p>Para entrar como cliente:</p>
-          <p>Email: <span className="font-mono">seoclient@exemplo.com</span></p>
-          <p className="font-semibold">Password: <span className="font-mono">client123</span></p>
-        </div>
+        
         <Button 
           type="submit" 
           className="w-full" 

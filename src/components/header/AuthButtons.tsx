@@ -15,6 +15,18 @@ const AuthButtons = () => {
     navigate('/');
   };
 
+  const handleDashboardAccess = () => {
+    if (user) {
+      // If user is logged in, navigate directly to dashboard
+      navigate('/dashboard');
+    } else {
+      // If not logged in, redirect to sign in page
+      navigate('/signin');
+      
+      // You could also show a toast notification explaining why they're being redirected
+    }
+  };
+
   return (
     <div className="flex items-center gap-4">
       {!user ? (
@@ -30,8 +42,8 @@ const AuthButtons = () => {
         <Button variant="ghost" onClick={handleSignOut}>Sair</Button>
       )}
       
-      {/* Always show the button to access the dashboard */}
-      <Button variant="default" onClick={() => navigate('/dashboard')}>
+      {/* Dashboard button that requires login */}
+      <Button variant="default" onClick={handleDashboardAccess}>
         Acessar Dashboard
       </Button>
     </div>
