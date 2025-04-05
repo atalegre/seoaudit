@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Globe, Calendar, BarChart, BrainCircuit, Zap, Bot, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -106,7 +107,7 @@ const ScoreDisplay = ({
       </div>
       
       <div className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <ScoreCard 
             title="Score SEO" 
             score={seoScore} 
@@ -121,6 +122,22 @@ const ScoreDisplay = ({
             icon={<BrainCircuit className="h-5 w-5 text-purple-500" />} 
             color="purple"
           />
+          
+          <ScoreCard 
+            title="Performance" 
+            score={performanceScore} 
+            description="Velocidade do site" 
+            icon={<Zap className="h-5 w-5 text-orange-500" />} 
+            color="orange"
+          />
+          
+          <ScoreCard 
+            title="Presença em IA" 
+            score={llmPresenceScore} 
+            description="Visibilidade em LLMs" 
+            icon={<Bot className="h-5 w-5 text-green-500" />} 
+            color="green"
+          />
         </div>
         
         {overallScore < 70 && (
@@ -133,7 +150,7 @@ const ScoreDisplay = ({
         
         <div className="mt-6 bg-gray-50 p-3 rounded-md">
           <p className="text-sm text-gray-600 text-center">
-            Score global combinando SEO (40%) e AIO (30%).
+            Score global combinando SEO (40%), AIO (30%), Performance (20%) e Presença em IA (10%).
           </p>
         </div>
         
