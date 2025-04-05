@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
@@ -10,19 +11,17 @@ import SearchConsoleSection from '@/components/metrics/SearchConsoleSection';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { getClientFromDatabase } from '@/utils/api/clientService';
-import { getClientAnalysisHistory } from '@/utils/api/supabaseClient';
+import { getClientAnalysisHistory, storeApiKey, getApiKey } from '@/utils/api/supabaseClient';
 import { getSearchConsolePerformance } from '@/utils/api/searchConsoleService';
-import { Client } from '@/utils/api/types';
 import { useToast } from '@/hooks/use-toast';
-import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
-import { auth } from '@/integrations/firebase';
-import { storeApiKey, getApiKey } from '@/utils/api/supabaseClient';
+import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import IndexationSection from '@/components/metrics/IndexationSection';
+import { supabase } from '@/integrations/supabase/client';
 
 const ClientPage = () => {
   const { id } = useParams<{ id: string }>();
-  const [client, setClient] = useState<Client | null>(null);
+  const [client, setClient] = useState<any | null>(null);
   const [analysisHistory, setAnalysisHistory] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -91,7 +90,10 @@ const ClientPage = () => {
         try {
           const apiKey = await getApiKey(user.email, client.website);
           if (apiKey) {
-            setGoogleAuth({ accessToken: apiKey.apiKey, refreshToken: apiKey.refreshToken });
+            setGoogleAuth({ 
+              accessToken: apiKey, 
+              refreshToken: null 
+            });
           }
         } catch (error) {
           console.error("Error loading API key:", error);
@@ -131,19 +133,19 @@ const ClientPage = () => {
       return;
     }
     
-    const provider = new GoogleAuthProvider();
     try {
-      const result = await signInWithPopup(auth, provider);
-      const credential = GoogleAuthProvider.credentialFromResult(result);
-      const accessToken = credential?.accessToken;
-      const refreshToken = result.user.refreshToken;
+      // Simulating Google auth with Supabase OAuth (not available now)
+      toast.info('Google authentication will be implemented using Supabase OAuth.');
       
-      if (accessToken && refreshToken) {
-        setGoogleAuth({ accessToken, refreshToken });
-        await storeApiKey(user.email, client.website, accessToken, refreshToken);
+      // For now, prompt user to manually provide a Google API token
+      const accessToken = prompt('For demonstration purposes, please enter a Google API token:');
+      
+      if (accessToken) {
+        setGoogleAuth({ accessToken, refreshToken: null });
+        await storeApiKey(user.email, client.website, accessToken);
         toast.success('Google account linked successfully!');
       } else {
-        toast.error('Failed to retrieve access token from Google.');
+        toast.error('No access token provided.');
       }
     } catch (error: any) {
       console.error("Google Sign-In Error:", error);
@@ -158,9 +160,8 @@ const ClientPage = () => {
     }
     
     try {
-      await signOut(auth);
       setGoogleAuth({ accessToken: null, refreshToken: null });
-      await storeApiKey(user.email, client.website, null, null);
+      await storeApiKey(user.email, client.website, null);
       toast.success('Google account disconnected successfully!');
     } catch (error: any) {
       console.error("Google Sign-Out Error:", error);

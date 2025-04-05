@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Client } from './types';
 import { toast } from 'sonner';
@@ -169,5 +168,59 @@ export async function updateClientInDatabase(client: Client): Promise<void> {
       c.id === client.id ? client : c
     );
     localStorage.setItem('clients', JSON.stringify(updatedClients));
+  }
+}
+
+/**
+ * Busca um cliente específico pelo ID
+ */
+export async function getClientFromDatabase(clientId: number): Promise<Client | null> {
+  try {
+    console.log('Fetching client with ID:', clientId);
+    
+    // @ts-ignore - This is necessary because the auto-generated types don't include the clients table yet
+    const { data, error } = await supabase
+      .from('clients')
+      .select('*')
+      .eq('id', clientId)
+      .single();
+    
+    if (error) {
+      console.error('Error fetching client from Supabase:', error);
+      throw error;
+    }
+    
+    if (!data) {
+      console.warn('No client found with ID:', clientId);
+      return null;
+    }
+    
+    console.log('Fetched client:', data);
+    
+    // Transform the data to ensure all properties match Client type
+    const client: Client = {
+      id: Number(data.id),
+      name: data.name || '',
+      website: data.website || '',
+      contactName: data.contactname || '', // Note the lowercase field name from DB
+      contactEmail: data.contactemail || '', // Note the lowercase field name from DB
+      notes: data.notes || '',
+      status: data.status || 'pending',
+      account: data.account || 'Admin',
+      seoScore: data.seoscore || 0, // Note the lowercase field name from DB
+      aioScore: data.aioscore || 0, // Note the lowercase field name from DB
+      lastAnalysis: data.lastanalysis || new Date().toISOString(), // Note the lowercase field name from DB
+      lastReport: data.lastreport || '' // Note the lowercase field name from DB
+    };
+    
+    return client;
+  } catch (error) {
+    console.warn('Using localStorage fallback for client');
+    
+    // Se ainda não existir conexão com o Supabase, usamos o localStorage como fallback
+    const localClients = JSON.parse(localStorage.getItem('clients') || '[]');
+    const client = localClients.find((c: Client) => c.id === clientId);
+    console.log('Fetched client from localStorage:', client);
+    return client || null;
   }
 }
