@@ -125,6 +125,14 @@ export const PAI_DIRECTORY: DirectoryListing[] = [
     url: "www.climag.pt",
     paiUrl: "https://pai.pt/empresas/climag",
   },
+  // Laboratório Andrade
+  {
+    domains: ['laboratorioandrade.pt', 'www.laboratorioandrade.pt'],
+    name: "Laboratório Andrade",
+    phone: "219 388 275",
+    url: "www.laboratorioandrade.pt",
+    paiUrl: "https://pai.pt/empresas/laboratorio-andrade",
+  },
   // Adicionar qualquer site atual aqui para testes
   {
     domains: ['lovable.dev', 'www.lovable.dev'],
