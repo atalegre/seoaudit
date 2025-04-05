@@ -23,16 +23,29 @@ const CookieConsent: React.FC = () => {
 
   // Check if consent was already given
   useEffect(() => {
-    const storedConsent = CookieConsentManager.getConsent();
-    if (!storedConsent) {
-      setShowBanner(true);
-    } else {
-      setCookieSettings(storedConsent);
-      CookieConsentManager.applyConsent(storedConsent);
-    }
+    const checkConsent = async () => {
+      // First try to load from database (if user is authenticated)
+      const dbConsent = await CookieConsentManager.loadConsentFromDatabase();
+      
+      if (dbConsent) {
+        setCookieSettings(dbConsent);
+        CookieConsentManager.applyConsent(dbConsent);
+      } else {
+        // Fallback to localStorage
+        const storedConsent = CookieConsentManager.getConsent();
+        if (!storedConsent) {
+          setShowBanner(true);
+        } else {
+          setCookieSettings(storedConsent);
+          CookieConsentManager.applyConsent(storedConsent);
+        }
+      }
+    };
+    
+    checkConsent();
   }, []);
 
-  const handleAcceptAll = () => {
+  const handleAcceptAll = async () => {
     const allAccepted = {
       necessary: true,
       functional: true,
@@ -41,11 +54,11 @@ const CookieConsent: React.FC = () => {
     };
     
     setCookieSettings(allAccepted);
-    CookieConsentManager.saveConsent(allAccepted);
+    await CookieConsentManager.saveConsent(allAccepted);
     setShowBanner(false);
   };
 
-  const handleRejectAll = () => {
+  const handleRejectAll = async () => {
     const allRejected = {
       necessary: true, // Always required
       functional: false,
@@ -54,12 +67,12 @@ const CookieConsent: React.FC = () => {
     };
     
     setCookieSettings(allRejected);
-    CookieConsentManager.saveConsent(allRejected);
+    await CookieConsentManager.saveConsent(allRejected);
     setShowBanner(false);
   };
 
-  const handleSavePreferences = () => {
-    CookieConsentManager.saveConsent(cookieSettings);
+  const handleSavePreferences = async () => {
+    await CookieConsentManager.saveConsent(cookieSettings);
     setShowBanner(false);
     setShowPreferences(false);
   };
@@ -79,8 +92,8 @@ const CookieConsent: React.FC = () => {
 
   // Make resetConsent available globally for testing purposes
   useEffect(() => {
-    (window as any).resetCookieConsent = () => {
-      CookieConsentManager.resetConsent();
+    (window as any).resetCookieConsent = async () => {
+      await CookieConsentManager.resetConsent();
       setShowBanner(true);
     };
   }, []);

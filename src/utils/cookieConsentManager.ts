@@ -1,4 +1,6 @@
 
+import { supabase } from '@/integrations/supabase/client';
+
 interface CookieSettings {
   necessary: boolean;
   functional: boolean;
@@ -27,11 +29,37 @@ export const CookieConsentManager = {
   
   /**
    * Save cookie consent settings
+   * If user is authenticated, also saves to Supabase database
    */
-  saveConsent(settings: CookieSettings): void {
+  async saveConsent(settings: CookieSettings): Promise<void> {
     try {
+      // Always save to localStorage for immediate access
       localStorage.setItem(CONSENT_KEY, JSON.stringify(settings));
+      
+      // Apply the consent settings to tracking services
       this.applyConsent(settings);
+      
+      // If user is authenticated, save to database
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const userId = session.user.id;
+        
+        // Store in the api_keys table under a special key_type
+        const { error } = await supabase
+          .from('api_keys')
+          .upsert({
+            key_type: 'cookie_consent',
+            key_value: JSON.stringify(settings),
+            user_id: userId,
+            updated_at: new Date().toISOString()
+          }, { onConflict: 'key_type, user_id' });
+          
+        if (error) {
+          console.error('Error saving cookie consent to database:', error);
+        } else {
+          console.log('Cookie consent preferences saved to database');
+        }
+      }
     } catch (e) {
       console.error('Error saving cookie consent:', e);
     }
@@ -40,8 +68,65 @@ export const CookieConsentManager = {
   /**
    * Reset cookie consent (removes stored preferences)
    */
-  resetConsent(): void {
+  async resetConsent(): Promise<void> {
     localStorage.removeItem(CONSENT_KEY);
+    
+    // If user is authenticated, also remove from database
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const userId = session.user.id;
+        
+        const { error } = await supabase
+          .from('api_keys')
+          .delete()
+          .eq('key_type', 'cookie_consent')
+          .eq('user_id', userId);
+          
+        if (error) {
+          console.error('Error deleting cookie consent from database:', error);
+        } else {
+          console.log('Cookie consent preferences removed from database');
+        }
+      }
+    } catch (e) {
+      console.error('Error resetting cookie consent in database:', e);
+    }
+  },
+  
+  /**
+   * Load consent settings from database if user is authenticated
+   * Returns the settings if found, null otherwise
+   */
+  async loadConsentFromDatabase(): Promise<CookieSettings | null> {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        return null;
+      }
+      
+      const userId = session.user.id;
+      
+      const { data, error } = await supabase
+        .from('api_keys')
+        .select('key_value')
+        .eq('key_type', 'cookie_consent')
+        .eq('user_id', userId)
+        .single();
+      
+      if (error || !data) {
+        return null;
+      }
+      
+      const settings = JSON.parse(data.key_value);
+      // Update localStorage with the settings from database
+      localStorage.setItem(CONSENT_KEY, data.key_value);
+      
+      return settings;
+    } catch (e) {
+      console.error('Error loading cookie consent from database:', e);
+      return null;
+    }
   },
   
   /**
