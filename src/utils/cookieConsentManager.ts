@@ -139,20 +139,55 @@ export const CookieConsentManager = {
     // Initialize dataLayer if not already defined
     window.dataLayer = window.dataLayer || [];
     
-    // Update Google's consent mode
-    if (typeof window.gtag === 'function') {
-      console.log('Applying consent settings to Google services:', settings);
+    try {
+      console.log('Checking for Google tags...');
+      console.log('GTM available:', typeof window.dataLayer !== 'undefined');
+      console.log('GA4 available:', typeof window.gtag === 'function');
       
-      // Default format for Google Consent Mode v2
-      window.gtag('consent', 'update', {
-        'analytics_storage': settings.analytics ? 'granted' : 'denied',
-        'ad_storage': settings.marketing ? 'granted' : 'denied',
-        'functionality_storage': settings.functional ? 'granted' : 'denied',
-        'personalization_storage': settings.functional ? 'granted' : 'denied',
-        'security_storage': 'granted', // Always needed for security purposes
-      });
+      // Print the GTM tag ID from the DOM if available
+      const gtmScripts = document.querySelectorAll('script[src*="googletagmanager"]');
+      if (gtmScripts.length > 0) {
+        console.log('Found GTM script tags:', gtmScripts.length);
+        gtmScripts.forEach(script => {
+          const src = script.getAttribute('src') || '';
+          const idMatch = src.match(/[?&]id=([^&]+)/);
+          if (idMatch) {
+            console.log('GTM ID found in script:', idMatch[1]);
+          }
+        });
+      } else {
+        console.warn('No GTM script tags found in DOM');
+      }
       
-      // Also push the consent update directly to dataLayer for GTM
+      // First update Google's consent mode
+      if (typeof window.gtag === 'function') {
+        console.log('Applying consent settings to Google services:', settings);
+        
+        // Default format for Google Consent Mode v2
+        window.gtag('consent', 'update', {
+          'analytics_storage': settings.analytics ? 'granted' : 'denied',
+          'ad_storage': settings.marketing ? 'granted' : 'denied',
+          'functionality_storage': settings.functional ? 'granted' : 'denied',
+          'personalization_storage': settings.functional ? 'granted' : 'denied',
+          'security_storage': 'granted', // Always needed for security purposes
+        });
+        
+        // Also push the consent update directly to dataLayer for GTM
+        window.dataLayer.push({
+          'event': 'cookie_consent_update',
+          'cookie_consent': {
+            'analytics': settings.analytics,
+            'functional': settings.functional,
+            'marketing': settings.marketing
+          }
+        });
+        
+        console.log('Consent settings applied successfully to Google services');
+      } else {
+        console.warn('Google tag (gtag) not available, consent settings not applied through gtag');
+      }
+      
+      // Always push to dataLayer as a fallback even if gtag is not defined
       window.dataLayer.push({
         'event': 'cookie_consent_update',
         'cookie_consent': {
@@ -161,12 +196,57 @@ export const CookieConsentManager = {
           'marketing': settings.marketing
         }
       });
+      console.log('Pushed consent update directly to dataLayer');
       
-      console.log('Consent settings applied successfully');
-    } else {
-      console.warn('Google tag (gtag) not available, consent settings not applied');
+      // Additional debug info for GTM
+      this.validateTagsPresence();
+      
+    } catch (error) {
+      console.error('Error applying consent settings:', error);
+    }
+  },
+  
+  /**
+   * Validate if Google Tags are present and working
+   */
+  validateTagsPresence(): void {
+    try {
+      // Check for dataLayer
+      if (window.dataLayer && Array.isArray(window.dataLayer)) {
+        console.log('dataLayer is properly initialized with', window.dataLayer.length, 'events');
+      } else {
+        console.warn('dataLayer is not properly initialized');
+      }
+      
+      // Manually test GTM
+      window.dataLayer.push({
+        'event': 'debug_event',
+        'debug_time': new Date().toISOString()
+      });
+      console.log('Pushed debug event to dataLayer');
+      
+      // Check for GA4 configuration
+      if (typeof window.gtag === 'function') {
+        // Get the GA4 measurement ID that's in use
+        const gaScripts = document.querySelectorAll('script[src*="gtag/js"]');
+        if (gaScripts.length > 0) {
+          console.log('Found GA4 script tags:', gaScripts.length);
+          gaScripts.forEach(script => {
+            const src = script.getAttribute('src') || '';
+            const idMatch = src.match(/[?&]id=([^&]+)/);
+            if (idMatch) {
+              console.log('GA4 ID found in script:', idMatch[1]);
+            }
+          });
+        } else {
+          console.warn('No GA4 script tags found in DOM');
+        }
+      }
+    } catch (error) {
+      console.error('Error validating tags presence:', error);
     }
   }
 };
 
+// Create a simpler export for direct use
 export default CookieConsentManager;

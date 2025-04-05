@@ -46,6 +46,11 @@ const CookieConsent: React.FC = () => {
     };
     
     checkConsent();
+    
+    // Run the validation as soon as component mounts
+    setTimeout(() => {
+      CookieConsentManager.validateTagsPresence();
+    }, 1000);
   }, []);
 
   const handleAcceptAll = async () => {
@@ -108,7 +113,16 @@ const CookieConsent: React.FC = () => {
     (window as any).debugCookieConsent = () => {
       const consent = CookieConsentManager.getConsent();
       console.log('Current cookie consent state:', consent);
+      
+      // Also trigger a tag validation
+      CookieConsentManager.validateTagsPresence();
+      
       return consent;
+    };
+    
+    // Add a function to force show the banner for testing
+    (window as any).showCookieConsent = () => {
+      setShowBanner(true);
     };
   }, []);
 

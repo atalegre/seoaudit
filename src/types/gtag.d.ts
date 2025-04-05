@@ -14,3 +14,18 @@ interface ConsentOptions {
   'security_storage'?: 'granted';
   'wait_for_update'?: number;
 }
+
+// GTM event types
+interface GTMEvent {
+  event: string;
+  [key: string]: any;
+}
+
+// GA4 measurement types
+interface GA4MeasurementOptions {
+  send_page_view?: boolean;
+  cookie_domain?: string;
+  cookie_flags?: string;
+  cookie_update?: boolean;
+  cookie_expires?: number;
+}
