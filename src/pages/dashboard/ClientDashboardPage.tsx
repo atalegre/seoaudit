@@ -5,7 +5,6 @@ import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/Header';
 import { useAuthCheck } from '@/hooks/useAuthCheck';
 import { useDashboardData } from '@/hooks/useDashboardData';
-import DashboardHeader from '@/components/dashboard/client/DashboardHeader';
 import DashboardContent from '@/components/dashboard/client/DashboardContent';
 
 const ClientDashboardPage = () => {
@@ -45,7 +44,7 @@ const ClientDashboardPage = () => {
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-1 container max-w-7xl mx-auto px-4 py-8">
-        {/* Use the correct props for DashboardHeader */}
+        {/* Dashboard title */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold">Dashboard</h1>
           <p className="text-muted-foreground">Gerencie seus websites e analise o desempenho</p>

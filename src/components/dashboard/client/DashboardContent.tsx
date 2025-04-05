@@ -44,6 +44,17 @@ const DashboardContent = ({
     return <LoadingState />;
   }
 
+  // Convert Client[] to be compatible with WebsiteData[]
+  const websiteData = clients.map(client => ({
+    id: client.id,
+    url: client.website,
+    status: client.status,
+    name: client.name,
+    lastAnalyzed: typeof client.lastAnalysis === 'string' 
+      ? client.lastAnalysis 
+      : client.lastAnalysis?.toISOString() || 'Nunca'
+  }));
+
   return (
     <>
       {clients.length > 0 && selectedClientId ? (
@@ -68,7 +79,7 @@ const DashboardContent = ({
       ) : null}
       
       <WebsitesSection 
-        websites={clients} 
+        websites={websiteData} 
         isLoading={isLoading} 
         onWebsiteAdded={onWebsiteAdded}
         userEmail={userEmail}

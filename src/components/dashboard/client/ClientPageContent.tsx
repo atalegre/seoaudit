@@ -55,6 +55,15 @@ const ClientPageContent: React.FC<ClientPageContentProps> = ({
       : client.lastAnalysis.toISOString()
     : 'Never';
 
+  // Create a websites array with just the current client
+  const clientWebsites = [{
+    url: client.website,
+    status: client.status,
+    lastAnalyzed: lastAnalysisString,
+    name: client.name,
+    id: client.id
+  }];
+
   return (
     <div className="space-y-6">
       <DashboardHeader 
@@ -87,9 +96,9 @@ const ClientPageContent: React.FC<ClientPageContentProps> = ({
         </TabsList>
         
         <TabsContent value="overview" className="space-y-4">
-          <WebsitesSection websites={mockWebsites} />
+          <WebsitesSection websites={clientWebsites} />
           <GoogleAuthSection clientId={client.id} />
-          <WebsiteIndexationSection websites={mockWebsites} />
+          <WebsiteIndexationSection websites={clientWebsites} />
         </TabsContent>
         
         <TabsContent value="search-console">
