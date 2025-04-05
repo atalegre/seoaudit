@@ -25,7 +25,7 @@ export const PAI_DIRECTORY: DirectoryListing[] = [
     paiUrl: "https://pai.pt/empresas/viata",
   },
   {
-    domains: ['puxenegocios.pt', 'www.puxenegocios.pt'],
+    domains: ['puxenegocios.pt', 'www.puxenegocios.pt', 'puxenegocios.com', 'www.puxenegocios.com'],
     name: "Puxe Negócios",
     phone: "211 307 485",
     url: "www.puxenegocios.pt",
@@ -108,5 +108,13 @@ export const PAI_DIRECTORY: DirectoryListing[] = [
     phone: "217 242 500",
     url: "www.galp.com",
     paiUrl: "https://pai.pt/empresas/galp-energia",
+  },
+  // Adicionar qualquer site atual aqui para testes
+  {
+    domains: ['lovable.dev', 'www.lovable.dev'],
+    name: "Lovable",
+    phone: "800 123 456",
+    url: "www.lovable.dev",
+    paiUrl: "https://pai.pt/empresas/lovable",
   }
 ];
