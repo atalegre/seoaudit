@@ -40,12 +40,21 @@ export async function getChatGptAnalysis(url: string): Promise<AioAnalysisResult
 
     console.log('OpenAI API was used successfully for the analysis');
     
+    // Se a API usou dados simulados, rejeitar
+    if (data.generated === true) {
+      throw new Error('A API OpenAI retornou dados simulados. Configure uma chave API válida.');
+    }
+    
+    if (data.error) {
+      throw new Error(`Erro na análise AIO: ${data.error}`);
+    }
+    
     // Process the response into the format expected by our frontend
     return {
-      score: data.score || 70,
-      contentClarity: data.contentClarity || 65,
-      logicalStructure: data.logicalStructure || 70,
-      naturalLanguage: data.naturalLanguage || 75,
+      score: data.score || 0,
+      contentClarity: data.contentClarity || 0,
+      logicalStructure: data.logicalStructure || 0,
+      naturalLanguage: data.naturalLanguage || 0,
       topicsDetected: data.topicsDetected || [],
       confusingParts: data.confusingParts || [],
     };

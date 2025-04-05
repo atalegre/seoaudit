@@ -71,29 +71,23 @@ export function useAnalysis(urlParam: string | null) {
         });
         
         // Iniciar as análises em paralelo
-        const seoPromise = getPageInsightsData(normalizedUrl)
-          .catch(err => {
-            setSeoError(err instanceof Error ? err.message : 'Erro desconhecido na análise SEO');
-            console.error('Error fetching Page Insights data:', err);
-            return null;
-          });
+        let seoData = null;
+        let aioData = null;
         
+        try {
+          seoData = await getPageInsightsData(normalizedUrl);
+        } catch (err) {
+          setSeoError(err instanceof Error ? err.message : 'Erro desconhecido na análise SEO');
+          console.error('Error fetching Page Insights data:', err);
+        }
+          
         // AIO Promise - now using a small delay to avoid conflicts
-        const aioPromise = new Promise(resolve => {
-          setTimeout(async () => {
-            try {
-              const data = await getChatGptAnalysis(normalizedUrl);
-              resolve(data);
-            } catch (err) {
-              setAioError(err instanceof Error ? err.message : 'Erro desconhecido na análise AIO');
-              console.error('Error fetching AIO data:', err);
-              resolve(null);
-            }
-          }, 500);
-        });
-        
-        // Resolver análises
-        const [seoData, aioData] = await Promise.all([seoPromise, aioPromise]);
+        try {
+          aioData = await getChatGptAnalysis(normalizedUrl);
+        } catch (err) {
+          setAioError(err instanceof Error ? err.message : 'Erro desconhecido na análise AIO');
+          console.error('Error fetching AIO data:', err);
+        }
         
         if (!seoData && !aioData) {
           setError('Falha em ambas as análises. Por favor, verifique suas configurações de API.');
@@ -101,6 +95,7 @@ export function useAnalysis(urlParam: string | null) {
           return;
         }
         
+        // Criar resultado apenas com os dados disponíveis
         const results = createAnalysisResult(normalizedUrl, seoData, aioData as any);
         
         // Guardar no cache com timestamp

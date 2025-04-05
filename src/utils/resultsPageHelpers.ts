@@ -1,205 +1,116 @@
-import { AnalysisResult, AccessibilityAnalysisResult, SeoAnalysisResult } from './api/types';
-import { PageInsightsData } from './api/pageInsights/types';
+
+import { AnalysisResult, SeoAnalysisResult, AioAnalysisResult } from './api/types';
 
 /**
- * Format URL for display by removing protocol
+ * Formata URL para exibição, removendo protocolo e trailing slash
  */
 export function formatUrl(url: string): string {
-  return url.replace(/^https?:\/\//, '');
+  return url.replace(/^https?:\/\//, '').replace(/\/$/, '');
 }
 
-// Create analysis result from SEO and AIO data
+/**
+ * Cria um resultado de análise combinando dados SEO e AIO
+ * @param url URL analisada
+ * @param seoData Dados da análise SEO (pageInsights)
+ * @param aioData Dados da análise AIO (chat-gpt)
+ * @returns Resultado da análise combinada
+ */
 export function createAnalysisResult(
-  url: string, 
-  seoData: PageInsightsData | null, 
-  aioData: any | null, 
-  accessibilityData: AccessibilityAnalysisResult | null = null
+  url: string,
+  seoData: SeoAnalysisResult | null,
+  aioData: AioAnalysisResult | null
 ): AnalysisResult {
-  // Create a default SEO object with simulated data if we don't have real data
-  const seo: SeoAnalysisResult = seoData ? {
-    ...seoData,
-    score: seoData.score || 65,
-    performanceScore: seoData.performanceScore || 70,
-    bestPracticesScore: seoData.bestPracticesScore || 75,
-    loadTimeDesktop: seoData.loadTimeDesktop || 3.2,
-    loadTimeMobile: seoData.loadTimeMobile || 5.1,
-    mobileFriendly: seoData.mobileFriendly !== undefined ? seoData.mobileFriendly : true,
-    security: seoData.security !== undefined ? seoData.security : true,
-    imageOptimization: seoData.imageOptimization || 60,
-    headingsStructure: seoData.headingsStructure || 65,
-    metaTags: seoData.metaTags || 70,
-    lcp: seoData.lcp || 3.5,
-    fid: seoData.fid || 120,
-    cls: seoData.cls || 0.15
-  } : {
-    score: 65,
-    performanceScore: 70,
-    bestPracticesScore: 75,
-    loadTimeDesktop: 3.2,
-    loadTimeMobile: 5.1,
-    mobileFriendly: true,
-    security: true,
-    imageOptimization: 60,
-    headingsStructure: 65,
-    metaTags: 70,
-    lcp: 3.5, 
-    fid: 120,
-    cls: 0.15
+  const timestamp = new Date().toISOString();
+  
+  // Construir objeto SEO com apenas dados reais
+  const seo: SeoAnalysisResult = {
+    score: seoData?.score ?? 0,
+    performanceScore: seoData?.performanceScore ?? 0,
+    bestPracticesScore: seoData?.bestPracticesScore ?? 0,
+    loadTimeDesktop: seoData?.loadTimeDesktop,
+    loadTimeMobile: seoData?.loadTimeMobile,
+    mobileFriendly: seoData?.mobileFriendly ?? false,
+    security: seoData?.security ?? false,
+    imageOptimization: seoData?.imageOptimization ?? 0,
+    headingsStructure: seoData?.headingsStructure ?? 0,
+    metaTags: seoData?.metaTags ?? 0,
+    lcp: seoData?.lcp,
+    fid: seoData?.fid,
+    cls: seoData?.cls,
+    tapTargetsScore: seoData?.tapTargetsScore ?? 0,
+    tapTargetsIssues: seoData?.tapTargetsIssues ?? 0,
+    recommendations: seoData?.recommendations ?? []
   };
   
-  // Create a default AIO object with simulated data if we don't have real data
-  const aio = aioData ? {
-    ...aioData,
-    score: aioData.score || 70
-  } : {
-    score: 70,
-    contentClarity: 65,
-    logicalStructure: 75,
-    naturalLanguage: 70,
-    topicsDetected: ["Website", "Digital"],
-    confusingParts: ["Algumas seções têm linguagem técnica em excesso"]
+  // Construir objeto AIO com apenas dados reais
+  const aio: AioAnalysisResult = {
+    score: aioData?.score ?? 0,
+    contentClarity: aioData?.contentClarity ?? 0,
+    logicalStructure: aioData?.logicalStructure ?? 0,
+    naturalLanguage: aioData?.naturalLanguage ?? 0,
+    topicsDetected: aioData?.topicsDetected ?? [],
+    confusingParts: aioData?.confusingParts ?? []
   };
   
-  // Use provided accessibility data or create default
-  const accessibility = accessibilityData || {
-    score: 65,
-    violations: [],
-    wcagCompliant: false,
-    eaaCompliant: false,
-    passedTests: [],
-    manualChecksNeeded: []
-  };
+  // Calcular status geral
+  const seoScore = seo.score;
+  const aioScore = aio.score;
+  const averageScore = (seoScore + aioScore) / 2;
   
-  // Generate recommendations based on issues found in both analyses
-  const recommendations = generateRecommendations(seo, aio, accessibility);
-  
-  // Calculate overall status based on all scores
-  const scores = [seo.score, aio.score];
-  if (accessibility) {
-    scores.push(accessibility.score);
+  let overallStatus = 'Crítico';
+  if (averageScore >= 75) {
+    overallStatus = 'Saudável';
+  } else if (averageScore >= 50) {
+    overallStatus = 'A melhorar';
   }
   
-  const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
-  const overallStatus = 
-    avgScore >= 80 ? 'Saudável' : 
-    avgScore >= 60 ? 'A melhorar' : 
-    'Crítico';
+  // Combinar recomendações, se houver dados
+  const recommendations = [];
+  
+  // Adicionar recomendações do SEO, se existirem
+  if (seoData?.recommendations?.length) {
+    const seoRecs = seoData.recommendations.map((rec, index) => ({
+      id: Date.now() + index,
+      suggestion: rec.title,
+      description: rec.description,
+      seoImpact: rec.importance >= 3 ? 'Alto' : rec.importance === 2 ? 'Médio' : 'Baixo',
+      aioImpact: 'Baixo',
+      priority: rec.importance,
+      status: 'pending'
+    }));
+    recommendations.push(...seoRecs);
+  }
+  
+  // Adicionar recomendações do AIO, se existirem e houver partes confusas
+  if (aioData?.confusingParts?.length) {
+    const aioRecs = aioData.confusingParts.map((part, index) => ({
+      id: Date.now() + 1000 + index,
+      suggestion: `Melhorar: ${part}`,
+      description: part,
+      seoImpact: 'Baixo',
+      aioImpact: 'Alto',
+      priority: 2,
+      status: 'pending'
+    }));
+    recommendations.push(...aioRecs);
+  }
   
   return {
     url,
-    timestamp: new Date().toISOString(),
-    status: 'Concluída',
+    timestamp,
+    status: seoData || aioData ? 'Concluída' : 'Falha',
     seo,
     aio,
-    accessibility,
     recommendations,
-    overallStatus
+    overallStatus: overallStatus as any
   };
 }
 
-// Generate recommendations based on issues found
-function generateRecommendations(seo: any, aio: any, accessibility?: AccessibilityAnalysisResult): any[] {
-  const recommendations = [];
-  
-  // Add recommendations based on SEO issues
-  if (seo.mobileFriendly === false) {
-    recommendations.push({
-      id: Date.now() + 1,
-      suggestion: "Otimizar o site para dispositivos móveis",
-      seoImpact: "Alto",
-      aioImpact: "Médio",
-      priority: 1,
-      status: "pending"
-    });
-  }
-  
-  if (seo.security === false) {
-    recommendations.push({
-      id: Date.now() + 2,
-      suggestion: "Implementar HTTPS para melhorar a segurança",
-      seoImpact: "Alto",
-      aioImpact: "Baixo",
-      priority: 1,
-      status: "pending"
-    });
-  }
-  
-  if (seo.imageOptimization < 70) {
-    recommendations.push({
-      id: Date.now() + 3,
-      suggestion: "Otimizar imagens para melhorar o tempo de carregamento",
-      seoImpact: "Médio",
-      aioImpact: "Baixo",
-      priority: 2,
-      status: "pending"
-    });
-  }
-  
-  // Add recommendations based on AIO issues
-  if (aio.contentClarity < 70) {
-    recommendations.push({
-      id: Date.now() + 4,
-      suggestion: "Melhorar a clareza do conteúdo para algoritmos de IA",
-      seoImpact: "Baixo",
-      aioImpact: "Alto",
-      priority: 2,
-      status: "pending"
-    });
-  }
-  
-  // Add recommendations based on accessibility issues
-  if (accessibility && accessibility.violations && accessibility.violations.length > 0) {
-    // Group by impact level
-    const criticalViolations = accessibility.violations.filter(v => v.impact === 'critical');
-    const seriousViolations = accessibility.violations.filter(v => v.impact === 'serious');
-    
-    if (criticalViolations.length > 0) {
-      recommendations.push({
-        id: Date.now() + 5,
-        suggestion: `Corrigir ${criticalViolations.length} problemas críticos de acessibilidade`,
-        seoImpact: "Médio",
-        aioImpact: "Alto",
-        priority: 1,
-        status: "pending"
-      });
-    }
-    
-    if (seriousViolations.length > 0) {
-      recommendations.push({
-        id: Date.now() + 6,
-        suggestion: `Resolver ${seriousViolations.length} problemas sérios de acessibilidade WCAG`,
-        seoImpact: "Baixo",
-        aioImpact: "Médio",
-        priority: 2,
-        status: "pending"
-      });
-    }
-    
-    // Add specific recommendations for common issues
-    const hasImageAltIssue = accessibility.violations.some(v => v.id === 'image-alt');
-    if (hasImageAltIssue) {
-      recommendations.push({
-        id: Date.now() + 7,
-        suggestion: "Adicionar texto alternativo a todas as imagens",
-        seoImpact: "Médio",
-        aioImpact: "Alto",
-        priority: 2,
-        status: "pending"
-      });
-    }
-    
-    const hasColorContrastIssue = accessibility.violations.some(v => v.id === 'color-contrast');
-    if (hasColorContrastIssue) {
-      recommendations.push({
-        id: Date.now() + 8,
-        suggestion: "Melhorar contraste de cores para conformidade com WCAG",
-        seoImpact: "Baixo",
-        aioImpact: "Médio",
-        priority: 3,
-        status: "pending"
-      });
-    }
-  }
-  
-  return recommendations;
+/**
+ * Verifica se uma análise está completa
+ * @param analysis Resultado da análise a verificar
+ * @returns Verdadeiro se ambas as análises estiverem concluídas
+ */
+export function isAnalysisComplete(analysis: AnalysisResult): boolean {
+  return analysis.seo.score > 0 && analysis.aio.score > 0;
 }

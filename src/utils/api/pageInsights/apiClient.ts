@@ -2,9 +2,8 @@
 import { getApiKey } from '../supabaseClient';
 import { toast } from 'sonner';
 import { createTimedRequest } from './corsHandlers';
-import { generateLocalPageInsights } from './mockDataGenerator';
-import { processPageInsightsData } from './apiProcessor';
 import { PageInsightsData } from './types';
+import { processPageInsightsData } from './apiProcessor';
 
 // Cache aprimorado com TTL e compressão de chaves
 const apiRequestCache = new Map<string, Promise<PageInsightsData>>();
@@ -40,17 +39,15 @@ export async function fetchPageInsightsData(url: string): Promise<PageInsightsDa
       console.log('API key from localStorage:', apiKey ? 'Found' : 'Not found');
     }
     
-    // Use local analyzer if no API key is available
+    // Rejeitar se não houver chave API
     if (!apiKey) {
-      console.log('No API key, using local analyzer');
-      toast.warning('Chave da API Google Page Insights não encontrada', {
-        description: 'Configure sua chave API nas Configurações para obter dados SEO precisos.',
+      console.error('No API key available for Google Page Insights');
+      toast.error('Chave da API Google Page Insights necessária', {
+        description: 'Configure sua chave API nas Configurações para obter dados SEO.',
         duration: 5000,
       });
       
-      // Simulate a delay to prevent hammering local generation
-      await new Promise(resolve => setTimeout(resolve, 100));
-      return generateLocalPageInsights(url);
+      throw new Error('Chave API do Google Page Insights não configurada. Configure nas configurações.');
     }
 
     toast('Analisando SEO com Google Page Insights...', {
@@ -58,13 +55,12 @@ export async function fetchPageInsightsData(url: string): Promise<PageInsightsDa
     });
 
     // Construct API URL with proper query parameters
-    // Using a direct fetch with full control over parameters
     const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&strategy=mobile&category=performance&category=seo&category=best-practices`;
     
     console.log('Fetching Google Page Insights data');
     
     // Create timed request with abort controller - max 10 seconds for mobile connections
-    const { fetchProps, clearTimeout } = createTimedRequest(apiUrl, 10000);
+    const { fetchProps, clearTimeout } = createTimedRequest(apiUrl, 20000); // Aumentado para 20 segundos
     
     try {
       const response = await fetch(apiUrl, fetchProps);
@@ -97,30 +93,25 @@ export async function fetchPageInsightsData(url: string): Promise<PageInsightsDa
         }
         
         console.error(errorMessage);
-        toast.warning('Falha na API do Google', {
-          description: 'Usando analisador local para dados de SEO.',
-        });
-        return generateLocalPageInsights(url);
+        throw new Error(`Erro na API do Google: ${errorMessage}`);
       }
       
       const data = await response.json();
       console.log('Google Page Insights API response received:', data.lighthouseResult ? 'Valid data' : 'Invalid data');
+      
+      if (!data.lighthouseResult) {
+        throw new Error('API Google retornou dados incompletos ou inválidos');
+      }
       
       return processPageInsightsData(data, url);
     } catch (fetchError: any) {
       clearTimeout();
       if (fetchError.name === 'AbortError') {
         console.error('Google Page Insights API request timed out');
-        toast.warning('Tempo limite excedido', {
-          description: 'A API do Google não respondeu a tempo. Usando analisador local para dados de SEO.'
-        });
-        return generateLocalPageInsights(url);
+        throw new Error('Tempo limite da API excedido. Tente novamente mais tarde.');
       } else {
         console.error('Fetch error:', fetchError.message);
-        toast.warning('Falha na API do Google', {
-          description: 'Usando analisador local para dados de SEO.',
-        });
-        return generateLocalPageInsights(url);
+        throw fetchError;
       }
     } finally {
       // Remove in-flight request after a delay to prevent immediate re-fetching

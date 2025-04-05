@@ -1,6 +1,5 @@
 
 import { corsHeaders } from "./corsHeaders.ts";
-import { generateSimulatedAnalysis } from "./mockAnalysis.ts";
 import { requestOpenAiAnalysis } from "./openaiClient.ts";
 
 /**
@@ -28,20 +27,16 @@ export async function analyzeWebsite(req: Request): Promise<Response> {
 
   const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
   
-  // If there's no API key, simulate analysis instead of giving an error
+  // Se não houver chave API, retornar erro em vez de simular
   if (!OPENAI_API_KEY) {
-    console.log('OPENAI_API_KEY não está configurada - usando análise simulada');
-    const { url, content } = await req.json().catch(() => ({ url: '', content: '' }));
-    
-    if (!url) {
-      throw new Error('URL é obrigatória');
-    }
-    
-    const result = generateSimulatedAnalysis(url);
-    
-    return new Response(JSON.stringify(result), {
+    console.error('OPENAI_API_KEY não está configurada');
+    return new Response(JSON.stringify({
+      error: 'Chave API OpenAI não configurada no servidor',
+      code: 500,
+      message: 'Configuração de servidor incompleta'
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200
+      status: 500
     });
   }
 
@@ -68,24 +63,13 @@ export async function analyzeWebsite(req: Request): Promise<Response> {
     console.error(`[${requestId}] Erro ao chamar a API OpenAI:`, error);
     
     // If the error is specific to the OpenAI API
-    if (error.message.includes('OpenAI')) {
-      return new Response(JSON.stringify({
-        error: error.message,
-        apiUsed: false,
-        details: error.details || {}
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 502
-      });
-    } else {
-      // For other errors, use simulated data
-      const fallbackData = generateSimulatedAnalysis(url);
-      fallbackData.error = error.message;
-      
-      return new Response(JSON.stringify(fallbackData), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200
-      });
-    }
+    return new Response(JSON.stringify({
+      error: error.message,
+      apiUsed: false,
+      details: error.details || {}
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 502
+    });
   }
 }

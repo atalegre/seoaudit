@@ -1,6 +1,5 @@
 
 import { GooglePageInsightsResponse, PageInsightsData } from './types';
-import { generateLocalPageInsights } from './mockDataGenerator';
 
 // Memoização de resultados para evitar processamento repetido
 const resultsCache = new Map<string, {data: PageInsightsData, timestamp: number}>();
@@ -29,24 +28,24 @@ export function processPageInsightsData(data: GooglePageInsightsResponse, url: s
       data?.lighthouseResult?.audits?.[audit]?.score || 0;
       
     // Calcular pontuações principais
-    const seoScore = getScore('seo') || 60;
-    const performanceScore = getScore('performance') || 65;
-    const bestPracticesScore = getScore('best-practices') || 70;
+    const seoScore = getScore('seo');
+    const performanceScore = getScore('performance');
+    const bestPracticesScore = getScore('best-practices');
     
     // Core Web Vitals simplificados
     const lcpRaw = data?.lighthouseResult?.audits?.['largest-contentful-paint']?.numericValue;
-    const lcp = lcpRaw ? Math.round(lcpRaw / 10) / 100 : 3.5;
+    const lcp = lcpRaw ? Math.round(lcpRaw / 10) / 100 : undefined;
     
     const fidRaw = data?.lighthouseResult?.audits?.['max-potential-fid']?.numericValue;
-    const fid = fidRaw ? Math.round(fidRaw) : 120;
+    const fid = fidRaw ? Math.round(fidRaw) : undefined;
     
     const clsRaw = data?.lighthouseResult?.audits?.['cumulative-layout-shift']?.numericValue;
-    const cls = clsRaw ? Math.round(clsRaw * 100) / 100 : 0.15;
+    const cls = clsRaw ? Math.round(clsRaw * 100) / 100 : undefined;
     
     // Tempos de carregamento
     const fcpMs = data?.loadingExperience?.metrics?.FIRST_CONTENTFUL_PAINT_MS?.percentile || 0;
-    const loadTimeDesktop = fcpMs ? fcpMs / 1000 : 3.2;
-    const loadTimeMobile = fcpMs ? (fcpMs * 1.5) / 1000 : 5.1;
+    const loadTimeDesktop = fcpMs ? fcpMs / 1000 : undefined;
+    const loadTimeMobile = fcpMs ? (fcpMs * 1.5) / 1000 : undefined;
     
     // Core de dados simplificado
     const result: PageInsightsData = {
@@ -58,9 +57,9 @@ export function processPageInsightsData(data: GooglePageInsightsResponse, url: s
       loadTimeMobile,
       mobileFriendly: getAuditScore('viewport') > 0.9,
       security: getAuditScore('is-on-https') > 0.9,
-      imageOptimization: Math.round(getAuditScore('uses-optimized-images') * 100) || 60,
-      headingsStructure: Math.round(getAuditScore('document-title') * 100) || 65,
-      metaTags: Math.round(getAuditScore('meta-description') * 100) || 60,
+      imageOptimization: Math.round(getAuditScore('uses-optimized-images') * 100),
+      headingsStructure: Math.round(getAuditScore('document-title') * 100),
+      metaTags: Math.round(getAuditScore('meta-description') * 100),
       lcp,
       fid, 
       cls,
@@ -89,7 +88,7 @@ export function processPageInsightsData(data: GooglePageInsightsResponse, url: s
     return result;
   } catch (error) {
     console.error('Error processing PageInsights data:', error);
-    return generateLocalPageInsights(url);
+    throw new Error('Falha ao processar dados da API PageInsights');
   }
 }
 

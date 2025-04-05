@@ -1,6 +1,7 @@
+
 import React, { useRef, lazy, Suspense } from 'react';
 import { AnalysisResult } from '@/utils/api/types';
-import { AlertCircle, Loader2, FileText } from 'lucide-react';
+import { AlertCircle, Loader2, FileText, AlertTriangle } from 'lucide-react';
 import ScoreDisplay from '@/components/ScoreDisplay';
 import ReportForm from '@/components/ReportForm';
 import { formatUrl } from '@/utils/resultsPageHelpers';
@@ -56,6 +57,44 @@ const ResultsContent: React.FC<ResultsContentProps> = ({
     recommendationsRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // Check if we have real SEO data
+  const hasSeoData = analysisData?.seo?.score > 0;
+  
+  // Check if we have real AIO data
+  const hasAioData = analysisData?.aio?.score > 0;
+  
+  // Se não temos nenhum dado, mostrar mensagem de erro
+  if (!hasSeoData && !hasAioData) {
+    return (
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-xl md:text-3xl font-bold mb-4 md:mb-8 animate-fade-in lcp-target">
+          Resultados da análise
+        </h1>
+        
+        <Alert variant="destructive" className="mb-6">
+          <AlertTriangle className="h-5 w-5" />
+          <AlertTitle>Não foi possível obter dados reais</AlertTitle>
+          <AlertDescription className="space-y-2">
+            <p>Não conseguimos obter dados reais das APIs para a análise.</p>
+            {seoError && <p><strong>Erro SEO:</strong> {seoError}</p>}
+            {aioError && <p><strong>Erro AIO:</strong> {aioError}</p>}
+            <p>Por favor, verifique se as chaves de API estão configuradas corretamente nas Configurações.</p>
+          </AlertDescription>
+        </Alert>
+        
+        <div className="flex justify-center mt-8">
+          <button 
+            onClick={onReanalyze}
+            className="bg-primary text-white px-6 py-3 rounded-md hover:bg-primary/90 transition-colors"
+          >
+            <Loader2 className="h-4 w-4 mr-2 inline" />
+            Tentar novamente
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-6xl mx-auto">
       <h1 className="text-xl md:text-3xl font-bold mb-4 md:mb-8 animate-fade-in lcp-target">
@@ -65,11 +104,11 @@ const ResultsContent: React.FC<ResultsContentProps> = ({
       {(seoError || aioError) && (
         <Alert variant="warning" className="mb-6">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Algumas análises falharam</AlertTitle>
+          <AlertTitle>Dados parciais disponíveis</AlertTitle>
           <AlertDescription className="space-y-2">
-            {seoError && <p>Análise SEO: {seoError}</p>}
-            {aioError && <p>Análise AIO: {aioError}</p>}
-            <p>Os resultados mostrados podem estar incompletos.</p>
+            {seoError && <p><strong>Análise SEO:</strong> {seoError}</p>}
+            {aioError && <p><strong>Análise AIO:</strong> {aioError}</p>}
+            <p>Os resultados mostrados são baseados apenas nos dados que pudemos obter.</p>
           </AlertDescription>
         </Alert>
       )}
@@ -80,8 +119,8 @@ const ResultsContent: React.FC<ResultsContentProps> = ({
           <ScoreDisplay
             seoScore={analysisData?.seo?.score || 0}
             aioScore={analysisData?.aio?.score || 0}
-            performanceScore={analysisData?.seo?.performanceScore || 65}
-            llmPresenceScore={30}
+            performanceScore={analysisData?.seo?.performanceScore || 0}
+            llmPresenceScore={0}
             status={analysisData?.overallStatus as any || 'Crítico'}
             url={formatUrl(analysisData?.url || '')}
             logoUrl={analysisData?.logoUrl}
@@ -101,52 +140,68 @@ const ResultsContent: React.FC<ResultsContentProps> = ({
           {/* Blocos de análise estruturados */}
           <div className="space-y-6">
             {/* 2. 📊 Bloco 1 - SEO Técnico e Performance */}
-            <Suspense fallback={<LazyLoadingFallback />}>
-              <TechnicalHealthPanel
-                loadTimeDesktop={analysisData.seo.loadTimeDesktop || 3.2}
-                loadTimeMobile={analysisData.seo.loadTimeMobile || 5.1}
-                mobileFriendly={analysisData.seo.mobileFriendly || false}
-                security={analysisData.seo.security || false}
-                imageOptimization={analysisData.seo.imageOptimization || 60}
-                performanceScore={analysisData.seo.performanceScore || 65}
-                lcp={analysisData.seo.lcp}
-                cls={analysisData.seo.cls}
-                fid={analysisData.seo.fid}
-              />
-            </Suspense>
-            
-            {/* 3. 🤖 Bloco 2 - Clareza para Inteligência Artificial */}
-            <Suspense fallback={<LazyLoadingFallback />}>
-              <AioAnalysisPanel
-                aioScore={analysisData.aio.score}
-                contentClarity={analysisData.aio.contentClarity}
-                logicalStructure={analysisData.aio.logicalStructure}
-                naturalLanguage={analysisData.aio.naturalLanguage}
-                topicsDetected={analysisData.aio.topicsDetected || []}
-                confusingParts={analysisData.aio.confusingParts || []}
-              />
-            </Suspense>
-            
-            {/* 4. 🌍 Bloco 3 - Presença Local e IA */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {hasSeoData ? (
               <Suspense fallback={<LazyLoadingFallback />}>
-                <LLMPresenceAudit url={analysisData.url} autoStart={false} />
-              </Suspense>
-              
-              <Suspense fallback={<LazyLoadingFallback />}>
-                <LocalDirectoryPresence 
-                  url={analysisData.url} 
-                  companyName={analysisData.seo.companyName} 
+                <TechnicalHealthPanel
+                  loadTimeDesktop={analysisData.seo.loadTimeDesktop}
+                  loadTimeMobile={analysisData.seo.loadTimeMobile}
+                  mobileFriendly={analysisData.seo.mobileFriendly}
+                  security={analysisData.seo.security}
+                  imageOptimization={analysisData.seo.imageOptimization}
+                  performanceScore={analysisData.seo.performanceScore}
+                  lcp={analysisData.seo.lcp}
+                  cls={analysisData.seo.cls}
+                  fid={analysisData.seo.fid}
                 />
               </Suspense>
-            </div>
+            ) : (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Dados SEO não disponíveis</AlertTitle>
+                <AlertDescription>
+                  {seoError || "Não foi possível obter dados SEO reais. Configure uma chave API válida."}
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            {/* 3. 🤖 Bloco 2 - Clareza para Inteligência Artificial */}
+            {hasAioData ? (
+              <Suspense fallback={<LazyLoadingFallback />}>
+                <AioAnalysisPanel
+                  aioScore={analysisData.aio.score}
+                  contentClarity={analysisData.aio.contentClarity}
+                  logicalStructure={analysisData.aio.logicalStructure}
+                  naturalLanguage={analysisData.aio.naturalLanguage}
+                  topicsDetected={analysisData.aio.topicsDetected || []}
+                  confusingParts={analysisData.aio.confusingParts || []}
+                />
+              </Suspense>
+            ) : (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Dados AIO não disponíveis</AlertTitle>
+                <AlertDescription>
+                  {aioError || "Não foi possível obter dados AIO reais. Configure uma chave API OpenAI válida."}
+                </AlertDescription>
+              </Alert>
+            )}
             
             {/* 5. 🔧 Bloco 4 - Recomendações com impacto */}
-            <div ref={recommendationsRef} id="recommendations" className="pt-4 scroll-mt-16">
-              <Suspense fallback={<LazyLoadingFallback />}>
-                <EnhancedRecommendations recommendations={analysisData.recommendations || []} />
-              </Suspense>
-            </div>
+            {analysisData.recommendations && analysisData.recommendations.length > 0 ? (
+              <div ref={recommendationsRef} id="recommendations" className="pt-4 scroll-mt-16">
+                <Suspense fallback={<LazyLoadingFallback />}>
+                  <EnhancedRecommendations recommendations={analysisData.recommendations || []} />
+                </Suspense>
+              </div>
+            ) : (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Sem recomendações disponíveis</AlertTitle>
+                <AlertDescription>
+                  Não foi possível obter recomendações baseadas em dados reais.
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
         </div>
         
