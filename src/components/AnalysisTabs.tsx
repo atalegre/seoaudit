@@ -23,17 +23,28 @@ export const AnalysisTabs = ({ data, seoError, aioError }: AnalysisTabsProps) =>
       
       <TabsContent value="technical">
         <TechnicalHealthPanel 
-          data={data.seo} 
-          error={seoError}
-          className="border-t-0 rounded-t-none" 
+          loadTimeDesktop={data.seo.loadTimeDesktop}
+          loadTimeMobile={data.seo.loadTimeMobile}
+          mobileFriendly={data.seo.mobileFriendly}
+          security={data.seo.security}
+          imageOptimization={data.seo.imageOptimization}
+          performanceScore={data.seo.performanceScore}
+          lcp={data.seo.lcp}
+          cls={data.seo.cls}
+          fid={data.seo.fid}
+          className="border-t-0 rounded-t-none"
         />
       </TabsContent>
       
       <TabsContent value="aio">
         <AioAnalysisPanel 
-          data={data.aio} 
-          error={aioError}
-          className="border-t-0 rounded-t-none" 
+          aioScore={data.aio.score}
+          contentClarity={data.aio.contentClarity}
+          logicalStructure={data.aio.logicalStructure}
+          naturalLanguage={data.aio.naturalLanguage}
+          topicsDetected={data.aio.topicsDetected || []}
+          confusingParts={data.aio.confusingParts || []}
+          className="border-t-0 rounded-t-none"
         />
       </TabsContent>
       

@@ -1,4 +1,3 @@
-
 import { AnalysisResult, AccessibilityAnalysisResult, SeoAnalysisResult } from './api/types';
 import { PageInsightsData } from './api/pageInsights/types';
 
@@ -20,8 +19,8 @@ export function createAnalysisResult(
   const seo: SeoAnalysisResult = seoData ? {
     ...seoData,
     score: seoData.score || 65,
-    bestPracticesScore: seoData.bestPracticesScore || 75,
     performanceScore: seoData.performanceScore || 70,
+    bestPracticesScore: seoData.bestPracticesScore || 75,
     loadTimeDesktop: seoData.loadTimeDesktop || 3.2,
     loadTimeMobile: seoData.loadTimeMobile || 5.1,
     mobileFriendly: seoData.mobileFriendly !== undefined ? seoData.mobileFriendly : true,
