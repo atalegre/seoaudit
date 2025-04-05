@@ -1,18 +1,18 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Client } from '@/utils/api/types';
+import ScoreOverview from '@/components/dashboard/ScoreOverview';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { useAnalysis } from '@/hooks/useAnalysis';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
-import DashboardHeader from './DashboardHeader';
-import ScoreOverview from './ScoreOverview';
-import WebsitesSection from './WebsitesSection';
-import NotificationsSection from './NotificationsSection';
-import ReportsSection from './ReportsSection';
-import GoogleAuthSection from './GoogleAuthSection';
-import WebsiteIndexationSection from './WebsiteIndexationSection';
-import SearchConsoleDisplay from './SearchConsoleDisplay';
-import AddWebsiteDialog from '@/components/dashboard/AddWebsiteDialog';
+import { Separator } from '@/components/ui/separator';
+import TechnicalHealthPanel from '@/components/TechnicalHealthPanel';
+import AioAnalysisPanel from '@/components/AioAnalysisPanel';
+import EnhancedRecommendations from '@/components/EnhancedRecommendations';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
+import LLMPresenceAudit from '@/components/llm-presence/LLMPresenceAudit';
+import LocalDirectoryPresence from '@/components/LocalDirectoryPresence';
 
 interface ClientPageContentProps {
   client: Client;
@@ -20,110 +20,96 @@ interface ClientPageContentProps {
   onWebsiteAdded: () => void;
 }
 
-// Mock data for components that need it
-const mockReports = [
-  { id: 1, name: 'SEO Report', date: '2023-05-15', status: 'completed', type: 'SEO' },
-  { id: 2, name: 'AIO Report', date: '2023-05-10', status: 'completed', type: 'AIO' }
-];
-
-const mockNotifications = [
-  { id: 1, title: 'SEO Score Alert', description: 'Your SEO score has improved', date: '2023-05-15', read: false, urgent: false },
-  { id: 2, title: 'New Recommendations', description: '3 new recommendations available', date: '2023-05-10', read: true, urgent: true }
-];
-
-// Mock websites data for WebsitesSection
-const mockWebsites = [
-  { id: 1, name: 'Main Website', url: 'https://example.com', status: 'active' }
-];
-
 const ClientPageContent: React.FC<ClientPageContentProps> = ({ 
   client, 
   analysisHistory,
-  onWebsiteAdded
+  onWebsiteAdded 
 }) => {
-  const [showAddWebsiteDialog, setShowAddWebsiteDialog] = useState(false);
-
-  // Define the handleMarkAsRead function
-  const handleMarkAsRead = (notificationId: number) => {
-    console.log('Marking notification as read:', notificationId);
-  };
-
-  // Convert from Date to string if needed
-  const lastAnalysisString = client.lastAnalysis 
-    ? typeof client.lastAnalysis === 'string' 
-      ? client.lastAnalysis 
-      : client.lastAnalysis.toISOString()
-    : 'Never';
-
-  // Create a websites array with just the current client
-  const clientWebsites = [{
-    url: client.website,
-    status: client.status,
-    lastAnalyzed: lastAnalysisString,
-    name: client.name,
-    id: client.id
-  }];
-
+  const { analysisData, isLoading, error } = useAnalysis(client.website);
+  
   return (
-    <div className="space-y-6">
-      <DashboardHeader 
-        clientName={client.name}
-        clientWebsite={client.website}
-        clientStatus={client.status}
-        clientLastUpdate={lastAnalysisString}
-      />
-      
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Dashboard</h2>
-        <Button onClick={() => setShowAddWebsiteDialog(true)} className="flex items-center">
-          <Plus className="mr-2 h-4 w-4" />
-          Adicionar Website
-        </Button>
+    <div className="space-y-6 p-6">
+      <div className="flex flex-col space-y-2">
+        <h1 className="text-2xl font-bold">{client.name}</h1>
+        <p className="text-muted-foreground">{client.website}</p>
       </div>
       
-      <ScoreOverview 
-        seoScore={client.seoScore || 0}
-        aioScore={client.aioScore || 0}
-        accessibilityScore={client.accessibilityScore || 0}
-      />
+      <Separator />
       
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="search-console">Search Console</TabsTrigger>
-          <TabsTrigger value="reports">Relatórios</TabsTrigger>
-          <TabsTrigger value="notifications">Notificações</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="overview" className="space-y-4">
-          <WebsitesSection websites={clientWebsites} />
-          <GoogleAuthSection clientId={client.id} />
-          <WebsiteIndexationSection websites={clientWebsites} />
-        </TabsContent>
-        
-        <TabsContent value="search-console">
-          <SearchConsoleDisplay clientId={client.id} />
-        </TabsContent>
-        
-        <TabsContent value="reports">
-          <ReportsSection reports={mockReports} />
-        </TabsContent>
-        
-        <TabsContent value="notifications">
-          <NotificationsSection 
-            notifications={mockNotifications} 
-            onMarkAsRead={handleMarkAsRead} 
-          />
-        </TabsContent>
-      </Tabs>
+      <ScoreOverview client={client} showDetailedReport={true} />
       
-      {/* Add Website Dialog */}
-      {showAddWebsiteDialog && (
-        <AddWebsiteDialog 
-          isOpen={showAddWebsiteDialog}
-          onClose={() => setShowAddWebsiteDialog(false)}
-          onAddWebsite={onWebsiteAdded}
-        />
+      {isLoading ? (
+        <Card>
+          <CardContent className="pt-6">
+            <p>A carregar análise detalhada...</p>
+          </CardContent>
+        </Card>
+      ) : error ? (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      ) : analysisData ? (
+        <Tabs defaultValue="seo" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="seo">Saúde Técnica</TabsTrigger>
+            <TabsTrigger value="aio">Análise AIO</TabsTrigger>
+            <TabsTrigger value="recommendations">Recomendações</TabsTrigger>
+            <TabsTrigger value="llm">Presença em LLMs</TabsTrigger>
+            <TabsTrigger value="directories">Diretórios Locais</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="seo" className="space-y-4">
+            <TechnicalHealthPanel
+              loadTimeDesktop={analysisData.seo.loadTimeDesktop}
+              loadTimeMobile={analysisData.seo.loadTimeMobile}
+              mobileFriendly={analysisData.seo.mobileFriendly}
+              security={analysisData.seo.security}
+              imageOptimization={analysisData.seo.imageOptimization}
+              performanceScore={analysisData.seo.performanceScore}
+              lcp={analysisData.seo.lcp}
+              cls={analysisData.seo.cls}
+              fid={analysisData.seo.fid}
+            />
+          </TabsContent>
+          
+          <TabsContent value="aio" className="space-y-4">
+            <AioAnalysisPanel
+              aioScore={analysisData.aio.score}
+              contentClarity={analysisData.aio.contentClarity}
+              logicalStructure={analysisData.aio.logicalStructure}
+              naturalLanguage={analysisData.aio.naturalLanguage}
+              topicsDetected={analysisData.aio.topicsDetected || []}
+              confusingParts={analysisData.aio.confusingParts || []}
+            />
+          </TabsContent>
+          
+          <TabsContent value="recommendations" className="space-y-4">
+            <EnhancedRecommendations recommendations={analysisData.recommendations || []} />
+          </TabsContent>
+          
+          <TabsContent value="llm" className="space-y-4">
+            <LLMPresenceAudit url={client.website} autoStart={true} />
+          </TabsContent>
+          
+          <TabsContent value="directories" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Presença em Diretórios Locais</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <LocalDirectoryPresence domain={client.website} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      ) : (
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Ainda não existem análises para este website. Execute uma nova análise para ver os resultados.
+          </AlertDescription>
+        </Alert>
       )}
     </div>
   );
