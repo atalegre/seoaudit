@@ -1,6 +1,7 @@
 
 import { corsHeaders } from "./corsHeaders.ts";
 import { getSystemPrompt, getUserPrompt } from "./prompts.ts";
+import { performAccessibilityAudit } from "./accessibilityAudit.ts";
 // Using direct ESM import for OpenAI to ensure compatibility with Deno
 import { OpenAI } from "https://esm.sh/openai@4.20.1";
 
@@ -90,9 +91,18 @@ export async function requestOpenAiAnalysis(url: string, content: string, reques
     const jsonResult = JSON.parse(analysisText);
     console.log(`[${requestId}] JSON extraído com sucesso:`, jsonResult);
     
+    // Perform accessibility audit if content is available
+    let accessibilityResults = null;
+    if (content) {
+      console.log(`[${requestId}] Realizando auditoria de acessibilidade WCAG/EAA`);
+      accessibilityResults = performAccessibilityAudit(content);
+      console.log(`[${requestId}] Resultado da auditoria de acessibilidade:`, accessibilityResults);
+    }
+    
     // Add tracking information
     return {
       ...jsonResult,
+      accessibility: accessibilityResults,
       apiUsed: true,
       requestId: requestId,
       timestamp: new Date().toISOString(),

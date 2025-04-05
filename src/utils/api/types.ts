@@ -1,9 +1,11 @@
+
 export interface AnalysisResult {
   url: string;
   timestamp: string;
   status: string;
   seo: SeoAnalysisResult;
   aio: AioAnalysisResult;
+  accessibility?: AccessibilityAnalysisResult; // New accessibility analysis
   recommendations?: Recommendation[];
   overallStatus: StatusClassification;
   logoUrl?: string | null; // Added for logo URL storage
@@ -37,6 +39,24 @@ export interface AioAnalysisResult {
   [key: string]: any;
 }
 
+// New interface for accessibility analysis
+export interface AccessibilityAnalysisResult {
+  score: number;
+  violations: AccessibilityViolation[];
+  wcagCompliant: boolean;
+  eaaCompliant: boolean;
+  passedTests: string[];
+  manualChecksNeeded: string[];
+}
+
+export interface AccessibilityViolation {
+  id: string;
+  impact: 'critical' | 'serious' | 'moderate' | 'minor';
+  description: string;
+  helpUrl?: string;
+  nodes: number;
+}
+
 export interface Recommendation {
   suggestion: string;
   seoImpact: "Alto" | "Médio" | "Baixo" | "Nenhum";
@@ -60,6 +80,7 @@ export interface Client {
   account?: string;
   seoScore?: number;
   aioScore?: number;
+  accessibilityScore?: number; // New accessibility score
   lastAnalysis?: Date | string;
   lastReport?: string;
 }

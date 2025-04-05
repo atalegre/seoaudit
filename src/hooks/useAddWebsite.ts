@@ -41,6 +41,7 @@ export const useAddWebsite = ({ onSuccess, userId }: UseAddWebsiteProps) => {
         account: userId || 'Admin',
         seoScore: analysis.seo.score || 0,
         aioScore: analysis.aio.score || 0,
+        accessibilityScore: analysis.accessibility?.score || 0,
         lastAnalysis: new Date().toISOString(),
         lastReport: ''
       };
