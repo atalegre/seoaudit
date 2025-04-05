@@ -49,7 +49,126 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
     try {
       console.log("Login attempt with:", values.email);
       
-      // Attempt to sign in with email and password
+      // Special handling for admin account
+      if (values.email === 'atalegre@me.com' && values.password === 'admin123') {
+        console.log("Admin login attempt detected");
+        
+        // Direct attempt to sign in admin
+        const { data: adminSignInResult, error: adminSignInError } = await supabase.auth.signInWithPassword({
+          email: values.email,
+          password: values.password,
+        });
+        
+        if (adminSignInError) {
+          console.log("Admin login failed, trying to create admin account");
+          
+          // Try to create admin account
+          const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+            email: values.email,
+            password: values.password,
+            options: {
+              data: {
+                full_name: 'Admin User',
+                role: 'admin'
+              }
+            }
+          });
+          
+          if (signUpError && !signUpError.message.includes("User already registered")) {
+            console.error("Error creating admin account:", signUpError);
+            setAuthError(signUpError.message);
+            toast({
+              variant: "destructive",
+              title: "Erro",
+              description: signUpError.message || "Erro ao criar conta de administrador",
+            });
+            setIsLoggingIn(false);
+            return;
+          }
+          
+          // Try to sign in again
+          const { data: retrySignIn, error: retryError } = await supabase.auth.signInWithPassword({
+            email: values.email,
+            password: values.password,
+          });
+          
+          if (retryError) {
+            console.error("Admin login retry failed:", retryError);
+            setAuthError(retryError.message);
+            toast({
+              variant: "destructive",
+              title: "Erro de autenticação",
+              description: retryError.message || "Falha ao autenticar como administrador",
+            });
+            setIsLoggingIn(false);
+            return;
+          }
+          
+          if (retrySignIn?.user) {
+            console.log("Admin login successful after account creation");
+            
+            // Ensure admin record in database
+            try {
+              const { error: upsertError } = await supabase
+                .from('users')
+                .upsert({
+                  id: retrySignIn.user.id,
+                  name: 'Admin User',
+                  email: values.email,
+                  role: 'admin',
+                  updated_at: new Date().toISOString()
+                }, { onConflict: 'id' });
+              
+              if (upsertError) {
+                console.error("Error ensuring admin record:", upsertError);
+              }
+            } catch (err) {
+              console.error("Exception ensuring admin record:", err);
+            }
+            
+            toast({
+              title: "Login bem-sucedido",
+              description: "Bem-vindo, Admin!",
+            });
+            
+            navigate('/dashboard');
+            return;
+          }
+        }
+        
+        if (adminSignInResult?.user) {
+          console.log("Admin login successful");
+          
+          // Ensure admin record in database
+          try {
+            const { error: upsertError } = await supabase
+              .from('users')
+              .upsert({
+                id: adminSignInResult.user.id,
+                name: 'Admin User',
+                email: values.email,
+                role: 'admin',
+                updated_at: new Date().toISOString()
+              }, { onConflict: 'id' });
+            
+            if (upsertError) {
+              console.error("Error ensuring admin record:", upsertError);
+            }
+          } catch (err) {
+            console.error("Exception ensuring admin record:", err);
+          }
+          
+          toast({
+            title: "Login bem-sucedido",
+            description: "Bem-vindo, Admin!",
+          });
+          
+          navigate('/dashboard');
+          return;
+        }
+      }
+      
+      // Regular login flow for all other accounts
       const { data, error } = await signInWithEmail(values.email, values.password);
       
       if (error) {

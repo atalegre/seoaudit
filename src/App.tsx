@@ -31,53 +31,66 @@ import GuidesPage from "./pages/content/GuidesPage";
 import SeoAioChecklistPage from "./pages/content/SeoAioChecklistPage";
 import VerificationPage from "./pages/VerificationPage";
 import { createDefaultUsers } from "./utils/auth/createDefaultUsers";
+import { UserProvider } from "./contexts/UserContext";
 
 const queryClient = new QueryClient();
 
 const App = () => {
-  // Initialize default users but don't wait for them to be created
+  // Initialize default users on app load
   useEffect(() => {
-    createDefaultUsers();
+    const setupDefaultUsers = async () => {
+      try {
+        console.log("Setting up default users on app load...");
+        await createDefaultUsers();
+        console.log("Default users setup complete");
+      } catch (error) {
+        console.error("Error setting up default users:", error);
+      }
+    };
+
+    setupDefaultUsers();
   }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/results" element={<ResultsPage />} />
-            <Route path="/como-funciona" element={<HowItWorksPage />} />
-            <Route path="/faq" element={<FAQPage />} />
-            <Route path="/contacto" element={<ContactPage />} />
-            <Route path="/signin" element={<SignInPage />} />
-            <Route path="/signup" element={<SignUpPage />} />
-            <Route path="/recuperar-password" element={<ForgotPasswordPage />} />
-            <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route path="/verification" element={<VerificationPage />} />
-            <Route path="/auth/callback" element={<Navigate to="/dashboard" />} />
-            
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/dashboard/client" element={<ClientDashboardPage />} />
-            <Route path="/dashboard/client/:id" element={<ClientPage />} />
-            <Route path="/dashboard/clients" element={<ClientsPage />} />
-            <Route path="/dashboard/bulk-import" element={<BulkImportPage />} />
-            <Route path="/dashboard/settings" element={<SettingsPage />} />
-            <Route path="/dashboard/blog-posts" element={<BlogPostsPage />} />
-            
-            <Route path="/blog" element={<BlogPage />} />
-            <Route path="/blog/:slug" element={<BlogPostPage />} />
-            <Route path="/glossario" element={<GlossaryPage />} />
-            <Route path="/glossario/:slug" element={<GlossaryTermPage />} />
-            <Route path="/guias" element={<GuidesPage />} />
-            <Route path="/guias/seo-aio-checklist" element={<SeoAioChecklistPage />} />
-            
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </TooltipProvider>
-      </BrowserRouter>
+      <UserProvider>
+        <BrowserRouter>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/results" element={<ResultsPage />} />
+              <Route path="/como-funciona" element={<HowItWorksPage />} />
+              <Route path="/faq" element={<FAQPage />} />
+              <Route path="/contacto" element={<ContactPage />} />
+              <Route path="/signin" element={<SignInPage />} />
+              <Route path="/signup" element={<SignUpPage />} />
+              <Route path="/recuperar-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/verification" element={<VerificationPage />} />
+              <Route path="/auth/callback" element={<Navigate to="/dashboard" />} />
+              
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/dashboard/client" element={<ClientDashboardPage />} />
+              <Route path="/dashboard/client/:id" element={<ClientPage />} />
+              <Route path="/dashboard/clients" element={<ClientsPage />} />
+              <Route path="/dashboard/bulk-import" element={<BulkImportPage />} />
+              <Route path="/dashboard/settings" element={<SettingsPage />} />
+              <Route path="/dashboard/blog-posts" element={<BlogPostsPage />} />
+              
+              <Route path="/blog" element={<BlogPage />} />
+              <Route path="/blog/:slug" element={<BlogPostPage />} />
+              <Route path="/glossario" element={<GlossaryPage />} />
+              <Route path="/glossario/:slug" element={<GlossaryTermPage />} />
+              <Route path="/guias" element={<GuidesPage />} />
+              <Route path="/guias/seo-aio-checklist" element={<SeoAioChecklistPage />} />
+              
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </TooltipProvider>
+        </BrowserRouter>
+      </UserProvider>
     </QueryClientProvider>
   );
 };

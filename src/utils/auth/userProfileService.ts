@@ -61,6 +61,22 @@ export async function ensureUserInDb(
       role = 'admin';
     }
     
+    // Check if user exists first
+    const { data: existingUser, error: checkError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
+    
+    if (checkError) {
+      console.error("Error checking if user exists:", checkError);
+    }
+    
+    // If user exists but with different email (edge case), update by id
+    if (existingUser && existingUser.email !== email) {
+      console.log(`User ID exists but email changed from ${existingUser.email} to ${email}`);
+    }
+    
     // Use upsert to create or update user
     const { error } = await supabase
       .from('users')
