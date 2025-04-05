@@ -3,7 +3,6 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Check, ArrowRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 interface SuccessViewProps {
   sendByEmail: boolean;
@@ -12,8 +11,6 @@ interface SuccessViewProps {
 }
 
 const SuccessView: React.FC<SuccessViewProps> = ({ sendByEmail, compact = false, onDashboardClick }) => {
-  const navigate = useNavigate();
-  
   return (
     <Card className={`w-full animate-scale-in ${compact ? 'p-2' : ''}`}>
       <CardHeader className={compact ? 'p-3' : ''}>
@@ -44,7 +41,7 @@ const SuccessView: React.FC<SuccessViewProps> = ({ sendByEmail, compact = false,
           className="flex items-center gap-2"
           size={compact ? "sm" : "default"}
         >
-          Aceder ao Dashboard <ArrowRight className="h-4 w-4" />
+          Ver relatório completo <ArrowRight className="h-4 w-4" />
         </Button>
       </CardFooter>
     </Card>
