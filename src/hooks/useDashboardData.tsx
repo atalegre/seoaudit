@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { getClientAnalysisHistory, getClientsFromDatabase } from '@/utils/api';
 import { Client } from '@/utils/api/types';
+import { toast } from 'sonner';
+import { useSearchParams } from 'react-router-dom';
 
 interface DashboardDataReturn {
   clients: Client[];
@@ -25,7 +27,8 @@ export const useDashboardData = (
   id?: string, 
   userEmail?: string
 ): DashboardDataReturn => {
-  const { toast } = useToast();
+  const { toast: hookToast } = useToast();
+  const [searchParams] = useSearchParams();
   const [clients, setClients] = useState<Client[]>([]);
   const [clientReports, setClientReports] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -38,16 +41,10 @@ export const useDashboardData = (
   const [totalRecommendations, setTotalRecommendations] = useState(0);
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
 
-  // Check URL parameters for a specific website
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlParameter = urlParams.get('url');
-    
-    if (urlParameter) {
-      console.log("Found URL parameter:", urlParameter);
-      localStorage.setItem('lastAnalyzedUrl', urlParameter);
-    }
-  }, []);
+  // Get URL from params or localStorage
+  const urlParam = searchParams.get('url');
+  const storedUrl = localStorage.getItem('lastAnalyzedUrl');
+  const targetUrl = urlParam || storedUrl || '';
   
   const fetchClientData = async () => {
     try {
@@ -58,9 +55,6 @@ export const useDashboardData = (
       const clientsData = await getClientsFromDatabase();
       console.log("Fetched clients:", clientsData);
       
-      // Get the URL from local storage if available
-      const lastAnalyzedUrl = localStorage.getItem('lastAnalyzedUrl');
-      
       // Filter clients by user account if available
       let userClients = userEmail 
         ? clientsData.filter((client: Client) => client.account === userEmail)
@@ -69,18 +63,44 @@ export const useDashboardData = (
       console.log("User email:", userEmail);
       console.log("Filtered clients for user:", userClients);
       
-      // If no clients found for this user but we have a lastAnalyzedUrl,
+      // If no clients found for this user but we have a targetUrl,
       // try finding it in all clients
-      if ((!userClients || userClients.length === 0) && lastAnalyzedUrl) {
-        console.log("No clients found for user, trying to find by URL:", lastAnalyzedUrl);
-        const matchingClient = clientsData.find((client: Client) => 
-          client.website === lastAnalyzedUrl || 
-          client.website === lastAnalyzedUrl.replace(/^https?:\/\//, '')
-        );
+      if ((!userClients || userClients.length === 0) && targetUrl) {
+        console.log("No clients found for user, trying to find by URL:", targetUrl);
+        
+        // Normalize URLs for comparison
+        const normalizeUrl = (url: string) => {
+          return url.replace(/^https?:\/\//, '')
+                   .replace(/\/$/, '')
+                   .toLowerCase();
+        };
+        
+        const normalizedTargetUrl = normalizeUrl(targetUrl);
+        
+        const matchingClient = clientsData.find((client: Client) => {
+          const clientUrl = client.website || '';
+          return normalizeUrl(clientUrl) === normalizedTargetUrl;
+        });
         
         if (matchingClient) {
           console.log("Found matching client by URL:", matchingClient);
+          // If we found a matching client by URL, update its account to associate with current user
+          if (userEmail && matchingClient.account !== userEmail) {
+            try {
+              // This would need a proper API call to update the client's account
+              console.log("Updating client account to associate with current user");
+              matchingClient.account = userEmail;
+              // Ideally update this in the database too
+            } catch (err) {
+              console.error("Error updating client account:", err);
+            }
+          }
           userClients = [matchingClient];
+        } else {
+          console.log("No matching client found by URL");
+          toast.error("Site não encontrado", {
+            description: "O site analisado não foi encontrado no sistema."
+          });
         }
       }
       
@@ -143,8 +163,8 @@ export const useDashboardData = (
         console.log("Latest report:", latestReport);
         
         // Atualizar scores
-        setSeoScore(latestReport.seo.score || 0);
-        setAioScore(latestReport.aio.score || 0);
+        setSeoScore(latestReport.seo?.score || 0);
+        setAioScore(latestReport.aio?.score || 0);
         
         // Atualizar última atualização
         setLastUpdate(new Date(latestReport.timestamp).toLocaleDateString());
@@ -153,8 +173,8 @@ export const useDashboardData = (
         if (sortedHistory.length > 1) {
           const previousReport = sortedHistory[1];
           setScoreDiff({
-            seo: (latestReport.seo.score || 0) - (previousReport.seo.score || 0),
-            aio: (latestReport.aio.score || 0) - (previousReport.aio.score || 0)
+            seo: (latestReport.seo?.score || 0) - (previousReport.seo?.score || 0),
+            aio: (latestReport.aio?.score || 0) - (previousReport.aio?.score || 0)
           });
         }
         
@@ -168,17 +188,17 @@ export const useDashboardData = (
         // Formatar relatórios para exibição
         const formattedReports = sortedHistory.slice(0, 4).map((report, index) => ({
           id: index + 1,
-          name: `Relatório ${(report.seo.score || 0) > (report.aio.score || 0) ? 'SEO' : 'AIO'} ${new Date(report.timestamp).toLocaleDateString()}`,
+          name: `Relatório ${(report.seo?.score || 0) > (report.aio?.score || 0) ? 'SEO' : 'AIO'} ${new Date(report.timestamp).toLocaleDateString()}`,
           date: new Date(report.timestamp).toLocaleDateString(),
           status: 'completed',
-          type: (report.seo.score || 0) > (report.aio.score || 0) ? 'SEO' : 'AIO'
+          type: (report.seo?.score || 0) > (report.aio?.score || 0) ? 'SEO' : 'AIO'
         }));
         
         setClientReports(formattedReports);
         
         // Notificações baseadas em análise real
         const newNotifications = [];
-        if ((latestReport.seo.score || 0) < 60) {
+        if ((latestReport.seo?.score || 0) < 60) {
           newNotifications.push({
             id: 1,
             title: 'Score SEO baixo',
@@ -233,12 +253,20 @@ export const useDashboardData = (
           type: clientData.seoScore > clientData.aioScore ? 'SEO' : 'AIO'
         }]);
       }
+
+      // Show success message when data is loaded
+      toast.success("Dashboard atualizado", {
+        description: "Os dados do site foram carregados com sucesso."
+      });
     } catch (error) {
       console.error('Error fetching client data:', error);
-      toast({
+      hookToast({
         title: "Erro",
         description: "Não foi possível carregar os dados do cliente.",
         variant: "destructive"
+      });
+      toast.error("Erro ao carregar dados", {
+        description: "Não foi possível carregar os dados do cliente."
       });
     } finally {
       setIsLoading(false);
@@ -257,8 +285,11 @@ export const useDashboardData = (
   
   // Initial data fetch
   useEffect(() => {
+    if (targetUrl) {
+      console.log("Initial fetch with target URL:", targetUrl);
+    }
     fetchClientData();
-  }, [id, selectedClientId, userEmail]);
+  }, [id, userEmail]);
   
   return {
     clients,

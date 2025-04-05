@@ -69,6 +69,10 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
     setIsSubmitting(true);
     
     try {
+      // Store URL in local storage to ensure it's available after redirect
+      localStorage.setItem('lastAnalyzedUrl', url);
+      console.log("Saved analyzed URL to localStorage:", url);
+      
       // Verificar se o usuário já existe ou criar conta
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
@@ -96,7 +100,7 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
         contactEmail: email,
         website: url,
         status: 'active',
-        account: email, // Use email as account to link the client to this user
+        account: email, // This is critical - use email as account to link the client to this user
         seoScore: seoScore,
         aioScore: aioScore,
         lastAnalysis: new Date(),
@@ -105,9 +109,6 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
       console.log('Creating client in database:', newClient);
       const savedClientResult = await saveClientsToDatabase([newClient]);
       console.log('Save client result:', savedClientResult);
-      
-      // Store URL in local storage to ensure it's available after redirect
-      localStorage.setItem('lastAnalyzedUrl', url);
       
       // Envio de email com relatório
       if (sendByEmail) {

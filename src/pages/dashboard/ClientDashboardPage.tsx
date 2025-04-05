@@ -1,20 +1,32 @@
 
-import React, { useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/Header';
 import { useAuthCheck } from '@/hooks/useAuthCheck';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import DashboardContent from '@/components/dashboard/client/DashboardContent';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const ClientDashboardPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const { toast: hookToast } = useToast();
   const { user, userEmail } = useAuthCheck();
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
+  
+  // Get url parameter if present
+  const urlParam = searchParams.get('url');
   
   useEffect(() => {
+    // Store URL parameter in localStorage for persistence
+    if (urlParam) {
+      console.log("Storing URL parameter in localStorage:", urlParam);
+      localStorage.setItem('lastAnalyzedUrl', urlParam);
+    }
+    
     // Check auth state when component mounts
     const checkAuth = async () => {
       const { data } = await supabase.auth.getSession();
@@ -26,11 +38,16 @@ const ClientDashboardPage = () => {
             message: "Faça login para acessar o dashboard"
           }
         });
+      } else {
+        setIsAuthChecked(true);
+        toast.success("Dashboard carregado", {
+          description: "Os seus dados foram carregados com sucesso."
+        });
       }
     };
     
     checkAuth();
-  }, [navigate, location]);
+  }, [navigate, location, urlParam]);
   
   const {
     clients,
@@ -49,7 +66,7 @@ const ClientDashboardPage = () => {
   } = useDashboardData(undefined, userEmail);
 
   const handleLogout = () => {
-    toast({
+    hookToast({
       title: "Sessão terminada",
       description: "Você foi desconectado com sucesso.",
     });
