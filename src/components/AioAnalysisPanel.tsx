@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BrainCircuit, AlertCircle, CheckCircle, MessageSquare } from 'lucide-react';
@@ -45,7 +44,6 @@ interface TopicTagProps {
 }
 
 const TopicTag: React.FC<TopicTagProps> = ({ topic }) => {
-  // Generate a consistent but random-like color based on the topic string
   const stringToColor = (str: string) => {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
@@ -57,7 +55,7 @@ const TopicTag: React.FC<TopicTagProps> = ({ topic }) => {
   };
   
   const backgroundColor = stringToColor(topic);
-  const textColor = "hsl(0, 0%, 20%)"; // Dark text
+  const textColor = "hsl(0, 0%, 20%)";
   
   return (
     <Badge 
@@ -90,6 +88,7 @@ interface AioAnalysisPanelProps {
   naturalLanguage: number;
   topicsDetected: string[];
   confusingParts: string[];
+  className?: string;
 }
 
 const AioAnalysisPanel: React.FC<AioAnalysisPanelProps> = ({
@@ -98,9 +97,9 @@ const AioAnalysisPanel: React.FC<AioAnalysisPanelProps> = ({
   logicalStructure,
   naturalLanguage,
   topicsDetected,
-  confusingParts
+  confusingParts,
+  className
 }) => {
-  // Generate descriptive text for each metric
   const getClarityDescription = (score: number) => {
     if (score >= 80) return "O conteúdo é claro e direto, facilitando o entendimento da IA.";
     if (score >= 60) return "O conteúdo é razoavelmente claro, mas tem pontos que a IA pode não compreender completamente.";
@@ -120,7 +119,7 @@ const AioAnalysisPanel: React.FC<AioAnalysisPanelProps> = ({
   };
   
   return (
-    <Card>
+    <Card className={cn(className)}>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-medium flex items-center gap-2">

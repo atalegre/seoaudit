@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Zap, Smartphone, Lock, Image, AlertTriangle, Check } from 'lucide-react';
@@ -18,6 +17,7 @@ interface TechnicalHealthPanelProps {
   lcp?: number;
   cls?: number;
   fid?: number;
+  className?: string;
 }
 
 const AlertBanner = ({ condition, message, type }: { condition: boolean, message: string, type: 'warning' | 'success' }) => {
@@ -47,7 +47,6 @@ const AlertBanner = ({ condition, message, type }: { condition: boolean, message
   return null;
 };
 
-// Usando React.memo para evitar re-renderizações desnecessárias
 const TechnicalHealthPanel = React.memo(({
   loadTimeDesktop,
   loadTimeMobile,
@@ -57,17 +56,16 @@ const TechnicalHealthPanel = React.memo(({
   performanceScore,
   lcp = 2.5,
   cls = 0.25,
-  fid = 100
+  fid = 100,
+  className
 }: TechnicalHealthPanelProps) => {
-  // Helper functions para status
   const getSpeedStatus = (seconds: number) => 
     seconds <= 2 ? 'success' : seconds <= 4 ? 'warning' : 'error';
 
-  // Valor texto simples para mobileFriendly
   const mobileFriendlyText = mobileFriendly ? 'Sim' : 'Não';
   
   return (
-    <Card className="border-blue-100">
+    <Card className={cn("border-blue-100", className)}>
       <CardHeader className="pb-2 border-b border-blue-50">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-medium flex items-center gap-2">
@@ -137,7 +135,6 @@ const TechnicalHealthPanel = React.memo(({
                     imageOptimization >= 40 ? "Otimização parcial de imagens" : "Imagens sem otimização adequada"}
         />
         
-        {/* Alertas visuais conforme solicitado */}
         <AlertBanner 
           condition={loadTimeMobile > 4}
           message="Tempo de carregamento acima de 4s em mobile"
