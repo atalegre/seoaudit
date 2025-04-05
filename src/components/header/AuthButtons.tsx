@@ -1,51 +1,27 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
 import { useUser } from '@/contexts/UserContext';
+import LoginButton from './buttons/LoginButton';
+import RegisterButton from './buttons/RegisterButton';
+import LogoutButton from './buttons/LogoutButton';
+import DashboardButton from './buttons/DashboardButton';
 
 const AuthButtons = () => {
-  const navigate = useNavigate();
-  const { user, role } = useUser();
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    navigate('/');
-  };
-
-  const handleDashboardAccess = () => {
-    if (user) {
-      // If user is logged in, navigate directly to dashboard
-      navigate('/dashboard');
-    } else {
-      // If not logged in, redirect to sign in page
-      navigate('/signin');
-      
-      // You could also show a toast notification explaining why they're being redirected
-    }
-  };
+  const { user } = useUser();
 
   return (
     <div className="flex items-center gap-4">
       {!user ? (
         <>
-          <Button variant="outline" onClick={() => navigate('/signin')}>
-            Entrar
-          </Button>
-          <Button variant="outline" onClick={() => navigate('/signup')}>
-            Registar
-          </Button>
+          <LoginButton />
+          <RegisterButton />
         </>
       ) : (
-        <Button variant="ghost" onClick={handleSignOut}>Sair</Button>
+        <LogoutButton />
       )}
       
       {/* Dashboard button that requires login */}
-      <Button variant="default" onClick={handleDashboardAccess}>
-        Acessar Dashboard
-      </Button>
+      <DashboardButton />
     </div>
   );
 };
