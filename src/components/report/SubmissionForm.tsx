@@ -50,10 +50,43 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
       localStorage.setItem('lastAnalyzedUrl', url);
       console.log("Saved analyzed URL to localStorage:", url);
       
-      // Verificar se o usuário já existe ou criar conta
+      // Check if user is already logged in
+      if (user) {
+        console.log("User already logged in:", user);
+        // Create client directly associated with this user
+        const newClient: Client = {
+          id: Date.now(), // Temporary, will be replaced by Supabase ID
+          name,
+          contactName: name,
+          contactEmail: email,
+          website: url,
+          status: 'active',
+          account: user.email || email, // Make sure to link to the user's email
+          seoScore: seoScore,
+          aioScore: aioScore,
+          lastAnalysis: new Date(),
+        };
+        
+        await saveClientsToDatabase([newClient]);
+        
+        // Send email if requested
+        if (sendByEmail) {
+          await sendReportByEmail(email, name, seoScore, aioScore, url);
+          toast.success('Relatório enviado para o seu email com sucesso!');
+        }
+        
+        // Set as submitted and redirect to dashboard with URL parameter
+        setIsSubmitted(true);
+        setTimeout(() => {
+          navigate(`/dashboard/client?url=${encodeURIComponent(url)}`);
+        }, 2000);
+        return;
+      }
+      
+      // If not logged in, create a new account
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
-        password: `${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`, // Senha aleatória
+        password: `${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`, // Random password
         options: {
           data: {
             name,
@@ -69,9 +102,9 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
       
       console.log('Auth data:', authData);
       
-      // Criar cliente no sistema com informações completas
+      // Create client in the system with complete information
       const newClient: Client = {
-        id: Date.now(), // Temporário, será substituído pelo ID do Supabase
+        id: Date.now(), // Temporary, will be replaced by Supabase ID
         name,
         contactName: name,
         contactEmail: email,
@@ -87,7 +120,7 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
       const savedClientResult = await saveClientsToDatabase([newClient]);
       console.log('Save client result:', savedClientResult);
       
-      // Envio de email com relatório
+      // Send email with report if requested
       if (sendByEmail) {
         const emailSent = await sendReportByEmail(
           email, 
@@ -104,14 +137,14 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
         }
       }
       
-      // Sucesso
+      // Success
       setIsSubmitted(true);
       toast.success('Conta criada com sucesso!');
       
-      // Autenticar o usuário
+      // Authenticate the user
       if (!authData?.user) {
         console.log('Attempting to sign in user with email:', email);
-        // Redirecionar para a página de login com URL como parâmetro
+        // Redirect to login page with URL as parameter
         setTimeout(() => {
           navigate('/signin', { 
             state: { 
@@ -124,7 +157,7 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
       }
       
       console.log('Auth successful, redirecting to dashboard with URL parameter');
-      // Redirecionar para o dashboard após 2 segundos
+      // Redirect to dashboard after 2 seconds
       setTimeout(() => {
         navigate(`/dashboard/client?url=${encodeURIComponent(url)}`);
       }, 2000);

@@ -1,136 +1,100 @@
 
 import { useState, useEffect } from 'react';
-import { getClientsFromDatabase, getClientAnalysisHistory } from '@/utils/api';
 import { Client } from '@/utils/api/types';
+import { getClientsFromDatabase } from '@/utils/api/clientService';
 import { toast } from 'sonner';
-import { useToast } from '@/hooks/use-toast';
-
-export interface ClientDataResult {
-  clients: Client[];
-  isLoading: boolean;
-  selectedClientId: number | null;
-  setSelectedClientId: (id: number | null) => void;
-  fetchClientData: () => Promise<Client | null>;
-}
 
 export function useClientDataFetching(
-  targetUrl: string,
-  userEmail?: string,
-  clientId?: number | null
-): ClientDataResult {
+  targetUrl: string | null = null,
+  userEmail: string | null = null,
+  clientId: number | null = null
+) {
   const [clients, setClients] = useState<Client[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
-  const { toast: hookToast } = useToast();
-
-  const fetchClientData = async (): Promise<Client | null> => {
+  const [selectedClientId, setSelectedClientId] = useState<number | null>(clientId);
+  
+  // Function to fetch client data
+  const fetchClientData = async () => {
     try {
       setIsLoading(true);
-      console.log("=== Client Data Fetch Started ===");
-      console.log("Target URL:", targetUrl);
-      console.log("User email:", userEmail);
+      console.log("Fetching client data with targetUrl:", targetUrl, "userEmail:", userEmail);
       
-      // Get all client websites
-      const clientsData = await getClientsFromDatabase();
-      console.log("Fetched clients:", clientsData);
+      const allClients = await getClientsFromDatabase();
+      console.log("Fetched clients:", allClients);
       
-      // Filter clients by user account if available
-      let userClients = userEmail 
-        ? clientsData.filter((client: Client) => 
-            client.account === userEmail || 
-            client.contactEmail === userEmail)
-        : clientsData;
+      // Filter clients based on user email or admin status
+      let filteredClients: Client[] = [];
       
-      console.log("Filtered clients for user:", userClients);
+      if (userEmail) {
+        // Filter clients that belong to this user's account
+        filteredClients = allClients.filter(
+          client => client.account === userEmail || client.contactEmail === userEmail
+        );
+        console.log("Filtered clients for user:", filteredClients);
+      } else {
+        filteredClients = allClients;
+      }
       
-      // If no clients found for this user but we have a targetUrl,
-      // try finding it in all clients
-      if ((!userClients || userClients.length === 0) && targetUrl) {
-        console.log("No clients found for user, trying to find by URL:", targetUrl);
-        
-        // Normalize URLs for comparison
+      setClients(filteredClients);
+      
+      // If we have clients and a target URL, try to find and select the matching client
+      if (filteredClients.length > 0 && targetUrl) {
+        // Normalize URLs for comparison (remove protocol, www, and trailing slashes)
         const normalizeUrl = (url: string) => {
-          if (!url) return '';
-          return url.replace(/^https?:\/\//, '')
-                   .replace(/\/$/, '')
-                   .replace(/^www\./, '')
-                   .toLowerCase();
+          return url.replace(/^https?:\/\/(www\.)?/, '')
+                   .replace(/\/$/, '');
         };
         
         const normalizedTargetUrl = normalizeUrl(targetUrl);
-        console.log("Normalized target URL:", normalizedTargetUrl);
         
-        const matchingClient = clientsData.find((client: Client) => {
-          const clientUrl = client.website || '';
-          const normalizedClientUrl = normalizeUrl(clientUrl);
-          console.log(`Comparing: "${normalizedClientUrl}" with "${normalizedTargetUrl}"`);
-          return normalizedClientUrl === normalizedTargetUrl;
+        // Find client with matching website
+        const targetClient = filteredClients.find(client => {
+          if (!client.website) return false;
+          return normalizeUrl(client.website) === normalizedTargetUrl;
         });
         
-        if (matchingClient) {
-          console.log("Found matching client by URL:", matchingClient);
-          // If we found a matching client by URL, update its account to associate with current user
-          if (userEmail && matchingClient.account !== userEmail) {
-            try {
-              // Associate with current user
-              console.log("Updating client account to associate with current user");
-              matchingClient.account = userEmail;
-              // Ideally update this in the database too
-            } catch (err) {
-              console.error("Error updating client account:", err);
-            }
+        if (targetClient) {
+          console.log("Target client ID:", targetClient.id);
+          setSelectedClientId(targetClient.id);
+          return targetClient; // Return for immediate use by caller
+        } else if (clientId) {
+          // If no match by URL but we have a requested client ID
+          const clientById = filteredClients.find(c => c.id === clientId);
+          if (clientById) {
+            console.log("Client found by ID:", clientById);
+            setSelectedClientId(clientId);
+            return clientById;
           }
-          userClients = [matchingClient];
-        } else {
-          console.log("No matching client found by URL");
-          toast.error("Site não encontrado", {
-            description: "O site analisado não foi encontrado no sistema."
-          });
+        } else if (filteredClients.length > 0) {
+          // No match by URL or ID, select the most recent client
+          console.log("No client match, selecting most recent:", filteredClients[0].id);
+          setSelectedClientId(filteredClients[0].id);
+          return filteredClients[0];
         }
+      } else if (filteredClients.length > 0 && !selectedClientId) {
+        // If no target URL but we have clients, select the first one
+        console.log("No target URL, selecting first client:", filteredClients[0].id);
+        setSelectedClientId(filteredClients[0].id);
       }
       
-      setClients(userClients);
-      
-      if (!userClients || userClients.length === 0) {
-        console.log("No clients found for this user");
-        setIsLoading(false);
-        return null;
-      }
-      
-      // If no specific client ID is provided, use the first one or the selected one
-      const targetClientId = clientId || selectedClientId || userClients[0]?.id;
-      if (targetClientId) {
-        setSelectedClientId(targetClientId);
-      }
-      
-      console.log("Target client ID:", targetClientId);
-      
-      // Get the client data
-      const clientData = userClients.find(c => c.id === targetClientId);
-      if (!clientData) {
-        console.log("Client not found with ID:", targetClientId);
-        setIsLoading(false);
-        return null;
-      }
-      
-      console.log("Client found:", clientData);
-      return clientData;
+      // Return the first client or null if we have no clients
+      return filteredClients.length > 0 ? filteredClients[0] : null;
     } catch (error) {
-      console.error('Error fetching client data:', error);
-      hookToast({
-        title: "Erro",
-        description: "Não foi possível carregar os dados do cliente.",
-        variant: "destructive"
-      });
-      toast.error("Erro ao carregar dados", {
-        description: "Não foi possível carregar os dados do cliente."
+      console.error("Error fetching client data:", error);
+      toast.error("Erro ao carregar dados dos clientes", {
+        description: "Tente novamente mais tarde."
       });
       return null;
     } finally {
       setIsLoading(false);
     }
   };
-
+  
+  // Initial data fetch on component mount
+  useEffect(() => {
+    fetchClientData();
+  }, [targetUrl, userEmail, clientId]);
+  
   return {
     clients,
     isLoading,

@@ -23,7 +23,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
         <SuccessView 
           sendByEmail={sendByEmail} 
           compact={compact} 
-          onDashboardClick={() => navigate('/dashboard/client')} 
+          onDashboardClick={() => navigate(`/dashboard/client?url=${encodeURIComponent(url)}`)} 
         />
       ) : (
         <SubmissionForm
