@@ -34,14 +34,29 @@ const TechnicalHealthPanel = React.memo(({
   fid = 100,
   className
 }: TechnicalHealthPanelProps) => {
-  // Função memoizada para determinar o status de velocidade
+  // Funções memoizadas para melhorar desempenho
   const getSpeedStatus = useMemo(() => 
     (seconds: number) => seconds <= 2 ? 'success' : seconds <= 4 ? 'warning' : 'error',
   []);
 
   const mobileFriendlyText = mobileFriendly ? 'Sim' : 'Não';
   
-  // Utilizar content-visibility em elementos não críticos
+  // Memoizar textos de descrição para evitar recriação nas renderizações
+  const loadDesktopDescription = useMemo(() => {
+    return loadTimeDesktop <= 2 ? "Excelente tempo de resposta" : 
+           loadTimeDesktop <= 4 ? "Tempo de resposta aceitável" : "Tempo de resposta lento";
+  }, [loadTimeDesktop]);
+  
+  const loadMobileDescription = useMemo(() => {
+    return loadTimeMobile <= 2 ? "Rápido em dispositivos móveis" : 
+           loadTimeMobile <= 4 ? "Aceitável em dispositivos móveis" : "Lento em dispositivos móveis";
+  }, [loadTimeMobile]);
+  
+  const imageOptDescription = useMemo(() => {
+    return imageOptimization >= 70 ? "Imagens bem otimizadas" : 
+           imageOptimization >= 40 ? "Otimização parcial de imagens" : "Imagens sem otimização adequada";
+  }, [imageOptimization]);
+  
   return (
     <Card className={cn("border-blue-100", className)}>
       <CardHeader className="pb-2 border-b border-blue-50">
@@ -64,16 +79,15 @@ const TechnicalHealthPanel = React.memo(({
         </div>
       </CardHeader>
       <CardContent className="pt-4 grid gap-3">
-        {/* Reservar espaço para elementos antes do carregamento para reduzir CLS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3" style={{ minHeight: '120px', containIntrinsicSize: '0 120px', contentVisibility: 'auto' }}>
+        {/* Métricas de velocidade */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <MetricItem 
             title="Carregamento Desktop" 
             value={`${loadTimeDesktop.toFixed(1)}s`}
             status={getSpeedStatus(loadTimeDesktop)}
             icon={<Zap className={cn("h-4 w-4", loadTimeDesktop <= 2 ? "text-green-500" : 
                                          loadTimeDesktop <= 4 ? "text-amber-500" : "text-red-500")} />}
-            description={loadTimeDesktop <= 2 ? "Excelente tempo de resposta" : 
-                       loadTimeDesktop <= 4 ? "Tempo de resposta aceitável" : "Tempo de resposta lento"}
+            description={loadDesktopDescription}
           />
           <MetricItem 
             title="Carregamento Mobile" 
@@ -81,12 +95,12 @@ const TechnicalHealthPanel = React.memo(({
             status={getSpeedStatus(loadTimeMobile)}
             icon={<Smartphone className={cn("h-4 w-4", loadTimeMobile <= 2 ? "text-green-500" : 
                                            loadTimeMobile <= 4 ? "text-amber-500" : "text-red-500")} />}
-            description={loadTimeMobile <= 2 ? "Rápido em dispositivos móveis" : 
-                       loadTimeMobile <= 4 ? "Aceitável em dispositivos móveis" : "Lento em dispositivos móveis"}
+            description={loadMobileDescription}
           />
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3" style={{ minHeight: '120px', containIntrinsicSize: '0 120px', contentVisibility: 'auto' }}>
+        {/* Métricas de compatibilidade */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <MetricItem 
             title="Adaptável para Mobile" 
             value={mobileFriendlyText}
@@ -103,36 +117,36 @@ const TechnicalHealthPanel = React.memo(({
           />
         </div>
         
+        {/* Otimização de imagens */}
         <MetricItem 
           title="Otimização de Imagens" 
           value={`${imageOptimization}%`}
           status={imageOptimization >= 70 ? 'success' : imageOptimization >= 40 ? 'warning' : 'error'}
           icon={<Image className={cn("h-4 w-4", 
-                                  imageOptimization >= 70 ? "text-green-500" : 
-                                  imageOptimization >= 40 ? "text-amber-500" : "text-red-500")} />}
-          description={imageOptimization >= 70 ? "Imagens bem otimizadas" : 
-                    imageOptimization >= 40 ? "Otimização parcial de imagens" : "Imagens sem otimização adequada"}
+                               imageOptimization >= 70 ? "text-green-500" : 
+                               imageOptimization >= 40 ? "text-amber-500" : "text-red-500")} />}
+          description={imageOptDescription}
         />
         
-        {/* Lazy load do conteúdo menos crítico */}
-        <div style={{ contentVisibility: 'auto', containIntrinsicSize: '0 80px' }}>
+        {/* Alertas - renderização condicional direta sem content-visibility */}
+        {loadTimeMobile > 4 && (
           <AlertBanner 
-            condition={loadTimeMobile > 4}
+            condition={true}
             message="Tempo de carregamento acima de 4s em mobile"
             type="warning"
           />
-          
+        )}
+        
+        {security && mobileFriendly && (
           <AlertBanner 
-            condition={security && mobileFriendly}
+            condition={true}
             message="Estrutura HTML válida e segura"
             type="success"
           />
-        </div>
+        )}
         
-        {/* Renderização lazy de métricas web vitals */}
-        <div style={{ contentVisibility: 'auto', containIntrinsicSize: '0 150px' }}>
-          <CoreWebVitalsSection lcp={lcp} cls={cls} fid={fid} />
-        </div>
+        {/* Métricas web vitals - carregadas diretamente */}
+        <CoreWebVitalsSection lcp={lcp} cls={cls} fid={fid} />
       </CardContent>
     </Card>
   );

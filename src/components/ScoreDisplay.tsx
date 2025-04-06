@@ -77,6 +77,7 @@ const ScoreDisplay = memo((props: ScoreDisplayProps) => {
   
   const { handleDashboardAccess } = useDashboardAccess();
   
+  // Corrigindo propriedade para remover 'deferred' que não existe no tipo
   const { presenceScore } = useLLMPresence({ 
     url, 
     autoStart: false 

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, memo } from 'react';
 
 interface LazyOptimizedImageProps {
@@ -25,17 +26,19 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = memo(({
   sizes = '100vw',
   onLoad,
 }) => {
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(priority);
   const [isInView, setIsInView] = useState(priority);
   const imgRef = useRef<HTMLImageElement>(null);
   const placeholderRef = useRef<HTMLDivElement>(null);
   
+  // Configurar aspect ratio apenas uma vez
   useEffect(() => {
     if (placeholderRef.current && width && height) {
       placeholderRef.current.style.aspectRatio = `${width}/${height}`;
     }
   }, [width, height]);
   
+  // Otimizar Intersection Observer com cleanup adequado
   useEffect(() => {
     if (priority || !window.IntersectionObserver) {
       setIsInView(true);
@@ -47,19 +50,24 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = memo(({
       threshold: 0.01,
     };
     
-    const observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) {
-        setIsInView(true);
-        observer.disconnect();
-      }
-    }, options);
+    let observer: IntersectionObserver;
+    const currentElement = imgRef.current;
     
-    if (imgRef.current) {
-      observer.observe(imgRef.current);
+    if (currentElement) {
+      observer = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+          setIsInView(true);
+          observer.disconnect();
+        }
+      }, options);
+      
+      observer.observe(currentElement);
     }
     
     return () => {
-      observer.disconnect();
+      if (observer && currentElement) {
+        observer.disconnect();
+      }
     };
   }, [priority]);
   
@@ -67,16 +75,19 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = memo(({
     ? { aspectRatio: `${width}/${height}`, contain: 'layout' }
     : {};
     
-  const optimizedSrc = src.endsWith('.jpg') || src.endsWith('.jpeg') || src.endsWith('.png')
-    ? src.replace(/\.(jpg|jpeg|png)$/, '.webp')
-    : src;
+  // Memoizar a URL otimizada para evitar recálculos
+  const optimizedSrc = React.useMemo(() => {
+    return src.endsWith('.jpg') || src.endsWith('.jpeg') || src.endsWith('.png')
+      ? src.replace(/\.(jpg|jpeg|png)$/, '.webp')
+      : src;
+  }, [src]);
     
-  const createSrcSet = () => {
+  const createSrcSet = React.useCallback(() => {
     if (!width) return undefined;
     
     const baseSrc = optimizedSrc;
     return `${baseSrc} 1x, ${baseSrc.replace(/\.webp$/, '@2x.webp')} 2x`;
-  };
+  }, [optimizedSrc, width]);
   
   const handleImageLoad = () => {
     setIsLoaded(true);
