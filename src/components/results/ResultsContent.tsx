@@ -1,54 +1,83 @@
 
-import React from 'react';
+import React, { useRef, lazy, Suspense } from 'react';
+import { AlertCircle } from 'lucide-react';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import ScoreDisplay from '@/components/ScoreDisplay';
+import { formatUrl } from '@/utils/resultsPageHelpers';
 import { AnalysisResult } from '@/utils/api/types';
-import { useIsMobile } from '@/hooks/use-mobile';
-import AnalysisErrorView from './AnalysisErrorView';
-import AnalysisContent from './AnalysisContent';
+import ReanalyzeButton from './ReanalyzeButton';
+import PartialDataAlert from './PartialDataAlert';
 
-interface ResultsContentProps {
+// Lazy load report form to improve initial render time
+const ReportForm = lazy(() => import('@/components/report/ReportForm'));
+
+interface AnalysisContentProps {
   analysisData: AnalysisResult;
   seoError: string | null;
   aioError: string | null;
   onReanalyze: () => void;
 }
 
-const ResultsContent: React.FC<ResultsContentProps> = ({ 
-  analysisData, 
-  seoError, 
-  aioError, 
-  onReanalyze 
+const AnalysisContent: React.FC<AnalysisContentProps> = ({
+  analysisData,
+  seoError,
+  aioError,
+  onReanalyze
 }) => {
-  const isMobile = useIsMobile();
-  
+  const recommendationsRef = useRef<HTMLDivElement>(null);
   const hasSeoData = analysisData?.seo?.score > 0;
   const hasAioData = analysisData?.aio?.score > 0;
+  const seoHasError = analysisData?.seo?.isError === true;
   
-  if (!hasSeoData && !hasAioData) {
-    return <AnalysisErrorView 
-      seoError={seoError} 
-      aioError={aioError} 
-      onReanalyze={onReanalyze} 
-    />;
-  }
-
+  const scrollToRecommendations = () => {
+    recommendationsRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+  
   return (
-    <div className="max-w-6xl mx-auto">
-      <h1 className="text-xl md:text-3xl font-bold mb-4 md:mb-8 animate-fade-in lcp-target">
-        Resultados da análise
-      </h1>
+    <>
+      <PartialDataAlert 
+        seoError={seoError} 
+        aioError={aioError} 
+        seoHasError={seoHasError} 
+        seoErrorMessage={analysisData?.seo?.errorMessage}
+      />
       
-      <div className="grid grid-cols-1 gap-4 md:gap-6">
-        <div className="space-y-4 md:space-y-6">
-          <AnalysisContent 
-            analysisData={analysisData}
-            seoError={seoError}
-            aioError={aioError}
-            onReanalyze={onReanalyze}
-          />
+      {/* Priority content - LCP target */}
+      <div className="lcp-target">
+        <ScoreDisplay
+          seoScore={analysisData?.seo?.score || 0}
+          aioScore={analysisData?.aio?.score || 0}
+          performanceScore={analysisData?.seo?.performanceScore || 0}
+          llmPresenceScore={0}
+          status={analysisData?.overallStatus as any || 'Crítico'}
+          url={formatUrl(analysisData?.url || '')}
+          logoUrl={analysisData?.logoUrl}
+          onScrollToRecommendations={scrollToRecommendations}
+        />
+      </div>
+      
+      <ReanalyzeButton onReanalyze={onReanalyze} />
+      
+      {/* Deferred content - load after main content */}
+      <div className="space-y-6 mt-8" style={{ contentVisibility: 'auto', containIntrinsicSize: '0 300px' }}>
+        <div className="bg-white p-6 rounded-lg border shadow-sm">
+          <h2 className="text-xl font-semibold mb-4">Relatório Completo</h2>
+          <p className="text-gray-600 mb-6">
+            Para aceder ao relatório completo com análises detalhadas, recomendações personalizadas
+            e insights sobre SEO e otimização de conteúdo, registe-se na nossa plataforma.
+          </p>
+          
+          <Suspense fallback={<div className="animate-pulse bg-gray-200 h-16 rounded-md"></div>}>
+            <ReportForm 
+              url={analysisData?.url || ''} 
+              seoScore={analysisData?.seo?.score || 0}
+              aioScore={analysisData?.aio?.score || 0}
+            />
+          </Suspense>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
-export default ResultsContent;
+export default React.memo(AnalysisContent);

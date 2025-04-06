@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { AnalysisResult } from '@/utils/api/types';
 import { getPageInsightsData } from '@/utils/api';
 import { getChatGptAnalysis } from '@/utils/api/chatGptService';
@@ -18,6 +18,7 @@ export function useAnalysis(urlParam: string | null) {
   const [seoError, setSeoError] = useState<string | null>(null);
   const [aioError, setAioError] = useState<string | null>(null);
   const analysisInProgress = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (!urlParam) {
@@ -25,6 +26,14 @@ export function useAnalysis(urlParam: string | null) {
       setError("URL não fornecido");
       return;
     }
+
+    // Cleanup previous analysis if running
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    // Create new abort controller
+    abortControllerRef.current = new AbortController();
 
     const storedUrl = localStorage.getItem(ANALYSIS_URL_KEY);
     const storedAnalysis = localStorage.getItem(ANALYSIS_STORAGE_KEY);
@@ -45,12 +54,15 @@ export function useAnalysis(urlParam: string | null) {
             const domain = extractDomainFromUrl(urlParam);
             if (domain) {
               parsedAnalysis.logoUrl = `https://logo.clearbit.com/${domain}`;
-              console.log('Adicionado logo URL ao resultado em cache:', parsedAnalysis.logoUrl);
             }
           }
           
-          setAnalysisData(parsedAnalysis);
-          setIsLoading(false);
+          // Use a microtask to update state to avoid blocking rendering
+          queueMicrotask(() => {
+            setAnalysisData(parsedAnalysis);
+            setIsLoading(false);
+          });
+          
           toast('Usando análise em cache', {
             description: 'Mostrando resultados da análise anterior',
             duration: 3000
@@ -59,8 +71,6 @@ export function useAnalysis(urlParam: string | null) {
         } catch (parseError) {
           console.error('Erro ao analisar dados em cache:', parseError);
         }
-      } else {
-        console.log('Cache expirado, obterá novos dados');
       }
     }
     
@@ -70,121 +80,128 @@ export function useAnalysis(urlParam: string | null) {
     }
     
     analysisInProgress.current = true;
-    console.log('Iniciando nova análise para URL:', urlParam);
     setIsLoading(true);
     setSeoError(null);
     setAioError(null);
     
-    // Usar setTimeout para não bloquear a renderização
-    const analyzeUrl = async () => {
-      try {
-        let normalizedUrl = urlParam;
-        if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
-          normalizedUrl = 'https://' + normalizedUrl;
-        }
-        
-        toast('Análise em andamento...', {
-          description: 'Aguarde enquanto analisamos o site.',
-          duration: 3000
-        });
-        
-        // Preparar o URL do logo antecipadamente
-        const domain = extractDomainFromUrl(normalizedUrl);
-        let logoUrl = null;
-        if (domain) {
-          logoUrl = `https://logo.clearbit.com/${domain}`;
-          console.log('Logo URL gerado:', logoUrl);
-        }
-        
-        // Iniciar as análises em paralelo
-        const [seoDataPromise, aioDataPromise] = await Promise.allSettled([
-          // SEO Promise with timeout
-          Promise.race([
+    // Use rAF and microtasks to optimize rendering performance
+    requestAnimationFrame(() => {
+      const analyzeUrl = async () => {
+        try {
+          let normalizedUrl = urlParam;
+          if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
+            normalizedUrl = 'https://' + normalizedUrl;
+          }
+          
+          toast('Análise em andamento...', {
+            description: 'Aguarde enquanto analisamos o site.',
+            duration: 3000
+          });
+          
+          // Preparar o URL do logo antecipadamente para reduzir LCP
+          const domain = extractDomainFromUrl(normalizedUrl);
+          let logoUrl = null;
+          if (domain) {
+            logoUrl = `https://logo.clearbit.com/${domain}`;
+            
+            // Preload logo image to improve LCP
+            const imgPreload = new Image();
+            imgPreload.src = logoUrl;
+          }
+          
+          // Otimizado: iniciar apenas a análise SEO inicialmente para melhorar o tempo de resposta
+          const seoDataPromise = Promise.race([
             getPageInsightsData(normalizedUrl),
             new Promise<null>((_, reject) => 
-              setTimeout(() => reject(new Error('Timeout na análise SEO')), 30000)
+              setTimeout(() => reject(new Error('Timeout na análise SEO')), 15000)
             )
-          ]),
-          // AIO Promise with timeout and delay to avoid conflicts
-          new Promise(resolve => setTimeout(resolve, 100)).then(() => 
-            Promise.race([
+          ]);
+          
+          let seoData = null;
+          
+          try {
+            seoData = await seoDataPromise;
+          } catch (seoError) {
+            setSeoError(seoError instanceof Error ? seoError.message : 'Erro desconhecido na análise SEO');
+            console.error('Error fetching Page Insights data:', seoError);
+          }
+          
+          // Se temos dados SEO, mostrar resultados parciais imediatamente
+          if (seoData) {
+            const partialResults = createAnalysisResult(normalizedUrl, seoData, null);
+            if (logoUrl) {
+              partialResults.logoUrl = logoUrl;
+            }
+            
+            setAnalysisData(partialResults);
+            // Manter loading true enquanto AIO análise continua
+          }
+          
+          // Agora iniciar análise AIO em segundo plano
+          let aioData = null;
+          
+          try {
+            // AIO análise com timeout mais longo
+            aioData = await Promise.race([
               getChatGptAnalysis(normalizedUrl),
               new Promise<null>((_, reject) => 
-                setTimeout(() => reject(new Error('Timeout na análise AIO')), 40000)
+                setTimeout(() => reject(new Error('Timeout na análise AIO')), 25000)
               )
-            ])
-          )
-        ]);
-        
-        let seoData = null;
-        let aioData = null;
-        
-        if (seoDataPromise.status === 'fulfilled') {
-          seoData = seoDataPromise.value;
-        } else {
-          setSeoError(seoDataPromise.reason?.message || 'Erro desconhecido na análise SEO');
-          console.error('Error fetching Page Insights data:', seoDataPromise.reason);
-        }
-        
-        if (aioDataPromise.status === 'fulfilled') {
-          aioData = aioDataPromise.value;
-        } else {
-          setAioError(aioDataPromise.reason?.message || 'Erro desconhecido na análise AIO');
-          console.error('Error fetching AIO data:', aioDataPromise.reason);
-        }
-        
-        if (!seoData && !aioData) {
-          setError('Falha em ambas as análises. Por favor, verifique suas configurações de API.');
+            ]);
+          } catch (aioError) {
+            setAioError(aioError instanceof Error ? aioError.message : 'Erro desconhecido na análise AIO');
+            console.error('Error fetching AIO data:', aioError);
+          }
+          
+          // Criar resultado final com todos os dados disponíveis
+          const finalResults = createAnalysisResult(normalizedUrl, seoData, aioData as any);
+          
+          if (logoUrl) {
+            finalResults.logoUrl = logoUrl;
+          }
+          
+          // Guardar no cache com timestamp
+          try {
+            localStorage.setItem(ANALYSIS_URL_KEY, urlParam);
+            localStorage.setItem(ANALYSIS_STORAGE_KEY, JSON.stringify(finalResults));
+            localStorage.setItem(ANALYSIS_STORAGE_KEY + '_time', Date.now().toString());
+          } catch (storageError) {
+            console.warn('Não foi possível salvar no cache:', storageError);
+          }
+          
+          setAnalysisData(finalResults);
+          
+        } catch (error) {
+          console.error('Error performing analysis:', error);
+          toast.error('Erro ao analisar site', {
+            description: 'Não foi possível completar a análise do site.',
+          });
+          setError("Ocorreu um erro ao analisar o site");
+        } finally {
           setIsLoading(false);
           analysisInProgress.current = false;
-          return;
+          abortControllerRef.current = null;
         }
-        
-        // Criar resultado apenas com os dados disponíveis
-        const results = createAnalysisResult(normalizedUrl, seoData, aioData as any);
-        
-        // Adicionar logo URL se disponível
-        if (logoUrl) {
-          results.logoUrl = logoUrl;
-          console.log('Logo URL adicionado ao resultado:', logoUrl);
-        }
-        
-        // Guardar no cache com timestamp
-        localStorage.setItem(ANALYSIS_URL_KEY, urlParam);
-        localStorage.setItem(ANALYSIS_STORAGE_KEY, JSON.stringify(results));
-        localStorage.setItem(ANALYSIS_STORAGE_KEY + '_time', Date.now().toString());
-        
-        setAnalysisData(results);
-        
-        console.log('Analysis completed with logo:', results);
-      } catch (error) {
-        console.error('Error performing analysis:', error);
-        toast.error('Erro ao analisar site', {
-          description: 'Não foi possível completar a análise do site.',
-        });
-        setError("Ocorreu um erro ao analisar o site");
-      } finally {
-        setIsLoading(false);
-        analysisInProgress.current = false;
-      }
-    };
-    
-    // Defer to the next frame to avoid blocking the main thread
-    requestAnimationFrame(() => {
+      };
+      
       analyzeUrl();
     });
     
     // Cleanup function
     return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
       analysisInProgress.current = false;
     };
   }, [urlParam]);
 
-  const handleReanalyze = () => {
+  const handleReanalyze = useCallback(() => {
     localStorage.removeItem(ANALYSIS_STORAGE_KEY);
     localStorage.removeItem(ANALYSIS_URL_KEY);
     window.location.reload();
-  };
+  }, []);
 
   return {
     isLoading,

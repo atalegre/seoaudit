@@ -4,6 +4,16 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 
+// Implement connection preloading for critical resources
+const preconnectLinks = ['https://fonts.googleapis.com', 'https://fonts.gstatic.com', 'https://www.googletagmanager.com'];
+preconnectLinks.forEach(url => {
+  const link = document.createElement('link');
+  link.rel = 'preconnect';
+  link.href = url;
+  link.crossOrigin = 'anonymous';
+  document.head.appendChild(link);
+});
+
 // Optimize loading strategy to improve LCP and FCP
 const rootElement = document.getElementById("root");
 
@@ -13,11 +23,14 @@ if (!rootElement) {
 
 // Use requestIdleCallback to defer non-critical work
 const startApp = () => {
-  createRoot(rootElement).render(
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
-  );
+  // Create a flushing microtask to prioritize LCP elements
+  Promise.resolve().then(() => {
+    createRoot(rootElement).render(
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>
+    );
+  });
   
   // Report core web vitals
   if ('performance' in window && 'getEntriesByType' in performance) {
@@ -26,10 +39,11 @@ const startApp = () => {
       setTimeout(() => {
         const paintMetrics = performance.getEntriesByType('paint');
         const fcpEntry = paintMetrics.find(entry => entry.name === 'first-contentful-paint');
+        
+        // Use PerformanceObserver to capture LCP
         const lcpObserver = new PerformanceObserver((entryList) => {
           const entries = entryList.getEntries();
           const lastEntry = entries[entries.length - 1];
-          // Log LCP for debugging
           console.log(`LCP: ${lastEntry.startTime}ms`);
           lcpObserver.disconnect();
         });
@@ -44,15 +58,12 @@ const startApp = () => {
   }
 };
 
-// Optimize initialization based on document readiness
+// Priorize critical content rendering
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
-    // Prioritize critical rendering first
-    requestAnimationFrame(() => {
-      startApp();
-    });
+    requestAnimationFrame(startApp);
   });
 } else {
-  // DOM already loaded - start app with higher priority
+  // DOM already loaded - start app immediately
   startApp();
 }

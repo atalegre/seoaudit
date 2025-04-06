@@ -21,7 +21,7 @@ interface TechnicalHealthPanelProps {
   className?: string;
 }
 
-// Memoize component to prevent unnecessary re-renders
+// Use React.memo para evitar renderizações desnecessárias
 const TechnicalHealthPanel = React.memo(({
   loadTimeDesktop,
   loadTimeMobile,
@@ -34,11 +34,14 @@ const TechnicalHealthPanel = React.memo(({
   fid = 100,
   className
 }: TechnicalHealthPanelProps) => {
-  const getSpeedStatus = (seconds: number) => 
-    seconds <= 2 ? 'success' : seconds <= 4 ? 'warning' : 'error';
+  // Função memoizada para determinar o status de velocidade
+  const getSpeedStatus = React.useMemo(() => 
+    (seconds: number) => seconds <= 2 ? 'success' : seconds <= 4 ? 'warning' : 'error',
+  []);
 
   const mobileFriendlyText = mobileFriendly ? 'Sim' : 'Não';
   
+  // Utilizar content-visibility em elementos não críticos
   return (
     <Card className={cn("border-blue-100", className)}>
       <CardHeader className="pb-2 border-b border-blue-50">
@@ -61,8 +64,8 @@ const TechnicalHealthPanel = React.memo(({
         </div>
       </CardHeader>
       <CardContent className="pt-4 grid gap-3">
-        {/* Define fixed height containers to prevent layout shifts */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3" style={{ minHeight: '120px' }}>
+        {/* Reservar espaço para elementos antes do carregamento para reduzir CLS */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3" style={{ minHeight: '120px', containIntrinsicSize: '0 120px', contentVisibility: 'auto' }}>
           <MetricItem 
             title="Carregamento Desktop" 
             value={`${loadTimeDesktop.toFixed(1)}s`}
@@ -83,7 +86,7 @@ const TechnicalHealthPanel = React.memo(({
           />
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3" style={{ minHeight: '120px' }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3" style={{ minHeight: '120px', containIntrinsicSize: '0 120px', contentVisibility: 'auto' }}>
           <MetricItem 
             title="Adaptável para Mobile" 
             value={mobileFriendlyText}
@@ -111,19 +114,25 @@ const TechnicalHealthPanel = React.memo(({
                     imageOptimization >= 40 ? "Otimização parcial de imagens" : "Imagens sem otimização adequada"}
         />
         
-        <AlertBanner 
-          condition={loadTimeMobile > 4}
-          message="Tempo de carregamento acima de 4s em mobile"
-          type="warning"
-        />
+        {/* Lazy load do conteúdo menos crítico */}
+        <div style={{ contentVisibility: 'auto', containIntrinsicSize: '0 80px' }}>
+          <AlertBanner 
+            condition={loadTimeMobile > 4}
+            message="Tempo de carregamento acima de 4s em mobile"
+            type="warning"
+          />
+          
+          <AlertBanner 
+            condition={security && mobileFriendly}
+            message="Estrutura HTML válida e segura"
+            type="success"
+          />
+        </div>
         
-        <AlertBanner 
-          condition={security && mobileFriendly}
-          message="Estrutura HTML válida e segura"
-          type="success"
-        />
-        
-        <CoreWebVitalsSection lcp={lcp} cls={cls} fid={fid} />
+        {/* Renderização lazy de métricas web vitals */}
+        <div style={{ contentVisibility: 'auto', containIntrinsicSize: '0 150px' }}>
+          <CoreWebVitalsSection lcp={lcp} cls={cls} fid={fid} />
+        </div>
       </CardContent>
     </Card>
   );

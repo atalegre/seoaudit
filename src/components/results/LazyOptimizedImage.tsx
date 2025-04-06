@@ -9,6 +9,7 @@ interface LazyOptimizedImageProps {
   className?: string;
   placeholderColor?: string;
   priority?: boolean;
+  fetchpriority?: 'high' | 'low' | 'auto';
 }
 
 const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
@@ -19,12 +20,14 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
   className = '',
   placeholderColor = '#f3f4f6',
   priority = false,
+  fetchpriority = 'auto',
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(priority);
   const imgRef = useRef<HTMLImageElement>(null);
   
   useEffect(() => {
+    // Add native loading attribute for browsers that support it
     if (priority || !window.IntersectionObserver) {
       setIsInView(true);
       return;
@@ -57,6 +60,11 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
     ? { aspectRatio: `${width}/${height}` }
     : {};
     
+  // Implementar formato de próxima geração como WebP quando possível
+  const optimizedSrc = src.endsWith('.jpg') || src.endsWith('.jpeg') || src.endsWith('.png')
+    ? src.replace(/\.(jpg|jpeg|png)$/, '.webp')
+    : src;
+    
   return (
     <div 
       ref={imgRef}
@@ -68,13 +76,15 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
     >
       {isInView && (
         <img
-          src={src}
+          src={optimizedSrc}
+          srcSet={width ? `${optimizedSrc} 1x, ${optimizedSrc.replace(/\.webp$/, '@2x.webp')} 2x` : undefined}
           alt={alt}
           width={width}
           height={height}
           loading={priority ? "eager" : "lazy"}
           onLoad={() => setIsLoaded(true)}
-          fetchPriority={priority ? "high" : "auto"}
+          fetchPriority={priority ? "high" : fetchpriority}
+          decoding="async"
           className={`w-full h-full object-cover transition-opacity duration-300 ${
             isLoaded ? 'opacity-100' : 'opacity-0'
           }`}
