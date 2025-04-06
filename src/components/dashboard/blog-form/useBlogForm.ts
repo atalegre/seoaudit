@@ -58,11 +58,16 @@ export const useBlogForm = (initialData: BlogPost | null = null, onSuccess?: () 
         imageSrc = await uploadBlogImage(imageFile);
       }
       
-      // Prepare post data
+      // Prepare post data with required properties explicitly defined
       const postData: BlogPost = {
-        ...data,
-        imageSrc,
+        title: data.title, // explicitly define required properties
+        slug: data.slug,   // explicitly define required properties
+        excerpt: data.excerpt,
+        content: data.content,
+        keyLearning: data.keyLearning,
+        category: data.category,
         tags: data.tags.split(',').map(tag => tag.trim()),
+        imageSrc,
         id: initialData?.id || '',
         date: initialData?.date || new Date().toISOString(),
         popularity: initialData?.popularity || 0,
