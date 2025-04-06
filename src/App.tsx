@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -33,6 +34,7 @@ import { createDefaultUsers } from "./utils/auth/createDefaultUsers";
 import { UserProvider } from "./contexts/UserContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import CookieConsent from "./components/CookieConsent";
+import ScrollToTop from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +59,7 @@ const App = () => {
       <UserProvider>
         <LanguageProvider>
           <BrowserRouter>
+            <ScrollToTop />
             <TooltipProvider>
               <Toaster />
               <Sonner />
