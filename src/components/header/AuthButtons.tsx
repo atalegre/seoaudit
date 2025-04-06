@@ -1,8 +1,6 @@
 
 import React from 'react';
 import { useUser } from '@/contexts/UserContext';
-import LoginButton from './buttons/LoginButton';
-import RegisterButton from './buttons/RegisterButton';
 import LogoutButton from './buttons/LogoutButton';
 import DashboardButton from './buttons/DashboardButton';
 
@@ -11,16 +9,9 @@ const AuthButtons = () => {
 
   return (
     <div className="flex items-center gap-4">
-      {!user ? (
-        <>
-          <LoginButton />
-          <RegisterButton />
-        </>
-      ) : (
-        <LogoutButton />
-      )}
+      {user && <LogoutButton />}
       
-      {/* Dashboard button that requires login */}
+      {/* Dashboard button */}
       <DashboardButton />
     </div>
   );

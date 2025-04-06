@@ -45,10 +45,7 @@ const SignInPage = () => {
             </TabsList>
             
             <TabsContent value="signin" className="space-y-4">
-              <div className="text-center mb-6">
-                <h1 className="text-2xl font-bold">{t('sign-in')}</h1>
-                <p className="text-muted-foreground">{t('login-description') || "Digite suas credenciais para entrar na sua conta"}</p>
-              </div>
+              <p className="text-muted-foreground text-center">{t('login-description') || "Digite suas credenciais para entrar na sua conta"}</p>
               
               <AuthError error={authError} />
               
@@ -60,10 +57,7 @@ const SignInPage = () => {
             </TabsContent>
             
             <TabsContent value="signup" className="space-y-4">
-              <div className="text-center mb-6">
-                <h1 className="text-2xl font-bold">{t('sign-up')}</h1>
-                <p className="text-muted-foreground">{t('signup-description') || "Preencha os dados abaixo para criar sua conta"}</p>
-              </div>
+              <p className="text-muted-foreground text-center">{t('signup-description') || "Preencha os dados abaixo para criar sua conta"}</p>
               
               <AuthError error={authError} />
               
