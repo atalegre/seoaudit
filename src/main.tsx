@@ -62,8 +62,10 @@ const reportCoreWebVitals = () => {
           const clsObserver = new PerformanceObserver((entryList) => {
             let clsValue = 0;
             for (const entry of entryList.getEntries()) {
-              if (!entry.hadRecentInput) {
-                clsValue += entry.value;
+              // Fix: Type assertion to access LayoutShiftEntry properties
+              const layoutShiftEntry = entry as LayoutShiftEntry;
+              if (!layoutShiftEntry.hadRecentInput) {
+                clsValue += layoutShiftEntry.value;
               }
             }
             console.log(`CLS: ${clsValue}`);
@@ -77,6 +79,12 @@ const reportCoreWebVitals = () => {
     });
   }
 };
+
+// Define the LayoutShiftEntry interface to fix TypeScript errors
+interface LayoutShiftEntry extends PerformanceEntry {
+  value: number;
+  hadRecentInput: boolean;
+}
 
 // Renderizar aplicação com estratégia otimizada para melhor FCP/LCP
 const startApp = () => {
