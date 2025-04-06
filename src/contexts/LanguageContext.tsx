@@ -34,6 +34,11 @@ const translations: Record<Language, Record<string, string>> = {
     'glossary': 'Glossário',
     'guides': 'Guias',
     'checklist': 'SEO AIO Checklist',
+    'open-menu': 'Abrir menu',
+    'checklist-desc': 'Lista completa para otimizar o seu site para SEO e AI.',
+    'guides-desc': 'Tutoriais e guias detalhados sobre SEO.',
+    'blog-desc': 'Artigos e novidades sobre SEO e AI.',
+    'glossary-desc': 'Termos e conceitos de SEO e IA explicados.',
     
     // Auth
     'sign-in': 'Entrar',
@@ -170,6 +175,11 @@ const translations: Record<Language, Record<string, string>> = {
     'glossary': 'Glossary',
     'guides': 'Guides',
     'checklist': 'SEO AIO Checklist',
+    'open-menu': 'Open menu',
+    'checklist-desc': 'Complete list to optimize your website for SEO and AI.',
+    'guides-desc': 'Tutorials and detailed guides about SEO.',
+    'blog-desc': 'Articles and news about SEO and AI.',
+    'glossary-desc': 'SEO and AI terms and concepts explained.',
     
     // Auth
     'sign-in': 'Sign In',

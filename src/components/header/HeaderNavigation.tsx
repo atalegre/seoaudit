@@ -49,9 +49,7 @@ const HeaderNavigation = () => {
                   {t('checklist')}
                 </div>
                 <p className="text-sm leading-tight text-white/80">
-                  {t('language') === 'pt' 
-                    ? 'Lista completa para otimizar o seu site para SEO e AI.'
-                    : 'Complete list to optimize your website for SEO and AI.'}
+                  {t('checklist-desc')}
                 </p>
               </Link>
             </NavigationMenuLink>
@@ -61,9 +59,7 @@ const HeaderNavigation = () => {
               <Link to="/guias" className={cn("block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-seo/10 hover:text-seo focus:bg-seo/10 focus:text-seo")}>
                 <div className="text-sm font-medium leading-none">{t('guides')}</div>
                 <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                  {t('language') === 'pt' 
-                    ? 'Tutoriais e guias detalhados sobre SEO.'
-                    : 'Tutorials and detailed guides about SEO.'}
+                  {t('guides-desc')}
                 </p>
               </Link>
             </NavigationMenuLink>
@@ -73,9 +69,7 @@ const HeaderNavigation = () => {
               <Link to="/blog" className={cn("block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-seo/10 hover:text-seo focus:bg-seo/10 focus:text-seo")}>
                 <div className="text-sm font-medium leading-none">{t('blog')}</div>
                 <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                  {t('language') === 'pt' 
-                    ? 'Artigos e novidades sobre SEO e AI.'
-                    : 'Articles and news about SEO and AI.'}
+                  {t('blog-desc')}
                 </p>
               </Link>
             </NavigationMenuLink>
@@ -85,9 +79,7 @@ const HeaderNavigation = () => {
               <Link to="/glossario" className={cn("block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-aio/10 hover:text-aio focus:bg-aio/10 focus:text-aio")}>
                 <div className="text-sm font-medium leading-none">{t('glossary')}</div>
                 <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                  {t('language') === 'pt' 
-                    ? 'Termos e conceitos de SEO e IA explicados.'
-                    : 'SEO and AI terms and concepts explained.'}
+                  {t('glossary-desc')}
                 </p>
               </Link>
             </NavigationMenuLink>
@@ -102,7 +94,7 @@ const HeaderNavigation = () => {
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="md:hidden">
           <Menu className="h-6 w-6" />
-          <span className="sr-only">Abrir menu</span>
+          <span className="sr-only">{t('open-menu')}</span>
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-[280px] sm:w-[350px]">
@@ -112,39 +104,39 @@ const HeaderNavigation = () => {
             className="font-semibold text-lg text-primary"
             onClick={() => setIsMenuOpen(false)}
           >
-            Home
+            {t('home')}
           </Link>
           
           <div className="space-y-1">
-            <p className="font-medium text-sm text-muted-foreground mb-1">Recursos</p>
+            <p className="font-medium text-sm text-muted-foreground mb-1">{t('resources')}</p>
             <div className="pl-3 border-l border-gray-200 space-y-3">
               <Link 
                 to="/guias/seo-aio-checklist" 
                 className="block text-sm"
                 onClick={() => setIsMenuOpen(false)}
               >
-                SEO AIO Checklist
+                {t('checklist')}
               </Link>
               <Link 
                 to="/guias" 
                 className="block text-sm"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Guias
+                {t('guides')}
               </Link>
               <Link 
                 to="/blog" 
                 className="block text-sm"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Blog
+                {t('blog')}
               </Link>
               <Link 
                 to="/glossario" 
                 className="block text-sm"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Glossário
+                {t('glossary')}
               </Link>
             </div>
           </div>
@@ -169,7 +161,7 @@ const HeaderNavigation = () => {
       <NavigationMenuList>
         <NavigationMenuItem>
           <Link to="/" className={navigationMenuTriggerStyle()}>
-            Home
+            {t('home')}
           </Link>
         </NavigationMenuItem>
 
@@ -177,19 +169,19 @@ const HeaderNavigation = () => {
 
         <NavigationMenuItem>
           <Link to="/como-funciona" className={navigationMenuTriggerStyle()}>
-            Como Funciona
+            {t('how-it-works')}
           </Link>
         </NavigationMenuItem>
         
         <NavigationMenuItem>
           <Link to="/faq" className={navigationMenuTriggerStyle()}>
-            FAQ
+            {t('faq')}
           </Link>
         </NavigationMenuItem>
         
         <NavigationMenuItem>
           <Link to="/contacto" className={navigationMenuTriggerStyle()}>
-            Contacto
+            {t('contact')}
           </Link>
         </NavigationMenuItem>
       </NavigationMenuList>
