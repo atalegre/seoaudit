@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
@@ -27,6 +26,12 @@ const rootElement = document.getElementById("root");
 
 if (!rootElement) {
   throw new Error("Root element not found");
+}
+
+// Define the LayoutShiftEntry interface to fix TypeScript errors
+interface LayoutShiftEntry extends PerformanceEntry {
+  value: number;
+  hadRecentInput: boolean;
 }
 
 // Função para reportar métricas de performance
@@ -79,12 +84,6 @@ const reportCoreWebVitals = () => {
     });
   }
 };
-
-// Define the LayoutShiftEntry interface to fix TypeScript errors
-interface LayoutShiftEntry extends PerformanceEntry {
-  value: number;
-  hadRecentInput: boolean;
-}
 
 // Renderizar aplicação com estratégia otimizada para melhor FCP/LCP
 const startApp = () => {

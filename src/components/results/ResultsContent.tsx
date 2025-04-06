@@ -1,4 +1,3 @@
-
 import React, { useRef, Suspense, lazy } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
@@ -11,7 +10,7 @@ import { LazyLoadingFallback } from './LazyComponents';
 
 // Lazy load forms and non-critical components
 const ReportForm = lazy(() => import('@/components/report/ReportForm'));
-// Fix: import AnalysisTabs directly to ensure it has a default export
+// Fix: import AnalysisTabs correctly to ensure it has a default export
 const AnalysisTabs = lazy(() => import('@/components/AnalysisTabs').then(module => ({ default: module.AnalysisTabs })));
 
 interface AnalysisContentProps {
