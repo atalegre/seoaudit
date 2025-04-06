@@ -1,4 +1,3 @@
-
 import React, { memo } from 'react';
 import { Globe, Calendar, BarChart, BrainCircuit, Zap, Bot, ChevronDown, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
