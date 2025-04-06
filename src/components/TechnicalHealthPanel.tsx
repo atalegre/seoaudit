@@ -128,7 +128,7 @@ const TechnicalHealthPanel = React.memo(({
           description={imageOptDescription}
         />
         
-        {/* Alertas - renderização condicional direta sem content-visibility */}
+        {/* Alertas condicionais */}
         {loadTimeMobile > 4 && (
           <AlertBanner 
             condition={true}
@@ -145,7 +145,7 @@ const TechnicalHealthPanel = React.memo(({
           />
         )}
         
-        {/* Métricas web vitals - carregadas diretamente */}
+        {/* Métricas web vitals */}
         <CoreWebVitalsSection lcp={lcp} cls={cls} fid={fid} />
       </CardContent>
     </Card>

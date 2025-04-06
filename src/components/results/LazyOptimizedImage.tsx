@@ -46,7 +46,7 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = memo(({
     }
     
     const options = {
-      rootMargin: '300px',
+      rootMargin: '200px', // Reduzido para melhorar desempenho
       threshold: 0.01,
     };
     
@@ -72,21 +72,21 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = memo(({
   }, [priority]);
   
   const aspectRatioStyle = width && height
-    ? { aspectRatio: `${width}/${height}`, contain: 'layout' }
+    ? { aspectRatio: `${width}/${height}` }
     : {};
     
   // Memoizar a URL otimizada para evitar recálculos
   const optimizedSrc = React.useMemo(() => {
+    if (!src) return '';
     return src.endsWith('.jpg') || src.endsWith('.jpeg') || src.endsWith('.png')
       ? src.replace(/\.(jpg|jpeg|png)$/, '.webp')
       : src;
   }, [src]);
     
   const createSrcSet = React.useCallback(() => {
-    if (!width) return undefined;
+    if (!width || !optimizedSrc) return undefined;
     
-    const baseSrc = optimizedSrc;
-    return `${baseSrc} 1x, ${baseSrc.replace(/\.webp$/, '@2x.webp')} 2x`;
+    return `${optimizedSrc} 1x, ${optimizedSrc.replace(/\.webp$/, '@2x.webp')} 2x`;
   }, [optimizedSrc, width]);
   
   const handleImageLoad = () => {
@@ -123,7 +123,6 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = memo(({
             className={`w-full h-full object-cover transition-opacity duration-300 ${
               isLoaded ? 'opacity-100' : 'opacity-0'
             }`}
-            style={{ contain: 'paint' }}
           />
         )}
       </div>
