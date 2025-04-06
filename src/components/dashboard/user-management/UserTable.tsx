@@ -2,7 +2,7 @@
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash } from 'lucide-react';
+import { Pencil, Trash, Shield } from 'lucide-react';
 import { User } from '@/utils/api/userService';
 
 interface UserTableProps {
@@ -13,13 +13,32 @@ interface UserTableProps {
 }
 
 const UserTable: React.FC<UserTableProps> = ({ users, loading, onEdit, onDelete }) => {
+  // Função para mostrar o papel (role) de forma mais legível em português
+  const getRoleLabel = (role: string) => {
+    switch (role) {
+      case 'admin':
+        return 'Administrador';
+      case 'editor':
+        return 'Editor';
+      case 'user':
+        return 'Usuário';
+      default:
+        return role;
+    }
+  };
+
   return (
     <Table>
       <TableHeader>
         <TableRow>
           <TableHead>Nome</TableHead>
           <TableHead>Email</TableHead>
-          <TableHead>Função</TableHead>
+          <TableHead className="w-[120px]">
+            <div className="flex items-center gap-1">
+              <Shield className="h-4 w-4" />
+              <span>Função</span>
+            </div>
+          </TableHead>
           <TableHead className="w-[100px]">Ações</TableHead>
         </TableRow>
       </TableHeader>
@@ -45,11 +64,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, loading, onEdit, onDelete 
                       ? 'bg-amber-100 text-amber-700'
                       : 'bg-gray-100 text-gray-700'
                 }`}>
-                  {user.role === 'admin' 
-                    ? 'Administrador' 
-                    : user.role === 'editor' 
-                      ? 'Editor' 
-                      : 'Usuário'}
+                  {getRoleLabel(user.role)}
                 </span>
               </TableCell>
               <TableCell>
