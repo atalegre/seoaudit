@@ -10,6 +10,8 @@ interface LazyOptimizedImageProps {
   placeholderColor?: string;
   priority?: boolean;
   fetchpriority?: 'high' | 'low' | 'auto';
+  sizes?: string;
+  onLoad?: () => void;
 }
 
 const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
@@ -21,6 +23,8 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
   placeholderColor = '#f3f4f6',
   priority = false,
   fetchpriority = 'auto',
+  sizes = '100vw',
+  onLoad,
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(priority);
@@ -65,6 +69,19 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
     ? src.replace(/\.(jpg|jpeg|png)$/, '.webp')
     : src;
     
+  // Create appropriate srcset for responsive images
+  const createSrcSet = () => {
+    if (!width) return undefined;
+    
+    const baseSrc = optimizedSrc;
+    return `${baseSrc} 1x, ${baseSrc.replace(/\.webp$/, '@2x.webp')} 2x`;
+  };
+  
+  const handleImageLoad = () => {
+    setIsLoaded(true);
+    if (onLoad) onLoad();
+  };
+  
   return (
     <div 
       ref={imgRef}
@@ -77,12 +94,13 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
       {isInView && (
         <img
           src={optimizedSrc}
-          srcSet={width ? `${optimizedSrc} 1x, ${optimizedSrc.replace(/\.webp$/, '@2x.webp')} 2x` : undefined}
+          srcSet={createSrcSet()}
+          sizes={sizes}
           alt={alt}
           width={width}
           height={height}
           loading={priority ? "eager" : "lazy"}
-          onLoad={() => setIsLoaded(true)}
+          onLoad={handleImageLoad}
           fetchPriority={priority ? "high" : fetchpriority}
           decoding="async"
           className={`w-full h-full object-cover transition-opacity duration-300 ${
@@ -94,4 +112,4 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
   );
 };
 
-export default LazyOptimizedImage;
+export default React.memo(LazyOptimizedImage);

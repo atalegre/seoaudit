@@ -74,7 +74,7 @@
 }
 
 /* Otimizações para Core Web Vitals - LCP e CLS */
-.lcp-target {
+.lcp-target, .lcp-block {
   content-visibility: auto;
   contain-intrinsic-size: 0 500px;
 }
@@ -84,6 +84,19 @@ img {
   height: auto;
   max-width: 100%;
   display: block;
+}
+
+/* Definir dimensões para placeholders de imagem para evitar CLS */
+.image-placeholder {
+  background-color: #f3f4f6;
+  position: relative;
+  overflow: hidden;
+}
+
+.image-placeholder::before {
+  content: "";
+  display: block;
+  padding-top: 56.25%; /* 16:9 aspect ratio */
 }
 
 /* Otimização de animações */
@@ -105,4 +118,15 @@ img {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Otimizações para maior velocidade de parsing */
+.optimized-rendering {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 300px;
+}
+
+/* PRPL pattern optimization for page transitions */
+.page-transition-container {
+  min-height: 70vh;
 }

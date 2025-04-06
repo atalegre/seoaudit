@@ -1,5 +1,5 @@
 
-import React, { useRef, lazy, Suspense } from 'react';
+import React, { useRef, Suspense, lazy } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import ScoreDisplay from '@/components/ScoreDisplay';
@@ -7,9 +7,11 @@ import { formatUrl } from '@/utils/resultsPageHelpers';
 import { AnalysisResult } from '@/utils/api/types';
 import ReanalyzeButton from './ReanalyzeButton';
 import PartialDataAlert from './PartialDataAlert';
+import { LazyLoadingFallback } from './LazyComponents';
 
-// Lazy load report form to improve initial render time
+// Lazy load forms and non-critical components
 const ReportForm = lazy(() => import('@/components/report/ReportForm'));
+const AnalysisTabs = lazy(() => import('@/components/AnalysisTabs'));
 
 interface AnalysisContentProps {
   analysisData: AnalysisResult;
@@ -18,7 +20,7 @@ interface AnalysisContentProps {
   onReanalyze: () => void;
 }
 
-const AnalysisContent: React.FC<AnalysisContentProps> = ({
+const ResultsContent: React.FC<AnalysisContentProps> = ({
   analysisData,
   seoError,
   aioError,
@@ -42,8 +44,8 @@ const AnalysisContent: React.FC<AnalysisContentProps> = ({
         seoErrorMessage={analysisData?.seo?.errorMessage}
       />
       
-      {/* Priority content - LCP target */}
-      <div className="lcp-target">
+      {/* Conteúdo prioritário - Alvo LCP */}
+      <div className="lcp-block">
         <ScoreDisplay
           seoScore={analysisData?.seo?.score || 0}
           aioScore={analysisData?.aio?.score || 0}
@@ -58,8 +60,18 @@ const AnalysisContent: React.FC<AnalysisContentProps> = ({
       
       <ReanalyzeButton onReanalyze={onReanalyze} />
       
-      {/* Deferred content - load after main content */}
-      <div className="space-y-6 mt-8" style={{ contentVisibility: 'auto', containIntrinsicSize: '0 300px' }}>
+      {/* Conteúdo não crítico - carregar após LCP */}
+      <div className="space-y-6 mt-8" style={{ contentVisibility: 'auto', containIntrinsicSize: '0 500px' }}>
+        {(hasSeoData || hasAioData) && (
+          <Suspense fallback={<LazyLoadingFallback />}>
+            <AnalysisTabs 
+              data={analysisData} 
+              seoError={seoError}
+              aioError={aioError}
+            />
+          </Suspense>
+        )}
+        
         <div className="bg-white p-6 rounded-lg border shadow-sm">
           <h2 className="text-xl font-semibold mb-4">Relatório Completo</h2>
           <p className="text-gray-600 mb-6">
@@ -67,7 +79,7 @@ const AnalysisContent: React.FC<AnalysisContentProps> = ({
             e insights sobre SEO e otimização de conteúdo, registe-se na nossa plataforma.
           </p>
           
-          <Suspense fallback={<div className="animate-pulse bg-gray-200 h-16 rounded-md"></div>}>
+          <Suspense fallback={<LazyLoadingFallback />}>
             <ReportForm 
               url={analysisData?.url || ''} 
               seoScore={analysisData?.seo?.score || 0}
@@ -80,4 +92,4 @@ const AnalysisContent: React.FC<AnalysisContentProps> = ({
   );
 };
 
-export default React.memo(AnalysisContent);
+export default React.memo(ResultsContent);

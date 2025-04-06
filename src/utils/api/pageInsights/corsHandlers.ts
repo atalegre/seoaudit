@@ -24,7 +24,7 @@ export function createTimedRequest(apiUrl: string, timeout: number = 60000) {
       signal: controller.signal,
       headers: getDefaultHeaders(),
       mode: 'cors' as RequestMode,
-      cache: 'no-cache' as RequestCache
+      cache: 'force-cache' as RequestCache
     },
     clearTimeout: () => clearTimeout(timeoutId)
   };

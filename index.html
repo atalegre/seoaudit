@@ -21,9 +21,14 @@
     <!-- Preload critical resources -->
     <link rel="preload" href="/src/main.tsx" as="script" fetchpriority="high" />
     <link rel="preload" href="/src/components/Hero.tsx" as="script" fetchpriority="high" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="font" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" type="font/woff2" crossorigin />
+    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
+    <link rel="preconnect" href="https://logo.clearbit.com" crossorigin>
+    <link rel="preconnect" href="https://region1.google-analytics.com" crossorigin>
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com">
     
     <!-- Inline critical CSS for faster rendering -->
     <style>
@@ -52,7 +57,7 @@
         to { opacity: 1; }
       }
       /* Improved LCP target */
-      .lcp-target {
+      .lcp-target, .lcp-block {
         content-visibility: auto;
         contain-intrinsic-size: 0px 500px;
       }
@@ -119,11 +124,6 @@
       }
     </style>
 
-    <!-- DNS prefetch for external domains -->
-    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
-    <link rel="dns-prefetch" href="https://gpteng.co" />
-
     <!-- Google Analytics Consent Mode -->
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -172,6 +172,9 @@
     <noscript>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
     </noscript>
+    
+    <!-- Adicionar cabeçalhos Cache-Control para recursos estáticos -->
+    <meta http-equiv="Cache-Control" content="max-age=86400, must-revalidate" />
   </head>
 
   <body>

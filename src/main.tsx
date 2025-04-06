@@ -4,9 +4,17 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 
-// Implement connection preloading for critical resources
-const preconnectLinks = ['https://fonts.googleapis.com', 'https://fonts.gstatic.com', 'https://www.googletagmanager.com'];
-preconnectLinks.forEach(url => {
+// Lista de domínios para preconnect - reduz tempo de estabelecimento de conexão
+const preconnectDomains = [
+  'https://fonts.googleapis.com', 
+  'https://fonts.gstatic.com', 
+  'https://www.googletagmanager.com',
+  'https://logo.clearbit.com',
+  'https://region1.google-analytics.com'
+];
+
+// Preconnect crítico - implementa conexões antecipadas para recursos externos
+preconnectDomains.forEach(url => {
   const link = document.createElement('link');
   link.rel = 'preconnect';
   link.href = url;
@@ -14,56 +22,82 @@ preconnectLinks.forEach(url => {
   document.head.appendChild(link);
 });
 
-// Optimize loading strategy to improve LCP and FCP
+// Otimizar carregamento crítico - prioriza renderização inicial
 const rootElement = document.getElementById("root");
 
 if (!rootElement) {
   throw new Error("Root element not found");
 }
 
-// Use requestIdleCallback to defer non-critical work
-const startApp = () => {
-  // Create a flushing microtask to prioritize LCP elements
-  Promise.resolve().then(() => {
-    createRoot(rootElement).render(
-      <React.StrictMode>
-        <App />
-      </React.StrictMode>
-    );
-  });
-  
-  // Report core web vitals
+// Função para reportar métricas de performance
+const reportCoreWebVitals = () => {
   if ('performance' in window && 'getEntriesByType' in performance) {
-    // Use rAF to measure after paint
+    // Usar requestPostAnimationFrame para medir após pintura
     requestAnimationFrame(() => {
       setTimeout(() => {
         const paintMetrics = performance.getEntriesByType('paint');
         const fcpEntry = paintMetrics.find(entry => entry.name === 'first-contentful-paint');
         
-        // Use PerformanceObserver to capture LCP
-        const lcpObserver = new PerformanceObserver((entryList) => {
-          const entries = entryList.getEntries();
-          const lastEntry = entries[entries.length - 1];
-          console.log(`LCP: ${lastEntry.startTime}ms`);
-          lcpObserver.disconnect();
-        });
+        // Capturar e reportar LCP
+        try {
+          const lcpObserver = new PerformanceObserver((entryList) => {
+            const entries = entryList.getEntries();
+            const lastEntry = entries[entries.length - 1];
+            console.log(`LCP: ${lastEntry.startTime}ms`);
+            lcpObserver.disconnect();
+          });
+          
+          lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
+        } catch (e) {
+          console.warn('LCP reporting failed:', e);
+        }
         
-        lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
-        
+        // Reportar FCP se disponível
         if (fcpEntry) {
           console.log(`FCP: ${Math.round(fcpEntry.startTime)}ms`);
+        }
+        
+        // Capturar e reportar CLS
+        try {
+          const clsObserver = new PerformanceObserver((entryList) => {
+            let clsValue = 0;
+            for (const entry of entryList.getEntries()) {
+              if (!entry.hadRecentInput) {
+                clsValue += entry.value;
+              }
+            }
+            console.log(`CLS: ${clsValue}`);
+          });
+          
+          clsObserver.observe({ type: 'layout-shift', buffered: true });
+        } catch (e) {
+          console.warn('CLS reporting failed:', e);
         }
       }, 0);
     });
   }
 };
 
-// Priorize critical content rendering
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    requestAnimationFrame(startApp);
+// Renderizar aplicação com estratégia otimizada para melhor FCP/LCP
+const startApp = () => {
+  // Criar e renderizar aplicação como microtask para não bloquear thread principal
+  queueMicrotask(() => {
+    createRoot(rootElement).render(
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>
+    );
+    
+    // Reportar métricas após render
+    reportCoreWebVitals();
   });
+};
+
+// Otimizar estratégia de inicialização baseada no estado do DOM
+if (document.readyState === 'loading') {
+  // DOM ainda carregando - aguardar evento
+  document.addEventListener('DOMContentLoaded', startApp);
 } else {
-  // DOM already loaded - start app immediately
+  // DOM já carregado - iniciar imediatamente 
   startApp();
 }

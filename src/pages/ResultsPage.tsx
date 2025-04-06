@@ -1,5 +1,5 @@
 
-import React, { lazy, Suspense } from 'react';
+import React, { lazy, Suspense, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -32,6 +32,34 @@ const ResultsPage = () => {
     aioError, 
     handleReanalyze 
   } = useAnalysis(urlParam);
+  
+  // Função para melhorar o FCP/LCP - preparar a interface antecipadamente
+  useEffect(() => {
+    // Preload crítico de componentes que serão usados
+    const componentPaths = [
+      '@/components/results/LoadingState',
+      '@/components/results/ResultsContent'
+    ];
+    
+    // Usando dynamic import para preload
+    componentPaths.forEach(path => {
+      import(/* @vite-ignore */ path).catch(e => {
+        console.warn(`Failed to preload ${path}:`, e);
+      });
+    });
+    
+    // Reportar métricas de carregamento
+    if ('performance' in window) {
+      try {
+        const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+        if (navEntry) {
+          console.log(`Navigation Time: ${Math.round(navEntry.duration)}ms`);
+        }
+      } catch (e) {
+        console.warn('Error measuring navigation performance:', e);
+      }
+    }
+  }, []);
   
   const handleReturnHome = () => {
     navigate('/');

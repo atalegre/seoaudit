@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Zap, Smartphone, Lock, Image } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -35,7 +35,7 @@ const TechnicalHealthPanel = React.memo(({
   className
 }: TechnicalHealthPanelProps) => {
   // Função memoizada para determinar o status de velocidade
-  const getSpeedStatus = React.useMemo(() => 
+  const getSpeedStatus = useMemo(() => 
     (seconds: number) => seconds <= 2 ? 'success' : seconds <= 4 ? 'warning' : 'error',
   []);
 
