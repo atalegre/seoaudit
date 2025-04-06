@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -59,9 +58,10 @@ export const useBlogForm = (initialData: BlogPost | null = null, onSuccess?: () 
       }
       
       // Prepare post data with required properties explicitly defined
+      // Ensure tags is always an array
       const postData: BlogPost = {
-        title: data.title, // explicitly define required properties
-        slug: data.slug,   // explicitly define required properties
+        title: data.title,
+        slug: data.slug,
         excerpt: data.excerpt,
         content: data.content,
         keyLearning: data.keyLearning,

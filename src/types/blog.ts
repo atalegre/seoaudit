@@ -7,7 +7,7 @@ export interface BlogPost {
   content?: string;
   keyLearning?: string;
   category?: string;
-  tags?: string[] | string; // Can be either an array or comma-separated string
+  tags?: string[]; // Changed from "string[] | string" to just "string[]" to match DB schema
   imageSrc?: string;
   popularity?: number;
   date?: string;
