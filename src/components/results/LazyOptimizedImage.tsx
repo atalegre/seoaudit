@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, memo } from 'react';
 
 interface LazyOptimizedImageProps {
@@ -9,7 +8,7 @@ interface LazyOptimizedImageProps {
   className?: string;
   placeholderColor?: string;
   priority?: boolean;
-  fetchpriority?: 'high' | 'low' | 'auto';
+  fetchPriority?: 'high' | 'low' | 'auto';
   sizes?: string;
   onLoad?: () => void;
 }
@@ -22,7 +21,7 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = memo(({
   className = '',
   placeholderColor = '#f3f4f6',
   priority = false,
-  fetchpriority = 'auto',
+  fetchPriority = 'auto',
   sizes = '100vw',
   onLoad,
 }) => {
@@ -31,24 +30,20 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = memo(({
   const imgRef = useRef<HTMLImageElement>(null);
   const placeholderRef = useRef<HTMLDivElement>(null);
   
-  // Definir dimensões para altura/largura previamente conhecidas
   useEffect(() => {
-    // Definir dimensions no placeholder para evitar layout shifts (CLS)
     if (placeholderRef.current && width && height) {
       placeholderRef.current.style.aspectRatio = `${width}/${height}`;
     }
   }, [width, height]);
   
   useEffect(() => {
-    // Se é prioritário ou browser não suporta IntersectionObserver, carregar imediatamente
     if (priority || !window.IntersectionObserver) {
       setIsInView(true);
       return;
     }
     
-    // Usar margins maiores para começar a carregar antes da imagem entrar em viewport
     const options = {
-      rootMargin: '300px', // Carga antecipada - 300px antes do viewport
+      rootMargin: '300px',
       threshold: 0.01,
     };
     
@@ -68,22 +63,18 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = memo(({
     };
   }, [priority]);
   
-  // Calcular aspect ratio styles
   const aspectRatioStyle = width && height
     ? { aspectRatio: `${width}/${height}`, contain: 'layout' }
     : {};
     
-  // Implementar formatos next-gen webp quando possível
   const optimizedSrc = src.endsWith('.jpg') || src.endsWith('.jpeg') || src.endsWith('.png')
     ? src.replace(/\.(jpg|jpeg|png)$/, '.webp')
     : src;
     
-  // Criar srcset adequado para imagens responsivas
   const createSrcSet = () => {
     if (!width) return undefined;
     
     const baseSrc = optimizedSrc;
-    // Gerar tamanhos optimizados de 1x, 2x para diferentes resoluções
     return `${baseSrc} 1x, ${baseSrc.replace(/\.webp$/, '@2x.webp')} 2x`;
   };
   
@@ -116,7 +107,7 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = memo(({
             height={height}
             loading={priority ? "eager" : "lazy"}
             onLoad={handleImageLoad}
-            fetchPriority={priority ? "high" : fetchpriority}
+            fetchPriority={priority ? "high" : fetchPriority}
             decoding={priority ? "sync" : "async"}
             className={`w-full h-full object-cover transition-opacity duration-300 ${
               isLoaded ? 'opacity-100' : 'opacity-0'
