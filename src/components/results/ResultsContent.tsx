@@ -10,8 +10,12 @@ import { LazyLoadingFallback } from './LazyComponents';
 
 // Lazy load forms and non-critical components
 const ReportForm = lazy(() => import('@/components/report/ReportForm'));
-// Fix: import AnalysisTabs correctly to ensure it has a default export
-const AnalysisTabs = lazy(() => import('@/components/AnalysisTabs').then(module => ({ default: module.AnalysisTabs })));
+// Fix: properly convert named export to default export for lazy loading
+const AnalysisTabs = lazy(() => 
+  import('@/components/AnalysisTabs').then(module => ({ 
+    default: module.AnalysisTabs 
+  }))
+);
 
 interface AnalysisContentProps {
   analysisData: AnalysisResult;

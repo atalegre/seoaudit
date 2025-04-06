@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
@@ -67,7 +68,7 @@ const reportCoreWebVitals = () => {
           const clsObserver = new PerformanceObserver((entryList) => {
             let clsValue = 0;
             for (const entry of entryList.getEntries()) {
-              // Fix: Type assertion to access LayoutShiftEntry properties
+              // Use type assertion to access LayoutShiftEntry properties
               const layoutShiftEntry = entry as LayoutShiftEntry;
               if (!layoutShiftEntry.hadRecentInput) {
                 clsValue += layoutShiftEntry.value;
