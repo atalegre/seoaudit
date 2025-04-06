@@ -1,4 +1,3 @@
-
 import React, { memo } from 'react';
 import { Globe, Calendar, BarChart, BrainCircuit, Zap, Bot, ChevronDown, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -16,7 +15,6 @@ interface ScoreDisplayProps {
   onScrollToRecommendations: () => void;
 }
 
-// Extrair ScoreCard para optimizar renderização com memoização
 const ScoreCard = memo(({ 
   title, 
   score, 
@@ -32,7 +30,6 @@ const ScoreCard = memo(({
   color?: 'blue' | 'purple' | 'orange' | 'green' | 'gold';
   large?: boolean;
 }) => {
-  // Pré-definir classes para evitar recálculos em cada renderização
   const colorClasses = {
     blue: 'bg-blue-50 text-blue-700',
     purple: 'bg-purple-50 text-purple-700',
@@ -55,7 +52,6 @@ const ScoreCard = memo(({
 
 ScoreCard.displayName = 'ScoreCard';
 
-// Função para determinar cor do status - extraída para evitar recálculo
 const getStatusColor = (status: string): string => {
   const statusLower = status.toLowerCase();
   
@@ -66,7 +62,6 @@ const getStatusColor = (status: string): string => {
   return 'text-gray-500';
 };
 
-// Componente principal com memoização para evitar renderizações desnecessárias
 const ScoreDisplay = memo((props: ScoreDisplayProps) => {
   const {
     seoScore,
@@ -81,17 +76,14 @@ const ScoreDisplay = memo((props: ScoreDisplayProps) => {
   
   const { handleDashboardAccess } = useDashboardAccess();
   
-  // Deferido com hook simples para evitar carregamento no caminho crítico
   const { presenceScore } = useLLMPresence({ 
     url, 
-    autoStart: false // Iniciar somente após renderização principal
+    autoStart: false 
   });
   
-  // Calcular score uma única vez - evita recálculos desnecessários
   const actualLLMScore = llmPresenceScore || presenceScore || 0;
   const overallScore = Math.round((seoScore * 0.4) + (aioScore * 0.3) + (performanceScore * 0.2) + (actualLLMScore * 0.1));
   
-  // Status color já pré-calculado
   const statusColorClass = getStatusColor(status);
   
   return (
