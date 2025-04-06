@@ -16,7 +16,7 @@ const ReportForm = lazy(() => {
   return prefetchPromise;
 });
 
-// Fix: properly convert named export to default export for lazy loading
+// Properly import AnalysisTabs as a named export and convert to default export for lazy loading
 const AnalysisTabs = lazy(() => 
   import('@/components/AnalysisTabs').then(module => ({ 
     default: module.AnalysisTabs 

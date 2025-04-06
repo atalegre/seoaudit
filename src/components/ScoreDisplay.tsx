@@ -84,8 +84,7 @@ const ScoreDisplay = memo((props: ScoreDisplayProps) => {
   // Deferido com hook simples para evitar carregamento no caminho crítico
   const { presenceScore } = useLLMPresence({ 
     url, 
-    autoStart: false, // Iniciar somente após renderização principal
-    deferred: true 
+    autoStart: false // Iniciar somente após renderização principal
   });
   
   // Calcular score uma única vez - evita recálculos desnecessários
@@ -107,7 +106,7 @@ const ScoreDisplay = memo((props: ScoreDisplayProps) => {
                 className="w-10 h-10 object-contain rounded-md" 
                 loading="eager" 
                 decoding="async"
-                fetchpriority="high"
+                fetchPriority="high"
               />
             ) : (
               <Globe className="w-8 h-8 text-primary" aria-hidden="true" />
