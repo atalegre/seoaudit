@@ -77,11 +77,11 @@ const ScoreDisplay = memo((props: ScoreDisplayProps) => {
   
   const { handleDashboardAccess } = useDashboardAccess();
   
-  // Corrigido: removida a propriedade 'deferred' que não existe
-  const { presenceScore } = useLLMPresence({ 
+  // Implementamos useLLMPresence apenas se não temos um score já calculado
+  const { presenceScore } = !llmPresenceScore ? useLLMPresence({ 
     url, 
     autoStart: false 
-  });
+  }) : { presenceScore: 0 };
   
   const actualLLMScore = llmPresenceScore || presenceScore || 0;
   const overallScore = Math.round((seoScore * 0.4) + (aioScore * 0.3) + (performanceScore * 0.2) + (actualLLMScore * 0.1));

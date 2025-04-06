@@ -21,7 +21,6 @@ interface TechnicalHealthPanelProps {
   className?: string;
 }
 
-// Use React.memo para evitar renderizações desnecessárias
 const TechnicalHealthPanel = React.memo(({
   loadTimeDesktop,
   loadTimeMobile,
@@ -34,28 +33,18 @@ const TechnicalHealthPanel = React.memo(({
   fid = 100,
   className
 }: TechnicalHealthPanelProps) => {
-  // Funções memoizadas para melhorar desempenho
-  const getSpeedStatus = useMemo(() => 
-    (seconds: number) => seconds <= 2 ? 'success' : seconds <= 4 ? 'warning' : 'error',
-  []);
+  // Função para determinar o status com base no tempo de carregamento
+  const getSpeedStatus = (seconds: number) => 
+    seconds <= 2 ? 'success' : seconds <= 4 ? 'warning' : 'error';
 
+  // Textos pré-calculados
   const mobileFriendlyText = mobileFriendly ? 'Sim' : 'Não';
-  
-  // Memoizar textos de descrição para evitar recriação nas renderizações
-  const loadDesktopDescription = useMemo(() => {
-    return loadTimeDesktop <= 2 ? "Excelente tempo de resposta" : 
-           loadTimeDesktop <= 4 ? "Tempo de resposta aceitável" : "Tempo de resposta lento";
-  }, [loadTimeDesktop]);
-  
-  const loadMobileDescription = useMemo(() => {
-    return loadTimeMobile <= 2 ? "Rápido em dispositivos móveis" : 
-           loadTimeMobile <= 4 ? "Aceitável em dispositivos móveis" : "Lento em dispositivos móveis";
-  }, [loadTimeMobile]);
-  
-  const imageOptDescription = useMemo(() => {
-    return imageOptimization >= 70 ? "Imagens bem otimizadas" : 
-           imageOptimization >= 40 ? "Otimização parcial de imagens" : "Imagens sem otimização adequada";
-  }, [imageOptimization]);
+  const loadDesktopDescription = loadTimeDesktop <= 2 ? "Excelente tempo de resposta" : 
+                                loadTimeDesktop <= 4 ? "Tempo de resposta aceitável" : "Tempo de resposta lento";
+  const loadMobileDescription = loadTimeMobile <= 2 ? "Rápido em dispositivos móveis" : 
+                               loadTimeMobile <= 4 ? "Aceitável em dispositivos móveis" : "Lento em dispositivos móveis";
+  const imageOptDescription = imageOptimization >= 70 ? "Imagens bem otimizadas" : 
+                             imageOptimization >= 40 ? "Otimização parcial de imagens" : "Imagens sem otimização adequada";
   
   return (
     <Card className={cn("border-blue-100", className)}>
@@ -79,14 +68,13 @@ const TechnicalHealthPanel = React.memo(({
         </div>
       </CardHeader>
       <CardContent className="pt-4 grid gap-3">
-        {/* Métricas de velocidade */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <MetricItem 
             title="Carregamento Desktop" 
             value={`${loadTimeDesktop.toFixed(1)}s`}
             status={getSpeedStatus(loadTimeDesktop)}
             icon={<Zap className={cn("h-4 w-4", loadTimeDesktop <= 2 ? "text-green-500" : 
-                                         loadTimeDesktop <= 4 ? "text-amber-500" : "text-red-500")} />}
+                                       loadTimeDesktop <= 4 ? "text-amber-500" : "text-red-500")} />}
             description={loadDesktopDescription}
           />
           <MetricItem 
@@ -94,12 +82,11 @@ const TechnicalHealthPanel = React.memo(({
             value={`${loadTimeMobile.toFixed(1)}s`}
             status={getSpeedStatus(loadTimeMobile)}
             icon={<Smartphone className={cn("h-4 w-4", loadTimeMobile <= 2 ? "text-green-500" : 
-                                           loadTimeMobile <= 4 ? "text-amber-500" : "text-red-500")} />}
+                                         loadTimeMobile <= 4 ? "text-amber-500" : "text-red-500")} />}
             description={loadMobileDescription}
           />
         </div>
         
-        {/* Métricas de compatibilidade */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <MetricItem 
             title="Adaptável para Mobile" 
@@ -117,7 +104,6 @@ const TechnicalHealthPanel = React.memo(({
           />
         </div>
         
-        {/* Otimização de imagens */}
         <MetricItem 
           title="Otimização de Imagens" 
           value={`${imageOptimization}%`}
@@ -128,7 +114,6 @@ const TechnicalHealthPanel = React.memo(({
           description={imageOptDescription}
         />
         
-        {/* Alertas condicionais */}
         {loadTimeMobile > 4 && (
           <AlertBanner 
             condition={true}
@@ -145,7 +130,6 @@ const TechnicalHealthPanel = React.memo(({
           />
         )}
         
-        {/* Métricas web vitals */}
         <CoreWebVitalsSection lcp={lcp} cls={cls} fid={fid} />
       </CardContent>
     </Card>

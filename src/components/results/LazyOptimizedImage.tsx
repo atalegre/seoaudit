@@ -29,31 +29,23 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = memo(({
   const [isLoaded, setIsLoaded] = useState(priority);
   const [isInView, setIsInView] = useState(priority);
   const imgRef = useRef<HTMLImageElement>(null);
-  const placeholderRef = useRef<HTMLDivElement>(null);
   
-  // Configurar aspect ratio apenas uma vez
+  // Otimizar Intersection Observer com configuração simplificada
   useEffect(() => {
-    if (placeholderRef.current && width && height) {
-      placeholderRef.current.style.aspectRatio = `${width}/${height}`;
-    }
-  }, [width, height]);
-  
-  // Otimizar Intersection Observer com cleanup adequado
-  useEffect(() => {
-    if (priority || !window.IntersectionObserver) {
+    if (priority) {
       setIsInView(true);
       return;
     }
     
     const options = {
-      rootMargin: '200px', // Reduzido para melhorar desempenho
-      threshold: 0.01,
+      rootMargin: '100px',
+      threshold: 0,
     };
     
     let observer: IntersectionObserver;
     const currentElement = imgRef.current;
     
-    if (currentElement) {
+    if (currentElement && 'IntersectionObserver' in window) {
       observer = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting) {
           setIsInView(true);
@@ -62,6 +54,9 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = memo(({
       }, options);
       
       observer.observe(currentElement);
+    } else {
+      // Fallback para navegadores sem suporte a IntersectionObserver
+      setIsInView(true);
     }
     
     return () => {
@@ -71,61 +66,60 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = memo(({
     };
   }, [priority]);
   
-  const aspectRatioStyle = width && height
-    ? { aspectRatio: `${width}/${height}` }
-    : {};
+  // Simplificar aspectRatio para evitar recálculos
+  const aspectRatioStyle = (width && height) ? { aspectRatio: `${width}/${height}` } : {};
     
-  // Memoizar a URL otimizada para evitar recálculos
-  const optimizedSrc = React.useMemo(() => {
-    if (!src) return '';
-    return src.endsWith('.jpg') || src.endsWith('.jpeg') || src.endsWith('.png')
-      ? src.replace(/\.(jpg|jpeg|png)$/, '.webp')
-      : src;
-  }, [src]);
+  // Otimizar src para webp apenas quando necessário
+  const optimizedSrc = src.endsWith('.jpg') || src.endsWith('.jpeg') || src.endsWith('.png')
+    ? src.replace(/\.(jpg|jpeg|png)$/, '.webp')
+    : src;
     
-  const createSrcSet = React.useCallback(() => {
-    if (!width || !optimizedSrc) return undefined;
-    
-    return `${optimizedSrc} 1x, ${optimizedSrc.replace(/\.webp$/, '@2x.webp')} 2x`;
-  }, [optimizedSrc, width]);
+  // Simplificar srcSet para melhorar performance
+  const srcSet = width ? `${optimizedSrc} 1x, ${optimizedSrc.replace(/\.webp$/, '@2x.webp')} 2x` : undefined;
   
   const handleImageLoad = () => {
     setIsLoaded(true);
     if (onLoad) onLoad();
   };
   
+  // Renderizar placeholder simples se não estiver carregado
+  if (!isInView) {
+    return (
+      <div 
+        className={`relative overflow-hidden ${className}`}
+        style={{
+          backgroundColor: placeholderColor,
+          ...aspectRatioStyle,
+          minHeight: height ? `${height}px` : 'auto',
+        }}
+      />
+    );
+  }
+  
   return (
     <div 
-      ref={placeholderRef}
       className={`relative overflow-hidden ${className}`}
       style={{
         backgroundColor: placeholderColor,
         ...aspectRatioStyle,
       }}
     >
-      <div 
+      <img
         ref={imgRef}
-        className="w-full h-full"
-        style={{ minHeight: height ? `${height}px` : 'auto' }}
-      >
-        {isInView && (
-          <img
-            src={optimizedSrc}
-            srcSet={createSrcSet()}
-            sizes={sizes}
-            alt={alt}
-            width={width}
-            height={height}
-            loading={priority ? "eager" : "lazy"}
-            onLoad={handleImageLoad}
-            fetchPriority={priority ? "high" : fetchPriority}
-            decoding={priority ? "sync" : "async"}
-            className={`w-full h-full object-cover transition-opacity duration-300 ${
-              isLoaded ? 'opacity-100' : 'opacity-0'
-            }`}
-          />
-        )}
-      </div>
+        src={optimizedSrc}
+        srcSet={srcSet}
+        sizes={sizes}
+        alt={alt}
+        width={width}
+        height={height}
+        loading={priority ? "eager" : "lazy"}
+        onLoad={handleImageLoad}
+        fetchPriority={priority ? "high" : fetchPriority}
+        decoding={priority ? "sync" : "async"}
+        className={`w-full h-full object-cover transition-opacity duration-300 ${
+          isLoaded ? 'opacity-100' : 'opacity-0'
+        }`}
+      />
     </div>
   );
 });
