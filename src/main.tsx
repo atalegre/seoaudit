@@ -4,17 +4,14 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 
-// Lista de domínios para preconnect - reduz tempo de estabelecimento de conexão
-const preconnectDomains = [
+// Cache crítico de conexões para domínios externos - implementado antes de qualquer renderização
+const criticalDomains = [
   'https://fonts.googleapis.com', 
-  'https://fonts.gstatic.com', 
-  'https://www.googletagmanager.com',
-  'https://logo.clearbit.com',
-  'https://region1.google-analytics.com'
+  'https://fonts.gstatic.com'
 ];
 
-// Preconnect crítico - implementa conexões antecipadas para recursos externos
-preconnectDomains.forEach(url => {
+// Configurar conexões prioritárias imediatamente
+criticalDomains.forEach(url => {
   const link = document.createElement('link');
   link.rel = 'preconnect';
   link.href = url;
@@ -22,7 +19,32 @@ preconnectDomains.forEach(url => {
   document.head.appendChild(link);
 });
 
-// Otimizar carregamento crítico - prioriza renderização inicial
+// Configurar preconnect para domínios menos críticos de forma assíncrona
+const secondaryDomains = [
+  'https://www.googletagmanager.com',
+  'https://logo.clearbit.com',
+  'https://region1.google-analytics.com'
+];
+
+// Adiar conexões não críticas usando requestIdleCallback ou setTimeout
+const setupSecondaryConnections = () => {
+  secondaryDomains.forEach(url => {
+    const link = document.createElement('link');
+    link.rel = 'preconnect';
+    link.href = url;
+    link.crossOrigin = 'anonymous';
+    document.head.appendChild(link);
+  });
+};
+
+// Usar requestIdleCallback se disponível, ou setTimeout como fallback
+if ('requestIdleCallback' in window) {
+  window.requestIdleCallback(setupSecondaryConnections);
+} else {
+  setTimeout(setupSecondaryConnections, 1000);
+}
+
+// Elemento raiz do aplicativo - obtido apenas uma vez
 const rootElement = document.getElementById("root");
 
 if (!rootElement) {
@@ -35,77 +57,88 @@ interface LayoutShiftEntry extends PerformanceEntry {
   hadRecentInput: boolean;
 }
 
-// Função para reportar métricas de performance
+// Configuração da métrica CWV otimizada - com menor prioridade usando microtasks
 const reportCoreWebVitals = () => {
-  if ('performance' in window && 'getEntriesByType' in performance) {
-    // Usar requestPostAnimationFrame para medir após pintura
-    requestAnimationFrame(() => {
-      setTimeout(() => {
+  // Adiar a medição para não competir com a renderização inicial
+  queueMicrotask(() => {
+    if (!('performance' in window) || !('getEntriesByType' in performance)) {
+      return;
+    }
+    
+    // FCP - Otimizado para não bloquear
+    setTimeout(() => {
+      try {
         const paintMetrics = performance.getEntriesByType('paint');
         const fcpEntry = paintMetrics.find(entry => entry.name === 'first-contentful-paint');
         
-        // Capturar e reportar LCP
-        try {
-          const lcpObserver = new PerformanceObserver((entryList) => {
-            const entries = entryList.getEntries();
-            const lastEntry = entries[entries.length - 1];
-            console.log(`LCP: ${lastEntry.startTime}ms`);
-            lcpObserver.disconnect();
-          });
-          
-          lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
-        } catch (e) {
-          console.warn('LCP reporting failed:', e);
-        }
-        
-        // Reportar FCP se disponível
         if (fcpEntry) {
           console.log(`FCP: ${Math.round(fcpEntry.startTime)}ms`);
         }
-        
-        // Capturar e reportar CLS
-        try {
-          const clsObserver = new PerformanceObserver((entryList) => {
-            let clsValue = 0;
-            for (const entry of entryList.getEntries()) {
-              // Use type assertion to access LayoutShiftEntry properties
-              const layoutShiftEntry = entry as LayoutShiftEntry;
-              if (!layoutShiftEntry.hadRecentInput) {
-                clsValue += layoutShiftEntry.value;
-              }
+      } catch (e) {
+        console.warn('FCP measurement failed:', e);
+      }
+    }, 0);
+    
+    // LCP - Otimizado com tratamento de erros adequado
+    try {
+      const lcpObserver = new PerformanceObserver((entryList) => {
+        const entries = entryList.getEntries();
+        const lastEntry = entries[entries.length - 1];
+        console.log(`LCP: ${lastEntry.startTime}ms`);
+        lcpObserver.disconnect();
+      });
+      
+      lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
+    } catch (e) {
+      console.warn('LCP reporting failed:', e);
+    }
+    
+    // CLS - Com melhor detecção e adiamento
+    setTimeout(() => {
+      try {
+        const clsObserver = new PerformanceObserver((entryList) => {
+          let clsValue = 0;
+          for (const entry of entryList.getEntries()) {
+            // Use type assertion to access LayoutShiftEntry properties
+            const layoutShiftEntry = entry as LayoutShiftEntry;
+            if (!layoutShiftEntry.hadRecentInput) {
+              clsValue += layoutShiftEntry.value;
             }
-            console.log(`CLS: ${clsValue}`);
-          });
-          
-          clsObserver.observe({ type: 'layout-shift', buffered: true });
-        } catch (e) {
-          console.warn('CLS reporting failed:', e);
-        }
-      }, 0);
-    });
-  }
+          }
+          console.log(`CLS: ${clsValue}`);
+        });
+        
+        clsObserver.observe({ type: 'layout-shift', buffered: true });
+      } catch (e) {
+        console.warn('CLS reporting failed:', e);
+      }
+    }, 0);
+  });
 };
 
-// Renderizar aplicação com estratégia otimizada para melhor FCP/LCP
-const startApp = () => {
-  // Criar e renderizar aplicação como microtask para não bloquear thread principal
+// Estratégia de renderização assíncrona para melhorar LCP/FCP
+const renderApp = () => {
+  // Criar a raiz React sem bloquear o thread principal
+  const root = createRoot(rootElement);
+  
+  // Renderizar em um microtask para permitir que o browser pinte o que já está disponível
   queueMicrotask(() => {
-    createRoot(rootElement).render(
+    root.render(
       <React.StrictMode>
         <App />
       </React.StrictMode>
     );
     
-    // Reportar métricas após render
-    reportCoreWebVitals();
+    // Ativar métricas depois que a renderização inicial tiver ocorrido
+    setTimeout(reportCoreWebVitals, 100);
   });
 };
 
-// Otimizar estratégia de inicialização baseada no estado do DOM
+// Estratégia otimizada de inicialização baseada no readyState
 if (document.readyState === 'loading') {
-  // DOM ainda carregando - aguardar evento
-  document.addEventListener('DOMContentLoaded', startApp);
+  // DOM ainda não está pronto - usar evento
+  document.addEventListener('DOMContentLoaded', renderApp);
 } else {
-  // DOM já carregado - iniciar imediatamente 
-  startApp();
+  // DOM já está disponível - renderizar imediatamente
+  renderApp();
 }

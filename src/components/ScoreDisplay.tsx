@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Globe, Calendar, BarChart, BrainCircuit, Zap, Bot, ChevronDown, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useDashboardAccess } from '@/hooks/useDashboardAccess';
@@ -16,33 +16,33 @@ interface ScoreDisplayProps {
   onScrollToRecommendations: () => void;
 }
 
-interface ScoreCardProps {
+// Extrair ScoreCard para optimizar renderização com memoização
+const ScoreCard = memo(({ 
+  title, 
+  score, 
+  description, 
+  icon, 
+  color = 'blue', 
+  large = false 
+}: {
   title: string;
   score: number;
   description: string;
   icon: React.ReactNode;
   color?: 'blue' | 'purple' | 'orange' | 'green' | 'gold';
   large?: boolean;
-}
-
-const ScoreCard: React.FC<ScoreCardProps> = ({ title, score, description, icon, color = 'blue', large = false }) => {
-  const getColorClass = () => {
-    switch (color) {
-      case 'purple':
-        return 'bg-purple-50 text-purple-700';
-      case 'orange':
-        return 'bg-orange-50 text-orange-700';
-      case 'green':
-        return 'bg-green-50 text-green-700';
-      case 'gold':
-        return 'bg-amber-50 text-amber-700';
-      default:
-        return 'bg-blue-50 text-blue-700';
-    }
+}) => {
+  // Pré-definir classes para evitar recálculos em cada renderização
+  const colorClasses = {
+    blue: 'bg-blue-50 text-blue-700',
+    purple: 'bg-purple-50 text-purple-700',
+    orange: 'bg-orange-50 text-orange-700',
+    green: 'bg-green-50 text-green-700',
+    gold: 'bg-amber-50 text-amber-700',
   };
 
   return (
-    <div className={`rounded-md p-3 ${getColorClass()} ${large ? 'col-span-full' : ''}`}>
+    <div className={`rounded-md p-3 ${colorClasses[color]} ${large ? 'col-span-full' : ''}`}>
       <div className="flex items-center gap-2 mb-2">
         {icon}
         <h3 className="text-sm font-medium">{title}</h3>
@@ -51,40 +51,49 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ title, score, description, icon, 
       <p className="text-sm text-gray-500">{description}</p>
     </div>
   );
-};
+});
 
-const getStatusColor = (status: string) => {
-  switch (status.toLowerCase()) {
-    case 'excelente':
-      return 'text-green-500';
-    case 'bom':
-      return 'text-blue-500';
-    case 'medio':
-      return 'text-yellow-500';
-    case 'critico':
-      return 'text-red-500';
-    default:
-      return 'text-gray-500';
-  }
-};
+ScoreCard.displayName = 'ScoreCard';
 
-const ScoreDisplay = ({
-  seoScore,
-  aioScore,
-  performanceScore = 0,
-  llmPresenceScore = 0,
-  status,
-  url,
-  logoUrl,
-  onScrollToRecommendations,
-}) => {
-  const { handleDashboardAccess } = useDashboardAccess();
-  // Calculate LLM presence score if not provided
-  const { presenceScore } = useLLMPresence({ url, autoStart: !llmPresenceScore });
-  const actualLLMScore = llmPresenceScore || presenceScore || 0;
+// Função para determinar cor do status - extraída para evitar recálculo
+const getStatusColor = (status: string): string => {
+  const statusLower = status.toLowerCase();
   
-  // Calculate overall score
+  if (statusLower === 'excelente') return 'text-green-500';
+  if (statusLower === 'bom') return 'text-blue-500';
+  if (statusLower === 'medio') return 'text-yellow-500';
+  if (statusLower === 'critico') return 'text-red-500';
+  return 'text-gray-500';
+};
+
+// Componente principal com memoização para evitar renderizações desnecessárias
+const ScoreDisplay = memo((props: ScoreDisplayProps) => {
+  const {
+    seoScore,
+    aioScore,
+    performanceScore = 0,
+    llmPresenceScore = 0,
+    status,
+    url,
+    logoUrl,
+    onScrollToRecommendations,
+  } = props;
+  
+  const { handleDashboardAccess } = useDashboardAccess();
+  
+  // Deferido com hook simples para evitar carregamento no caminho crítico
+  const { presenceScore } = useLLMPresence({ 
+    url, 
+    autoStart: false, // Iniciar somente após renderização principal
+    deferred: true 
+  });
+  
+  // Calcular score uma única vez - evita recálculos desnecessários
+  const actualLLMScore = llmPresenceScore || presenceScore || 0;
   const overallScore = Math.round((seoScore * 0.4) + (aioScore * 0.3) + (performanceScore * 0.2) + (actualLLMScore * 0.1));
+  
+  // Status color já pré-calculado
+  const statusColorClass = getStatusColor(status);
   
   return (
     <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
@@ -96,20 +105,23 @@ const ScoreDisplay = ({
                 src={logoUrl} 
                 alt={`Logo de ${url}`} 
                 className="w-10 h-10 object-contain rounded-md" 
+                loading="eager" 
+                decoding="async"
+                fetchpriority="high"
               />
             ) : (
-              <Globe className="w-8 h-8 text-primary" />
+              <Globe className="w-8 h-8 text-primary" aria-hidden="true" />
             )}
             <div>
               <h2 className="text-lg font-semibold">{url}</h2>
-              <p className={`text-sm ${getStatusColor(status)}`}>
+              <p className={`text-sm ${statusColorClass}`}>
                 Status: {status}
               </p>
             </div>
           </div>
           
           <div className="flex items-center gap-1 text-sm text-gray-500">
-            <Calendar className="h-4 w-4" />
+            <Calendar className="h-4 w-4" aria-hidden="true" />
             <span>{new Date().toLocaleDateString()}</span>
           </div>
         </div>
@@ -121,7 +133,7 @@ const ScoreDisplay = ({
             title="Score Global" 
             score={overallScore} 
             description="Pontuação combinada de todas as métricas" 
-            icon={<Star className="h-5 w-5 text-amber-500" />} 
+            icon={<Star className="h-5 w-5 text-amber-500" aria-hidden="true" />} 
             color="gold"
             large
           />
@@ -130,14 +142,14 @@ const ScoreDisplay = ({
             title="Score SEO" 
             score={seoScore} 
             description="Pontuação técnica do site" 
-            icon={<BarChart className="h-5 w-5 text-blue-500" />} 
+            icon={<BarChart className="h-5 w-5 text-blue-500" aria-hidden="true" />} 
           />
           
           <ScoreCard 
             title="Score AIO" 
             score={aioScore} 
             description="Pontuação para IA" 
-            icon={<BrainCircuit className="h-5 w-5 text-purple-500" />} 
+            icon={<BrainCircuit className="h-5 w-5 text-purple-500" aria-hidden="true" />} 
             color="purple"
           />
           
@@ -145,7 +157,7 @@ const ScoreDisplay = ({
             title="Performance" 
             score={performanceScore} 
             description="Velocidade do site" 
-            icon={<Zap className="h-5 w-5 text-orange-500" />} 
+            icon={<Zap className="h-5 w-5 text-orange-500" aria-hidden="true" />} 
             color="orange"
           />
           
@@ -153,7 +165,7 @@ const ScoreDisplay = ({
             title="Presença em IA" 
             score={actualLLMScore} 
             description="Visibilidade em LLMs" 
-            icon={<Bot className="h-5 w-5 text-green-500" />} 
+            icon={<Bot className="h-5 w-5 text-green-500" aria-hidden="true" />} 
             color="green"
           />
         </div>
@@ -178,12 +190,14 @@ const ScoreDisplay = ({
             className="gap-2"
             size="lg"
           >
-            Ver relatório completo <ChevronDown className="h-4 w-4" />
+            Ver relatório completo <ChevronDown className="h-4 w-4" aria-hidden="true" />
           </Button>
         </div>
       </div>
     </div>
   );
-};
+});
+
+ScoreDisplay.displayName = 'ScoreDisplay';
 
 export default ScoreDisplay;

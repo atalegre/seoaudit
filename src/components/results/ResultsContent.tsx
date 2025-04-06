@@ -1,4 +1,5 @@
-import React, { useRef, Suspense, lazy } from 'react';
+
+import React, { useRef, Suspense, lazy, useEffect } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import ScoreDisplay from '@/components/ScoreDisplay';
@@ -8,8 +9,13 @@ import ReanalyzeButton from './ReanalyzeButton';
 import PartialDataAlert from './PartialDataAlert';
 import { LazyLoadingFallback } from './LazyComponents';
 
-// Lazy load forms and non-critical components
-const ReportForm = lazy(() => import('@/components/report/ReportForm'));
+// Lazy load não-crítico com prefetch para componentes principais
+const ReportForm = lazy(() => {
+  // Prefetch ReportForm para melhorar responsividade 
+  const prefetchPromise = import('@/components/report/ReportForm');
+  return prefetchPromise;
+});
+
 // Fix: properly convert named export to default export for lazy loading
 const AnalysisTabs = lazy(() => 
   import('@/components/AnalysisTabs').then(module => ({ 
@@ -35,6 +41,29 @@ const ResultsContent: React.FC<AnalysisContentProps> = ({
   const hasAioData = analysisData?.aio?.score > 0;
   const seoHasError = analysisData?.seo?.isError === true;
   
+  // Prefetch components on mount para melhorar desempenho percebido
+  useEffect(() => {
+    const prefetchComponents = async () => {
+      // Prefetch em paralelo usando Promise.all
+      if (hasSeoData || hasAioData) {
+        const prefetchPromises = [
+          import('@/components/AnalysisTabs'),
+          import('@/components/report/ReportForm')
+        ];
+        
+        try {
+          // Não aguardar para não bloquear renderização
+          Promise.all(prefetchPromises);
+        } catch (e) {
+          console.warn('Prefetch error:', e);
+        }
+      }
+    };
+    
+    // Usar setTimeout para dar prioridade ao LCP
+    setTimeout(prefetchComponents, 1000);
+  }, [hasSeoData, hasAioData]);
+  
   const scrollToRecommendations = () => {
     recommendationsRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -48,8 +77,8 @@ const ResultsContent: React.FC<AnalysisContentProps> = ({
         seoErrorMessage={analysisData?.seo?.errorMessage}
       />
       
-      {/* Conteúdo prioritário - Alvo LCP */}
-      <div className="lcp-block">
+      {/* Conteúdo prioritário - Alvo LCP otimizado com loading priority */}
+      <div className="lcp-block" style={{ contain: 'layout' }}>
         <ScoreDisplay
           seoScore={analysisData?.seo?.score || 0}
           aioScore={analysisData?.aio?.score || 0}
@@ -64,7 +93,7 @@ const ResultsContent: React.FC<AnalysisContentProps> = ({
       
       <ReanalyzeButton onReanalyze={onReanalyze} />
       
-      {/* Conteúdo não crítico - carregar após LCP */}
+      {/* Conteúdo não crítico - carregar após LCP com display content-visibility */}
       <div className="space-y-6 mt-8" style={{ contentVisibility: 'auto', containIntrinsicSize: '0 500px' }}>
         {(hasSeoData || hasAioData) && (
           <Suspense fallback={<LazyLoadingFallback />}>

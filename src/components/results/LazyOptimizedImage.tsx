@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, memo } from 'react';
 
 interface LazyOptimizedImageProps {
   src: string;
@@ -14,7 +14,7 @@ interface LazyOptimizedImageProps {
   onLoad?: () => void;
 }
 
-const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
+const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = memo(({
   src,
   alt,
   width,
@@ -29,26 +29,35 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(priority);
   const imgRef = useRef<HTMLImageElement>(null);
+  const placeholderRef = useRef<HTMLDivElement>(null);
+  
+  // Definir dimensões para altura/largura previamente conhecidas
+  useEffect(() => {
+    // Definir dimensions no placeholder para evitar layout shifts (CLS)
+    if (placeholderRef.current && width && height) {
+      placeholderRef.current.style.aspectRatio = `${width}/${height}`;
+    }
+  }, [width, height]);
   
   useEffect(() => {
-    // Add native loading attribute for browsers that support it
+    // Se é prioritário ou browser não suporta IntersectionObserver, carregar imediatamente
     if (priority || !window.IntersectionObserver) {
       setIsInView(true);
       return;
     }
     
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setIsInView(true);
-          observer.disconnect();
-        }
-      },
-      {
-        rootMargin: '200px', // Start loading before image enters viewport
-        threshold: 0.01,
+    // Usar margins maiores para começar a carregar antes da imagem entrar em viewport
+    const options = {
+      rootMargin: '300px', // Carga antecipada - 300px antes do viewport
+      threshold: 0.01,
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        setIsInView(true);
+        observer.disconnect();
       }
-    );
+    }, options);
     
     if (imgRef.current) {
       observer.observe(imgRef.current);
@@ -59,21 +68,22 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
     };
   }, [priority]);
   
-  // Calculate aspect ratio styles
+  // Calcular aspect ratio styles
   const aspectRatioStyle = width && height
-    ? { aspectRatio: `${width}/${height}` }
+    ? { aspectRatio: `${width}/${height}`, contain: 'layout' }
     : {};
     
-  // Implementar formato de próxima geração como WebP quando possível
+  // Implementar formatos next-gen webp quando possível
   const optimizedSrc = src.endsWith('.jpg') || src.endsWith('.jpeg') || src.endsWith('.png')
     ? src.replace(/\.(jpg|jpeg|png)$/, '.webp')
     : src;
     
-  // Create appropriate srcset for responsive images
+  // Criar srcset adequado para imagens responsivas
   const createSrcSet = () => {
     if (!width) return undefined;
     
     const baseSrc = optimizedSrc;
+    // Gerar tamanhos optimizados de 1x, 2x para diferentes resoluções
     return `${baseSrc} 1x, ${baseSrc.replace(/\.webp$/, '@2x.webp')} 2x`;
   };
   
@@ -84,32 +94,41 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
   
   return (
     <div 
-      ref={imgRef}
+      ref={placeholderRef}
       className={`relative overflow-hidden ${className}`}
       style={{
         backgroundColor: placeholderColor,
         ...aspectRatioStyle,
       }}
     >
-      {isInView && (
-        <img
-          src={optimizedSrc}
-          srcSet={createSrcSet()}
-          sizes={sizes}
-          alt={alt}
-          width={width}
-          height={height}
-          loading={priority ? "eager" : "lazy"}
-          onLoad={handleImageLoad}
-          fetchPriority={priority ? "high" : fetchpriority}
-          decoding="async"
-          className={`w-full h-full object-cover transition-opacity duration-300 ${
-            isLoaded ? 'opacity-100' : 'opacity-0'
-          }`}
-        />
-      )}
+      <div 
+        ref={imgRef}
+        className="w-full h-full"
+        style={{ minHeight: height ? `${height}px` : 'auto' }}
+      >
+        {isInView && (
+          <img
+            src={optimizedSrc}
+            srcSet={createSrcSet()}
+            sizes={sizes}
+            alt={alt}
+            width={width}
+            height={height}
+            loading={priority ? "eager" : "lazy"}
+            onLoad={handleImageLoad}
+            fetchPriority={priority ? "high" : fetchpriority}
+            decoding={priority ? "sync" : "async"}
+            className={`w-full h-full object-cover transition-opacity duration-300 ${
+              isLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+            style={{ contain: 'paint' }}
+          />
+        )}
+      </div>
     </div>
   );
-};
+});
 
-export default React.memo(LazyOptimizedImage);
+LazyOptimizedImage.displayName = 'LazyOptimizedImage';
+
+export default LazyOptimizedImage;

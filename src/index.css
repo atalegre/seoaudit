@@ -3,7 +3,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Configurações críticas para renderização rápida */
+/* Estilos críticos aplicados com alta prioridade */
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -56,10 +56,78 @@
     @apply border-border;
   }
 
+  html {
+    -webkit-text-size-adjust: 100%;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+  }
+
   body {
     @apply bg-background text-foreground;
-    text-rendering: optimizeSpeed;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeSpeed;
+  }
+  
+  /* Pré-definir altura para conteúdos críticos */
+  .header-container {
+    min-height: 64px;
+  }
+  
+  /* Reservar espaço para conteúdo crítico */
+  main {
+    min-height: 60vh;
+  }
+  
+  /* Reduzir Shift de layout para elementos que carregam dinamicamente */
+  .score-display-container {
+    min-height: 300px;
+  }
+  
+  img {
+    content-visibility: auto;
+    contain: layout size paint;
+  }
+}
+
+/* Contenção para evitar shifts de layout (CLS) */
+.lcp-target, .lcp-block {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 500px;
+  contain: layout style size paint;
+}
+
+/* Fallbacks para browsers mais antigos */
+@supports not (content-visibility: auto) {
+  .lcp-target, .lcp-block {
+    display: block;
+    min-height: 500px;
+  }
+}
+
+/* Configurações para imagens para evitar CLS */
+img {
+  height: auto;
+  max-width: 100%;
+  display: block;
+}
+
+img.auto-height {
+  height: auto !important;
+}
+
+/* Melhorar rastreamento de Performance */
+.perf-component {
+  contain: layout style paint;
+}
+
+/* Remover animações para usuários que preferem menos movimento */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
@@ -73,60 +141,24 @@
   z-index: 9999 !important; 
 }
 
-/* Otimizações para Core Web Vitals - LCP e CLS */
-.lcp-target, .lcp-block {
-  content-visibility: auto;
-  contain-intrinsic-size: 0 500px;
+/* Optimization for lazily loaded images */
+.lazy-image {
+  opacity: 0;
+  transition: opacity 0.3s ease-in;
 }
 
-/* Melhorar comportamento de imagens - reduzir CLS */
-img {
-  height: auto;
-  max-width: 100%;
-  display: block;
+.lazy-image.loaded {
+  opacity: 1;
 }
 
-/* Definir dimensões para placeholders de imagem para evitar CLS */
-.image-placeholder {
-  background-color: #f3f4f6;
-  position: relative;
-  overflow: hidden;
-}
-
-.image-placeholder::before {
-  content: "";
-  display: block;
-  padding-top: 56.25%; /* 16:9 aspect ratio */
-}
-
-/* Otimização de animações */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
+/* Fade-in animações otimizadas com GPU */
 .animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
+  opacity: 0;
+  animation: fade-in 0.3s ease-out forwards;
   will-change: opacity;
 }
 
-/* Reduza o CSS para dispositivos com preferências de movimento reduzido */
-@media (prefers-reduced-motion: reduce) {
-  *, ::before, ::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-/* Otimizações para maior velocidade de parsing */
-.optimized-rendering {
-  content-visibility: auto;
-  contain-intrinsic-size: 0 300px;
-}
-
-/* PRPL pattern optimization for page transitions */
-.page-transition-container {
-  min-height: 70vh;
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
