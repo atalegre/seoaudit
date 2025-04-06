@@ -1,4 +1,3 @@
-
 export const ptTranslations = {
   // Navigation
   'home': 'Home',
@@ -21,6 +20,8 @@ export const ptTranslations = {
   'sign-up': 'Registar',
   'sign-out': 'Sair',
   'dashboard': 'Dashboard',
+  'login-description': 'Digite suas credenciais para entrar na sua conta',
+  'signup-description': 'Preencha os dados abaixo para criar sua conta',
   
   // Client Page
   'clients': 'Clientes',
