@@ -120,7 +120,6 @@ export const enTranslations = {
   'legal': 'Legal',
   'terms': 'Terms and Conditions',
   'privacy': 'Privacy Policy',
-  'contact': 'Contact',
   'rights-reserved': 'All rights reserved.',
   
   // Verification
@@ -138,5 +137,5 @@ export const enTranslations = {
   'verify-resend': 'Resend verification email',
   'verify-resending': 'Resending...',
   'verify-email-sent': 'Email Sent',
-  'verify-email-success': 'Email resent successfully. Please check your inbox and spam folder.',
+  'verify-email-success': 'Email resent successfully. Please check your inbox and spam folder.'
 };

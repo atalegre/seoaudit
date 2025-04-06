@@ -120,7 +120,6 @@ export const ptTranslations = {
   'legal': 'Legal',
   'terms': 'Termos e Condições',
   'privacy': 'Política de Privacidade',
-  'contact': 'Contacto',
   'rights-reserved': 'Todos os direitos reservados.',
   
   // Verification
@@ -138,5 +137,5 @@ export const ptTranslations = {
   'verify-resend': 'Reenviar email de verificação',
   'verify-resending': 'A reenviar...',
   'verify-email-sent': 'Email Enviado',
-  'verify-email-success': 'Email reenviado com sucesso. Por favor verifique a sua caixa de entrada e pasta de spam.',
+  'verify-email-success': 'Email reenviado com sucesso. Por favor verifique a sua caixa de entrada e pasta de spam.'
 };
