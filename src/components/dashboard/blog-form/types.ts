@@ -15,3 +15,14 @@ export const blogPostSchema = z.object({
 });
 
 export type BlogFormValues = z.infer<typeof blogPostSchema>;
+
+// Validation messages in English
+export const getEnglishValidationMessages = () => ({
+  title: "Title must be at least 5 characters",
+  slug: "Slug must be at least 3 characters and contain only lowercase letters, numbers, and hyphens",
+  excerpt: "Excerpt must be at least 10 characters",
+  content: "Content must be at least 50 characters",
+  keyLearning: "Key learning must be at least 10 characters",
+  category: "Select a category",
+  tags: "Add at least one tag",
+});

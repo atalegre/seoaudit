@@ -2,38 +2,48 @@
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
-import { categories } from '@/data/blog-data';
 import { BlogFormValues } from './types';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface BlogFormCategoriesProps {
   form: UseFormReturn<BlogFormValues>;
 }
 
 const BlogFormCategories: React.FC<BlogFormCategoriesProps> = ({ form }) => {
+  const { language } = useLanguage();
+  
+  const categories = [
+    { value: 'seo', label: { pt: 'SEO', en: 'SEO' } },
+    { value: 'aio', label: { pt: 'Otimização para IA', en: 'AI Optimization' } },
+    { value: 'technical-seo', label: { pt: 'SEO Técnico', en: 'Technical SEO' } },
+    { value: 'content', label: { pt: 'Conteúdo', en: 'Content' } },
+    { value: 'analytics', label: { pt: 'Analytics', en: 'Analytics' } },
+    { value: 'updates', label: { pt: 'Atualizações', en: 'Updates' } },
+  ];
+  
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <FormField
         control={form.control}
         name="category"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Categoria</FormLabel>
+            <FormLabel>{language === 'pt' ? 'Categoria' : 'Category'}</FormLabel>
             <Select 
               onValueChange={field.onChange} 
               defaultValue={field.value}
             >
               <FormControl>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione uma categoria" />
+                  <SelectValue placeholder={language === 'pt' ? "Selecione uma categoria" : "Select a category"} />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                {categories.map(category => (
-                  <SelectItem key={category} value={category}>
-                    {category}
+                {categories.map((category) => (
+                  <SelectItem key={category.value} value={category.value}>
+                    {language === 'pt' ? category.label.pt : category.label.en}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -42,32 +52,19 @@ const BlogFormCategories: React.FC<BlogFormCategoriesProps> = ({ form }) => {
           </FormItem>
         )}
       />
-
+      
       <FormField
         control={form.control}
         name="tags"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Tags (separadas por vírgula)</FormLabel>
+            <FormLabel>{language === 'pt' ? 'Tags' : 'Tags'}</FormLabel>
             <FormControl>
-              <Input placeholder="SEO, AIO, Conteúdo" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={form.control}
-        name="keyLearning"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Aprendizado Chave</FormLabel>
-            <FormControl>
-              <Textarea 
-                placeholder="Pontos principais que o leitor deve aprender" 
-                {...field}
-                className="min-h-[80px]"
+              <Input 
+                placeholder={language === 'pt' 
+                  ? "seo, google, otimização (separadas por vírgula)" 
+                  : "seo, google, optimization (comma-separated)"} 
+                {...field} 
               />
             </FormControl>
             <FormMessage />

@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface BlogFormActionsProps {
   isSubmitting: boolean;
@@ -13,6 +14,8 @@ const BlogFormActions: React.FC<BlogFormActionsProps> = ({
   isEditing, 
   onCancel 
 }) => {
+  const { language } = useLanguage();
+  
   return (
     <div className="flex justify-end gap-2">
       <Button 
@@ -20,15 +23,17 @@ const BlogFormActions: React.FC<BlogFormActionsProps> = ({
         variant="outline" 
         onClick={onCancel}
       >
-        Cancelar
+        {language === 'pt' ? 'Cancelar' : 'Cancel'}
       </Button>
       <Button 
         type="submit" 
         disabled={isSubmitting}
       >
-        {isSubmitting ? 
-          "Salvando..." : 
-          isEditing ? "Atualizar Post" : "Criar Post"}
+        {isSubmitting 
+          ? (language === 'pt' ? "Salvando..." : "Saving...") 
+          : isEditing 
+            ? (language === 'pt' ? "Atualizar Post" : "Update Post") 
+            : (language === 'pt' ? "Criar Post" : "Create Post")}
       </Button>
     </div>
   );

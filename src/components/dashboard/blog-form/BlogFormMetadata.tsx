@@ -2,31 +2,36 @@
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { UseFormReturn } from 'react-hook-form';
 import { BlogFormValues } from './types';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface BlogFormMetadataProps {
   form: UseFormReturn<BlogFormValues>;
 }
 
 const BlogFormMetadata: React.FC<BlogFormMetadataProps> = ({ form }) => {
+  const { language } = useLanguage();
+  
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <FormField
         control={form.control}
         name="title"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Título</FormLabel>
+            <FormLabel>{language === 'pt' ? 'Título' : 'Title'}</FormLabel>
             <FormControl>
-              <Input placeholder="Título do post" {...field} />
+              <Input 
+                placeholder={language === 'pt' ? "Título do post" : "Post title"} 
+                {...field} 
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
-
+      
       <FormField
         control={form.control}
         name="slug"
@@ -34,24 +39,28 @@ const BlogFormMetadata: React.FC<BlogFormMetadataProps> = ({ form }) => {
           <FormItem>
             <FormLabel>Slug</FormLabel>
             <FormControl>
-              <Input placeholder="slug-do-post" {...field} />
+              <Input 
+                placeholder="como-melhorar-seo" 
+                {...field} 
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
-
+      
       <FormField
         control={form.control}
         name="excerpt"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Resumo</FormLabel>
+            <FormLabel>{language === 'pt' ? 'Resumo' : 'Excerpt'}</FormLabel>
             <FormControl>
-              <Textarea 
-                placeholder="Breve resumo do conteúdo" 
-                {...field}
-                className="min-h-[80px]"
+              <Input 
+                placeholder={language === 'pt' 
+                  ? "Breve resumo do artigo para listagens" 
+                  : "Brief summary of the article for listings"} 
+                {...field} 
               />
             </FormControl>
             <FormMessage />

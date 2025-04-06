@@ -1,112 +1,93 @@
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 import { BlogPost } from '@/types/blog';
-import { createBlogPost, updateBlogPost, uploadBlogImage } from '@/utils/supabaseBlogClient';
-import { blogPostSchema, BlogFormValues } from './types';
+import { BlogFormValues, blogPostSchema, getEnglishValidationMessages } from './types';
+import { uploadBlogImage, createBlogPost, updateBlogPost } from '@/utils/supabaseBlogClient';
+import { toast } from 'sonner';
+import { useLanguage } from '@/contexts/LanguageContext';
 
-export const useBlogForm = (initialData: BlogPost | null, onSuccess?: () => void) => {
-  const { toast } = useToast();
+export const useBlogForm = (initialData: BlogPost | null = null, onSuccess?: () => void) => {
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(initialData?.imageSrc || null);
+  const { language } = useLanguage();
+  
   const isEditing = !!initialData;
-
-  const defaultValues = initialData 
-    ? {
-        ...initialData,
-        tags: Array.isArray(initialData.tags) ? initialData.tags.join(', ') : initialData.tags
-      } 
-    : {
-        title: '',
-        slug: '',
-        excerpt: '',
-        content: '',
-        keyLearning: '',
-        category: '',
-        tags: '',
-        imageSrc: '',
-      };
-
-  const form = useForm<BlogFormValues>({
-    resolver: zodResolver(blogPostSchema),
-    defaultValues
-  });
-
-  useEffect(() => {
-    if (initialData?.imageSrc) {
-      setImagePreview(initialData.imageSrc);
-    }
-  }, [initialData]);
-
-  const generateSlug = (title: string) => {
-    return title
-      .toLowerCase()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/--+/g, '-')
-      .trim();
+  
+  // Prepare default values from initial data or empty values
+  const defaultValues: Partial<BlogFormValues> = {
+    title: initialData?.title || '',
+    slug: initialData?.slug || '',
+    excerpt: initialData?.excerpt || '',
+    content: initialData?.content || '',
+    keyLearning: initialData?.keyLearning || '',
+    category: initialData?.category || '',
+    tags: Array.isArray(initialData?.tags) 
+      ? initialData?.tags.join(', ') 
+      : initialData?.tags || '',
+    imageSrc: initialData?.imageSrc || '',
   };
 
-  useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (name === 'title' && !isEditing) {
-        const title = value.title as string;
-        if (title) {
-          form.setValue('slug', generateSlug(title));
-        }
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [form, isEditing]);
+  // Get the correct error messages based on language
+  const getErrorMessage = (field: keyof BlogFormValues, error: string) => {
+    if (language === 'en') {
+      const englishMessages = getEnglishValidationMessages();
+      return englishMessages[field] || error;
+    }
+    return error;
+  };
 
+  // Initialize the form
+  const form = useForm<BlogFormValues>({
+    resolver: zodResolver(blogPostSchema),
+    defaultValues,
+  });
+
+  // Handle form submission
   const onSubmit = async (data: BlogFormValues) => {
-    setIsSubmitting(true);
     try {
+      setIsSubmitting(true);
       let imageSrc = data.imageSrc;
       
+      // Upload image if a new one is selected
       if (imageFile) {
         imageSrc = await uploadBlogImage(imageFile);
       }
       
-      const tagsArray = data.tags.split(',').map(tag => tag.trim());
-      
-      const blogPostData: BlogPost = {
-        title: data.title,
-        slug: data.slug,
-        excerpt: data.excerpt,
-        content: data.content,
-        keyLearning: data.keyLearning,
-        category: data.category,
+      // Prepare post data
+      const postData: BlogPost = {
+        ...data,
         imageSrc,
-        tags: tagsArray,
-        popularity: initialData?.popularity || Math.floor(Math.random() * 25) + 75,
-        date: initialData?.date || new Date().toISOString().split('T')[0],
+        tags: data.tags.split(',').map(tag => tag.trim()),
+        id: initialData?.id || '',
+        date: initialData?.date || new Date().toISOString(),
+        popularity: initialData?.popularity || 0,
       };
-
+      
+      // Create or update post
       if (isEditing && initialData?.id) {
-        await updateBlogPost(initialData.id, blogPostData);
+        await updateBlogPost(initialData.id, postData);
+        toast.success(language === 'pt' ? 'Post atualizado com sucesso!' : 'Post updated successfully!');
       } else {
-        await createBlogPost(blogPostData);
+        await createBlogPost(postData);
+        toast.success(language === 'pt' ? 'Post criado com sucesso!' : 'Post created successfully!');
       }
       
-      toast({
-        title: isEditing ? "Post atualizado" : "Post criado",
-        description: isEditing 
-          ? "O post foi atualizado com sucesso." 
-          : "O post foi criado com sucesso.",
-      });
-
-      if (onSuccess) onSuccess();
+      // Clear form and navigate
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        navigate('/dashboard/blog-posts');
+      }
     } catch (error) {
-      console.error("Error saving blog post:", error);
-      toast({
-        title: "Erro",
-        description: "Ocorreu um erro ao salvar o post. Tente novamente.",
-        variant: "destructive"
-      });
+      console.error('Error submitting blog post:', error);
+      toast.error(language === 'pt' 
+        ? 'Erro ao salvar o post. Tente novamente.' 
+        : 'Error saving post. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

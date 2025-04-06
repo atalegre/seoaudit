@@ -8,6 +8,7 @@ import BlogFormImageUpload from './BlogFormImageUpload';
 import BlogFormContent from './BlogFormContent';
 import BlogFormActions from './BlogFormActions';
 import { useBlogForm } from './useBlogForm';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface BlogFormProps {
   initialData?: BlogPost | null;
@@ -15,6 +16,7 @@ interface BlogFormProps {
 }
 
 const BlogForm: React.FC<BlogFormProps> = ({ initialData = null, onSuccess }) => {
+  const { language } = useLanguage();
   const {
     form,
     isSubmitting,
