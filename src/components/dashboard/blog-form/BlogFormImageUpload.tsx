@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { UseFormReturn } from 'react-hook-form';
 import { BlogFormValues } from './types';
-import { Image, Upload } from 'lucide-react';
+import { Image, Upload, RefreshCw } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface BlogFormImageUploadProps {
@@ -38,6 +38,16 @@ const BlogFormImageUpload: React.FC<BlogFormImageUploadProps> = ({
   
   const handleBrowseClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleRandomImageClick = () => {
+    // Get a random Unsplash image optimized for blog content
+    const randomSearchTerms = ['seo', 'digital', 'computer', 'marketing', 'business', 'technology', 'data', 'ai'];
+    const randomTerm = randomSearchTerms[Math.floor(Math.random() * randomSearchTerms.length)];
+    const randomImage = `https://source.unsplash.com/random/1200x800/?${randomTerm}`;
+    
+    setImagePreview(randomImage);
+    form.setValue('imageSrc', randomImage);
   };
   
   return (
@@ -81,16 +91,27 @@ const BlogFormImageUpload: React.FC<BlogFormImageUploadProps> = ({
                   )}
                 </div>
                 
-                {/* Upload button */}
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={handleBrowseClick}
-                  className="w-full"
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  {language === 'pt' ? 'Selecionar Imagem' : 'Select Image'}
-                </Button>
+                {/* Button group */}
+                <div className="flex gap-2">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={handleBrowseClick}
+                    className="flex-1"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    {language === 'pt' ? 'Selecionar Imagem' : 'Select Image'}
+                  </Button>
+                  
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleRandomImageClick}
+                    title={language === 'pt' ? 'Obter imagem aleatória do Unsplash' : 'Get random image from Unsplash'}
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </FormControl>
             <FormMessage />
