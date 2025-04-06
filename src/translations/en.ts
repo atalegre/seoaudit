@@ -1,3 +1,4 @@
+
 export const enTranslations = {
   // Navigation
   'home': 'Home',
@@ -22,6 +23,8 @@ export const enTranslations = {
   'dashboard': 'Dashboard',
   'login-description': 'Enter your credentials to access your account',
   'signup-description': 'Fill in the details below to create your account',
+  'logging-in': 'Signing in',
+  'forgot-password': 'Forgot password?',
   
   // Client Page
   'clients': 'Clients',

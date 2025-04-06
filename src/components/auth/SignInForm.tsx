@@ -10,6 +10,7 @@ import EmailField from './EmailField';
 import PasswordField from './PasswordField';
 import { signinFormSchema, SigninFormValues } from './schemas/signinSchema';
 import { useSignIn } from './hooks/useSignIn';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type SignInFormProps = {
   email?: string;
@@ -27,6 +28,7 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
   });
 
   const { isLoggingIn, handleSignIn } = useSignIn(setAuthError);
+  const { t } = useLanguage();
 
   const onSubmit = (values: SigninFormValues) => {
     handleSignIn(values);
@@ -45,17 +47,17 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
           disabled={isLoggingIn}
         >
           {isLoggingIn ? (
-            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Entrando...</>
+            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t('logging-in')}...</>
           ) : (
             <>
-              <LogIn className="mr-2 h-4 w-4" /> Entrar
+              <LogIn className="mr-2 h-4 w-4" /> {t('sign-in')}
             </>
           )}
         </Button>
 
         <div className="mt-4 text-center text-sm">
           <Link to="/recuperar-password" className="text-primary hover:underline">
-            Esqueceu a password?
+            {t('forgot-password') || "Esqueceu a password?"}
           </Link>
         </div>
       </form>

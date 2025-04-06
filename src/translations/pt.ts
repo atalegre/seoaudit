@@ -1,3 +1,4 @@
+
 export const ptTranslations = {
   // Navigation
   'home': 'Home',
@@ -22,6 +23,8 @@ export const ptTranslations = {
   'dashboard': 'Dashboard',
   'login-description': 'Digite suas credenciais para entrar na sua conta',
   'signup-description': 'Preencha os dados abaixo para criar sua conta',
+  'logging-in': 'Entrando',
+  'forgot-password': 'Esqueceu a password?',
   
   // Client Page
   'clients': 'Clientes',
@@ -104,10 +107,9 @@ export const ptTranslations = {
   'tags': 'Tags',
   'tags-placeholder': 'seo, ai, digital-marketing',
   'tags-help': 'Separe as tags com vírgulas',
-  'image': 'Imagem',
-  'upload-image': 'Carregar imagem',
-  'change-image': 'Alterar imagem',
-  'remove-image': 'Remover imagem',
+  'upload-image': 'Carregar',
+  'change-image': 'Alterar',
+  'remove-image': 'Remover',
   'drag-drop': 'Arraste e solte uma imagem ou clique para selecionar',
   'accepted-formats': 'Formatos aceitos: JPG, PNG, WebP, máx 2MB',
   'cancel': 'Cancelar',
