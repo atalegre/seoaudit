@@ -21,6 +21,7 @@ interface TechnicalHealthPanelProps {
   className?: string;
 }
 
+// Memoize component to prevent unnecessary re-renders
 const TechnicalHealthPanel = React.memo(({
   loadTimeDesktop,
   loadTimeMobile,
@@ -60,7 +61,8 @@ const TechnicalHealthPanel = React.memo(({
         </div>
       </CardHeader>
       <CardContent className="pt-4 grid gap-3">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {/* Define fixed height containers to prevent layout shifts */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3" style={{ minHeight: '120px' }}>
           <MetricItem 
             title="Carregamento Desktop" 
             value={`${loadTimeDesktop.toFixed(1)}s`}
@@ -81,7 +83,7 @@ const TechnicalHealthPanel = React.memo(({
           />
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3" style={{ minHeight: '120px' }}>
           <MetricItem 
             title="Adaptável para Mobile" 
             value={mobileFriendlyText}

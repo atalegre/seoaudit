@@ -18,41 +18,16 @@
     <!-- Google site verification -->
     <meta name="google-site-verification" content="google55a096d7c18d6d3a.html" />
 
-    <!-- Google Analytics Consent Mode -->
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      
-      // Default consent - wait for user choices
-      gtag('consent', 'default', {
-        'analytics_storage': 'denied',
-        'ad_storage': 'denied',
-        'functionality_storage': 'denied',
-        'wait_for_update': 500 // Wait for cookie consent
-      });
-    </script>
-
-    <!-- Google Analytics (Enhanced Implementation) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-33EYX0JZM1"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-33EYX0JZM1', {
-        'send_page_view': true,
-        'cookie_domain': 'seoaudit.pt',
-        'cookie_flags': 'SameSite=None;Secure'
-      });
-    </script>
-
     <!-- Preload critical resources -->
     <link rel="preload" href="/src/main.tsx" as="script" fetchpriority="high" />
     <link rel="preload" href="/src/components/Hero.tsx" as="script" fetchpriority="high" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" as="font" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" type="font/woff2" crossorigin />
     
     <!-- Inline critical CSS for faster rendering -->
     <style>
-      /* Critical rendering path CSS - from performance audit */
+      /* Critical rendering path CSS - improved for LCP and FCP */
       :root {
         --background: 0 0% 100%;
         --foreground: 222.2 84% 4.9%;
@@ -76,6 +51,7 @@
         from { opacity: 0; }
         to { opacity: 1; }
       }
+      /* Improved LCP target */
       .lcp-target {
         content-visibility: auto;
         contain-intrinsic-size: 0px 500px;
@@ -83,7 +59,7 @@
       .text-seo { color: #3366cc; }
       .text-aio { color: #ff6633; }
       
-      /* Critical first view styles */
+      /* Critical first view styles - optimized */
       .hero-container {
         max-width: 72rem;
         margin-left: auto;
@@ -101,17 +77,79 @@
         margin-bottom: 2rem;
         color: hsl(215.4 16.3% 46.9%);
       }
+
+      /* Add loading="lazy" to non-critical images */
+      img:not([loading]) {
+        loading: lazy;
+      }
+      
+      /* Hero section optimization */
+      .hero-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 2rem 1rem;
+      }
+      
+      /* Form button optimization */
+      .primary-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.375rem;
+        font-weight: 500;
+        padding: 0.75rem 1.5rem;
+        background-color: hsl(222.2 47.4% 11.2%);
+        color: white;
+        transition: background-color 0.2s;
+      }
+      
+      /* Layout optimization to prevent CLS */
+      .layout-wrapper {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      @media (min-width: 768px) {
+        .layout-wrapper {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
     </style>
 
-    <!-- Preconnect to external domains -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preconnect" href="https://gpteng.co" crossorigin />
-    
     <!-- DNS prefetch for external domains -->
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
     <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
     <link rel="dns-prefetch" href="https://gpteng.co" />
+
+    <!-- Google Analytics Consent Mode -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      
+      // Default consent - wait for user choices
+      gtag('consent', 'default', {
+        'analytics_storage': 'denied',
+        'ad_storage': 'denied',
+        'functionality_storage': 'denied',
+        'wait_for_update': 500 // Wait for cookie consent
+      });
+    </script>
+
+    <!-- Google Analytics - modified to be non-blocking -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-33EYX0JZM1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-33EYX0JZM1', {
+        'send_page_view': true,
+        'cookie_domain': 'seoaudit.pt',
+        'cookie_flags': 'SameSite=None;Secure'
+      });
+    </script>
 
     <!-- Open Graph / Facebook -->
     <meta property="og:title" content="SEOAudit - Análise SEO e AIO" />
@@ -143,8 +181,8 @@
     <!-- End Google Tag Manager (noscript) -->
     
     <div id="root"></div>
-    <!-- Add the required Lovable script tag -->
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+    <!-- Add the required Lovable script tag with defer -->
+    <script src="https://cdn.gpteng.co/gptengineer.js" type="module" defer></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

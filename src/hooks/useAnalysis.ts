@@ -1,10 +1,9 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AnalysisResult } from '@/utils/api/types';
 import { getPageInsightsData } from '@/utils/api';
 import { getChatGptAnalysis } from '@/utils/api/chatGptService';
 import { createAnalysisResult } from '@/utils/resultsPageHelpers';
-import { fetchSiteLogo } from '@/utils/api/logoService';
 import { extractDomainFromUrl } from '@/utils/domainUtils';
 import { toast } from 'sonner';
 
@@ -18,6 +17,7 @@ export function useAnalysis(urlParam: string | null) {
   const [error, setError] = useState<string | null>(null);
   const [seoError, setSeoError] = useState<string | null>(null);
   const [aioError, setAioError] = useState<string | null>(null);
+  const analysisInProgress = useRef(false);
 
   useEffect(() => {
     if (!urlParam) {
@@ -64,13 +64,19 @@ export function useAnalysis(urlParam: string | null) {
       }
     }
     
+    // Prevent multiple parallel analysis requests
+    if (analysisInProgress.current) {
+      return;
+    }
+    
+    analysisInProgress.current = true;
     console.log('Iniciando nova análise para URL:', urlParam);
     setIsLoading(true);
     setSeoError(null);
     setAioError(null);
     
     // Usar setTimeout para não bloquear a renderização
-    setTimeout(async () => {
+    const analyzeUrl = async () => {
       try {
         let normalizedUrl = urlParam;
         if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
@@ -91,27 +97,46 @@ export function useAnalysis(urlParam: string | null) {
         }
         
         // Iniciar as análises em paralelo
+        const [seoDataPromise, aioDataPromise] = await Promise.allSettled([
+          // SEO Promise with timeout
+          Promise.race([
+            getPageInsightsData(normalizedUrl),
+            new Promise<null>((_, reject) => 
+              setTimeout(() => reject(new Error('Timeout na análise SEO')), 30000)
+            )
+          ]),
+          // AIO Promise with timeout and delay to avoid conflicts
+          new Promise(resolve => setTimeout(resolve, 100)).then(() => 
+            Promise.race([
+              getChatGptAnalysis(normalizedUrl),
+              new Promise<null>((_, reject) => 
+                setTimeout(() => reject(new Error('Timeout na análise AIO')), 40000)
+              )
+            ])
+          )
+        ]);
+        
         let seoData = null;
         let aioData = null;
         
-        try {
-          seoData = await getPageInsightsData(normalizedUrl);
-        } catch (err) {
-          setSeoError(err instanceof Error ? err.message : 'Erro desconhecido na análise SEO');
-          console.error('Error fetching Page Insights data:', err);
+        if (seoDataPromise.status === 'fulfilled') {
+          seoData = seoDataPromise.value;
+        } else {
+          setSeoError(seoDataPromise.reason?.message || 'Erro desconhecido na análise SEO');
+          console.error('Error fetching Page Insights data:', seoDataPromise.reason);
         }
-          
-        // AIO Promise - now using a small delay to avoid conflicts
-        try {
-          aioData = await getChatGptAnalysis(normalizedUrl);
-        } catch (err) {
-          setAioError(err instanceof Error ? err.message : 'Erro desconhecido na análise AIO');
-          console.error('Error fetching AIO data:', err);
+        
+        if (aioDataPromise.status === 'fulfilled') {
+          aioData = aioDataPromise.value;
+        } else {
+          setAioError(aioDataPromise.reason?.message || 'Erro desconhecido na análise AIO');
+          console.error('Error fetching AIO data:', aioDataPromise.reason);
         }
         
         if (!seoData && !aioData) {
           setError('Falha em ambas as análises. Por favor, verifique suas configurações de API.');
           setIsLoading(false);
+          analysisInProgress.current = false;
           return;
         }
         
@@ -140,8 +165,19 @@ export function useAnalysis(urlParam: string | null) {
         setError("Ocorreu um erro ao analisar o site");
       } finally {
         setIsLoading(false);
+        analysisInProgress.current = false;
       }
-    }, 0);
+    };
+    
+    // Defer to the next frame to avoid blocking the main thread
+    requestAnimationFrame(() => {
+      analyzeUrl();
+    });
+    
+    // Cleanup function
+    return () => {
+      analysisInProgress.current = false;
+    };
   }, [urlParam]);
 
   const handleReanalyze = () => {

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import CookieConsentManager from '@/utils/cookie-consent';
 import { CookieSettings } from '@/utils/cookie-consent';
@@ -12,46 +13,58 @@ export function useCookieConsent() {
     marketing: false,
   });
 
-  // Check if consent was already given
+  // Check if consent was already given - defer to after critical rendering
   useEffect(() => {
-    const checkConsent = async () => {
+    // Use requestIdleCallback to defer non-critical work
+    const checkConsent = () => {
       // First try to load from database (if user is authenticated)
-      const dbConsent = await CookieConsentManager.loadConsentFromDatabase();
-      
-      if (dbConsent) {
-        console.log('Loaded consent settings from database:', dbConsent);
-        setCookieSettings(dbConsent);
-        CookieConsentManager.applyConsent(dbConsent);
-      } else {
-        // Fallback to localStorage
-        const storedConsent = CookieConsentManager.getConsent();
-        if (!storedConsent) {
-          console.log('No consent settings found, showing banner');
-          setShowBanner(true);
+      CookieConsentManager.loadConsentFromDatabase().then(dbConsent => {
+        if (dbConsent) {
+          console.log('Loaded consent settings from database:', dbConsent);
+          setCookieSettings(dbConsent);
+          CookieConsentManager.applyConsent(dbConsent);
         } else {
-          console.log('Loaded consent settings from localStorage:', storedConsent);
-          setCookieSettings(storedConsent);
-          CookieConsentManager.applyConsent(storedConsent);
+          // Fallback to localStorage
+          const storedConsent = CookieConsentManager.getConsent();
+          if (!storedConsent) {
+            console.log('No consent settings found, showing banner');
+            setShowBanner(true);
+          } else {
+            console.log('Loaded consent settings from localStorage:', storedConsent);
+            setCookieSettings(storedConsent);
+            CookieConsentManager.applyConsent(storedConsent);
+          }
         }
-      }
+      });
     };
     
-    checkConsent();
+    // Defer cookie consent check to improve initial page load
+    if (window.requestIdleCallback) {
+      window.requestIdleCallback(checkConsent, { timeout: 1000 });
+    } else {
+      // Fallback for browsers without requestIdleCallback
+      setTimeout(checkConsent, 500);
+    }
     
-    // Run the validation immediately to check for tag presence
-    CookieConsentManager.validateTagsPresence();
-    
-    // Run again after a short delay to ensure everything is loaded
-    setTimeout(() => {
+    // Defer tag validation to improve FCP and LCP
+    const validateTags = () => {
       CookieConsentManager.validateTagsPresence();
       CookieConsentManager.verifyCrossDomainTracking();
-    }, 1000);
+    };
+    
+    if (window.requestIdleCallback) {
+      window.requestIdleCallback(validateTags, { timeout: 2000 });
+    } else {
+      setTimeout(validateTags, 1000);
+    }
     
     // Also run the validation after the window load event
     window.addEventListener('load', () => {
-      setTimeout(() => {
-        CookieConsentManager.validateTagsPresence();
-      }, 500);
+      if (window.requestIdleCallback) {
+        window.requestIdleCallback(validateTags, { timeout: 2000 });
+      } else {
+        setTimeout(validateTags, 1000);
+      }
     });
   }, []);
 
@@ -69,10 +82,16 @@ export function useCookieConsent() {
     await CookieConsentManager.saveConsent(allAccepted);
     setShowBanner(false);
     
-    // Re-validate tags after consent is given
-    setTimeout(() => {
-      CookieConsentManager.validateTagsPresence();
-    }, 500);
+    // Defer re-validation to after UI update
+    if (window.requestIdleCallback) {
+      window.requestIdleCallback(() => {
+        CookieConsentManager.validateTagsPresence();
+      }, { timeout: 500 });
+    } else {
+      setTimeout(() => {
+        CookieConsentManager.validateTagsPresence();
+      }, 500);
+    }
   };
 
   // Handle rejecting all non-essential cookies
