@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -27,7 +28,7 @@ export const useBlogForm = (initialData: BlogPost | null = null, onSuccess?: () 
     category: initialData?.category || '',
     tags: Array.isArray(initialData?.tags) 
       ? initialData?.tags.join(', ') 
-      : initialData?.tags || '',
+      : '',
     imageSrc: initialData?.imageSrc || '',
   };
 
@@ -66,7 +67,7 @@ export const useBlogForm = (initialData: BlogPost | null = null, onSuccess?: () 
         content: data.content,
         keyLearning: data.keyLearning,
         category: data.category,
-        tags: data.tags.split(',').map(tag => tag.trim()),
+        tags: data.tags ? data.tags.split(',').map(tag => tag.trim()) : [],
         imageSrc,
         id: initialData?.id || '',
         date: initialData?.date || new Date().toISOString(),

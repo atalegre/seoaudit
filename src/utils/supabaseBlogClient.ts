@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@/integrations/supabase/client';
 import { BlogPost } from '@/types/blog';
 import { TablesInsert } from '@/integrations/supabase/types';
 
@@ -34,22 +34,23 @@ export const uploadBlogImage = async (file: File): Promise<string> => {
 // Function to create a new blog post in Supabase
 export const createBlogPost = async (post: BlogPost): Promise<BlogPost | null> => {
   try {
+    // Ensure tags is always an array
+    const formattedPost = {
+      title: post.title,
+      slug: post.slug,
+      excerpt: post.excerpt,
+      content: post.content,
+      key_learning: post.keyLearning,
+      category: post.category,
+      tags: Array.isArray(post.tags) ? post.tags : [],
+      image_src: post.imageSrc,
+      popularity: post.popularity,
+      date: post.date,
+    };
+
     const { data, error } = await supabase
       .from('blog_posts')
-      .insert([
-        {
-          title: post.title,
-          slug: post.slug,
-          excerpt: post.excerpt,
-          content: post.content,
-          key_learning: post.keyLearning,
-          category: post.category,
-          tags: post.tags,
-          image_src: post.imageSrc,
-          popularity: post.popularity,
-          date: post.date,
-        }
-      ])
+      .insert([formattedPost])
       .select()
       .single();
 
@@ -68,20 +69,23 @@ export const createBlogPost = async (post: BlogPost): Promise<BlogPost | null> =
 // Function to update an existing blog post in Supabase
 export const updateBlogPost = async (id: string, post: BlogPost): Promise<BlogPost | null> => {
   try {
+    // Ensure tags is always an array
+    const formattedPost = {
+      title: post.title,
+      slug: post.slug,
+      excerpt: post.excerpt,
+      content: post.content,
+      key_learning: post.keyLearning,
+      category: post.category,
+      tags: Array.isArray(post.tags) ? post.tags : [],
+      image_src: post.imageSrc,
+      popularity: post.popularity,
+      date: post.date,
+    };
+
     const { data, error } = await supabase
       .from('blog_posts')
-      .update({
-        title: post.title,
-        slug: post.slug,
-        excerpt: post.excerpt,
-        content: post.content,
-        key_learning: post.keyLearning,
-        category: post.category,
-        tags: post.tags,
-        image_src: post.imageSrc,
-        popularity: post.popularity,
-        date: post.date,
-      })
+      .update(formattedPost)
       .eq('id', id)
       .select()
       .single();
@@ -232,8 +236,16 @@ export const createOptimizedBlogPosts = async (): Promise<boolean> => {
     for (const post of optimizedPosts) {
       // Ensure tags is always an array of strings
       const formattedPost = {
-        ...post,
-        tags: Array.isArray(post.tags) ? post.tags : (typeof post.tags === 'string' ? post.tags.split(',').map(tag => tag.trim()) : [])
+        title: post.title,
+        slug: post.slug,
+        excerpt: post.excerpt,
+        content: post.content,
+        key_learning: post.keyLearning,
+        category: post.category,
+        tags: Array.isArray(post.tags) ? post.tags : [],
+        image_src: post.imageSrc,
+        popularity: post.popularity,
+        date: post.date,
       };
       
       // Insert each post individually
