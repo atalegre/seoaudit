@@ -2,6 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ResendButtonProps {
   onResend: () => void;
@@ -9,6 +10,8 @@ interface ResendButtonProps {
 }
 
 const ResendButton = ({ onResend, isResending }: ResendButtonProps) => {
+  const { t } = useLanguage();
+  
   return (
     <Button 
       variant="default" 
@@ -18,10 +21,10 @@ const ResendButton = ({ onResend, isResending }: ResendButtonProps) => {
     >
       {isResending ? (
         <>
-          <RefreshCw className="h-4 w-4 animate-spin mr-2" /> A reenviar...
+          <RefreshCw className="h-4 w-4 animate-spin mr-2" /> {t('verify-resending')}
         </>
       ) : (
-        <>Reenviar email de verificação</>
+        <>{t('verify-resend')}</>
       )}
     </Button>
   );

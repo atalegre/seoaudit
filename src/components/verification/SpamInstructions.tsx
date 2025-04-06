@@ -1,14 +1,17 @@
 
 import React from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const SpamInstructions = () => {
+  const { t } = useLanguage();
+  
   return (
     <div className="text-sm text-muted-foreground mt-4">
-      <p className="font-medium">Não recebeu o email?</p>
+      <p className="font-medium">{t('verify-no-email')}</p>
       <ul className="list-disc pl-5 mt-2 space-y-1">
-        <li>Verifique a sua pasta de spam ou lixo eletrónico</li>
-        <li>Adicione no-reply@seoaudit.pt aos seus contactos</li>
-        <li>Aguarde alguns minutos, pois os emails podem demorar a chegar</li>
+        <li>{t('verify-check-spam')}</li>
+        <li>{t('verify-add-contact')}</li>
+        <li>{t('verify-wait')}</li>
       </ul>
     </div>
   );

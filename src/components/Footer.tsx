@@ -1,7 +1,10 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Footer = () => {
+  const { t } = useLanguage();
   const currentYear = new Date().getFullYear();
   
   return (
@@ -11,12 +14,12 @@ const Footer = () => {
           <div className="space-y-3">
             <div className="font-bold text-2xl">SEOAudit</div>
             <p className="text-sm text-muted-foreground">
-              Otimize o seu site para motores de busca e modelos de IA.
+              {t('footer-description')}
             </p>
           </div>
           
           <div>
-            <h3 className="font-medium mb-3">Navegação</h3>
+            <h3 className="font-medium mb-3">{t('navigation')}</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/" className="text-muted-foreground hover:text-foreground">
@@ -25,7 +28,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link to="/como-funciona" className="text-muted-foreground hover:text-foreground">
-                  Como Funciona
+                  {t('how-it-works')}
                 </Link>
               </li>
               <li>
@@ -37,23 +40,23 @@ const Footer = () => {
           </div>
           
           <div>
-            <h3 className="font-medium mb-3">Legal</h3>
+            <h3 className="font-medium mb-3">{t('legal')}</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/termos" className="text-muted-foreground hover:text-foreground">
-                  Termos e Condições
+                  {t('terms')}
                 </Link>
               </li>
               <li>
                 <Link to="/privacidade" className="text-muted-foreground hover:text-foreground">
-                  Política de Privacidade
+                  {t('privacy')}
                 </Link>
               </li>
             </ul>
           </div>
           
           <div>
-            <h3 className="font-medium mb-3">Contacto</h3>
+            <h3 className="font-medium mb-3">{t('contact')}</h3>
             <ul className="space-y-2 text-sm">
               <li className="text-muted-foreground">
                 Email: info@seoaudit.pt
@@ -67,7 +70,7 @@ const Footer = () => {
         
         <div className="border-t mt-8 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            &copy; {currentYear} SEOAudit. Todos os direitos reservados.
+            &copy; {currentYear} SEOAudit. {t('rights-reserved')}
           </p>
           <div className="flex gap-4">
             <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground">

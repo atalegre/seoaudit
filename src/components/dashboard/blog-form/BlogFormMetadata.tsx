@@ -11,7 +11,7 @@ interface BlogFormMetadataProps {
 }
 
 const BlogFormMetadata: React.FC<BlogFormMetadataProps> = ({ form }) => {
-  const { language } = useLanguage();
+  const { t } = useLanguage();
   
   return (
     <div className="space-y-4">
@@ -20,10 +20,10 @@ const BlogFormMetadata: React.FC<BlogFormMetadataProps> = ({ form }) => {
         name="title"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>{language === 'pt' ? 'Título' : 'Title'}</FormLabel>
+            <FormLabel>{t('title')}</FormLabel>
             <FormControl>
               <Input 
-                placeholder={language === 'pt' ? "Título do post" : "Post title"} 
+                placeholder={t('post-title')} 
                 {...field} 
               />
             </FormControl>
@@ -54,12 +54,10 @@ const BlogFormMetadata: React.FC<BlogFormMetadataProps> = ({ form }) => {
         name="excerpt"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>{language === 'pt' ? 'Resumo' : 'Excerpt'}</FormLabel>
+            <FormLabel>{t('excerpt')}</FormLabel>
             <FormControl>
               <Input 
-                placeholder={language === 'pt' 
-                  ? "Breve resumo do artigo para listagens" 
-                  : "Brief summary of the article for listings"} 
+                placeholder={t('excerpt-placeholder')} 
                 {...field} 
               />
             </FormControl>

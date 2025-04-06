@@ -14,7 +14,7 @@ const BlogFormActions: React.FC<BlogFormActionsProps> = ({
   isEditing, 
   onCancel 
 }) => {
-  const { language } = useLanguage();
+  const { t } = useLanguage();
   
   return (
     <div className="flex justify-end gap-2">
@@ -23,17 +23,17 @@ const BlogFormActions: React.FC<BlogFormActionsProps> = ({
         variant="outline" 
         onClick={onCancel}
       >
-        {language === 'pt' ? 'Cancelar' : 'Cancel'}
+        {t('cancel')}
       </Button>
       <Button 
         type="submit" 
         disabled={isSubmitting}
       >
         {isSubmitting 
-          ? (language === 'pt' ? "Salvando..." : "Saving...") 
+          ? t('saving') 
           : isEditing 
-            ? (language === 'pt' ? "Atualizar Post" : "Update Post") 
-            : (language === 'pt' ? "Criar Post" : "Create Post")}
+            ? t('update-post')
+            : t('create-post')}
       </Button>
     </div>
   );

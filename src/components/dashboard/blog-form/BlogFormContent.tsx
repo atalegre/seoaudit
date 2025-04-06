@@ -11,7 +11,7 @@ interface BlogFormContentProps {
 }
 
 const BlogFormContent: React.FC<BlogFormContentProps> = ({ form }) => {
-  const { language, t } = useLanguage();
+  const { t } = useLanguage();
   
   return (
     <>
@@ -20,12 +20,10 @@ const BlogFormContent: React.FC<BlogFormContentProps> = ({ form }) => {
         name="content"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>{language === 'pt' ? 'Conteúdo (HTML)' : 'Content (HTML)'}</FormLabel>
+            <FormLabel>{t('content')}</FormLabel>
             <FormControl>
               <Textarea 
-                placeholder={language === 'pt' 
-                  ? "<h2>Introdução</h2><p>Conteúdo do artigo...</p>" 
-                  : "<h2>Introduction</h2><p>Article content...</p>"} 
+                placeholder={t('content-placeholder')} 
                 {...field}
                 className="min-h-[300px] font-mono"
               />
@@ -40,12 +38,10 @@ const BlogFormContent: React.FC<BlogFormContentProps> = ({ form }) => {
         name="keyLearning"
         render={({ field }) => (
           <FormItem className="mt-4">
-            <FormLabel>{language === 'pt' ? 'Aprendizado Chave' : 'Key Learning'}</FormLabel>
+            <FormLabel>{t('key-learning')}</FormLabel>
             <FormControl>
               <Textarea 
-                placeholder={language === 'pt' 
-                  ? "O que o leitor deve aprender com este artigo..." 
-                  : "What the reader should learn from this article..."} 
+                placeholder={t('key-learning-placeholder')} 
                 {...field}
                 className="min-h-[100px]"
               />
