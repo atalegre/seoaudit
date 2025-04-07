@@ -36,10 +36,13 @@ import { LanguageProvider } from "./contexts/LanguageContext";
 import CookieConsent from "./components/CookieConsent";
 import ScrollToTop from "./components/ScrollToTop";
 import SuiteDashboard from "./pages/suite/SuiteDashboard";
+import DashboardLayout from "./pages/dashboard/DashboardLayout";
+import SuiteLayout from "./pages/suite/SuiteLayout";
+import SeoAnalysisPage from "./pages/suite/SeoAnalysisPage";
 
 const queryClient = new QueryClient();
 
-const App = () => {
+function App() {
   useEffect(() => {
     const setupDefaultUsers = async () => {
       try {
@@ -77,23 +80,27 @@ const App = () => {
                 <Route path="/verification" element={<VerificationPage />} />
                 <Route path="/auth/callback" element={<Navigate to="/dashboard" />} />
                 
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/dashboard/client" element={<ClientDashboardPage />} />
-                <Route path="/dashboard/client/:id" element={<ClientPage />} />
-                <Route path="/dashboard/clients" element={<ClientsPage />} />
-                <Route path="/dashboard/bulk-import" element={<BulkImportPage />} />
-                <Route path="/dashboard/settings" element={<SettingsPage />} />
-                <Route path="/dashboard/blog-posts" element={<BlogPostsPage />} />
+                <Route path="/dashboard" element={<DashboardLayout />}>
+                  <Route path="" element={<DashboardPage />} />
+                  <Route path="client" element={<ClientDashboardPage />} />
+                  <Route path="client/:id" element={<ClientPage />} />
+                  <Route path="clients" element={<ClientsPage />} />
+                  <Route path="bulk-import" element={<BulkImportPage />} />
+                  <Route path="settings" element={<SettingsPage />} />
+                  <Route path="blog-posts" element={<BlogPostsPage />} />
+                </Route>
                 
-                <Route path="/suite" element={<SuiteDashboard />} />
-                <Route path="/suite/seo" element={<SuiteDashboard />} />
-                <Route path="/suite/aio" element={<SuiteDashboard />} />
-                <Route path="/suite/llm" element={<SuiteDashboard />} />
-                <Route path="/suite/directories" element={<SuiteDashboard />} />
-                <Route path="/suite/keywords" element={<SuiteDashboard />} />
-                <Route path="/suite/recommender" element={<SuiteDashboard />} />
-                <Route path="/suite/writer" element={<SuiteDashboard />} />
-                <Route path="/suite/reports" element={<SuiteDashboard />} />
+                <Route path="/suite" element={<SuiteLayout />}>
+                  <Route index element={<SuiteDashboard />} />
+                  <Route path="seo" element={<SeoAnalysisPage />} />
+                  <Route path="aio" element={<SuiteDashboard />} />
+                  <Route path="llm" element={<SuiteDashboard />} />
+                  <Route path="directories" element={<SuiteDashboard />} />
+                  <Route path="keywords" element={<SuiteDashboard />} />
+                  <Route path="recommender" element={<SuiteDashboard />} />
+                  <Route path="writer" element={<SuiteDashboard />} />
+                  <Route path="reports" element={<SuiteDashboard />} />
+                </Route>
                 
                 <Route path="/blog" element={<BlogPage />} />
                 <Route path="/blog/:slug" element={<BlogPostPage />} />
@@ -110,6 +117,6 @@ const App = () => {
       </UserProvider>
     </QueryClientProvider>
   );
-};
+}
 
 export default App;
