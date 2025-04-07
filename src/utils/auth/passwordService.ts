@@ -15,7 +15,7 @@ export async function resetPassword(email: string) {
       throw error;
     }
     
-    return true;
+    return { success: true };
   } catch (error) {
     console.error("Exception during password reset:", error);
     throw error;
@@ -36,7 +36,7 @@ export async function updatePassword(newPassword: string) {
       throw error;
     }
     
-    return true;
+    return { success: true };
   } catch (error) {
     console.error("Exception during password update:", error);
     throw error;
