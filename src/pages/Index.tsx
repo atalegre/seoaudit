@@ -19,24 +19,28 @@ React.useEffect(() => {
     forms.forEach(form => {
       // Remove existing listeners by cloning
       const newForm = form.cloneNode(true);
-      form.parentNode?.replaceChild(newForm, form);
-      
-      // Add our custom listener
-      newForm.addEventListener('submit', (e) => {
-        e.preventDefault();
+      if (form.parentNode) {
+        form.parentNode.replaceChild(newForm, form);
         
-        // Get the URL value
-        const urlInput = newForm.querySelector('input[type="url"], input[type="text"]');
-        const url = urlInput?.value;
-        
-        if (url) {
-          // Dispatch our custom event
-          const customEvent = new CustomEvent('seoaudit:analyze', { 
-            detail: { url } 
+        // Add our custom listener
+        if (newForm instanceof HTMLElement) {
+          newForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Get the URL value
+            const urlInput = newForm.querySelector('input[type="url"], input[type="text"]');
+            const url = urlInput?.value;
+            
+            if (url) {
+              // Dispatch our custom event
+              const customEvent = new CustomEvent('seoaudit:analyze', { 
+                detail: { url } 
+              });
+              window.dispatchEvent(customEvent);
+            }
           });
-          window.dispatchEvent(customEvent);
         }
-      });
+      }
     });
   };
   
