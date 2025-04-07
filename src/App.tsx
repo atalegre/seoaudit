@@ -39,6 +39,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import SuiteDashboard from "./pages/suite/SuiteDashboard";
 import DashboardLayout from "./components/dashboard/DashboardLayout";
 import SeoAnalysisPage from "./pages/suite/SeoAnalysisPage";
+import AioOptimizationPage from "./pages/suite/AioOptimizationPage";
 
 const queryClient = new QueryClient();
 
@@ -92,7 +93,7 @@ function App() {
                 
                 <Route path="/suite" element={<SuiteDashboard />} />
                 <Route path="/suite/seo" element={<SeoAnalysisPage />} />
-                <Route path="/suite/aio" element={<SuiteDashboard />} />
+                <Route path="/suite/aio" element={<AioOptimizationPage />} />
                 <Route path="/suite/llm" element={<SuiteDashboard />} />
                 <Route path="/suite/directories" element={<SuiteDashboard />} />
                 <Route path="/suite/keywords" element={<SuiteDashboard />} />

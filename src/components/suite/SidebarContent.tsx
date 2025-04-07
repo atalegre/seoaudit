@@ -65,7 +65,7 @@ const SidebarContent = () => {
           )}
         >
           {item.icon}
-          <span className="hidden group-hover:inline">{item.name}</span>
+          <span className="sidebar-label">{item.name}</span>
         </Link>
       ))}
     </>
