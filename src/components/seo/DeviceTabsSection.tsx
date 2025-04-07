@@ -101,14 +101,28 @@ const DeviceTabsSection: React.FC<DeviceTabsSectionProps> = ({
           <TabsContent value="desktop" className="m-0">
             {hasDesktopData && (
               <div className="p-4 space-y-6">
-                <DevicePerformancePanel data={desktopData} />
+                <DevicePerformancePanel 
+                  data={desktopData} 
+                  deviceType="desktop" 
+                />
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <CoreWebVitalsPanel data={desktopData} />
-                  <TechnicalAuditsPanel data={desktopData} />
+                  <CoreWebVitalsPanel 
+                    lcp={desktopData.lcp} 
+                    cls={desktopData.cls} 
+                    fid={desktopData.fid} 
+                  />
+                  <TechnicalAuditsPanel 
+                    mobileFriendly={desktopData.mobileFriendly}
+                    security={desktopData.security}
+                    headingsStructure={desktopData.headingsStructure}
+                    metaTags={desktopData.metaTags}
+                  />
                 </div>
                 
-                <OpportunitiesPanel data={desktopData} />
+                <OpportunitiesPanel 
+                  recommendations={desktopData.recommendations || []} 
+                />
               </div>
             )}
           </TabsContent>
@@ -116,14 +130,28 @@ const DeviceTabsSection: React.FC<DeviceTabsSectionProps> = ({
           <TabsContent value="mobile" className="m-0">
             {hasMobileData && (
               <div className="p-4 space-y-6">
-                <DevicePerformancePanel data={mobileData} />
+                <DevicePerformancePanel 
+                  data={mobileData} 
+                  deviceType="mobile" 
+                />
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <CoreWebVitalsPanel data={mobileData} />
-                  <TechnicalAuditsPanel data={mobileData} />
+                  <CoreWebVitalsPanel 
+                    lcp={mobileData.lcp} 
+                    cls={mobileData.cls} 
+                    fid={mobileData.fid} 
+                  />
+                  <TechnicalAuditsPanel 
+                    mobileFriendly={mobileData.mobileFriendly}
+                    security={mobileData.security}
+                    headingsStructure={mobileData.headingsStructure}
+                    metaTags={mobileData.metaTags}
+                  />
                 </div>
                 
-                <OpportunitiesPanel data={mobileData} />
+                <OpportunitiesPanel 
+                  recommendations={mobileData.recommendations || []} 
+                />
               </div>
             )}
           </TabsContent>
