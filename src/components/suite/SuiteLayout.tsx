@@ -93,8 +93,8 @@ const SuiteLayout = ({
           </SidebarFooter>
         </Sidebar>
 
-        {/* Main content that adjusts based on sidebar state */}
-        <div className="flex-1 flex flex-col md:ml-[--sidebar-width] lg:ml-[--sidebar-width] transition-all duration-200 ease-in-out group-data-[collapsible=icon]:md:ml-[--sidebar-width-icon] group-data-[collapsible=icon]:lg:ml-[--sidebar-width-icon]">
+        {/* Main content area with proper spacing */}
+        <div className="flex-1 flex flex-col md:pl-[14rem] lg:pl-[14rem] group-data-[collapsible=icon]:md:pl-[3.5rem] group-data-[collapsible=icon]:lg:pl-[3.5rem] transition-all duration-200 ease-in-out">
           <header className="flex h-14 items-center border-b px-4 lg:px-6 sticky top-0 bg-background z-10">
             <SidebarTrigger />
             <div className="flex flex-1 items-center justify-between">

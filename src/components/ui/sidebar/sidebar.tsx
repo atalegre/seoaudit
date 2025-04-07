@@ -63,7 +63,7 @@ export const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
       );
     }
 
-    // Fixed positioning for the sidebar
+    // Fixed positioning for the sidebar, matching the provided HTML structure
     return (
       <div
         ref={ref}
@@ -73,7 +73,7 @@ export const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
         data-variant={variant}
         data-side={side}
       >
-        {/* This handles the spacing when sidebar is collapsed to icon view */}
+        {/* Sidebar spacing element */}
         <div
           className={cn(
             "duration-200 relative h-svh w-[--sidebar-width] bg-transparent transition-[width] ease-linear",
@@ -84,6 +84,7 @@ export const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
               : "group-data-[collapsible=icon]:w-[--sidebar-width-icon]"
           )}
         />
+        {/* Fixed sidebar container */}
         <div
           className={cn(
             "duration-200 fixed inset-y-0 z-40 hidden h-svh w-[--sidebar-width] transition-[left,right,width] ease-linear md:flex",
@@ -97,6 +98,7 @@ export const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
           )}
           {...props}
         >
+          {/* Sidebar content */}
           <div
             data-sidebar="sidebar"
             className={cn(
