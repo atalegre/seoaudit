@@ -75,15 +75,16 @@ const SidebarContent = () => {
   const location = useLocation();
 
   return (
-    <SidebarGroupContent className="py-1">
-      <SidebarMenu className="space-y-1">
+    <SidebarGroupContent className="py-0.5">
+      <SidebarMenu className="space-y-0.5">
         {sidebarItems.map((item) => (
           <SidebarMenuItem key={item.path}>
             <SidebarMenuButton
               tooltip={item.tooltip}
               isActive={location.pathname === item.path}
               onClick={() => navigate(item.path)}
-              className="h-9"
+              className="h-8"
+              size="sm"
             >
               <item.icon className="w-4 h-4" />
               <span>{item.label}</span>

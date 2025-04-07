@@ -34,6 +34,10 @@
     --ring: 222.2 84% 4.9%;
  
     --radius: 0.5rem;
+    
+    /* Custom sidebar width */
+    --sidebar-width: 14rem;
+    --sidebar-width-icon: 2.5rem;
   }
  
   .dark {
