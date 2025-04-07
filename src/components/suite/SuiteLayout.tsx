@@ -52,7 +52,7 @@ const SuiteLayout = ({
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full">
-        <Sidebar variant="sidebar" collapsible="icon">
+        <Sidebar variant="sidebar" collapsible="hover">
           <SidebarHeader className="flex items-center justify-center h-14 border-b py-2 px-2">
             <img 
               src="/lovable-uploads/d5a32965-2a6a-49a6-8474-6efb96afd0f7.png" 
@@ -63,7 +63,7 @@ const SuiteLayout = ({
 
           <SidebarContent>
             <SidebarGroup>
-              <SidebarGroupLabel className="px-3 py-1 text-xs text-muted-foreground">Menu Principal</SidebarGroupLabel>
+              <SidebarGroupLabel className="px-3 py-1 text-xs text-muted-foreground sidebar-label">Menu Principal</SidebarGroupLabel>
               <SidebarContentItems />
             </SidebarGroup>
           </SidebarContent>
@@ -77,7 +77,7 @@ const SuiteLayout = ({
                 size="sm"
               >
                 <LogOut className="mr-2 h-3.5 w-3.5" />
-                <span>Login</span>
+                <span className="sidebar-label">Login</span>
               </Button>
             ) : (
               <Button 
@@ -87,14 +87,14 @@ const SuiteLayout = ({
                 size="sm"
               >
                 <LogOut className="mr-2 h-3.5 w-3.5" />
-                <span>Logout</span>
+                <span className="sidebar-label">Logout</span>
               </Button>
             )}
           </SidebarFooter>
         </Sidebar>
 
         {/* Main content area with proper spacing */}
-        <div className="flex-1 flex flex-col md:pl-[var(--sidebar-width)] lg:pl-[var(--sidebar-width)] group-data-[collapsible=icon]:md:pl-[var(--sidebar-width-icon)] group-data-[collapsible=icon]:lg:pl-[var(--sidebar-width-icon)] transition-all duration-200 ease-in-out">
+        <div className="flex-1 flex flex-col pl-[var(--sidebar-width-icon)] transition-all duration-200 ease-in-out">
           <header className="flex h-14 items-center border-b px-4 lg:px-6 sticky top-0 bg-background z-10">
             <SidebarTrigger />
             <div className="flex flex-1 items-center justify-between">

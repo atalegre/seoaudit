@@ -4,14 +4,14 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "./context";
 
-export const SIDEBAR_WIDTH = "7rem";
+export const SIDEBAR_WIDTH = "14rem";
 export const SIDEBAR_WIDTH_MOBILE = "12rem";
 export const SIDEBAR_WIDTH_ICON = "3.5rem";
 
 interface SidebarProps extends React.ComponentProps<"div"> {
   side?: "left" | "right";
   variant?: "sidebar" | "floating" | "inset";
-  collapsible?: "offcanvas" | "icon" | "none";
+  collapsible?: "offcanvas" | "icon" | "none" | "hover";
 }
 
 export const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
@@ -63,6 +63,41 @@ export const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
       );
     }
 
+    // Hover-based sidebar expansion
+    if (collapsible === "hover") {
+      return (
+        <div
+          ref={ref}
+          className="group/sidebar hidden md:block text-sidebar-foreground"
+          {...props}
+        >
+          {/* Spacing div (only used for layout) */}
+          <div className="relative h-svh w-[--sidebar-width-icon] transition-all duration-200 ease-linear"></div>
+
+          {/* Fixed sidebar container */}
+          <div
+            className={cn(
+              "fixed inset-y-0 z-30 hidden md:flex h-svh transition-all duration-200 ease-linear",
+              side === "left" ? "left-0" : "right-0"
+            )}
+          >
+            {/* Actual sidebar content with hover behavior */}
+            <div
+              data-sidebar="sidebar"
+              className="flex h-full flex-col border-r border-sidebar-border bg-sidebar backdrop-blur-md transition-all duration-200 ease-in-out hover:w-[--sidebar-width]"
+              style={{ 
+                width: "var(--sidebar-width-icon)",
+                "--sidebar-width": SIDEBAR_WIDTH,
+                "--sidebar-width-icon": SIDEBAR_WIDTH_ICON 
+              } as React.CSSProperties}
+            >
+              {children}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     // Fixed positioning for the sidebar, matching the provided HTML structure
     return (
       <div
@@ -72,6 +107,7 @@ export const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
         data-collapsible={state === "collapsed" ? collapsible : ""}
         data-variant={variant}
         data-side={side}
+        {...props}
       >
         {/* Sidebar spacing element */}
         <div

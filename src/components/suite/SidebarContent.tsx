@@ -39,7 +39,6 @@ const SidebarContent = () => {
   const location = useLocation();
   const { state } = useSidebar();
   const { user } = useUser();
-  const isCollapsed = state === "collapsed";
   
   // Determine which items to show based on the current path
   const isSuitePath = location.pathname.startsWith('/suite');
@@ -66,16 +65,15 @@ const SidebarContent = () => {
             <Link 
               to={item.path}
               className={cn(
-                "flex items-center justify-center gap-2 px-2 py-2 rounded-md text-sm transition-colors",
+                "flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors",
                 "hover:bg-gray-100/70 hover:backdrop-blur-lg",
-                !isCollapsed && "flex-col",
                 location.pathname === item.path 
                   ? "bg-primary text-primary-foreground" 
                   : "text-sidebar-foreground"
               )}
             >
               {item.icon}
-              {!isCollapsed && <span className="text-xs text-center mt-1">{item.name}</span>}
+              <span className="sidebar-label">{item.name}</span>
             </Link>
           </TooltipTrigger>
           <TooltipContent side="right">
