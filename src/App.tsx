@@ -1,10 +1,10 @@
-
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
 import Index from "./pages/Index";
 import ResultsPage from "./pages/ResultsPage";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -35,11 +35,11 @@ import { UserProvider } from "./contexts/UserContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import CookieConsent from "./components/CookieConsent";
 import ScrollToTop from "./components/ScrollToTop";
+import SuiteDashboard from "./pages/suite/SuiteDashboard";
 
 const queryClient = new QueryClient();
 
 const App = () => {
-  // Initialize default users on app load
   useEffect(() => {
     const setupDefaultUsers = async () => {
       try {
@@ -84,6 +84,16 @@ const App = () => {
                 <Route path="/dashboard/bulk-import" element={<BulkImportPage />} />
                 <Route path="/dashboard/settings" element={<SettingsPage />} />
                 <Route path="/dashboard/blog-posts" element={<BlogPostsPage />} />
+                
+                <Route path="/suite" element={<SuiteDashboard />} />
+                <Route path="/suite/seo" element={<SuiteDashboard />} />
+                <Route path="/suite/aio" element={<SuiteDashboard />} />
+                <Route path="/suite/llm" element={<SuiteDashboard />} />
+                <Route path="/suite/directories" element={<SuiteDashboard />} />
+                <Route path="/suite/keywords" element={<SuiteDashboard />} />
+                <Route path="/suite/recommender" element={<SuiteDashboard />} />
+                <Route path="/suite/writer" element={<SuiteDashboard />} />
+                <Route path="/suite/reports" element={<SuiteDashboard />} />
                 
                 <Route path="/blog" element={<BlogPage />} />
                 <Route path="/blog/:slug" element={<BlogPostPage />} />
