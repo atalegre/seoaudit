@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { getPageInsightsData } from '@/utils/api/pageInsights';
 import type { PageInsightsData } from '@/utils/api/pageInsights/types';
+import { toast } from 'sonner';
 
 export function useSeoAnalysis() {
   const [url, setUrl] = useState('');
@@ -10,7 +11,7 @@ export function useSeoAnalysis() {
   const [desktopData, setDesktopData] = useState<PageInsightsData | null>(null);
   const [mobileData, setMobileData] = useState<PageInsightsData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
+  const { toast: uiToast } = useToast();
 
   // Carregar o último URL analisado ao inicializar
   useEffect(() => {
@@ -23,10 +24,8 @@ export function useSeoAnalysis() {
 
   const analyzeUrl = async (urlToAnalyze = url) => {
     if (!urlToAnalyze) {
-      toast({
-        title: "URL necessário",
-        description: "Por favor, insira uma URL válida para analisar.",
-        variant: "destructive",
+      toast("URL necessário", {
+        description: "Por favor, insira uma URL válida para analisar."
       });
       return;
     }
@@ -44,27 +43,31 @@ export function useSeoAnalysis() {
       // Salvar a URL no localStorage
       localStorage.setItem('lastAnalyzedUrl', urlToAnalyze);
       
-      // Simular carregamento sequencial (desktop primeiro, depois mobile)
-      const desktopInsights = await getPageInsightsData(normalizedUrl);
-      setDesktopData(desktopInsights);
-      
-      // Em uma implementação real, você teria diferentes endpoints/parâmetros para mobile
-      const mobileInsights = await getPageInsightsData(normalizedUrl);
-      setMobileData(mobileInsights);
-      
-      toast({
-        title: "Análise concluída",
-        description: "Os resultados da análise SEO estão prontos.",
-      });
-    } catch (error) {
+      // Obter dados para desktop e mobile usando a mesma API
+      try {
+        const desktopInsights = await getPageInsightsData(normalizedUrl);
+        setDesktopData(desktopInsights);
+        
+        const mobileInsights = await getPageInsightsData(normalizedUrl);
+        setMobileData(mobileInsights);
+        
+        toast.success("Análise concluída", {
+          description: "Os resultados da análise SEO estão prontos."
+        });
+      } catch (apiError: any) {
+        console.error("Erro ao analisar URL:", apiError);
+        setError(apiError.message || 'Ocorreu um erro desconhecido');
+        
+        toast.error("Erro na análise", {
+          description: apiError.message || 'Ocorreu um erro desconhecido'
+        });
+      }
+    } catch (error: any) {
       console.error("Erro ao analisar URL:", error);
-      const errorMessage = error instanceof Error ? error.message : 'Ocorreu um erro desconhecido';
-      setError(errorMessage);
+      setError(error.message || 'Ocorreu um erro desconhecido');
       
-      toast({
-        title: "Erro na análise",
-        description: errorMessage,
-        variant: "destructive",
+      toast.error("Erro na análise", {
+        description: error.message || 'Ocorreu um erro desconhecido'
       });
     } finally {
       setIsAnalyzing(false);

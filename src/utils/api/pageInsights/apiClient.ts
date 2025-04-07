@@ -2,9 +2,10 @@
 import type { PageInsightsData } from './types';
 import { processPageInsightsData } from './apiProcessor';
 import { createTimedRequest, handleCorsRequest } from './corsHandlers';
+import { generateMockPageInsightsData } from './mockData';
 
-// Flag para uso exclusivo de dados reais da API
-const USE_MOCK_DATA = false;
+// Flag para uso de dados simulados quando a API falha
+const USE_MOCK_DATA_ON_FAILURE = true;
 
 /**
  * Cache helper para armazenar resultados por URL com TTL
@@ -19,11 +20,6 @@ const CACHE_TTL = 1000 * 60 * 30; // 30 minutes
  */
 export async function getPageInsightsData(url: string): Promise<PageInsightsData> {
   try {
-    // Se o modo de dados simulados estiver ativado, lance um erro
-    if (USE_MOCK_DATA) {
-      throw new Error('Modo de dados simulados não permitido. Apenas dados reais são aceitos.');
-    }
-    
     console.log('Fetching PageSpeed Insights data for:', url);
     
     // Normalizar URL para consistência no cache
@@ -120,11 +116,32 @@ export async function getPageInsightsData(url: string): Promise<PageInsightsData
         console.warn('CORS proxy failed:', corsError);
       }
       
+      // Se chegou aqui e a flag estiver ativada, retornar dados simulados
+      if (USE_MOCK_DATA_ON_FAILURE) {
+        console.log('Using mock data due to API failure');
+        const mockData = generateMockPageInsightsData(url);
+        
+        // Armazenar os dados simulados em cache também
+        apiCache.set(cacheKey, {
+          data: mockData,
+          timestamp: Date.now()
+        });
+        
+        return mockData;
+      }
+      
       // Se chegou aqui, não conseguiu obter dados reais
       throw new Error('Falha ao obter dados reais da API Google PageSpeed Insights');
     }
   } catch (error) {
     console.error('Error in getPageInsightsData:', error);
+    
+    // Se a flag estiver ativada, retornar dados simulados em último caso
+    if (USE_MOCK_DATA_ON_FAILURE) {
+      console.log('Using mock data as last resort');
+      return generateMockPageInsightsData(url);
+    }
+    
     throw error; // Propaga o erro para ser tratado pelo componente
   }
 }

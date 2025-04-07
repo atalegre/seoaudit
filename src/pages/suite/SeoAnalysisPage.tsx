@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import SuiteLayout from '@/components/suite/SuiteLayout';
 import UrlInputSection from '@/components/seo/UrlInputSection';
 import DeviceTabsSection from '@/components/seo/DeviceTabsSection';
 import { useSeoAnalysis } from '@/hooks/useSeoAnalysis';
@@ -18,26 +19,31 @@ const SeoAnalysisPage = () => {
   } = useSeoAnalysis();
 
   return (
-    <div className="container py-6">
-      <h1 className="text-2xl font-bold mb-6">Análise SEO Technical</h1>
-      
-      <UrlInputSection 
-        url={url}
-        isAnalyzing={isAnalyzing}
-        extractDomain={extractDomain}
-        onUrlChange={handleUrlChange}
-        onReanalyze={handleReanalyze}
-      />
+    <SuiteLayout 
+      title="Análise SEO Technical"
+      domain={url ? extractDomain(url) : undefined}
+      onRerunAnalysis={handleReanalyze}
+      isAnalyzing={isAnalyzing}
+    >
+      <div className="space-y-6">
+        <UrlInputSection 
+          url={url}
+          isAnalyzing={isAnalyzing}
+          extractDomain={extractDomain}
+          onUrlChange={handleUrlChange}
+          onReanalyze={handleReanalyze}
+        />
 
-      <DeviceTabsSection 
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        desktopData={desktopData}
-        mobileData={mobileData}
-        isAnalyzing={isAnalyzing}
-        error={error}
-      />
-    </div>
+        <DeviceTabsSection 
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          desktopData={desktopData}
+          mobileData={mobileData}
+          isAnalyzing={isAnalyzing}
+          error={error}
+        />
+      </div>
+    </SuiteLayout>
   );
 };
 
