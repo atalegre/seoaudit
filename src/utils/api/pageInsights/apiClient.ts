@@ -6,6 +6,9 @@ import { createTimedRequest, handleCorsRequest } from './corsHandlers';
 // Desativar completamente o uso de dados simulados
 const USE_MOCK_DATA_ON_FAILURE = false;
 
+// Chave temporária para desenvolvimento (será substituída pela variável de ambiente em produção)
+const TEMP_API_KEY = 'AIzaSyBufWRXPTJGrGgATN-_ir2hR74Czmju6Js';
+
 /**
  * Cache helper para armazenar resultados por URL com TTL
  */
@@ -55,11 +58,13 @@ export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mo
       }
     }
     
-    // Obter a chave API do PageSpeed
-    const apiKey = import.meta.env.VITE_PAGESPEED_API_KEY || '';
+    // Obter a chave API do PageSpeed - usar a chave temporária se a env não estiver disponível
+    const apiKey = import.meta.env.VITE_PAGESPEED_API_KEY || TEMP_API_KEY;
     if (!apiKey) {
       throw new Error('Falha ao obter dados reais da API Google PageSpeed Insights. Chave API PageSpeed não configurada. Configure a variável de ambiente VITE_PAGESPEED_API_KEY');
     }
+    
+    console.log('Usando chave API PageSpeed:', apiKey.substring(0, 8) + '...');
     
     // Use fetch API with optimized settings
     try {

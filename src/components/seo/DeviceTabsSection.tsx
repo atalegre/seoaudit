@@ -1,22 +1,22 @@
 
 import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, Loader2 } from 'lucide-react';
-import type { PageInsightsData } from '@/utils/api/pageInsights/types';
+import { Monitor, Smartphone, AlertTriangle } from 'lucide-react';
 import DevicePerformancePanel from './DevicePerformancePanel';
-import CoreWebVitalsPanel from './CoreWebVitalsPanel';
-import TechnicalAuditsPanel from './TechnicalAuditsPanel';
 import OpportunitiesPanel from './OpportunitiesPanel';
+import TechnicalAuditsPanel from './TechnicalAuditsPanel';
+import CoreWebVitalsPanel from './CoreWebVitalsPanel';
+import AnalysisErrorView from '@/components/results/AnalysisErrorView';
+import { toast } from 'sonner';
 
 interface DeviceTabsSectionProps {
   activeTab: string;
-  setActiveTab: (tab: string) => void;
-  desktopData: PageInsightsData | null;
-  mobileData: PageInsightsData | null;
+  setActiveTab: (value: string) => void;
+  desktopData: any;
+  mobileData: any;
   isAnalyzing: boolean;
-  error?: string | null;
+  error: string | null;
 }
 
 const DeviceTabsSection: React.FC<DeviceTabsSectionProps> = ({
@@ -27,116 +27,109 @@ const DeviceTabsSection: React.FC<DeviceTabsSectionProps> = ({
   isAnalyzing,
   error
 }) => {
-  // Se está carregando, mostre um indicador de carregamento
-  if (isAnalyzing) {
+  const handleRetry = () => {
+    toast.info("Limpando cache e reiniciando análise", {
+      duration: 3000
+    });
+    
+    // Limpar cache do sessionStorage
+    Object.keys(sessionStorage).forEach(key => {
+      if (key.startsWith('psi_')) {
+        sessionStorage.removeItem(key);
+      }
+    });
+    
+    // Recarregar a página para forçar uma nova análise
+    window.location.reload();
+  };
+
+  // Check if we have any valid data
+  const hasDesktopData = desktopData && !isAnalyzing;
+  const hasMobileData = mobileData && !isAnalyzing;
+  const hasAnyData = hasDesktopData || hasMobileData;
+  
+  if (error && !hasAnyData) {
+    // Se temos um erro e nenhum dado válido, mostrar a tela de erro
     return (
-      <Card className="p-8 text-center">
-        <div className="flex flex-col items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-          <p>Analisando a página. Isso pode levar alguns minutos...</p>
-        </div>
-      </Card>
+      <AnalysisErrorView 
+        seoError={error}
+        aioError={null}
+        onReanalyze={handleRetry}
+      />
     );
   }
-
-  // Se ocorreu um erro, exiba a mensagem
-  if (error) {
-    return (
-      <Alert variant="destructive" className="mb-6">
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>Erro ao obter dados da API</AlertTitle>
-        <AlertDescription>
-          {error}
-          <p className="mt-2">Certifique-se de que a URL é válida e acessível publicamente.</p>
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
-  // Se não houver dados, mostre uma mensagem orientando o usuário
-  if (!desktopData && !mobileData) {
-    return (
-      <Alert className="mb-6">
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>Sem dados para exibir</AlertTitle>
-        <AlertDescription>
-          Insira uma URL válida acima e clique em "Analisar" para ver os resultados.
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
+  
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
-      <TabsList className="grid w-full grid-cols-2 mb-4">
-        <TabsTrigger value="desktop">Desktop</TabsTrigger>
-        <TabsTrigger value="mobile">Mobile</TabsTrigger>
-      </TabsList>
-
-      <TabsContent value="desktop" className="space-y-4">
-        {desktopData ? (
-          <>
-            <DevicePerformancePanel 
-              data={desktopData} 
-              deviceType="desktop" 
-            />
-            <CoreWebVitalsPanel 
-              lcp={desktopData.lcp} 
-              cls={desktopData.cls} 
-              fid={desktopData.fid} 
-            />
-            <TechnicalAuditsPanel 
-              mobileFriendly={desktopData.mobileFriendly}
-              security={desktopData.security}
-              headingsStructure={desktopData.headingsStructure}
-              metaTags={desktopData.metaTags}
-            />
-            <OpportunitiesPanel 
-              recommendations={desktopData.recommendations || []} 
-            />
-          </>
-        ) : (
-          <Alert>
-            <AlertTitle>Dados Desktop não disponíveis</AlertTitle>
-            <AlertDescription>
-              Não foi possível obter dados para visualização desktop.
-            </AlertDescription>
-          </Alert>
-        )}
-      </TabsContent>
-
-      <TabsContent value="mobile" className="space-y-4">
-        {mobileData ? (
-          <>
-            <DevicePerformancePanel 
-              data={mobileData} 
-              deviceType="mobile" 
-            />
-            <CoreWebVitalsPanel 
-              lcp={mobileData.lcp} 
-              cls={mobileData.cls} 
-              fid={mobileData.fid} 
-            />
-            <TechnicalAuditsPanel 
-              mobileFriendly={mobileData.mobileFriendly}
-              security={mobileData.security}
-              headingsStructure={mobileData.headingsStructure}
-              metaTags={mobileData.metaTags}
-            />
-            <OpportunitiesPanel 
-              recommendations={mobileData.recommendations || []} 
-            />
-          </>
-        ) : (
-          <Alert>
-            <AlertTitle>Dados Mobile não disponíveis</AlertTitle>
-            <AlertDescription>
-              Não foi possível obter dados para visualização mobile.
-            </AlertDescription>
-          </Alert>
-        )}
-      </TabsContent>
-    </Tabs>
+    <Card>
+      <CardContent className="p-0">
+        <Tabs 
+          value={activeTab} 
+          onValueChange={setActiveTab}
+          className="w-full"
+        >
+          <div className="border-b px-4">
+            <TabsList className="bg-transparent h-14">
+              <TabsTrigger 
+                value="desktop" 
+                className="data-[state=active]:bg-blue-50 flex items-center gap-2 px-4"
+                disabled={isAnalyzing || !hasDesktopData}
+              >
+                <Monitor className="h-4 w-4" />
+                <span>Desktop</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="mobile" 
+                className="data-[state=active]:bg-blue-50 flex items-center gap-2 px-4"
+                disabled={isAnalyzing || !hasMobileData}
+              >
+                <Smartphone className="h-4 w-4" />
+                <span>Mobile</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
+          
+          {error && hasAnyData && (
+            <div className="p-4 bg-amber-50 text-amber-800 border-b border-amber-200 flex items-start gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5" />
+              <div className="text-sm">
+                <p className="font-medium">Aviso: Dados parciais disponíveis</p>
+                <p className="text-xs">{error}</p>
+              </div>
+            </div>
+          )}
+          
+          <TabsContent value="desktop" className="m-0">
+            {hasDesktopData && (
+              <div className="p-4 space-y-6">
+                <DevicePerformancePanel data={desktopData} />
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <CoreWebVitalsPanel data={desktopData} />
+                  <TechnicalAuditsPanel data={desktopData} />
+                </div>
+                
+                <OpportunitiesPanel data={desktopData} />
+              </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="mobile" className="m-0">
+            {hasMobileData && (
+              <div className="p-4 space-y-6">
+                <DevicePerformancePanel data={mobileData} />
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <CoreWebVitalsPanel data={mobileData} />
+                  <TechnicalAuditsPanel data={mobileData} />
+                </div>
+                
+                <OpportunitiesPanel data={mobileData} />
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
   );
 };
 
