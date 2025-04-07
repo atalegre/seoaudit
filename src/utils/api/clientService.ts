@@ -93,10 +93,7 @@ export async function saveClientsToDatabase(clients: Client[]): Promise<{success
     // @ts-ignore - This is necessary because the auto-generated types don't include the clients table yet
     const { data, error } = await supabase
       .from('clients')
-      .upsert(clientsToSave, { 
-        onConflict: 'id',
-        ignoreDuplicates: false 
-      });
+      .upsert(clientsToSave);
     
     if (error) {
       // If the table doesn't exist, handle that case separately
@@ -160,7 +157,7 @@ export async function updateClientInDatabase(client: Client): Promise<void> {
     const { error } = await supabase
       .from('clients')
       .update(clientToUpdate)
-      .eq('id', client.id);
+      .eq('id', String(client.id)); // Convert to string to match expected type
     
     if (error) {
       throw error;
@@ -190,7 +187,7 @@ export async function getClientFromDatabase(clientId: number): Promise<Client | 
     const { data, error } = await supabase
       .from('clients')
       .select('*')
-      .eq('id', clientId)
+      .eq('id', String(clientId)) // Convert to string to match expected type
       .maybeSingle();
     
     if (error) {

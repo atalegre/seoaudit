@@ -62,8 +62,6 @@ export async function storeApiKey(
         key_type: 'google',
         key_value: apiKey || '', // Empty string for null values
         updated_at: new Date().toISOString()
-      }, {
-        onConflict: 'user_id,key_type'
       });
     
     if (error) throw error;

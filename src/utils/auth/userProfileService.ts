@@ -11,6 +11,7 @@ export async function checkUserRole(userId: string): Promise<UserRole> {
     const { data: userInfo } = await supabase.auth.getUser();
     if (userInfo?.user?.email === 'atalegre@me.com') {
       // Ensure admin role in database
+      // @ts-ignore - Necessary due to schema type mismatch
       await supabase
         .from('users')
         .upsert([
@@ -20,16 +21,17 @@ export async function checkUserRole(userId: string): Promise<UserRole> {
             email: 'atalegre@me.com',
             role: 'admin'
           }
-        ] as any, { onConflict: 'id' });
+        ], { onConflict: 'id' });
       
       return 'admin';
     }
     
     // For other users, check the users table
+    // @ts-ignore - Necessary due to schema type mismatch
     const { data, error } = await supabase
       .from('users')
       .select('role')
-      .eq('id', userId as any)
+      .eq('id', userId)
       .maybeSingle();
     
     if (error) {
@@ -37,7 +39,11 @@ export async function checkUserRole(userId: string): Promise<UserRole> {
       throw error;
     }
     
-    return ((data && 'role' in data) ? data.role as UserRole : 'user');
+    if (data && typeof data === 'object' && 'role' in data) {
+      return data.role as UserRole;
+    }
+    
+    return 'user'; // Default to user role
   } catch (error) {
     console.error('Error checking user role:', error);
     return 'user'; // Default to user role if there's an error
@@ -60,6 +66,7 @@ export async function ensureUserInDb(
     }
     
     // Use upsert to create or update user
+    // @ts-ignore - Necessary due to schema type mismatch
     const { error } = await supabase
       .from('users')
       .upsert({
@@ -68,7 +75,7 @@ export async function ensureUserInDb(
         email: email,
         role: role,
         updated_at: new Date().toISOString()
-      } as any, { onConflict: 'id' });
+      }, { onConflict: 'id' });
     
     if (error) {
       console.error("Error ensuring user in database:", error);
@@ -87,10 +94,11 @@ export async function ensureUserInDb(
  */
 export async function getUserProfile(userId: string) {
   try {
+    // @ts-ignore - Necessary due to schema type mismatch
     const { data, error } = await supabase
       .from('users')
       .select('*')
-      .eq('id', userId as any)
+      .eq('id', userId)
       .maybeSingle();
       
     if (error) {

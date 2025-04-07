@@ -90,6 +90,7 @@ export async function createUser(userData: {
       throw new Error('Todos os campos obrigatórios devem ser fornecidos');
     }
     
+    // @ts-ignore - Necessary due to schema type mismatch
     const { data, error } = await supabase
       .from('users')
       .insert([userData])
@@ -125,6 +126,7 @@ export async function updateUser(userId: string, userData: { name?: string, emai
       throw new Error('Pelo menos um campo deve ser fornecido para atualização');
     }
     
+    // @ts-ignore - Necessary due to schema type mismatch
     const { data, error } = await supabase
       .from('users')
       .update(userData)
