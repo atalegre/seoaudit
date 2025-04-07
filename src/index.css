@@ -34,9 +34,9 @@
  
     --radius: 0.5rem;
     
-    /* Custom sidebar width */
-    --sidebar-width: 12rem;
-    --sidebar-width-icon: 2.5rem;
+    /* Custom sidebar width - adjusted for better spacing */
+    --sidebar-width: 14rem;
+    --sidebar-width-icon: 3rem;
   }
  
   .dark {
