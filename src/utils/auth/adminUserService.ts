@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { UserRole } from './types';
 import { UserWithEmail } from './commonTypes';
@@ -206,6 +205,5 @@ export async function signInOrSignUpAdmin(email: string, password: string, name:
 
 // Export everything
 export {
-  ADMIN_EMAIL,
-  createOrUpdateAdmin
+  ADMIN_EMAIL
 };
