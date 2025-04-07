@@ -41,36 +41,6 @@ export function useSignIn(setAuthError: (error: string | null) => void) {
           description: "Bem-vindo de volta!",
         });
         
-        // Check user role to determine where to navigate
-        let role = 'user';
-        
-        // Special case for admin email
-        if (values.email === 'atalegre@me.com') {
-          role = 'admin';
-        } else {
-          // Check user metadata first
-          role = data.user.user_metadata?.role || 'user';
-          
-          // If not in metadata, check database
-          if (role !== 'admin') {
-            try {
-              const { data: userData, error: userError } = await supabase
-                .from('users')
-                .select('role')
-                .eq('id', data.user.id)
-                .maybeSingle();
-              
-              if (!userError && userData && 'role' in userData) {
-                if (userData.role === 'admin') {
-                  role = 'admin';
-                }
-              }
-            } catch (err) {
-              console.error("Error checking user role:", err);
-            }
-          }
-        }
-        
         // Check if there's a returnTo path in the location state
         const state = location.state as { returnTo?: string } | null;
         const returnPath = state?.returnTo;
@@ -80,9 +50,9 @@ export function useSignIn(setAuthError: (error: string | null) => void) {
           console.log("Navigating to return path:", returnPath);
           navigate(returnPath);
         } else {
-          // Navigate based on role
-          console.log("Navigating based on role:", role);
-          navigate(role === 'admin' ? '/dashboard' : '/dashboard/client');
+          // Navigate to the suite dashboard instead of role-based navigation
+          console.log("Navigating to suite dashboard");
+          navigate('/suite');
         }
       } else {
         setAuthError("Unknown error during authentication");
