@@ -1,11 +1,10 @@
-
 import type { PageInsightsData } from './types';
 import { processPageInsightsData } from './apiProcessor';
 import { generateLocalPageInsights } from './mockDataGenerator';
 import { createTimedRequest, handleCorsRequest } from './corsHandlers';
 
-// Flag for development mode - set to true to use mock data
-const USE_MOCK_DATA = true;
+// Flag for development mode - set to false to use real API
+const USE_MOCK_DATA = false;
 
 /**
  * Cache helper para armazenar resultados por URL com TTL
