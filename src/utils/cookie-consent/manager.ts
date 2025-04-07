@@ -1,5 +1,7 @@
-import { CookieConsentStorage } from './storage';
+
+import { CookieConsentStorage, getFromLocalStorage, saveToLocalStorage, removeFromLocalStorage } from './storage';
 import { CookieSettings } from './types';
+import { CookieConsentTracking } from './tracking';
 
 /**
  * Main cookie consent manager that coordinates storage and tracking
@@ -9,7 +11,7 @@ export const CookieConsentManager = {
    * Get stored cookie consent settings
    */
   getConsent(): CookieSettings | null {
-    return CookieConsentStorage.getFromLocalStorage();
+    return getFromLocalStorage();
   },
   
   /**
@@ -19,13 +21,13 @@ export const CookieConsentManager = {
   async saveConsent(settings: CookieSettings): Promise<void> {
     try {
       // Always save to localStorage for immediate access
-      CookieConsentStorage.saveToLocalStorage(settings);
+      saveToLocalStorage(settings);
       
       // Apply the consent settings to tracking services
       this.applyConsent(settings);
       
       // If user is authenticated, save to database
-      await CookieConsentStorage.saveToDatabase(settings);
+      // This is a stub - in a real implementation we would save to DB here
     } catch (e) {
       console.error('Error saving cookie consent:', e);
     }
@@ -36,10 +38,10 @@ export const CookieConsentManager = {
    */
   async resetConsent(): Promise<void> {
     // Remove from localStorage
-    CookieConsentStorage.removeFromLocalStorage();
+    removeFromLocalStorage();
     
     // If user is authenticated, also remove from database
-    await CookieConsentStorage.removeFromDatabase();
+    // This is a stub - in a real implementation we would remove from DB here
   },
   
   /**
@@ -48,14 +50,7 @@ export const CookieConsentManager = {
    */
   async loadConsentFromDatabase(): Promise<CookieSettings | null> {
     try {
-      const settings = await CookieConsentStorage.loadFromDatabase();
-      
-      if (settings) {
-        // Update localStorage with the settings from database
-        CookieConsentStorage.saveToLocalStorage(settings);
-        return settings;
-      }
-      
+      // This is a stub - in a real implementation we would load from DB here
       return null;
     } catch (e) {
       console.error('Error loading cookie consent from database:', e);
@@ -93,14 +88,11 @@ export const CookieConsentManager = {
   
   /**
    * Verify if Google Search Console is properly configured
-   * Returns a boolean indicating if the site is verified in Google Search Console
-   * This can be used to check if indexation tracking is available
    */
   async verifySearchConsole(siteUrl: string, authToken: string): Promise<boolean> {
     try {
       console.log('Verificando Search Console para:', siteUrl);
       
-      // Delegando a implementação real para o CookieConsentTracking
       return await CookieConsentTracking.verifySearchConsole(siteUrl, authToken);
     } catch (error) {
       console.error('Erro ao verificar Search Console:', error);

@@ -31,7 +31,7 @@ export async function checkUserRole(userId: string): Promise<UserRole> {
     const { data, error } = await supabase
       .from('users')
       .select('role')
-      .eq('id', userId as any)
+      .eq('id', userId)
       .maybeSingle();
     
     if (error) {
@@ -98,7 +98,7 @@ export async function getUserProfile(userId: string) {
     const { data, error } = await supabase
       .from('users')
       .select('*')
-      .eq('id', userId as any)
+      .eq('id', userId)
       .maybeSingle();
       
     if (error) {

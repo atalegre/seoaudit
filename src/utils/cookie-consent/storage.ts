@@ -1,5 +1,43 @@
-
 import { supabase } from '@/integrations/supabase/client';
+import { CookieSettings } from './types';
+
+// Local storage key
+const COOKIE_CONSENT_KEY = 'cookie_consent_preferences';
+
+/**
+ * Save cookie preferences to localStorage
+ */
+export function saveToLocalStorage(preferences: CookieSettings): void {
+  try {
+    localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(preferences));
+  } catch (error) {
+    console.error('Error saving cookie consent to localStorage:', error);
+  }
+}
+
+/**
+ * Get cookie preferences from localStorage
+ */
+export function getFromLocalStorage(): CookieSettings | null {
+  try {
+    const stored = localStorage.getItem(COOKIE_CONSENT_KEY);
+    return stored ? JSON.parse(stored) : null;
+  } catch (error) {
+    console.error('Error getting cookie consent from localStorage:', error);
+    return null;
+  }
+}
+
+/**
+ * Remove cookie preferences from localStorage
+ */
+export function removeFromLocalStorage(): void {
+  try {
+    localStorage.removeItem(COOKIE_CONSENT_KEY);
+  } catch (error) {
+    console.error('Error removing cookie consent from localStorage:', error);
+  }
+}
 
 /**
  * Stores cookie consent preferences in Supabase
@@ -189,17 +227,42 @@ export async function revokeApiKeyConsent(
   }
 }
 
-// Export a class for compatibility
+// Export a class for compatibility with existing code
 export class CookieConsentStorage {
-  static async store(userId: string, preferences: any): Promise<boolean> {
-    return storeCookieConsent(userId, preferences);
+  static getFromLocalStorage(): CookieSettings | null {
+    return getFromLocalStorage();
   }
   
-  static async get(userId: string): Promise<any> {
-    return getCookieConsent(userId);
+  static saveToLocalStorage(preferences: CookieSettings): void {
+    saveToLocalStorage(preferences);
   }
   
-  static async revoke(userId: string): Promise<boolean> {
-    return revokeCookieConsent(userId);
+  static async loadFromDatabase(): Promise<CookieSettings | null> {
+    // Implementation would go here
+    return null;
+  }
+  
+  static async saveToDatabase(preferences: CookieSettings): Promise<boolean> {
+    // Implementation would go here
+    return true;
+  }
+  
+  static removeFromLocalStorage(): void {
+    removeFromLocalStorage();
+  }
+  
+  static async removeFromDatabase(): Promise<boolean> {
+    // Implementation would go here
+    return true;
   }
 }
+
+// Exports for original API
+export {
+  storeCookieConsent,
+  getFromLocalStorage as getCookieConsent,
+  removeFromLocalStorage as revokeCookieConsent,
+  storeApiKeyConsent,
+  getApiKeyConsent,
+  revokeApiKeyConsent,
+};

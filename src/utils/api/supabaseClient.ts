@@ -10,7 +10,7 @@ export async function getClientAnalysisHistory(clientId: number): Promise<any[]>
     const { data, error } = await supabase
       .from('analysis_results')
       .select('*')
-      .eq('client_id', clientId.toString()) // Convert to string as the API expects
+      .eq('client_id', clientId)
       .order('created_at', { ascending: false });
     
     if (error) throw error;
@@ -40,7 +40,7 @@ export async function storeApiKey(
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('id')
-      .eq('email', userEmail as any)
+      .eq('email', userEmail)
       .single();
     
     if (userError) {
@@ -87,7 +87,7 @@ export async function getApiKey(userEmail: string): Promise<any | null> {
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('id')
-      .eq('email', userEmail as any)
+      .eq('email', userEmail)
       .single();
     
     if (userError) {
@@ -111,7 +111,7 @@ export async function getApiKey(userEmail: string): Promise<any | null> {
       .from('api_keys')
       .select('key_value')
       .eq('user_id', userId)
-      .eq('key_type', 'google' as any)
+      .eq('key_type', 'google')
       .single();
     
     if (error) {
@@ -152,7 +152,7 @@ export async function saveAnalysisResult(
     const { error } = await supabase
       .from('analysis_results')
       .insert([{
-        client_id: clientId.toString(), // Convert to string as the API expects
+        client_id: clientId,
         url: url,
         seo_data: seo,
         aio_data: aio,

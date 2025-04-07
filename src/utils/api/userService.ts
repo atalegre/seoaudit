@@ -63,12 +63,15 @@ export async function getUserById(userId: string): Promise<User | null> {
       return null; // Return null on error
     }
     
+    // Type assertion to avoid "property does not exist on type never" errors
+    const userData = data as any;
+    
     // Ensure the role is properly typed using safe property access and default values
     return {
-      id: data?.id || '',
-      name: data?.name || '',
-      email: data?.email || '',
-      role: (data?.role as 'admin' | 'editor' | 'user') || 'user'
+      id: userData?.id || '',
+      name: userData?.name || '',
+      email: userData?.email || '',
+      role: (userData?.role as 'admin' | 'editor' | 'user') || 'user'
     };
   } catch (error) {
     console.error('Erro ao buscar detalhes do usuário:', error);

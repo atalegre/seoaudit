@@ -7,11 +7,14 @@ export { default } from './manager';
 
 // Export storage
 export { 
-  storeCookieConsent, 
-  getCookieConsent, 
-  revokeCookieConsent,
+  saveToLocalStorage as storeCookieConsent, 
+  getFromLocalStorage as getCookieConsent, 
+  removeFromLocalStorage as revokeCookieConsent,
   storeApiKeyConsent,
   getApiKeyConsent,
   revokeApiKeyConsent,
   CookieConsentStorage
 } from './storage';
+
+// Export tracking
+export { CookieConsentTracking } from './tracking';

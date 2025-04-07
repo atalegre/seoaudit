@@ -78,15 +78,15 @@ export async function saveClientsToDatabase(clients: Client[]): Promise<{success
       id: client.id,
       name: client.name,
       website: client.website,
-      contactname: client.contactName || '', // Note the lowercase field name for DB
-      contactemail: client.contactEmail || '', // Note the lowercase field name for DB
+      contactname: client.contactName || '', 
+      contactemail: client.contactEmail || '', 
       notes: client.notes || '',
       status: client.status || 'pending',
       account: client.account || 'Admin',
-      seoscore: client.seoScore || 0, // Note the lowercase field name for DB
-      aioscore: client.aioScore || 0, // Note the lowercase field name for DB
-      lastanalysis: typeof client.lastAnalysis === 'string' ? client.lastAnalysis : new Date().toISOString(), // Convert Date to string if needed
-      lastreport: client.lastReport || '' // Note the lowercase field name for DB
+      seoscore: client.seoScore || 0, 
+      aioscore: client.aioScore || 0, 
+      lastanalysis: typeof client.lastAnalysis === 'string' ? client.lastAnalysis : new Date().toISOString(),
+      lastreport: client.lastReport || '' 
     }));
     
     // Insere os novos clientes
@@ -149,7 +149,7 @@ export async function updateClientInDatabase(client: Client): Promise<void> {
       account: client.account,
       seoscore: client.seoScore,
       aioscore: client.aioScore,
-      lastanalysis: typeof client.lastAnalysis === 'string' ? client.lastAnalysis : new Date().toISOString(), // Convert Date to string
+      lastanalysis: typeof client.lastAnalysis === 'string' ? client.lastAnalysis : new Date().toISOString(), 
       lastreport: client.lastReport
     };
     
@@ -157,7 +157,7 @@ export async function updateClientInDatabase(client: Client): Promise<void> {
     const { error } = await supabase
       .from('clients')
       .update(clientToUpdate)
-      .eq('id', client.id.toString()); // Convert to string to match expected type
+      .eq('id', client.id);
     
     if (error) {
       throw error;
@@ -187,7 +187,7 @@ export async function getClientFromDatabase(clientId: number): Promise<Client | 
     const { data, error } = await supabase
       .from('clients')
       .select('*')
-      .eq('id', clientId.toString()) // Convert to string to match expected type
+      .eq('id', clientId)
       .maybeSingle();
     
     if (error) {
@@ -208,20 +208,21 @@ export async function getClientFromDatabase(clientId: number): Promise<Client | 
     }
     
     // Transform the data to ensure all properties match Client type with proper type safety
+    // Type assertion to avoid "Property does not exist on type never" errors
+    const clientData = data as any;
     const client: Client = {
-      // Use type assertions and default values to handle potential nulls
-      id: Number(data?.id || 0),
-      name: data?.name || '',
-      website: data?.website || '',
-      contactName: data?.contactname || '', 
-      contactEmail: data?.contactemail || '', 
-      notes: data?.notes || '',
-      status: data?.status || 'pending',
-      account: data?.account || 'Admin',
-      seoScore: data?.seoscore || 0, 
-      aioScore: data?.aioscore || 0, 
-      lastAnalysis: data?.lastanalysis || new Date().toISOString(), 
-      lastReport: data?.lastreport || '' 
+      id: Number(clientData?.id || 0),
+      name: clientData?.name || '',
+      website: clientData?.website || '',
+      contactName: clientData?.contactname || '', 
+      contactEmail: clientData?.contactemail || '', 
+      notes: clientData?.notes || '',
+      status: clientData?.status || 'pending',
+      account: clientData?.account || 'Admin',
+      seoScore: clientData?.seoscore || 0, 
+      aioScore: clientData?.aioscore || 0, 
+      lastAnalysis: clientData?.lastanalysis || new Date().toISOString(), 
+      lastReport: clientData?.lastreport || '' 
     };
     
     return client;

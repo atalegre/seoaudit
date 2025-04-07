@@ -21,19 +21,21 @@ export async function createOrUpdateAdmin() {
       const { data: existingAdmin } = await supabase
         .from('users')
         .select('*')
-        .eq('email', ADMIN_EMAIL as any)
+        .eq('email', ADMIN_EMAIL)
         .maybeSingle();
       
       if (existingAdmin && typeof existingAdmin === 'object' && !('error' in existingAdmin)) {
         console.log("Admin found in users table:", existingAdmin);
         
+        const adminData = existingAdmin as any;
+        
         // If admin exists but doesn't have admin role, update it
-        if (existingAdmin?.role !== 'admin') {
+        if (adminData?.role !== 'admin') {
           // @ts-ignore - Necessary due to schema type mismatch
           await supabase
             .from('users')
             .update({ role: 'admin' })
-            .eq('email', ADMIN_EMAIL as any);
+            .eq('email', ADMIN_EMAIL);
           console.log("Updated admin role in users table");
         }
       }

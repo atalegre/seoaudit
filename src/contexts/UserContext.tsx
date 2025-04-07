@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { checkUserRole, getUserProfile } from '@/utils/auth/userProfileService';
@@ -38,7 +37,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUserProfile(userProfileData);
           
           // Safely access the role property with nullish check
-          if (userProfileData && userProfileData?.role) {
+          if (userProfileData && userProfileData.role) {
             setRole(userProfileData.role);
           } else {
             // Default if role is not found
