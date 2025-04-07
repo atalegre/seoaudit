@@ -15,23 +15,13 @@ serve(async (req) => {
   } catch (error) {
     console.error('Erro ao analisar website:', error);
     
-    // Return simulated data in case of error
-    const fallbackData = {
-      score: 65,
-      contentClarity: 70,
-      logicalStructure: 60,
-      naturalLanguage: 75,
-      topicsDetected: ["Marketing Digital", "SEO", "Web"],
-      confusingParts: ["Seção 'Sobre Nós' com informações insuficientes"],
-      analysis: "Análise de fallback devido a erro na API.",
-      apiUsed: false,
+    // Retornar erro real sem dados simulados
+    return new Response(JSON.stringify({
       error: error.message || 'Erro interno ao analisar website',
-      generated: true
-    };
-    
-    return new Response(JSON.stringify(fallbackData), {
+      apiUsed: false
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200 // Return 200 with simulated data instead of error
+      status: 500 // Return error status instead of fake data
     });
   }
 });

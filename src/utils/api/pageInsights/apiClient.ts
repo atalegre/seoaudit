@@ -3,7 +3,7 @@ import type { PageInsightsData } from './types';
 import { processPageInsightsData } from './apiProcessor';
 import { createTimedRequest, handleCorsRequest } from './corsHandlers';
 
-// Desativar o uso de dados simulados
+// Desativar completamente o uso de dados simulados
 const USE_MOCK_DATA_ON_FAILURE = false;
 
 /**
@@ -55,13 +55,14 @@ export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mo
       }
     }
     
+    // Obter a chave API do PageSpeed
+    const apiKey = import.meta.env.VITE_PAGESPEED_API_KEY || '';
+    if (!apiKey) {
+      throw new Error('Chave API PageSpeed não configurada. Configure a variável de ambiente VITE_PAGESPEED_API_KEY');
+    }
+    
     // Use fetch API with optimized settings
     try {
-      const apiKey = import.meta.env.VITE_PAGESPEED_API_KEY || ''; // Usar chave API real
-      if (!apiKey) {
-        throw new Error('Chave API PageSpeed não configurada. Configure a variável de ambiente VITE_PAGESPEED_API_KEY');
-      }
-      
       const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&strategy=${strategy}&category=performance&category=accessibility&category=best-practices&category=seo`;
       
       // Usar fetch com timeout otimizado
