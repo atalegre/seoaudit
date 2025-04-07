@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
-// Componente simplificado para otimização de LCP
+// Componente otimizado para LCP
 const Hero = () => {
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -26,17 +26,17 @@ const Hero = () => {
   };
   
   return (
-    <div className="container px-4 py-12 max-w-6xl mx-auto">
+    <div className="container px-4 py-8 max-w-6xl mx-auto">
       <div className="flex flex-col items-center text-center">
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-6">
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
           O seu site está otimizado para o Google e para a IA?
         </h1>
         
-        <p className="text-lg text-muted-foreground mb-8 max-w-3xl">
+        <p className="text-lg text-muted-foreground mb-6 max-w-3xl">
           Analise gratuitamente o seu site e descubra como melhorar a sua presença nos motores de busca e nos modelos de IA.
         </p>
         
-        <form onSubmit={handleSubmit} className="w-full max-w-xl flex flex-col gap-4 md:flex-row md:gap-2">
+        <form onSubmit={handleSubmit} className="w-full max-w-xl flex flex-col gap-3 md:flex-row md:gap-2">
           <div className="flex-1 relative">
             <Input
               type="text"
@@ -50,7 +50,7 @@ const Hero = () => {
           </div>
           
           <Button type="submit" className="h-12 px-6" disabled={isLoading}>
-            {isLoading ? 'Analisando...' : 'Analisar agora gratuitamente'}
+            {isLoading ? 'Analisando...' : 'Analisar agora'}
           </Button>
         </form>
       </div>

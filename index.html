@@ -7,7 +7,10 @@
     <title>SEOAudit - Análise de otimização para motores de busca e IA</title>
     <meta name="description" content="Analise gratuitamente o seu site para motores de busca (SEO) e modelos de IA (AIO). Descubra como melhorar a sua presença digital." />
     
-    <!-- Estilos críticos inline para melhorar FCP -->
+    <!-- Preload de recursos críticos -->
+    <link rel="preload" href="/src/main.tsx" as="script" fetchpriority="high" />
+    
+    <!-- Estilos críticos inline para melhorar FCP e LCP -->
     <style>
       :root {
         --background: 0 0% 100%;
@@ -51,19 +54,16 @@
       }
     </style>
     
-    <!-- Preload de recursos críticos -->
-    <link rel="preload" href="/src/main.tsx" as="script" fetchpriority="high" />
-    <link rel="preload" href="/src/components/Hero.tsx" as="script" fetchpriority="high" />
-    
     <!-- Preconnects otimizados apenas para domínios críticos -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
-    <!-- Carregar fonte de forma não-bloqueante -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+    <!-- Carregar fonte após renderização inicial -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap"></noscript>
     
-    <!-- Deferred Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-33EYX0JZM1"></script>
+    <!-- Analytics deferido -->
+    <script defer src="https://www.googletagmanager.com/gtag/js?id=G-33EYX0JZM1"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
@@ -85,29 +85,30 @@
 
   <body>
     <div id="root"></div>
-    <!-- Script GPT Engineer e App principal -->
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+    <!-- App principal carregado com prioridade alta -->
     <script type="module" src="/src/main.tsx"></script>
     
     <!-- Deferred Google Tag Manager -->
     <script>
       window.addEventListener('load', function() {
-        // GTM script
-        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-        })(window,document,'script','dataLayer','GTM-WHKJ76ZT');
-        
-        // GTM noscript fallback
-        var noscript = document.createElement('noscript');
-        var iframe = document.createElement('iframe');
-        iframe.src = "https://www.googletagmanager.com/ns.html?id=GTM-WHKJ76ZT";
-        iframe.height = "0";
-        iframe.width = "0";
-        iframe.style = "display:none;visibility:hidden";
-        noscript.appendChild(iframe);
-        document.body.appendChild(noscript);
+        setTimeout(function() {
+          // GTM script
+          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+          })(window,document,'script','dataLayer','GTM-WHKJ76ZT');
+          
+          // GTM noscript fallback
+          var noscript = document.createElement('noscript');
+          var iframe = document.createElement('iframe');
+          iframe.src = "https://www.googletagmanager.com/ns.html?id=GTM-WHKJ76ZT";
+          iframe.height = "0";
+          iframe.width = "0";
+          iframe.style = "display:none;visibility:hidden";
+          noscript.appendChild(iframe);
+          document.body.appendChild(noscript);
+        }, 2000); // Atraso de 2 segundos para permitir carregamento crítico
       });
     </script>
   </body>

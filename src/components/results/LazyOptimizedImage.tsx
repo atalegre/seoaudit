@@ -14,7 +14,7 @@ interface LazyOptimizedImageProps {
   onLoad?: () => void;
 }
 
-// Implementação extremamente simplificada e leve para melhorar LCP
+// Implementação extremamente simplificada para LCP
 const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
   src,
   alt,
@@ -26,16 +26,13 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
   fetchPriority = 'auto',
   onLoad,
 }) => {
-  // Simplificar aspectRatio para evitar recálculos
-  const aspectRatioStyle = (width && height) ? { aspectRatio: `${width}/${height}` } : {};
-  
   return (
     <div 
       className={`relative ${className}`}
       style={{
         backgroundColor: placeholderColor,
-        ...aspectRatioStyle,
-        minHeight: height ? `${height}px` : 'auto',
+        width: width ? `${width}px` : '100%',
+        height: height ? `${height}px` : 'auto',
       }}
     >
       <img
@@ -46,7 +43,7 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
         loading={priority ? "eager" : "lazy"}
         onLoad={onLoad}
         fetchPriority={priority ? "high" : fetchPriority}
-        decoding={priority ? "sync" : "async"}
+        decoding="async"
         className="w-full h-full object-cover"
       />
     </div>

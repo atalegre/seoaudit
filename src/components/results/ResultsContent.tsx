@@ -32,15 +32,8 @@ const ResultsContent: React.FC<AnalysisContentProps> = ({
   
   return (
     <>
-      <PartialDataAlert 
-        seoError={seoError} 
-        aioError={aioError} 
-        seoHasError={seoHasError} 
-        seoErrorMessage={analysisData?.seo?.errorMessage}
-      />
-      
-      {/* Conteúdo prioritário para LCP */}
-      <div className="lcp-block">
+      {/* Conteúdo prioritário para LCP - sem animações */}
+      <div className="lcp-critical">
         <ScoreDisplay
           seoScore={analysisData?.seo?.score || 0}
           aioScore={analysisData?.aio?.score || 0}
@@ -54,6 +47,16 @@ const ResultsContent: React.FC<AnalysisContentProps> = ({
       </div>
       
       <ReanalyzeButton onReanalyze={onReanalyze} />
+      
+      {/* Alerta de erro carregado após o conteúdo crítico */}
+      <div id="non-critical-alerts">
+        <PartialDataAlert 
+          seoError={seoError} 
+          aioError={aioError} 
+          seoHasError={seoHasError} 
+          seoErrorMessage={analysisData?.seo?.errorMessage}
+        />
+      </div>
       
       {/* Conteúdo não crítico - carregado depois */}
       <div className="space-y-6 mt-8">
