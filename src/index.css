@@ -35,9 +35,9 @@
  
     --radius: 0.5rem;
     
-    /* Sidebar variables - redefining completely */
-    --sidebar-width: 13rem;
-    --sidebar-width-icon: 3rem;
+    /* Sidebar variables with adjusted width */
+    --sidebar-width: 14rem;
+    --sidebar-width-icon: 3.5rem;
     
     /* Sidebar colors */
     --sidebar-background: 0 0% 100%;

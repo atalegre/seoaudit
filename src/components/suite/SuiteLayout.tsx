@@ -53,7 +53,7 @@ const SuiteLayout = ({
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full">
-        <Sidebar className="shrink-0 border-r" variant="inset">
+        <Sidebar className="shrink-0 border-r" variant="inset" collapsible="offcanvas">
           <SidebarHeader className="flex items-center justify-center h-14 border-b py-2 px-2">
             <img 
               src="/lovable-uploads/d5a32965-2a6a-49a6-8474-6efb96afd0f7.png" 
@@ -74,20 +74,20 @@ const SuiteLayout = ({
               <Button 
                 onClick={handleLogin} 
                 variant="outline" 
-                className="w-full justify-start text-xs h-8 py-1.5"
+                className="w-full justify-start text-xs h-7 py-1"
                 size="sm"
               >
-                <LogOut className="mr-2 h-4 w-4" />
+                <LogOut className="mr-2 h-3.5 w-3.5" />
                 <span>Login</span>
               </Button>
             ) : (
               <Button 
                 onClick={handleLogout} 
                 variant="outline" 
-                className="w-full justify-start text-xs h-8 py-1.5"
+                className="w-full justify-start text-xs h-7 py-1"
                 size="sm"
               >
-                <LogOut className="mr-2 h-4 w-4" />
+                <LogOut className="mr-2 h-3.5 w-3.5" />
                 <span>Logout</span>
               </Button>
             )}

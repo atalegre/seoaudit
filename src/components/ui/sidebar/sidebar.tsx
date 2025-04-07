@@ -4,9 +4,9 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "./context";
 
-export const SIDEBAR_WIDTH = "13rem";
+export const SIDEBAR_WIDTH = "14rem";
 export const SIDEBAR_WIDTH_MOBILE = "16rem";
-export const SIDEBAR_WIDTH_ICON = "3rem";
+export const SIDEBAR_WIDTH_ICON = "3.5rem";
 
 interface SidebarProps extends React.ComponentProps<"div"> {
   side?: "left" | "right";
