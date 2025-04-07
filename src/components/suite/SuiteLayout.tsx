@@ -53,8 +53,8 @@ const SuiteLayout = ({
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full">
-        <Sidebar className="shrink-0" variant="inset">
-          <SidebarHeader className="flex items-center justify-center py-3 px-3">
+        <Sidebar className="shrink-0 border-r" variant="inset">
+          <SidebarHeader className="flex items-center justify-center h-14 border-b py-2 px-2">
             <img 
               src="/lovable-uploads/d5a32965-2a6a-49a6-8474-6efb96afd0f7.png" 
               alt="SEOAudit Logo" 
@@ -64,30 +64,30 @@ const SuiteLayout = ({
 
           <SidebarContent>
             <SidebarGroup>
-              <SidebarGroupLabel className="px-3 py-1 mb-1 text-xs">Menu Principal</SidebarGroupLabel>
+              <SidebarGroupLabel className="px-3 py-1 text-xs text-muted-foreground">Menu Principal</SidebarGroupLabel>
               <SidebarContentItems />
             </SidebarGroup>
           </SidebarContent>
 
-          <SidebarFooter className="px-3 py-3">
+          <SidebarFooter className="px-2 py-2 border-t">
             {!user ? (
               <Button 
                 onClick={handleLogin} 
                 variant="outline" 
-                className="w-full justify-start text-xs h-9 py-2"
+                className="w-full justify-start text-xs h-8 py-1.5"
                 size="sm"
               >
-                <LogOut className="mr-3 h-4 w-4" />
+                <LogOut className="mr-2 h-4 w-4" />
                 <span>Login</span>
               </Button>
             ) : (
               <Button 
                 onClick={handleLogout} 
                 variant="outline" 
-                className="w-full justify-start text-xs h-9 py-2"
+                className="w-full justify-start text-xs h-8 py-1.5"
                 size="sm"
               >
-                <LogOut className="mr-3 h-4 w-4" />
+                <LogOut className="mr-2 h-4 w-4" />
                 <span>Logout</span>
               </Button>
             )}
