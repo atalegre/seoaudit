@@ -66,7 +66,7 @@ const SidebarContent = () => {
               to={item.path}
               className={cn(
                 "flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors",
-                "hover:bg-gray-100/70 hover:backdrop-blur-lg",
+                "hover:bg-gray-100 dark:hover:bg-gray-800",
                 location.pathname === item.path 
                   ? "bg-primary text-primary-foreground" 
                   : "text-sidebar-foreground"

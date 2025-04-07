@@ -50,7 +50,7 @@ const SuiteLayout = ({
   };
   
   return (
-    <SidebarProvider defaultOpen={true}>
+    <SidebarProvider defaultOpen={false}>
       <div className="flex min-h-screen w-full">
         <Sidebar variant="sidebar" collapsible="hover">
           <SidebarHeader className="flex items-center justify-center h-14 border-b py-2 px-2">
