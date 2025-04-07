@@ -2,11 +2,9 @@
 import React, { useRef } from 'react';
 import ScoreDisplay from '@/components/ScoreDisplay';
 import { formatUrl } from '@/utils/resultsPageHelpers';
-import { AnalysisResult } from '@/utils/api/types';
 import ReanalyzeButton from './ReanalyzeButton';
 import PartialDataAlert from './PartialDataAlert';
 
-// Componente crítico - ultraotimizado
 const ResultsContent = ({ 
   analysisData, 
   seoError, 
@@ -24,7 +22,7 @@ const ResultsContent = ({
   
   return (
     <>
-      {/* Conteúdo prioritário para LCP - sem overhead */}
+      {/* Critical LCP content - optimized for performance */}
       <div className="lcp-critical">
         <ScoreDisplay
           seoScore={analysisData?.seo?.score || 0}
@@ -40,7 +38,7 @@ const ResultsContent = ({
       
       <ReanalyzeButton onReanalyze={onReanalyze} />
       
-      {/* Alerta de erro - carregamento secundário */}
+      {/* Secondary content - loaded after critical path */}
       {(seoError || aioError || seoHasError) && (
         <div id="non-critical-alerts" className="mt-4">
           <PartialDataAlert 
@@ -52,7 +50,7 @@ const ResultsContent = ({
         </div>
       )}
       
-      {/* Lazy load do restante do conteúdo */}
+      {/* Deferred content container */}
       <div id="deferred-content"></div>
     </>
   );

@@ -14,7 +14,6 @@ interface LazyOptimizedImageProps {
   onLoad?: () => void;
 }
 
-// Implementação extremamente otimizada para LCP
 const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
   src,
   alt,
@@ -26,7 +25,7 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
   fetchPriority = 'auto',
   onLoad,
 }) => {
-  // Para imagens prioritárias, renderização simples e direta sem lazy loading
+  // For priority images, use direct rendering without lazy loading
   if (priority) {
     return (
       <img
@@ -45,7 +44,7 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
     );
   }
 
-  // Para imagens não-prioritárias, usar loading="lazy" e nativo
+  // For non-priority images, use native lazy loading
   return (
     <img
       src={src}

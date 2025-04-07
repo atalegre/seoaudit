@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
-// Componente crítico para LCP - ultraotimizado
 const Hero = () => {
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);

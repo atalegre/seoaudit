@@ -4,18 +4,22 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 
-// Inicialização direta e prioritária
-const rootElement = document.getElementById("root");
+// Get the root element
+const rootElement = document.getElementById('root');
 
 if (!rootElement) {
-  throw new Error("Root element not found");
+  throw new Error('Root element not found');
 }
 
-// Renderizar App diretamente sem StrictMode para otimizar performance
+// Create a root and render the app
 const root = createRoot(rootElement);
-root.render(<App />);
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
 
-// Monitorar LCP para diagnóstico
+// Monitor LCP for performance diagnostics
 if ('PerformanceObserver' in window) {
   try {
     new PerformanceObserver((entryList) => {

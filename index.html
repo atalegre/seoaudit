@@ -7,10 +7,10 @@
     <title>SEOAudit - Análise de otimização para motores de busca e IA</title>
     <meta name="description" content="Analise gratuitamente o seu site para motores de busca (SEO) e modelos de IA (AIO). Descubra como melhorar a sua presença digital." />
     
-    <!-- Preload crítico -->
+    <!-- Critical preloads -->
     <link rel="preload" href="/src/main.tsx" as="script" fetchpriority="high" />
     
-    <!-- Estilos críticos inline -->
+    <!-- Inline critical styles -->
     <style>
       :root {
         --background: 0 0% 100%;
@@ -59,54 +59,36 @@
       }
     </style>
     
-    <!-- Preconnects otimizados apenas para domínios críticos -->
+    <!-- Optimized preconnects -->
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
-    <!-- Carregar fonte após renderização inicial -->
+    <!-- Deferred font loading -->
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" 
     onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap"></noscript>
     
-    <!-- Metadata para compartilhamento social -->
+    <!-- Social sharing metadata -->
     <meta property="og:title" content="SEOAudit - Análise SEO e AIO" />
     <meta property="og:description" content="Analise gratuitamente o seu site para motores de busca (SEO) e modelos de IA (AIO)." />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-    
-    <!-- Diferir radicalmente JavaScript não-crítico -->
-    <script>
-      const deferScripts = () => {
-        // Atrasar carregamento de analytics por 5 segundos
-        setTimeout(() => {
-          const analyticsScript = document.createElement('script');
-          analyticsScript.src = "https://www.googletagmanager.com/gtag/js?id=G-33EYX0JZM1";
-          analyticsScript.async = true;
-          document.body.appendChild(analyticsScript);
-          
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', 'G-33EYX0JZM1', { 'send_page_view': false });
-        }, 5000);
-      };
-      
-      // Executar apenas após carregamento completo
-      window.addEventListener('load', deferScripts);
-    </script>
   </head>
 
   <body>
     <div id="root"></div>
-    <!-- App principal carregado com prioridade alta -->
+    <!-- Main application script -->
     <script type="module" src="/src/main.tsx"></script>
     
-    <!-- GTM carregado via JavaScript somente após renderização completa -->
+    <!-- Essential GPT Engineer script for Lovable features -->
+    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+    
+    <!-- Deferred analytics loading -->
     <script>
       window.addEventListener('load', function() {
-        // Atraso muito maior para scripts não-críticos
+        // Delay non-critical scripts
         setTimeout(function() {
-          // GTM script carregado dinamicamente
+          // Google Tag Manager
           const gtmScript = document.createElement('script');
           gtmScript.innerHTML = `
             (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -117,7 +99,7 @@
           `;
           document.body.appendChild(gtmScript);
           
-          // GTM noscript fallback adicionado manualmente
+          // GTM noscript fallback
           const noscript = document.createElement('noscript');
           const iframe = document.createElement('iframe');
           iframe.src = "https://www.googletagmanager.com/ns.html?id=GTM-WHKJ76ZT";
@@ -126,10 +108,21 @@
           iframe.style = "display:none;visibility:hidden";
           noscript.appendChild(iframe);
           document.body.appendChild(noscript);
-        }, 3000); // Aumentado para 3 segundos
+          
+          // Google Analytics
+          setTimeout(() => {
+            const analyticsScript = document.createElement('script');
+            analyticsScript.src = "https://www.googletagmanager.com/gtag/js?id=G-33EYX0JZM1";
+            analyticsScript.async = true;
+            document.body.appendChild(analyticsScript);
+            
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-33EYX0JZM1', { 'send_page_view': false });
+          }, 5000);
+        }, 3000);
       });
     </script>
-    
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
   </body>
 </html>
