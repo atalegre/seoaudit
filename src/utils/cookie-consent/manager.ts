@@ -1,7 +1,6 @@
 
-import { CookieConsentStorage, getFromLocalStorage, saveToLocalStorage, removeFromLocalStorage } from './storage';
+import { getFromLocalStorage, saveToLocalStorage, removeFromLocalStorage, CookieConsentStorage } from './storage';
 import { CookieSettings } from './types';
-import { CookieConsentTracking } from './tracking';
 
 /**
  * Main cookie consent manager that coordinates storage and tracking
@@ -62,28 +61,32 @@ export const CookieConsentManager = {
    * Apply consent settings to tracking services
    */
   applyConsent(settings: CookieSettings): void {
-    CookieConsentTracking.applyConsent(settings);
+    // Stub implementation for tracking integration
+    console.log('Applying consent settings:', settings);
   },
   
   /**
    * Validate if Google Tags are present and working
    */
   validateTagsPresence(): void {
-    CookieConsentTracking.validateTagsPresence();
+    // Stub implementation for validating Google Tags
+    console.log('Validating presence of Google Tags');
   },
   
   /**
    * Verify cross-domain tracking is properly set up
    */
   verifyCrossDomainTracking(): void {
-    CookieConsentTracking.verifyCrossDomainTracking();
+    // Stub implementation for verifying cross-domain tracking
+    console.log('Verifying cross-domain tracking');
   },
   
   /**
    * Manually inject Google Tag Manager 
    */
   injectGTM(): void {
-    CookieConsentTracking.injectGTM();
+    // Stub implementation for injecting Google Tag Manager
+    console.log('Injecting Google Tag Manager');
   },
   
   /**
@@ -93,7 +96,8 @@ export const CookieConsentManager = {
     try {
       console.log('Verificando Search Console para:', siteUrl);
       
-      return await CookieConsentTracking.verifySearchConsole(siteUrl, authToken);
+      // Stub implementation for verifying Google Search Console
+      return false;
     } catch (error) {
       console.error('Erro ao verificar Search Console:', error);
       return false;

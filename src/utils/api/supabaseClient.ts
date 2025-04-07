@@ -6,11 +6,14 @@ import { supabase } from '@/integrations/supabase/client';
  */
 export async function getClientAnalysisHistory(clientId: number): Promise<any[]> {
   try {
+    // Convert clientId to string as expected by Supabase
+    const clientIdStr = clientId.toString();
+    
     // @ts-ignore - Ignoring type issues with the filter
     const { data, error } = await supabase
       .from('analysis_results')
       .select('*')
-      .eq('client_id', clientId)
+      .eq('client_id', clientIdStr)
       .order('created_at', { ascending: false });
     
     if (error) throw error;
@@ -64,7 +67,7 @@ export async function storeApiKey(
         key_type: 'google',
         key_value: apiKey || '', // Empty string for null values
         updated_at: new Date().toISOString()
-      }]);
+      }], { onConflict: 'user_id,key_type' });
     
     if (error) throw error;
   } catch (error) {
@@ -148,14 +151,17 @@ export async function saveAnalysisResult(
     // Extract required fields from the analysis result
     const { url, seo, aio } = analysisResult;
     
+    // Convert clientId to string since the database expects string IDs
+    const clientIdStr = clientId.toString();
+    
     // @ts-ignore - Necessary due to schema type mismatch
     const { error } = await supabase
       .from('analysis_results')
       .insert([{
-        client_id: clientId,
-        url: url,
-        seo_data: seo,
-        aio_data: aio,
+        client_id: clientIdStr,
+        url: url || '',
+        seo_data: seo || null,
+        aio_data: aio || null,
         seo_score: seo?.score || 0,
         aio_score: aio?.score || 0,
         overall_status: 'completed',
