@@ -52,7 +52,7 @@ const SuiteLayout = ({
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full">
-        <Sidebar className="shrink-0 border-r" variant="sidebar" collapsible="offcanvas">
+        <Sidebar variant="sidebar" collapsible="offcanvas">
           <SidebarHeader className="flex items-center justify-center h-14 border-b py-2 px-2">
             <img 
               src="/lovable-uploads/d5a32965-2a6a-49a6-8474-6efb96afd0f7.png" 
@@ -93,8 +93,9 @@ const SuiteLayout = ({
           </SidebarFooter>
         </Sidebar>
 
-        <div className="flex-1 flex flex-col">
-          <div className="flex h-14 items-center border-b px-4 lg:px-6">
+        {/* Main content area - completely restructured */}
+        <main className="flex-1 flex flex-col">
+          <header className="flex h-14 items-center border-b px-4 lg:px-6">
             <SidebarTrigger />
             <div className="flex flex-1 items-center justify-between">
               <div>
@@ -129,11 +130,11 @@ const SuiteLayout = ({
                 )}
               </div>
             </div>
-          </div>
+          </header>
           <div className="flex-1 p-4 lg:p-6">
             {children}
           </div>
-        </div>
+        </main>
       </div>
     </SidebarProvider>
   );

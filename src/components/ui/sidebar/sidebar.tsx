@@ -91,7 +91,7 @@ export const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
               : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
             variant === "floating" || variant === "inset"
               ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]"
-              : "group-data-[collapsible=icon]:w-[--sidebar-width-icon] group-data-[side=left]:border-r group-data-[side=right]:border-l",
+              : "group-data-[collapsible=icon]:w-[--sidebar-width-icon]",
             className
           )}
           {...props}
@@ -99,9 +99,7 @@ export const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
           <div
             data-sidebar="sidebar"
             className={cn(
-              "flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow",
-              // Fix the CSS to ensure content starts after the sidebar
-              variant === "sidebar" && "border-r"
+              "flex h-full w-full flex-col bg-sidebar border-r border-sidebar-border group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow",
             )}
             style={{ "--sidebar-width": SIDEBAR_WIDTH } as React.CSSProperties}
           >
