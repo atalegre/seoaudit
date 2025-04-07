@@ -90,6 +90,7 @@ export async function createOrUpdateAdmin(
     
     // If admin exists in auth system - find the admin user by email
     if (existingUsers?.users) {
+      // Use type assertion to make TypeScript know the structure of the user object
       const adminUser = existingUsers.users.find(user => user.email === email);
       if (adminUser) {
         adminUserId = adminUser.id;
@@ -204,4 +205,3 @@ export async function signInOrSignUpAdmin(email: string, password: string, name:
 export {
   ADMIN_EMAIL
 };
-
