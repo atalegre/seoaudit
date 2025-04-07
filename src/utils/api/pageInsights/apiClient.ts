@@ -58,7 +58,7 @@ export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mo
     // Obter a chave API do PageSpeed
     const apiKey = import.meta.env.VITE_PAGESPEED_API_KEY || '';
     if (!apiKey) {
-      throw new Error('Chave API PageSpeed não configurada. Configure a variável de ambiente VITE_PAGESPEED_API_KEY');
+      throw new Error('Falha ao obter dados reais da API Google PageSpeed Insights. Chave API PageSpeed não configurada. Configure a variável de ambiente VITE_PAGESPEED_API_KEY');
     }
     
     // Use fetch API with optimized settings
@@ -95,7 +95,10 @@ export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mo
         
         return processedData;
       } else {
-        throw new Error(`API request failed with status: ${response.status}`);
+        // Extrair a mensagem de erro da resposta quando possível
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error?.message || `Erro HTTP: ${response.status}`;
+        throw new Error(`Falha na API PageSpeed: ${errorMessage}`);
       }
     } catch (directApiError) {
       console.warn('Direct API call failed:', directApiError);
@@ -121,8 +124,20 @@ export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mo
         console.warn('CORS proxy failed:', corsError);
       }
       
-      // Não usar dados simulados, apenas propagar o erro
-      throw new Error('Falha ao obter dados reais da API Google PageSpeed Insights. ' + directApiError.message);
+      // Adicionar detalhes importantes à mensagem de erro
+      let errorMessage = 'Falha ao obter dados reais da API Google PageSpeed Insights. ';
+      
+      if (!apiKey) {
+        errorMessage += 'Chave API PageSpeed não configurada. Configure a variável de ambiente VITE_PAGESPEED_API_KEY';
+      } else if (directApiError.message.includes('network') || directApiError.message.includes('fetch')) {
+        errorMessage += 'Erro de rede ao conectar com a API. Verifique sua conexão à internet.';
+      } else {
+        errorMessage += directApiError.message;
+      }
+      
+      errorMessage += '\n\nCertifique-se de que a URL é válida e acessível publicamente.';
+      
+      throw new Error(errorMessage);
     }
   } catch (error) {
     console.error('Error in getPageInsightsData:', error);

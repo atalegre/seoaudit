@@ -33,6 +33,8 @@ export function useSeoAnalysis() {
     try {
       setIsAnalyzing(true);
       setError(null);
+      setDesktopData(null);
+      setMobileData(null);
       
       // Normalizar URL (adicionar https:// se não especificado)
       let normalizedUrl = urlToAnalyze;
@@ -44,22 +46,52 @@ export function useSeoAnalysis() {
       localStorage.setItem('lastAnalyzedUrl', urlToAnalyze);
       
       // Obter dados para desktop e mobile usando a mesma API com estratégia diferente
+      toast.info("Analisando...", {
+        description: "Obtendo dados reais de SEO, isso pode levar alguns segundos."
+      });
+      
       try {
-        const desktopInsights = await getPageInsightsData(normalizedUrl, 'desktop');
-        setDesktopData(desktopInsights);
+        const desktopPromise = getPageInsightsData(normalizedUrl, 'desktop');
+        const mobilePromise = getPageInsightsData(normalizedUrl, 'mobile');
         
-        const mobileInsights = await getPageInsightsData(normalizedUrl, 'mobile');
-        setMobileData(mobileInsights);
+        // Tentar obter ambos os dados, mas não falhar se apenas um deles funcionar
+        const [desktopResult, mobileResult] = await Promise.allSettled([desktopPromise, mobilePromise]);
         
-        toast.success("Análise concluída", {
-          description: "Os resultados da análise SEO estão prontos."
-        });
+        if (desktopResult.status === 'fulfilled') {
+          setDesktopData(desktopResult.value);
+        } else {
+          console.error("Erro ao analisar desktop:", desktopResult.reason);
+          // Não definir erro global ainda, apenas se ambos falharem
+        }
+        
+        if (mobileResult.status === 'fulfilled') {
+          setMobileData(mobileResult.value);
+        } else {
+          console.error("Erro ao analisar mobile:", mobileResult.reason);
+          // Não definir erro global ainda, apenas se ambos falharem
+        }
+        
+        // Se ambos falharem, definir o erro
+        if (desktopResult.status === 'rejected' && mobileResult.status === 'rejected') {
+          // Usar a mensagem de erro mais informativa
+          const errorMessage = desktopResult.reason.message || mobileResult.reason.message;
+          setError(errorMessage || 'Ocorreu um erro desconhecido');
+          
+          toast.error("Erro na análise", {
+            description: "Não foi possível obter dados reais. Verifique as configurações de API."
+          });
+        } else {
+          // Pelo menos um foi bem-sucedido
+          toast.success("Análise concluída", {
+            description: "Os resultados da análise SEO estão prontos."
+          });
+        }
       } catch (apiError: any) {
         console.error("Erro ao analisar URL:", apiError);
         setError(apiError.message || 'Ocorreu um erro desconhecido');
         
         toast.error("Erro na análise", {
-          description: apiError.message || 'Ocorreu um erro desconhecido'
+          description: "Falha ao conectar com a API. Verifique a configuração e tente novamente."
         });
       }
     } catch (error: any) {
