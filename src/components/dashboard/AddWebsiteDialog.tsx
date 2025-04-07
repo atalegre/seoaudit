@@ -14,12 +14,14 @@ export interface AddWebsiteDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onAddWebsite: () => void;
+  userEmail?: string;
 }
 
 const AddWebsiteDialog: React.FC<AddWebsiteDialogProps> = ({
   isOpen,
   onClose,
-  onAddWebsite
+  onAddWebsite,
+  userEmail
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -30,10 +32,13 @@ const AddWebsiteDialog: React.FC<AddWebsiteDialogProps> = ({
             Insira as informações do website que deseja analisar.
           </DialogDescription>
         </DialogHeader>
-        <AddWebsiteForm onSuccess={() => {
-          onAddWebsite();
-          onClose();
-        }} />
+        <AddWebsiteForm 
+          onSuccess={() => {
+            onAddWebsite();
+            onClose();
+          }} 
+          userId={userEmail}
+        />
       </DialogContent>
     </Dialog>
   );
