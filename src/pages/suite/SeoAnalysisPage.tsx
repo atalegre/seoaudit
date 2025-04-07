@@ -21,11 +21,12 @@ const SeoAnalysisPage = () => {
   const [activeTab, setActiveTab] = useState('desktop');
   const { toast } = useToast();
 
-  // Load the last analyzed URL from localStorage if available
+  // Carregar o último URL analisado e iniciar análise automaticamente
   useEffect(() => {
     const lastUrl = localStorage.getItem('lastAnalyzedUrl');
     if (lastUrl) {
       setUrl(lastUrl);
+      analyzeUrl(lastUrl);
     }
   }, []);
 
@@ -33,8 +34,8 @@ const SeoAnalysisPage = () => {
     setUrl(e.target.value);
   };
 
-  const analyzeUrl = async () => {
-    if (!url) {
+  const analyzeUrl = async (urlToAnalyze = url) => {
+    if (!urlToAnalyze) {
       toast({
         title: "URL necessário",
         description: "Por favor, insira uma URL válida para analisar.",
@@ -46,17 +47,17 @@ const SeoAnalysisPage = () => {
     try {
       setIsAnalyzing(true);
       
-      // Save the URL to localStorage
-      localStorage.setItem('lastAnalyzedUrl', url);
+      // Salvar a URL no localStorage
+      localStorage.setItem('lastAnalyzedUrl', urlToAnalyze);
       
       // Simular carregamento sequencial (desktop primeiro, depois mobile)
       // Na implementação real, você pode fazer ambas as chamadas de forma paralela
-      const desktopInsights = await getPageInsightsData(url);
+      const desktopInsights = await getPageInsightsData(urlToAnalyze);
       setDesktopData(desktopInsights);
       
       // Em uma implementação real, você teria diferentes endpoints/parâmetros para mobile
       // Aqui estamos simulando usando os mesmos dados, mas em produção seria uma chamada separada
-      const mobileInsights = await getPageInsightsData(url);
+      const mobileInsights = await getPageInsightsData(urlToAnalyze);
       setMobileData(mobileInsights);
       
       toast({
@@ -75,15 +76,27 @@ const SeoAnalysisPage = () => {
     }
   };
 
+  const handleReanalyze = () => {
+    analyzeUrl();
+  };
+
+  const extractDomain = (url: string) => {
+    try {
+      return new URL(url.startsWith('http') ? url : `https://${url}`).hostname;
+    } catch (e) {
+      return url;
+    }
+  };
+
   return (
     <div className="container py-6">
       <h1 className="text-2xl font-bold mb-6">Análise SEO Technical</h1>
       
       <Card className="mb-6">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg">Analisar URL</CardTitle>
+          <CardTitle className="text-lg">Site em análise: {url ? extractDomain(url) : 'Nenhum site'}</CardTitle>
           <CardDescription>
-            Insira a URL do site que deseja analisar com o Google PageSpeed Insights
+            Resultados da análise com Google PageSpeed Insights
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -96,7 +109,7 @@ const SeoAnalysisPage = () => {
               disabled={isAnalyzing}
             />
             <Button 
-              onClick={analyzeUrl} 
+              onClick={handleReanalyze} 
               disabled={isAnalyzing}
               className="gap-2"
             >
@@ -108,7 +121,7 @@ const SeoAnalysisPage = () => {
               ) : (
                 <>
                   <Zap className="h-4 w-4" />
-                  Analisar
+                  Analisar novamente
                 </>
               )}
             </Button>
