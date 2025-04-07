@@ -27,9 +27,10 @@ React.useEffect(() => {
           newForm.addEventListener('submit', (e) => {
             e.preventDefault();
             
-            // Get the URL value
+            // Get the URL value and properly type it
             const urlInput = newForm.querySelector('input[type="url"], input[type="text"]');
-            const url = urlInput?.value;
+            // Ensure urlInput is an HTMLInputElement before accessing its value property
+            const url = urlInput instanceof HTMLInputElement ? urlInput.value : '';
             
             if (url) {
               // Dispatch our custom event
