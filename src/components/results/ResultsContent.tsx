@@ -7,11 +7,20 @@ import PartialDataAlert from './PartialDataAlert';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
 
-const ResultsContent = ({ 
+interface ResultsContentProps {
+  analysisData: any;
+  seoError: string | null;
+  aioError: string | null;
+  onReanalyze: () => void;
+  isLoading?: boolean;
+}
+
+const ResultsContent: React.FC<ResultsContentProps> = ({ 
   analysisData, 
   seoError, 
   aioError, 
-  onReanalyze 
+  onReanalyze,
+  isLoading = false
 }) => {
   const recommendationsRef = useRef(null);
   const hasSeoData = analysisData?.seo?.score > 0;
