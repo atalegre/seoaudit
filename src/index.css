@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -34,16 +35,16 @@
  
     --radius: 0.5rem;
     
-    /* Sidebar variables with transparent background */
+    /* Sidebar variables */
     --sidebar-width: 14rem;
     --sidebar-width-icon: 3.5rem;
     
-    /* Sidebar colors with transparency */
-    --sidebar-background: 0 0% 100% / 0.85; /* Transparent white */
+    /* Sidebar colors with improved contrast */
+    --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 222.2 84% 4.9%;
-    --sidebar-accent: 210 40% 96.1% / 0.9;
+    --sidebar-accent: 210 40% 96.1%;
     --sidebar-accent-foreground: 222.2 47.4% 11.2%;
-    --sidebar-border: 214.3 31.8% 91.4% / 0.5;
+    --sidebar-border: 214.3 31.8% 91.4%;
     --sidebar-ring: 222.2 84% 4.9%;
     --sidebar-primary: 222.2 47.4% 11.2%;
     --sidebar-primary-foreground: 210 40% 98%;
