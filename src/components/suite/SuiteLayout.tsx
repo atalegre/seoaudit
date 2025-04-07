@@ -54,38 +54,40 @@ const SuiteLayout = ({
     <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full">
         <Sidebar className="shrink-0" variant="inset">
-          <SidebarHeader className="flex items-center justify-center py-3">
+          <SidebarHeader className="flex items-center justify-center py-2 px-1">
             <img 
               src="/lovable-uploads/d5a32965-2a6a-49a6-8474-6efb96afd0f7.png" 
               alt="SEOAudit Logo" 
-              className="h-7" 
+              className="h-6" 
             />
           </SidebarHeader>
 
-          <SidebarContent className="px-1">
+          <SidebarContent className="px-0.5">
             <SidebarGroup>
-              <SidebarGroupLabel className="px-2 py-1 mb-0">Menu Principal</SidebarGroupLabel>
+              <SidebarGroupLabel className="px-1.5 py-0.5 mb-0 text-[10px]">Menu Principal</SidebarGroupLabel>
               <SidebarContentItems />
             </SidebarGroup>
           </SidebarContent>
 
-          <SidebarFooter className="px-2">
+          <SidebarFooter className="px-1 py-1">
             {!user ? (
               <Button 
                 onClick={handleLogin} 
                 variant="outline" 
-                className="w-full justify-start"
+                className="w-full justify-start text-xs h-7 py-1"
+                size="sm"
               >
-                <LogOut className="mr-2 h-4 w-4" />
+                <LogOut className="mr-1.5 h-3.5 w-3.5" />
                 <span>Login</span>
               </Button>
             ) : (
               <Button 
                 onClick={handleLogout} 
                 variant="outline" 
-                className="w-full justify-start"
+                className="w-full justify-start text-xs h-7 py-1"
+                size="sm"
               >
-                <LogOut className="mr-2 h-4 w-4" />
+                <LogOut className="mr-1.5 h-3.5 w-3.5" />
                 <span>Logout</span>
               </Button>
             )}
