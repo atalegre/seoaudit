@@ -49,20 +49,24 @@ export async function signUpWithEmail(data: SignUpData): Promise<AuthResult> {
   const { name, email, password, role = 'user' } = data;
   
   console.log('Starting signup process for:', email);
+  console.log('Signup data:', { name, email, role });
 
   // Check if email already exists
   const emailExists = await checkEmailExists(email);
   if (emailExists && !isAdminEmail(email)) {
+    console.log('Email already exists, cannot proceed with signup:', email);
     throw new Error('Este email já está registrado. Por favor, faça login.');
   }
 
   // Special handling for admin email
   if (isAdminEmail(email)) {
+    console.log('Admin email detected, using special signup handling');
     return signInOrSignUpAdmin(email, password, name);
   }
   
   // For non-admin users, normal signup flow
   try {
+    console.log('Creating new user in auth system');
     // Create new user in auth
     const { data: authData, error } = await supabase.auth.signUp({
       email,

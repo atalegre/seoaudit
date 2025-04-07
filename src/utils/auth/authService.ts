@@ -2,11 +2,10 @@
 import { createDefaultUsers } from './createDefaultUsers';
 import { createOrUpdateAdmin, isAdminEmail, handleAdminUser } from './adminUserService';
 import { createOrUpdateClient } from './clientUserService';
-import { signUpWithEmail } from './signupService';
+import { signUpWithEmail, checkEmailExists } from './signupService';
 import { signInWithEmail } from './signinService';
 import { resetPassword, updatePassword } from './passwordService';
 import { checkUserRole, getUserProfile, createUserProfile } from './profileService';
-import { checkEmailExists } from './signupService';
 
 // Re-export all the functions
 export { 

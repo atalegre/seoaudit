@@ -1,7 +1,7 @@
 
 // This file now serves as the main entry point, re-exporting functionality from more specialized modules
 import { checkUserRole } from './roleService';
-import { getUserProfile } from './profileService';
+import { getUserProfile, createUserProfile } from './profileService';
 import { checkEmailExists } from './emailValidationService';
 import { handleAdminUser, isAdminEmail } from './adminUserService';
 
@@ -9,6 +9,7 @@ import { handleAdminUser, isAdminEmail } from './adminUserService';
 export {
   checkUserRole,
   getUserProfile,
+  createUserProfile,
   checkEmailExists,
   handleAdminUser,
   isAdminEmail

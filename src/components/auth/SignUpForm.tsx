@@ -1,19 +1,18 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
 import { UserPlus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
-import { signUpWithEmail } from '@/utils/auth/authService';
-import { signupFormSchema, SignUpFormValues } from './schemas/signupSchema';
+import { toast } from '@/hooks/use-toast';
+import { signUpWithEmail } from '@/utils/auth/signupService';
+import NameField from './NameField';
 import EmailField from './EmailField';
 import PasswordField from './PasswordField';
-import PasswordRequirements from './PasswordRequirements';
-import NameField from './NameField';
 import TermsCheckbox from './TermsCheckbox';
+import { signupFormSchema, SignUpFormValues } from './schemas/signupSchema';
 
 type SignUpFormProps = {
   setAuthError: (error: string | null) => void;
@@ -21,7 +20,6 @@ type SignUpFormProps = {
 
 const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [isRegistering, setIsRegistering] = useState(false);
   
   const form = useForm<SignUpFormValues>({
@@ -34,14 +32,10 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
     },
   });
 
-  async function onSubmit(values: SignUpFormValues) {
-    setIsRegistering(true);
-    setAuthError(null);
-    
+  const onSubmit = async (values: SignUpFormValues) => {
     try {
-      // Special case for admin email
-      const isAdminEmail = values.email === 'atalegre@me.com';
-      const role = isAdminEmail ? 'admin' : 'user';
+      setIsRegistering(true);
+      setAuthError(null);
       
       console.log('Submitting signup form with email:', values.email);
       
@@ -49,109 +43,41 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
         name: values.name,
         email: values.email,
         password: values.password,
-        acceptTerms: values.acceptTerms,
-        role: role
+        acceptTerms: values.acceptTerms
       });
       
-      if (result?.session) {
-        // User was signed in automatically
-        console.log('User signed in automatically:', result.user?.email);
-        
+      if (result.needsEmailVerification) {
         toast({
-          title: "Registo bem-sucedido",
-          description: "A sua conta foi criada com sucesso!",
+          title: "Verificação de email necessária",
+          description: "Por favor, verifique o seu email para continuar.",
         });
         
-        // Redirect based on role
+        navigate('/verification', { 
+          state: { email: values.email } 
+        });
+      } else if (result.user) {
+        toast({
+          title: "Conta criada com sucesso",
+          description: "Bem-vindo à nossa plataforma!",
+        });
+        
+        // Check role for redirect
+        const role = result.user.user_metadata?.role || 'user';
         navigate(role === 'admin' ? '/dashboard' : '/dashboard/client');
-      } else if (result?.user) {
-        // Email confirmation may be required
-        console.log('Email confirmation may be required for:', result.user?.email);
-        
-        toast({
-          title: "Registo bem-sucedido",
-          description: "Enviamos um email de confirmação. Por favor verifique sua caixa de entrada.",
-          duration: 8000,
-        });
-        
-        // For admin, try to redirect to dashboard
-        if (isAdminEmail) {
-          navigate('/dashboard');
-        } else {
-          // Navigate to verification page
-          navigate('/verification', { 
-            state: { email: values.email },
-            replace: true
-          });
-        }
-      } else {
-        // Unexpected result
-        console.error('Unexpected signup result:', result);
-        
-        toast({
-          variant: "destructive",
-          title: "Erro no registo",
-          description: "Ocorreu um erro inesperado durante o registo.",
-        });
       }
     } catch (error: any) {
       console.error("Exception during registration:", error);
+      setAuthError(error.message || "Erro ao criar conta");
       
-      // Handle admin-specific authentication errors
-      if (values.email === 'atalegre@me.com') {
-        if (error.message?.includes('Credenciais inválidas')) {
-          toast({
-            variant: "destructive",
-            title: "Erro de Autenticação",
-            description: error.message,
-          });
-        } else if (error.message?.includes('já está registrado') || 
-                  error.message?.includes('already registered')) {
-          toast({
-            title: "Admin já registrado",
-            description: "Tentando fazer login como administrador...",
-          });
-          
-          // Try to directly navigate to login with admin credentials
-          navigate('/signin', { 
-            state: { email: values.email },
-            replace: true
-          });
-        } else {
-          setAuthError(error.message);
-          toast({
-            variant: "destructive",
-            title: "Erro no Admin",
-            description: error.message || "Ocorreu um erro durante o registo do administrador.",
-          });
-        }
-        return;
-      }
-      
-      // Handle user already registered error
-      if (error.message?.includes('User already registered') || 
-          error.message?.includes('já está em uso') || 
-          error.message?.includes('já está registrado')) {
-        toast({
-          title: "Usuário já registrado",
-          description: "Este email já está registrado. Por favor, faça login.",
-        });
-        navigate('/signin', { 
-          state: { email: form.getValues().email },
-          replace: true
-        });
-      } else {
-        setAuthError(error.message);
-        toast({
-          variant: "destructive",
-          title: "Erro",
-          description: error.message || "Ocorreu um erro durante o registo.",
-        });
-      }
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: error.message || "Não foi possível criar a sua conta",
+      });
     } finally {
       setIsRegistering(false);
     }
-  }
+  };
 
   return (
     <Form {...form}>
@@ -159,8 +85,8 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
         <NameField form={form} />
         <EmailField form={form} />
         <PasswordField form={form} name="password" />
-        <PasswordRequirements />
         <TermsCheckbox form={form} />
+        
         <Button 
           type="submit" 
           className="w-full" 
@@ -168,13 +94,9 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
           disabled={isRegistering}
         >
           {isRegistering ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Registando...
-            </>
+            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Criando conta...</>
           ) : (
-            <>
-              <UserPlus className="mr-2 h-4 w-4" /> Registrar
-            </>
+            <><UserPlus className="mr-2 h-4 w-4" /> Criar Conta</>
           )}
         </Button>
       </form>
