@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Zap } from 'lucide-react';
 import WebVitalsGrid from './web-vitals/WebVitalsGrid';
-import StatusBadge from './web-vitals/StatusBadge';
+import StatusBadge, { StatusType } from './web-vitals/StatusBadge';
 import WebVitalsLegend from './web-vitals/WebVitalsLegend';
 import { MetricStatus } from './MetricCard';
 
@@ -24,7 +24,7 @@ const CoreWebVitalsPanel: React.FC<CoreWebVitalsPanelProps> = ({
   const fidStatus: MetricStatus = fid <= 100 ? "good" : fid <= 300 ? "needs-improvement" : "poor";
   
   // Determinar o status geral dos Core Web Vitals
-  const getOverallStatus = () => {
+  const getOverallStatus = (): { status: StatusType, message: string } => {
     if (lcpStatus === "good" && clsStatus === "good" && fidStatus === "good") {
       return { status: "passed", message: "Todos os Core Web Vitals passam nos critérios do Google." };
     } else if (lcpStatus === "poor" || clsStatus === "poor" || fidStatus === "poor") {

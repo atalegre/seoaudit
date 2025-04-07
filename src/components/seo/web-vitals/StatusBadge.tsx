@@ -3,7 +3,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import { Zap, AlertTriangle } from 'lucide-react';
 
-type StatusType = 'passed' | 'failed' | 'needs-improvement';
+export type StatusType = 'passed' | 'failed' | 'needs-improvement';
 
 interface StatusBadgeProps {
   status: StatusType;
