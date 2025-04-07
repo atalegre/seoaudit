@@ -5,8 +5,17 @@ import { UserProvider } from '@/contexts/UserContext';
 import AuthButtons from './header/AuthButtons';
 import HeaderNavigation from './header/HeaderNavigation';
 import LanguageSwitcher from './LanguageSwitcher';
+import DashboardButton from './header/buttons/DashboardButton';
+import { useUser } from '@/contexts/UserContext';
 
 const Header = () => {
+  const { user, role } = useUser();
+  
+  // Determine dashboard path based on user role
+  const getDashboardPath = () => {
+    return role === 'admin' ? '/dashboard' : '/dashboard/client';
+  };
+
   return (
     <UserProvider>
       <header className="sticky top-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-40">
@@ -23,6 +32,7 @@ const Header = () => {
           
           <div className="ml-auto flex items-center gap-2">
             <LanguageSwitcher />
+            {user && <DashboardButton dashboardPath={getDashboardPath()} />}
             <AuthButtons />
           </div>
         </div>
