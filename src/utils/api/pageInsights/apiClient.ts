@@ -1,9 +1,9 @@
+
 import type { PageInsightsData } from './types';
 import { processPageInsightsData } from './apiProcessor';
-import { generateLocalPageInsights } from './mockDataGenerator';
 import { createTimedRequest, handleCorsRequest } from './corsHandlers';
 
-// Flag for development mode - set to false to use real API
+// Flag para uso exclusivo de dados reais da API
 const USE_MOCK_DATA = false;
 
 /**
@@ -19,10 +19,9 @@ const CACHE_TTL = 1000 * 60 * 30; // 30 minutes
  */
 export async function getPageInsightsData(url: string): Promise<PageInsightsData> {
   try {
-    // If mock data is enabled, return generated data
+    // Se o modo de dados simulados estiver ativado, lance um erro
     if (USE_MOCK_DATA) {
-      console.log('Using mock PageSpeed Insights data');
-      return generateLocalPageInsights(url);
+      throw new Error('Modo de dados simulados não permitido. Apenas dados reais são aceitos.');
     }
     
     console.log('Fetching PageSpeed Insights data for:', url);
@@ -121,11 +120,11 @@ export async function getPageInsightsData(url: string): Promise<PageInsightsData
         console.warn('CORS proxy failed:', corsError);
       }
       
-      // Fallback para dados locais
-      return generateLocalPageInsights(url);
+      // Se chegou aqui, não conseguiu obter dados reais
+      throw new Error('Falha ao obter dados reais da API Google PageSpeed Insights');
     }
   } catch (error) {
     console.error('Error in getPageInsightsData:', error);
-    throw error;
+    throw error; // Propaga o erro para ser tratado pelo componente
   }
 }

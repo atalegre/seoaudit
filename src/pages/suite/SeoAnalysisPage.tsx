@@ -11,6 +11,7 @@ const SeoAnalysisPage = () => {
     isAnalyzing, 
     desktopData, 
     mobileData, 
+    error,
     handleUrlChange, 
     handleReanalyze, 
     extractDomain 
@@ -34,6 +35,7 @@ const SeoAnalysisPage = () => {
         desktopData={desktopData}
         mobileData={mobileData}
         isAnalyzing={isAnalyzing}
+        error={error}
       />
     </div>
   );

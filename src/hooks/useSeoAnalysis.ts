@@ -9,6 +9,7 @@ export function useSeoAnalysis() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [desktopData, setDesktopData] = useState<PageInsightsData | null>(null);
   const [mobileData, setMobileData] = useState<PageInsightsData | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Carregar o último URL analisado ao inicializar
@@ -32,16 +33,23 @@ export function useSeoAnalysis() {
 
     try {
       setIsAnalyzing(true);
+      setError(null);
+      
+      // Normalizar URL (adicionar https:// se não especificado)
+      let normalizedUrl = urlToAnalyze;
+      if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
+        normalizedUrl = 'https://' + normalizedUrl;
+      }
       
       // Salvar a URL no localStorage
       localStorage.setItem('lastAnalyzedUrl', urlToAnalyze);
       
       // Simular carregamento sequencial (desktop primeiro, depois mobile)
-      const desktopInsights = await getPageInsightsData(urlToAnalyze);
+      const desktopInsights = await getPageInsightsData(normalizedUrl);
       setDesktopData(desktopInsights);
       
       // Em uma implementação real, você teria diferentes endpoints/parâmetros para mobile
-      const mobileInsights = await getPageInsightsData(urlToAnalyze);
+      const mobileInsights = await getPageInsightsData(normalizedUrl);
       setMobileData(mobileInsights);
       
       toast({
@@ -50,9 +58,12 @@ export function useSeoAnalysis() {
       });
     } catch (error) {
       console.error("Erro ao analisar URL:", error);
+      const errorMessage = error instanceof Error ? error.message : 'Ocorreu um erro desconhecido';
+      setError(errorMessage);
+      
       toast({
         title: "Erro na análise",
-        description: "Ocorreu um erro ao analisar a URL. Tente novamente.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -81,6 +92,7 @@ export function useSeoAnalysis() {
     isAnalyzing,
     desktopData,
     mobileData,
+    error,
     handleUrlChange,
     handleReanalyze,
     extractDomain
