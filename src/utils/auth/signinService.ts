@@ -9,137 +9,7 @@ export async function signInWithEmail(email: string, password: string) {
   console.log("Attempting to sign in with email:", email);
   
   try {
-    // Special handling for demo accounts to ensure they always work
-    if ((email === 'atalegre@me.com' && password === 'admin123') || 
-        (email === 'seoclient@exemplo.com' && password === 'client123')) {
-      
-      console.log("Demo account login attempt");
-      
-      // Try to login first
-      const { data: signInResult, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      
-      if (signInResult && signInResult.user) {
-        console.log("Demo account login successful");
-        
-        // Ensure user has correct role in database
-        const role = email === 'atalegre@me.com' ? 'admin' : 'user';
-        const name = email === 'atalegre@me.com' ? 'Admin User' : 'SEO Client';
-        
-        await ensureUserInDb(
-          signInResult.user.id,
-          email,
-          name,
-          role
-        );
-        
-        return { data: signInResult, error: null };
-      }
-      
-      // If login failed for admin or client demo account, force account recreation
-      console.log("Demo account login failed, recreating account");
-      
-      // First try to delete any existing user with this email
-      try {
-        // Find user by email first
-        const { data: userByEmail } = await supabase
-          .from('users')
-          .select('id')
-          .eq('email', email)
-          .maybeSingle();
-        
-        if (userByEmail?.id) {
-          console.log("Found existing user in users table:", userByEmail.id);
-        }
-      } catch (err) {
-        console.error("Error checking for existing user:", err);
-      }
-      
-      // Create a new account with admin or client credentials
-      console.log(`Creating new ${email === 'atalegre@me.com' ? 'admin' : 'client'} account`);
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: email === 'atalegre@me.com' ? 'Admin User' : 'SEO Client',
-            role: email === 'atalegre@me.com' ? 'admin' : 'user'
-          }
-        }
-      });
-      
-      if (signUpError) {
-        if (signUpError.message.includes("User already registered")) {
-          console.log("User exists but password may be wrong. Trying admin sign-in one more time.");
-          // One more attempt to sign in
-          const { data: retryResult, error: retryError } = await supabase.auth.signInWithPassword({
-            email,
-            password
-          });
-          
-          if (retryError) {
-            console.error("Final login attempt failed:", retryError);
-            return { data: null, error: retryError };
-          }
-          
-          if (retryResult?.user) {
-            console.log("Final login attempt succeeded");
-            
-            // Ensure user has correct role in database
-            const role = email === 'atalegre@me.com' ? 'admin' : 'user';
-            const name = email === 'atalegre@me.com' ? 'Admin User' : 'SEO Client';
-            
-            await ensureUserInDb(
-              retryResult.user.id,
-              email,
-              name,
-              role
-            );
-            
-            return { data: retryResult, error: null };
-          }
-          
-          return { data: null, error: { message: "Failed to authenticate with provided credentials" } };
-        }
-        
-        console.error("Error creating demo account:", signUpError);
-        return { data: null, error: signUpError };
-      }
-      
-      // Try to login again after account creation
-      const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-      
-      if (loginError) {
-        console.error("Login failed after account creation:", loginError);
-        return { data: null, error: loginError };
-      }
-      
-      if (loginData && loginData.user) {
-        console.log("Login successful after account creation");
-        
-        // Ensure user has correct role in database
-        const role = email === 'atalegre@me.com' ? 'admin' : 'user';
-        const name = email === 'atalegre@me.com' ? 'Admin User' : 'SEO Client';
-        
-        await ensureUserInDb(
-          loginData.user.id,
-          email,
-          name,
-          role
-        );
-        
-        return { data: loginData, error: null };
-      }
-      
-      return { data: null, error: { message: "Failed to authenticate demo account" } };
-    }
-    
-    // Regular login flow for non-demo accounts
+    // Regular login flow
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -155,6 +25,8 @@ export async function signInWithEmail(email: string, password: string) {
       try {
         // Get user metadata
         const fullName = data.user.user_metadata?.full_name || 'User';
+        
+        // Special handling for admin email
         const role = email === 'atalegre@me.com' ? 'admin' : 'user';
         
         await ensureUserInDb(

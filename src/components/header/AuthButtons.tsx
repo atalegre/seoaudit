@@ -4,7 +4,6 @@ import { useUser } from '@/contexts/UserContext';
 import LogoutButton from './buttons/LogoutButton';
 import LoginButton from './buttons/LoginButton';
 import RegisterButton from './buttons/RegisterButton';
-import AdminLoginButton from './buttons/AdminLoginButton';
 
 const AuthButtons = () => {
   const { user } = useUser();
@@ -21,7 +20,6 @@ const AuthButtons = () => {
         <>
           <LoginButton />
           <RegisterButton />
-          <AdminLoginButton />
         </>
       )}
     </div>

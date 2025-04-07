@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { UserRole } from './types';
 
@@ -54,27 +53,9 @@ export async function ensureUserInDb(
   role: string = 'user'
 ): Promise<void> {
   try {
-    console.log(`Ensuring user ${email} exists in database with role ${role}`);
-    
     // Special handling for admin account
     if (email === 'atalegre@me.com') {
       role = 'admin';
-    }
-    
-    // Check if user exists first
-    const { data: existingUser, error: checkError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .maybeSingle();
-    
-    if (checkError) {
-      console.error("Error checking if user exists:", checkError);
-    }
-    
-    // If user exists but with different email (edge case), update by id
-    if (existingUser && existingUser.email !== email) {
-      console.log(`User ID exists but email changed from ${existingUser.email} to ${email}`);
     }
     
     // Use upsert to create or update user

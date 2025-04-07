@@ -17,7 +17,7 @@ export const useAuthCheck = (): UseAuthCheckResult => {
   const [user, setUser] = useState<any>(null);
   const [userEmail, setUserEmail] = useState<string>('');
   const [userName, setUserName] = useState<string>('Guest');
-  const [userRole, setUserRole] = useState<string>('admin'); // Default to admin role
+  const [userRole, setUserRole] = useState<string>('user'); // Default to user role
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -41,9 +41,9 @@ export const useAuthCheck = (): UseAuthCheckResult => {
         } else {
           // Set default values for non-authenticated users
           setUser(null);
-          setUserEmail('guest@example.com');
+          setUserEmail('');
           setUserName('Guest');
-          setUserRole('admin'); // Default to admin role for non-authenticated users
+          setUserRole('user'); // Default to user role for non-authenticated users
         }
       } catch (error) {
         console.error('Auth check error:', error);
