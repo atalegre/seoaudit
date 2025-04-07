@@ -93,7 +93,7 @@ const SuiteLayout = ({
           </SidebarFooter>
         </Sidebar>
 
-        {/* Main content area */}
+        {/* Main content area - fixed for proper spacing */}
         <main className="flex-1 flex flex-col">
           <header className="flex h-14 items-center border-b px-4 lg:px-6">
             <SidebarTrigger />

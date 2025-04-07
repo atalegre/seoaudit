@@ -1,5 +1,7 @@
 import * as React from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const SIDEBAR_COOKIE_NAME = "sidebar:state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
@@ -139,7 +141,3 @@ export const SidebarProvider = React.forwardRef<
   }
 );
 SidebarProvider.displayName = "SidebarProvider";
-
-// Re-export from other files
-import { cn } from "@/lib/utils";
-import { TooltipProvider } from "@/components/ui/tooltip";

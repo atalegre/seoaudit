@@ -63,6 +63,7 @@ export const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
       );
     }
 
+    // Fixed spacing and positioning for the sidebar to prevent content overlap
     return (
       <div
         ref={ref}
@@ -72,7 +73,7 @@ export const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
         data-variant={variant}
         data-side={side}
       >
-        {/* This is what handles the sidebar gap on desktop */}
+        {/* This handles the spacing when sidebar is collapsed to icon view */}
         <div
           className={cn(
             "duration-200 relative h-svh w-[--sidebar-width] bg-transparent transition-[width] ease-linear",
