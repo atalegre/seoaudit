@@ -10,7 +10,6 @@ import {
   SidebarGroup, 
   SidebarGroupLabel,
   SidebarHeader,
-  SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
@@ -94,7 +93,7 @@ const SuiteLayout = ({
           </SidebarFooter>
         </Sidebar>
 
-        <div className="flex-1">
+        <div className="flex-1 flex flex-col">
           <div className="flex h-14 items-center border-b px-4 lg:px-6">
             <SidebarTrigger />
             <div className="flex flex-1 items-center justify-between">
