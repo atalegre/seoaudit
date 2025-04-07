@@ -15,6 +15,7 @@ import {
   KeySquare, Brain, Zap
 } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
+import { fetchSiteLogo } from '@/utils/api/logoService';
 
 interface SampleRecommendation {
   id: number;
@@ -30,6 +31,7 @@ const SuiteDashboard = () => {
   const { toast: hookToast } = useToast();
   const { user } = useUser();
   const [isLoading, setIsLoading] = useState(false);
+  const [logoUrl, setLogoUrl] = useState('');
   
   // Sample data - in a real app, this would come from an API
   const seoScore = 72;
@@ -71,6 +73,20 @@ const SuiteDashboard = () => {
       toast.success(`Site analisado: ${url}`, {
         description: "Os resultados estão disponíveis no dashboard."
       });
+      
+      // Fetch logo for the domain
+      const fetchLogo = async () => {
+        try {
+          const logo = await fetchSiteLogo(url);
+          if (logo) {
+            setLogoUrl(logo);
+          }
+        } catch (error) {
+          console.error('Erro ao buscar logo:', error);
+        }
+      };
+      
+      fetchLogo();
     }
   }, [url]);
   
@@ -130,8 +146,15 @@ const SuiteDashboard = () => {
       
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-6">
         <Card className="col-span-full lg:col-span-1 row-span-2">
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center gap-4">
             <CardTitle>Pontuação Geral</CardTitle>
+            {logoUrl && (
+              <img 
+                src={logoUrl} 
+                alt={`Logo de ${domain}`} 
+                className="w-10 h-10 ml-auto object-contain rounded" 
+              />
+            )}
           </CardHeader>
           <CardContent className="flex flex-col items-center">
             <CircularProgress 
