@@ -1,98 +1,56 @@
 
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { 
-  Settings, Bot, Globe, MapPin, 
-  KeySquare, Brain, Pencil, FileText, 
-  Home
-} from 'lucide-react';
-import { 
-  SidebarMenu, 
-  SidebarMenuButton, 
-  SidebarMenuItem, 
-  SidebarGroupContent 
-} from "@/components/ui/sidebar";
+import { Link, useLocation } from 'react-router-dom';
+import { cn } from "@/lib/utils";
+import { BarChart, Users, Settings, FileText, Upload } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useSidebar } from '@/components/ui/sidebar/context';
 
-export const sidebarItems = [
-  {
-    icon: Home,
-    label: 'Dashboard',
-    path: '/suite',
-    tooltip: 'Visão geral'
-  },
-  {
-    icon: Settings,
-    label: 'SEO Analysis',
-    path: '/suite/seo',
-    tooltip: 'SEO técnico'
-  },
-  {
-    icon: Bot,
-    label: 'AIO',
-    path: '/suite/aio',
-    tooltip: 'Clareza para IA'
-  },
-  {
-    icon: Globe,
-    label: 'LLM Presence',
-    path: '/suite/llm',
-    tooltip: 'Presença em IA'
-  },
-  {
-    icon: MapPin,
-    label: 'Diretórios',
-    path: '/suite/directories',
-    tooltip: 'Presença local'
-  },
-  {
-    icon: KeySquare,
-    label: 'Keyword Tracker',
-    path: '/suite/keywords',
-    tooltip: 'Ranking e keywords'
-  },
-  {
-    icon: Brain,
-    label: 'Recomendador',
-    path: '/suite/recommender',
-    tooltip: 'Sugestões automáticas'
-  },
-  {
-    icon: Pencil,
-    label: 'Writer Assistant',
-    path: '/suite/writer',
-    tooltip: 'Criação de conteúdos'
-  },
-  {
-    icon: FileText,
-    label: 'Relatórios',
-    path: '/suite/reports',
-    tooltip: 'Histórico PDF / logs'
-  }
+// Define different sidebar items based on user role
+export const adminSidebarItems = [
+  { name: "Dashboard", path: "/dashboard", icon: <BarChart className="w-5 h-5" /> },
+  { name: "Clientes", path: "/dashboard/clients", icon: <Users className="w-5 h-5" /> },
+  { name: "Importação em Massa", path: "/dashboard/bulk-import", icon: <Upload className="w-5 h-5" /> },
+  { name: "Blog", path: "/dashboard/blog-posts", icon: <FileText className="w-5 h-5" /> },
+  { name: "Configurações", path: "/dashboard/settings", icon: <Settings className="w-5 h-5" /> },
+];
+
+export const clientSidebarItems = [
+  { name: "Dashboard", path: "/dashboard/client", icon: <BarChart className="w-5 h-5" /> },
+  { name: "Relatórios", path: "/dashboard/client/reports", icon: <FileText className="w-5 h-5" /> },
+  { name: "Configurações", path: "/dashboard/client/settings", icon: <Settings className="w-5 h-5" /> },
 ];
 
 const SidebarContent = () => {
-  const navigate = useNavigate();
   const location = useLocation();
+  const { state } = useSidebar();
+  const isCollapsed = state === "collapsed";
 
   return (
-    <SidebarGroupContent className="py-0.5">
-      <SidebarMenu className="space-y-0">
-        {sidebarItems.map((item) => (
-          <SidebarMenuItem key={item.path}>
-            <SidebarMenuButton
-              tooltip={item.tooltip}
-              isActive={location.pathname === item.path}
-              onClick={() => navigate(item.path)}
-              className="h-7 py-1"
-              size="sm"
+    <nav className="space-y-1">
+      {adminSidebarItems.map((item) => (
+        <Tooltip key={item.path}>
+          <TooltipTrigger asChild>
+            <Link 
+              to={item.path}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
+                "hover:bg-gray-100/70 hover:backdrop-blur-lg",
+                location.pathname === item.path 
+                  ? "bg-primary text-primary-foreground" 
+                  : "text-sidebar-foreground"
+              )}
             >
-              <item.icon className="w-3.5 h-3.5 mr-2" />
-              <span>{item.label}</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        ))}
-      </SidebarMenu>
-    </SidebarGroupContent>
+              {item.icon}
+              {!isCollapsed && <span>{item.name}</span>}
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent side="right">
+            {item.name}
+          </TooltipContent>
+        </Tooltip>
+      ))}
+    </nav>
   );
 };
 

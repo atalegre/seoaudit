@@ -50,7 +50,7 @@ const SuiteLayout = ({
   };
   
   return (
-    <SidebarProvider defaultOpen={false}>
+    <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full">
         <Sidebar variant="sidebar" collapsible="icon">
           <SidebarHeader className="flex items-center justify-center h-14 border-b py-2 px-2">
@@ -93,8 +93,8 @@ const SuiteLayout = ({
           </SidebarFooter>
         </Sidebar>
 
-        {/* Main content area - fixed for proper spacing */}
-        <main className="flex-1 flex flex-col">
+        {/* Main content area - with improved spacing */}
+        <main className="flex-1 flex flex-col ml-[var(--sidebar-width-icon)]">
           <header className="flex h-14 items-center border-b px-4 lg:px-6">
             <SidebarTrigger />
             <div className="flex flex-1 items-center justify-between">
