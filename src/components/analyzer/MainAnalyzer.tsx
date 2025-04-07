@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -50,8 +51,8 @@ const MainAnalyzer = () => {
           // For production - redirect to the suite subdomain
           window.location.href = `https://suite.seoaudit.pt/projeto/${projectId}?url=${encodeURIComponent(formattedUrl)}`;
         } else {
-          // For development - redirect to the local dashboard
-          window.location.href = `/dashboard/client?url=${encodeURIComponent(formattedUrl)}&projectId=${projectId}`;
+          // For development - redirect to the local suite
+          window.location.href = `/suite?url=${encodeURIComponent(formattedUrl)}&projectId=${projectId}`;
         }
       }, 1500); // Aguarda 1.5 segundos para simular análise inicial
       

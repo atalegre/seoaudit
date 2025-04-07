@@ -40,7 +40,7 @@ const Hero = () => {
       
       if (isDevelopment) {
         // Para ambiente de desenvolvimento
-        window.location.href = `/dashboard/client?url=${encodeURIComponent(formattedUrl)}&projectId=${projectId}`;
+        window.location.href = `/suite?url=${encodeURIComponent(formattedUrl)}&projectId=${projectId}`;
       } else {
         // Para produção - redireciona para o subdomínio suite
         window.location.href = `https://suite.seoaudit.pt/projeto/${projectId}?url=${encodeURIComponent(formattedUrl)}`;
