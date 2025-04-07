@@ -38,7 +38,6 @@ import CookieConsent from "./components/CookieConsent";
 import ScrollToTop from "./components/ScrollToTop";
 import SuiteDashboard from "./pages/suite/SuiteDashboard";
 import DashboardLayout from "./components/dashboard/DashboardLayout";
-import SuiteLayout from "./components/suite/SuiteLayout";
 import SeoAnalysisPage from "./pages/suite/SeoAnalysisPage";
 
 const queryClient = new QueryClient();
@@ -91,17 +90,15 @@ function App() {
                   <Route path="blog-posts" element={<BlogPostsPage />} />
                 </Route>
                 
-                <Route path="/suite" element={<SuiteLayout><Outlet /></SuiteLayout>}>
-                  <Route index element={<SuiteDashboard />} />
-                  <Route path="seo" element={<SeoAnalysisPage />} />
-                  <Route path="aio" element={<SuiteDashboard />} />
-                  <Route path="llm" element={<SuiteDashboard />} />
-                  <Route path="directories" element={<SuiteDashboard />} />
-                  <Route path="keywords" element={<SuiteDashboard />} />
-                  <Route path="recommender" element={<SuiteDashboard />} />
-                  <Route path="writer" element={<SuiteDashboard />} />
-                  <Route path="reports" element={<SuiteDashboard />} />
-                </Route>
+                <Route path="/suite" element={<SuiteDashboard />} />
+                <Route path="/suite/seo" element={<SeoAnalysisPage />} />
+                <Route path="/suite/aio" element={<SuiteDashboard />} />
+                <Route path="/suite/llm" element={<SuiteDashboard />} />
+                <Route path="/suite/directories" element={<SuiteDashboard />} />
+                <Route path="/suite/keywords" element={<SuiteDashboard />} />
+                <Route path="/suite/recommender" element={<SuiteDashboard />} />
+                <Route path="/suite/writer" element={<SuiteDashboard />} />
+                <Route path="/suite/reports" element={<SuiteDashboard />} />
                 
                 <Route path="/blog" element={<BlogPage />} />
                 <Route path="/blog/:slug" element={<BlogPostPage />} />
