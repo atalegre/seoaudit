@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { BarChart, Users, Settings, FileText, Upload } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useSidebar } from '@/components/ui/sidebar/context';
+import { useUser } from '@/contexts/UserContext';
 
 // Define different sidebar items based on user role
 export const adminSidebarItems = [
@@ -24,11 +25,15 @@ export const clientSidebarItems = [
 const SidebarContent = () => {
   const location = useLocation();
   const { state } = useSidebar();
+  const { user } = useUser();
   const isCollapsed = state === "collapsed";
+  
+  // Determine which items to show based on user role
+  const sidebarItems = user?.role === 'client' ? clientSidebarItems : adminSidebarItems;
 
   return (
     <nav className="space-y-1">
-      {adminSidebarItems.map((item) => (
+      {sidebarItems.map((item) => (
         <Tooltip key={item.path}>
           <TooltipTrigger asChild>
             <Link 
