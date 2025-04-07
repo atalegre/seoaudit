@@ -3,7 +3,6 @@ import React from 'react';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
-import { Sheet, SheetTrigger } from '@/components/ui/sheet';
 import RecommendationIcon from './RecommendationIcon';
 import ImpactBadge from './ImpactBadge';
 import PriorityBadge from './PriorityBadge';
@@ -48,19 +47,15 @@ const RecommendationRow: React.FC<RecommendationRowProps> = ({
         <PriorityBadge priority={recommendation.priority} />
       </TableCell>
       <TableCell>
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              className="h-8 w-8 p-0"
-              onClick={() => onSelectRecommendation(recommendation)}
-            >
-              <ArrowRight className="h-4 w-4" />
-              <span className="sr-only">Ver detalhes</span>
-            </Button>
-          </SheetTrigger>
-        </Sheet>
+        <Button 
+          variant="ghost" 
+          size="sm"
+          className="h-8 w-8 p-0"
+          onClick={() => onSelectRecommendation(recommendation)}
+        >
+          <ArrowRight className="h-4 w-4" />
+          <span className="sr-only">Ver detalhes</span>
+        </Button>
       </TableCell>
     </TableRow>
   );

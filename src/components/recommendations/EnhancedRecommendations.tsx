@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { CheckCircle } from 'lucide-react';
-import { SheetProvider } from '@/components/ui/sheet';
+import { Sheet } from '@/components/ui/sheet';
 import RecommendationTable from './RecommendationTable';
 import RecommendationDetail from './RecommendationDetail';
 import SupportCallout from './SupportCallout';
@@ -24,6 +24,12 @@ interface EnhancedRecommendationsProps {
 
 const EnhancedRecommendations: React.FC<EnhancedRecommendationsProps> = ({ recommendations }) => {
   const [selectedRecommendation, setSelectedRecommendation] = useState<RecommendationItem | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  
+  const handleSelectRecommendation = (recommendation: RecommendationItem) => {
+    setSelectedRecommendation(recommendation);
+    setSheetOpen(true);
+  };
   
   return (
     <Card id="recommendations">
@@ -41,13 +47,15 @@ const EnhancedRecommendations: React.FC<EnhancedRecommendationsProps> = ({ recom
         </div>
       </CardHeader>
       <CardContent>
-        <SheetProvider>
+        <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
           <RecommendationTable 
             recommendations={recommendations} 
-            onSelectRecommendation={setSelectedRecommendation} 
+            onSelectRecommendation={handleSelectRecommendation} 
           />
-          <RecommendationDetail recommendation={selectedRecommendation} />
-        </SheetProvider>
+          {selectedRecommendation && (
+            <RecommendationDetail recommendation={selectedRecommendation} />
+          )}
+        </Sheet>
         
         <SupportCallout />
       </CardContent>
