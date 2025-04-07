@@ -5,23 +5,15 @@ import { formatUrl } from '@/utils/resultsPageHelpers';
 import { AnalysisResult } from '@/utils/api/types';
 import ReanalyzeButton from './ReanalyzeButton';
 import PartialDataAlert from './PartialDataAlert';
-import ReportForm from '@/components/report/ReportForm';
-import { AnalysisTabs } from '@/components/AnalysisTabs';
 
-interface AnalysisContentProps {
-  analysisData: AnalysisResult;
-  seoError: string | null;
-  aioError: string | null;
-  onReanalyze: () => void;
-}
-
-const ResultsContent: React.FC<AnalysisContentProps> = ({
-  analysisData,
-  seoError,
-  aioError,
-  onReanalyze
+// Componente crítico - ultraotimizado
+const ResultsContent = ({ 
+  analysisData, 
+  seoError, 
+  aioError, 
+  onReanalyze 
 }) => {
-  const recommendationsRef = useRef<HTMLDivElement>(null);
+  const recommendationsRef = useRef(null);
   const hasSeoData = analysisData?.seo?.score > 0;
   const hasAioData = analysisData?.aio?.score > 0;
   const seoHasError = analysisData?.seo?.isError === true;
@@ -32,14 +24,14 @@ const ResultsContent: React.FC<AnalysisContentProps> = ({
   
   return (
     <>
-      {/* Conteúdo prioritário para LCP - sem animações */}
+      {/* Conteúdo prioritário para LCP - sem overhead */}
       <div className="lcp-critical">
         <ScoreDisplay
           seoScore={analysisData?.seo?.score || 0}
           aioScore={analysisData?.aio?.score || 0}
           performanceScore={analysisData?.seo?.performanceScore || 0}
           llmPresenceScore={0}
-          status={analysisData?.overallStatus as any || 'Crítico'}
+          status={analysisData?.overallStatus || 'Crítico'}
           url={formatUrl(analysisData?.url || '')}
           logoUrl={analysisData?.logoUrl}
           onScrollToRecommendations={scrollToRecommendations}
@@ -48,40 +40,20 @@ const ResultsContent: React.FC<AnalysisContentProps> = ({
       
       <ReanalyzeButton onReanalyze={onReanalyze} />
       
-      {/* Alerta de erro carregado após o conteúdo crítico */}
-      <div id="non-critical-alerts">
-        <PartialDataAlert 
-          seoError={seoError} 
-          aioError={aioError} 
-          seoHasError={seoHasError} 
-          seoErrorMessage={analysisData?.seo?.errorMessage}
-        />
-      </div>
-      
-      {/* Conteúdo não crítico - carregado depois */}
-      <div className="space-y-6 mt-8">
-        {(hasSeoData || hasAioData) && (
-          <AnalysisTabs 
-            data={analysisData} 
-            seoError={seoError}
-            aioError={aioError}
-          />
-        )}
-        
-        <div className="bg-white p-6 rounded-lg border shadow-sm">
-          <h2 className="text-xl font-semibold mb-4">Relatório Completo</h2>
-          <p className="text-gray-600 mb-6">
-            Para aceder ao relatório completo com análises detalhadas, recomendações personalizadas
-            e insights sobre SEO e otimização de conteúdo, registe-se na nossa plataforma.
-          </p>
-          
-          <ReportForm 
-            url={analysisData?.url || ''} 
-            seoScore={analysisData?.seo?.score || 0}
-            aioScore={analysisData?.aio?.score || 0}
+      {/* Alerta de erro - carregamento secundário */}
+      {(seoError || aioError || seoHasError) && (
+        <div id="non-critical-alerts" className="mt-4">
+          <PartialDataAlert 
+            seoError={seoError} 
+            aioError={aioError} 
+            seoHasError={seoHasError} 
+            seoErrorMessage={analysisData?.seo?.errorMessage}
           />
         </div>
-      </div>
+      )}
+      
+      {/* Lazy load do restante do conteúdo */}
+      <div id="deferred-content"></div>
     </>
   );
 };

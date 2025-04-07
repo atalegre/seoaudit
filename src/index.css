@@ -3,53 +3,39 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Estilos críticos aplicados com alta prioridade */
+/* Estilos críticos aplicados com máxima prioridade */
 @layer base {
   :root {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
     --primary: 222.2 47.4% 11.2%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --ring: 222.2 84% 4.9%;
-    --radius: 0.5rem;
-  }
-
-  * {
-    @apply border-border;
-  }
-
-  html {
-    -webkit-text-size-adjust: 100%;
-    font-synthesis: none;
   }
 
   body {
-    @apply bg-background text-foreground;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    text-rendering: optimizeSpeed;
   }
   
-  /* Reservar espaço para conteúdo crítico */
-  main {
-    min-height: 50vh;
+  /* Reservar espaço para LCP */
+  h1 {
+    font-size: 2rem;
+    line-height: 1.2;
+    font-weight: 700;
+    margin: 0 0 1rem;
   }
   
-  /* Otimização de imagens */
-  img {
-    height: auto;
-    max-width: 100%;
-    display: block;
+  /* Input de pesquisa crítico para LCP */
+  input, button {
+    font-family: inherit;
   }
 }
 
-/* Removidas animações fade-in para melhorar LCP */
+/* Todos os demais estilos carregados posteriormente */
 .radix-navigation-menu {
   z-index: 1000;
 }
@@ -57,3 +43,5 @@
 [data-radix-popper-content-wrapper] {
   z-index: 9999; 
 }
+
+/* Demais estilos não-críticos serão aplicados após renderização inicial */

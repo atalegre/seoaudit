@@ -14,7 +14,7 @@ interface LazyOptimizedImageProps {
   onLoad?: () => void;
 }
 
-// Implementação extremamente simplificada para LCP
+// Implementação extremamente otimizada para LCP
 const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
   src,
   alt,
@@ -26,27 +26,41 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
   fetchPriority = 'auto',
   onLoad,
 }) => {
-  return (
-    <div 
-      className={`relative ${className}`}
-      style={{
-        backgroundColor: placeholderColor,
-        width: width ? `${width}px` : '100%',
-        height: height ? `${height}px` : 'auto',
-      }}
-    >
+  // Para imagens prioritárias, renderização simples e direta sem lazy loading
+  if (priority) {
+    return (
       <img
         src={src}
         alt={alt}
         width={width}
         height={height}
-        loading={priority ? "eager" : "lazy"}
         onLoad={onLoad}
-        fetchPriority={priority ? "high" : fetchPriority}
-        decoding="async"
-        className="w-full h-full object-cover"
+        fetchPriority="high"
+        decoding="sync"
+        className={`w-full h-full object-cover ${className}`}
+        style={{
+          backgroundColor: placeholderColor,
+        }}
       />
-    </div>
+    );
+  }
+
+  // Para imagens não-prioritárias, usar loading="lazy" e nativo
+  return (
+    <img
+      src={src}
+      alt={alt}
+      width={width}
+      height={height}
+      loading="lazy"
+      onLoad={onLoad}
+      fetchPriority={fetchPriority}
+      decoding="async"
+      className={`w-full h-full object-cover ${className}`}
+      style={{
+        backgroundColor: placeholderColor,
+      }}
+    />
   );
 };
 
