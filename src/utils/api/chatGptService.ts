@@ -1,5 +1,5 @@
 
-import { AnalysisResult, AioAnalysisResult } from './types';
+import { AioAnalysisResult } from './types';
 
 // Using a template URL that can be overridden by environment variables
 const EDGE_FUNCTION_URL = import.meta.env.VITE_SUPABASE_EDGE_URL || 'https://vwtracpgzdqrowvjmizi.supabase.co';

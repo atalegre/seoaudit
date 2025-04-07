@@ -4,6 +4,8 @@ import ScoreDisplay from '@/components/ScoreDisplay';
 import { formatUrl } from '@/utils/resultsPageHelpers';
 import ReanalyzeButton from './ReanalyzeButton';
 import PartialDataAlert from './PartialDataAlert';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { AlertTriangle } from 'lucide-react';
 
 const ResultsContent = ({ 
   analysisData, 
@@ -20,21 +22,38 @@ const ResultsContent = ({
     recommendationsRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
   
+  // Verificar se temos dados válidos para exibir
+  const hasValidData = hasSeoData || hasAioData;
+  
   return (
     <>
+      {/* Mensagem para quando não temos dados válidos */}
+      {!hasValidData && !isLoading && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Dados não disponíveis</AlertTitle>
+          <AlertDescription>
+            Não foi possível obter dados reais para esta análise. 
+            Por favor, tente novamente ou verifique se as APIs estão configuradas corretamente.
+          </AlertDescription>
+        </Alert>
+      )}
+      
       {/* Critical LCP content - optimized for performance */}
-      <div className="lcp-critical">
-        <ScoreDisplay
-          seoScore={analysisData?.seo?.score || 0}
-          aioScore={analysisData?.aio?.score || 0}
-          performanceScore={analysisData?.seo?.performanceScore || 0}
-          llmPresenceScore={0}
-          status={analysisData?.overallStatus || 'Crítico'}
-          url={formatUrl(analysisData?.url || '')}
-          logoUrl={analysisData?.logoUrl}
-          onScrollToRecommendations={scrollToRecommendations}
-        />
-      </div>
+      {hasValidData && (
+        <div className="lcp-critical">
+          <ScoreDisplay
+            seoScore={analysisData?.seo?.score || 0}
+            aioScore={analysisData?.aio?.score || 0}
+            performanceScore={analysisData?.seo?.performanceScore || 0}
+            llmPresenceScore={0}
+            status={analysisData?.overallStatus || 'Crítico'}
+            url={formatUrl(analysisData?.url || '')}
+            logoUrl={analysisData?.logoUrl}
+            onScrollToRecommendations={scrollToRecommendations}
+          />
+        </div>
+      )}
       
       <ReanalyzeButton onReanalyze={onReanalyze} />
       

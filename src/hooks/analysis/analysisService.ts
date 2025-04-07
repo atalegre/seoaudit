@@ -74,6 +74,11 @@ export async function performAnalysis(
     finalResults.logoUrl = logoUrl;
   }
   
+  // Se não temos dados de nenhuma das APIs, lançar erro
+  if (!seoData && !aioData) {
+    throw new Error('Não foi possível obter dados reais de nenhuma API. Verifique sua conexão e tente novamente.');
+  }
+  
   return finalResults;
 }
 

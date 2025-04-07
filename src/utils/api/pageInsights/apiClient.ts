@@ -2,10 +2,9 @@
 import type { PageInsightsData } from './types';
 import { processPageInsightsData } from './apiProcessor';
 import { createTimedRequest, handleCorsRequest } from './corsHandlers';
-import { generateMockPageInsightsData } from './mockData';
 
-// Flag para uso de dados simulados quando a API falha
-const USE_MOCK_DATA_ON_FAILURE = true;
+// Desativar o uso de dados simulados
+const USE_MOCK_DATA_ON_FAILURE = false;
 
 /**
  * Cache helper para armazenar resultados por URL com TTL
@@ -58,7 +57,11 @@ export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mo
     
     // Use fetch API with optimized settings
     try {
-      const apiKey = 'AIzaSyDummyKeyForTest'; // This would normally come from your settings
+      const apiKey = import.meta.env.VITE_PAGESPEED_API_KEY || ''; // Usar chave API real
+      if (!apiKey) {
+        throw new Error('Chave API PageSpeed não configurada. Configure a variável de ambiente VITE_PAGESPEED_API_KEY');
+      }
+      
       const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&strategy=${strategy}&category=performance&category=accessibility&category=best-practices&category=seo`;
       
       // Usar fetch com timeout otimizado
@@ -117,32 +120,11 @@ export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mo
         console.warn('CORS proxy failed:', corsError);
       }
       
-      // Se chegou aqui e a flag estiver ativada, retornar dados simulados
-      if (USE_MOCK_DATA_ON_FAILURE) {
-        console.log('Using mock data due to API failure');
-        const mockData = generateMockPageInsightsData(url);
-        
-        // Armazenar os dados simulados em cache também
-        apiCache.set(cacheKey, {
-          data: mockData,
-          timestamp: Date.now()
-        });
-        
-        return mockData;
-      }
-      
-      // Se chegou aqui, não conseguiu obter dados reais
-      throw new Error('Falha ao obter dados reais da API Google PageSpeed Insights');
+      // Não usar dados simulados, apenas propagar o erro
+      throw new Error('Falha ao obter dados reais da API Google PageSpeed Insights. ' + directApiError.message);
     }
   } catch (error) {
     console.error('Error in getPageInsightsData:', error);
-    
-    // Se a flag estiver ativada, retornar dados simulados em último caso
-    if (USE_MOCK_DATA_ON_FAILURE) {
-      console.log('Using mock data as last resort');
-      return generateMockPageInsightsData(url);
-    }
-    
     throw error; // Propaga o erro para ser tratado pelo componente
   }
 }

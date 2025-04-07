@@ -50,7 +50,6 @@ export async function requestOpenAiAnalysis(url: string, content: string, reques
           content: userPrompt
         }
       ]
-      // Removed web_search_options that were previously here
     })
   });
   
