@@ -24,10 +24,17 @@ export async function getAllUsers(): Promise<User[]> {
     if (error) throw error;
     
     // Ensure the role is properly typed
-    return (data || []).map(user => ({
-      ...user,
-      role: user.role as 'admin' | 'editor' | 'user'
-    }));
+    return (data || []).map(user => {
+      // Check if user is an error object
+      if (!user || typeof user !== 'object' || 'error' in user) {
+        return {} as User; // Return empty user on error
+      }
+      
+      return {
+        ...user,
+        role: user.role as 'admin' | 'editor' | 'user'
+      };
+    });
   } catch (error) {
     console.error('Erro ao buscar usuários:', error);
     return [];
@@ -42,10 +49,15 @@ export async function getUserById(userId: string): Promise<User | null> {
     const { data, error } = await supabase
       .from('users')
       .select('*')
-      .eq('id', userId)
+      .eq('id', userId as any)
       .single();
     
     if (error) throw error;
+    
+    // Check if data is an error object
+    if (!data || typeof data !== 'object' || 'error' in data) {
+      return null; // Return null on error
+    }
     
     // Ensure the role is properly typed
     return data ? {
@@ -75,10 +87,14 @@ export async function createUser(userData: {
     
     const { data, error } = await supabase
       .from('users')
-      .insert([userData])
+      .insert([userData] as any)
       .select();
     
     if (error) throw error;
+    
+    if (!data || !data[0] || typeof data[0] !== 'object' || 'error' in data[0]) {
+      return null; // Return null on error
+    }
     
     // Ensure the role is properly typed
     return data?.[0] ? {
@@ -103,11 +119,15 @@ export async function updateUser(userId: string, userData: { name?: string, emai
     
     const { data, error } = await supabase
       .from('users')
-      .update(userData)
-      .eq('id', userId)
+      .update(userData as any)
+      .eq('id', userId as any)
       .select();
     
     if (error) throw error;
+    
+    if (!data || !data[0] || typeof data[0] !== 'object' || 'error' in data[0]) {
+      return null; // Return null on error
+    }
     
     // Ensure the role is properly typed
     return data?.[0] ? {
@@ -128,7 +148,7 @@ export async function deleteUser(userId: string): Promise<boolean> {
     const { error } = await supabase
       .from('users')
       .delete()
-      .eq('id', userId);
+      .eq('id', userId as any);
     
     if (error) throw error;
     return true;

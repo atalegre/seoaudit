@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { BlogPost } from '@/types/blog';
 import { TablesInsert } from '@/integrations/supabase/types';
@@ -50,7 +51,7 @@ export const createBlogPost = async (post: BlogPost): Promise<BlogPost | null> =
 
     const { data, error } = await supabase
       .from('blog_posts')
-      .insert([formattedPost])
+      .insert([formattedPost] as any)
       .select()
       .single();
 
@@ -59,7 +60,7 @@ export const createBlogPost = async (post: BlogPost): Promise<BlogPost | null> =
       throw error;
     }
 
-    return data as BlogPost;
+    return data as unknown as BlogPost;
   } catch (error) {
     console.error('Error in createBlogPost:', error);
     return null;
@@ -85,8 +86,8 @@ export const updateBlogPost = async (id: string, post: BlogPost): Promise<BlogPo
 
     const { data, error } = await supabase
       .from('blog_posts')
-      .update(formattedPost)
-      .eq('id', id)
+      .update(formattedPost as any)
+      .eq('id', id as any)
       .select()
       .single();
 
@@ -95,7 +96,7 @@ export const updateBlogPost = async (id: string, post: BlogPost): Promise<BlogPo
       throw error;
     }
 
-    return data as BlogPost;
+    return data as unknown as BlogPost;
   } catch (error) {
     console.error('Error in updateBlogPost:', error);
     return null;
@@ -108,7 +109,7 @@ export const deleteBlogPost = async (id: string): Promise<boolean> => {
     const { error } = await supabase
       .from('blog_posts')
       .delete()
-      .eq('id', id);
+      .eq('id', id as any);
 
     if (error) {
       console.error('Error deleting blog post:', error);
@@ -135,7 +136,7 @@ export const getBlogPosts = async (): Promise<BlogPost[]> => {
       throw error;
     }
 
-    return data as BlogPost[];
+    return data as unknown as BlogPost[];
   } catch (error) {
     console.error('Error in getBlogPosts:', error);
     return [];
@@ -148,7 +149,7 @@ export const getBlogPostBySlug = async (slug: string): Promise<BlogPost | null> 
     const { data, error } = await supabase
       .from('blog_posts')
       .select('*')
-      .eq('slug', slug)
+      .eq('slug', slug as any)
       .single();
 
     if (error) {
@@ -156,7 +157,7 @@ export const getBlogPostBySlug = async (slug: string): Promise<BlogPost | null> 
       throw error;
     }
 
-    return data as BlogPost;
+    return data as unknown as BlogPost;
   } catch (error) {
     console.error('Error in getBlogPostBySlug:', error);
     return null;
@@ -251,7 +252,7 @@ export const createOptimizedBlogPosts = async (): Promise<boolean> => {
       // Insert each post individually
       const { error } = await supabase
         .from('blog_posts')
-        .insert(formattedPost);
+        .insert(formattedPost as any);
         
       if (error) {
         console.error('Error creating optimized blog post:', error);

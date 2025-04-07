@@ -1,5 +1,6 @@
+
 import { supabase } from '@/integrations/supabase/client';
-import { UserRole } from './types';
+import { UserRole, UserProfile } from './types';
 
 /**
  * Checks and returns the role of a user
@@ -19,7 +20,7 @@ export async function checkUserRole(userId: string): Promise<UserRole> {
             email: 'atalegre@me.com',
             role: 'admin'
           }
-        ], { onConflict: 'id' });
+        ] as any, { onConflict: 'id' });
       
       return 'admin';
     }
@@ -28,7 +29,7 @@ export async function checkUserRole(userId: string): Promise<UserRole> {
     const { data, error } = await supabase
       .from('users')
       .select('role')
-      .eq('id', userId)
+      .eq('id', userId as any)
       .maybeSingle();
     
     if (error) {
@@ -36,7 +37,7 @@ export async function checkUserRole(userId: string): Promise<UserRole> {
       throw error;
     }
     
-    return (data?.role as UserRole) || 'user';
+    return ((data && 'role' in data) ? data.role as UserRole : 'user');
   } catch (error) {
     console.error('Error checking user role:', error);
     return 'user'; // Default to user role if there's an error
@@ -67,7 +68,7 @@ export async function ensureUserInDb(
         email: email,
         role: role,
         updated_at: new Date().toISOString()
-      }, { onConflict: 'id' });
+      } as any, { onConflict: 'id' });
     
     if (error) {
       console.error("Error ensuring user in database:", error);
@@ -89,7 +90,7 @@ export async function getUserProfile(userId: string) {
     const { data, error } = await supabase
       .from('users')
       .select('*')
-      .eq('id', userId)
+      .eq('id', userId as any)
       .maybeSingle();
       
     if (error) {

@@ -54,14 +54,16 @@ export function useSignIn(setAuthError: (error: string | null) => void) {
           // If not in metadata, check database
           if (role !== 'admin') {
             try {
-              const { data: userData } = await supabase
+              const { data: userData, error: userError } = await supabase
                 .from('users')
                 .select('role')
                 .eq('id', data.user.id)
                 .maybeSingle();
               
-              if (userData?.role === 'admin') {
-                role = 'admin';
+              if (!userError && userData && 'role' in userData) {
+                if (userData.role === 'admin') {
+                  role = 'admin';
+                }
               }
             } catch (err) {
               console.error("Error checking user role:", err);

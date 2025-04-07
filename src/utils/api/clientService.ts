@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Client } from './types';
 import { toast } from 'sonner';
@@ -27,20 +28,27 @@ export async function getClientsFromDatabase(): Promise<Client[]> {
     
     console.log('Fetched clients:', data);
     // Transform the data to ensure all properties match Client type
-    const clients: Client[] = (data || []).map(client => ({
-      id: Number(client.id),
-      name: client.name || '',
-      website: client.website || '',
-      contactName: client.contactname || '', // Note the lowercase field name from DB
-      contactEmail: client.contactemail || '', // Note the lowercase field name from DB
-      notes: client.notes || '',
-      status: client.status || 'pending',
-      account: client.account || 'Admin',
-      seoScore: client.seoscore || 0, // Note the lowercase field name from DB
-      aioScore: client.aioscore || 0, // Note the lowercase field name from DB
-      lastAnalysis: client.lastanalysis || new Date().toISOString(), // Note the lowercase field name from DB
-      lastReport: client.lastreport || '' // Note the lowercase field name from DB
-    }));
+    const clients: Client[] = (data || []).map(client => {
+      // Check if client is an error object first
+      if (!client || typeof client !== 'object' || 'error' in client) {
+        return {} as Client; // Return empty client on error
+      }
+      
+      return {
+        id: Number(client.id),
+        name: client.name || '',
+        website: client.website || '',
+        contactName: client.contactname || '', // Note the lowercase field name from DB
+        contactEmail: client.contactemail || '', // Note the lowercase field name from DB
+        notes: client.notes || '',
+        status: client.status || 'pending',
+        account: client.account || 'Admin',
+        seoScore: client.seoscore || 0, // Note the lowercase field name from DB
+        aioScore: client.aioscore || 0, // Note the lowercase field name from DB
+        lastAnalysis: client.lastanalysis || new Date().toISOString(), // Note the lowercase field name from DB
+        lastReport: client.lastreport || '' // Note the lowercase field name from DB
+      };
+    });
     
     return clients;
   } catch (error) {
@@ -85,7 +93,7 @@ export async function saveClientsToDatabase(clients: Client[]): Promise<{success
     // @ts-ignore - This is necessary because the auto-generated types don't include the clients table yet
     const { data, error } = await supabase
       .from('clients')
-      .upsert(clientsToSave, { 
+      .upsert(clientsToSave as any, { 
         onConflict: 'id',
         ignoreDuplicates: false 
       });
@@ -151,8 +159,8 @@ export async function updateClientInDatabase(client: Client): Promise<void> {
     // @ts-ignore - This is necessary because the auto-generated types don't include the clients table yet
     const { error } = await supabase
       .from('clients')
-      .update(clientToUpdate)
-      .eq('id', client.id);
+      .update(clientToUpdate as any)
+      .eq('id', client.id as any);
     
     if (error) {
       throw error;
@@ -182,7 +190,7 @@ export async function getClientFromDatabase(clientId: number): Promise<Client | 
     const { data, error } = await supabase
       .from('clients')
       .select('*')
-      .eq('id', clientId)
+      .eq('id', clientId as any)
       .single();
     
     if (error) {
@@ -196,6 +204,11 @@ export async function getClientFromDatabase(clientId: number): Promise<Client | 
     }
     
     console.log('Fetched client:', data);
+    
+    // Check if data is an error object
+    if ('error' in data) {
+      return null;
+    }
     
     // Transform the data to ensure all properties match Client type
     const client: Client = {

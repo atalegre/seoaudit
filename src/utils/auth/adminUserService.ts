@@ -20,18 +20,18 @@ export async function createOrUpdateAdmin() {
       const { data: existingAdmin } = await supabase
         .from('users')
         .select('*')
-        .eq('email', ADMIN_EMAIL)
+        .eq('email', ADMIN_EMAIL as any)
         .maybeSingle();
       
-      if (existingAdmin) {
+      if (existingAdmin && typeof existingAdmin === 'object' && !('error' in existingAdmin)) {
         console.log("Admin found in users table:", existingAdmin);
         
         // If admin exists but doesn't have admin role, update it
         if (existingAdmin.role !== 'admin') {
           await supabase
             .from('users')
-            .update({ role: 'admin' })
-            .eq('email', ADMIN_EMAIL);
+            .update({ role: 'admin' } as any)
+            .eq('email', ADMIN_EMAIL as any);
           console.log("Updated admin role in users table");
         }
       }
@@ -86,12 +86,11 @@ export async function createOrUpdateAdmin() {
       const { error } = await supabase
         .from('users')
         .upsert({
-          id: null, // Let the database generate an ID if needed
-          name: 'Admin User',
           email: ADMIN_EMAIL,
+          name: 'Admin User',
           role: 'admin',
           updated_at: new Date().toISOString()
-        }, { onConflict: 'email' });
+        } as any, { onConflict: 'email' });
       
       if (error) {
         console.error("Error upserting admin in users table:", error);

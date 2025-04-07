@@ -30,7 +30,9 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     async function loadUserProfile(userId: string) {
       try {
         const profile = await getUserProfile(userId);
-        if (profile) {
+        
+        // Check if profile is an error or valid profile data
+        if (profile && !('error' in profile)) {
           setUserProfile(profile as UserProfile);
           setRole(profile.role);
         } else {

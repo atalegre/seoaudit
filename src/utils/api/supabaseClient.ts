@@ -9,7 +9,7 @@ export async function getClientAnalysisHistory(clientId: number): Promise<any[]>
     const { data, error } = await supabase
       .from('analysis_results')
       .select('*')
-      .eq('client_id', clientId.toString()) // Convert to string as the API expects
+      .eq('client_id', clientId.toString() as any) // Convert to string as the API expects
       .order('created_at', { ascending: false });
     
     if (error) throw error;
@@ -38,7 +38,7 @@ export async function storeApiKey(
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('id')
-      .eq('email', userEmail)
+      .eq('email', userEmail as any)
       .single();
     
     if (userError) {
@@ -46,7 +46,11 @@ export async function storeApiKey(
       throw new Error('User not found');
     }
     
-    const userId = userData.id;
+    const userId = userData && 'id' in userData ? userData.id : null;
+    
+    if (!userId) {
+      throw new Error('User ID not found');
+    }
     
     // Now insert/update the API key with user_id
     const { error } = await supabase
@@ -56,7 +60,7 @@ export async function storeApiKey(
         key_type: 'google',
         key_value: apiKey || '', // Empty string for null values
         updated_at: new Date().toISOString()
-      }, {
+      } as any, {
         onConflict: 'user_id,key_type'
       });
     
@@ -80,7 +84,7 @@ export async function getApiKey(userEmail: string): Promise<any | null> {
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('id')
-      .eq('email', userEmail)
+      .eq('email', userEmail as any)
       .single();
     
     if (userError) {
@@ -91,14 +95,18 @@ export async function getApiKey(userEmail: string): Promise<any | null> {
       throw userError;
     }
     
-    const userId = userData.id;
+    const userId = userData && 'id' in userData ? userData.id : null;
+    
+    if (!userId) {
+      return null;
+    }
     
     // Now get the API key with user_id
     const { data, error } = await supabase
       .from('api_keys')
       .select('key_value')
-      .eq('user_id', userId)
-      .eq('key_type', 'google')
+      .eq('user_id', userId as any)
+      .eq('key_type', 'google' as any)
       .single();
     
     if (error) {
@@ -107,6 +115,10 @@ export async function getApiKey(userEmail: string): Promise<any | null> {
         return null;
       }
       throw error;
+    }
+    
+    if (!data || !('key_value' in data)) {
+      return null;
     }
     
     return {
@@ -141,7 +153,7 @@ export async function saveAnalysisResult(
         aio_score: aio?.score || 0,
         overall_status: 'completed',
         created_at: new Date().toISOString()
-      });
+      } as any);
     
     if (error) throw error;
   } catch (error) {

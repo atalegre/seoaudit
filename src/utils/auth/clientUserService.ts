@@ -47,7 +47,7 @@ export async function createOrUpdateClient() {
       const { data: existingClientInTable } = await supabase
         .from('users')
         .select('*')
-        .eq('email', CLIENT_EMAIL)
+        .eq('email', CLIENT_EMAIL as any)
         .maybeSingle();
       
       if (!existingClientInTable) {
@@ -58,7 +58,7 @@ export async function createOrUpdateClient() {
             email: CLIENT_EMAIL,
             role: 'user'
           }
-        ]);
+        ] as any);
         console.log("Created client user in users table");
       } else {
         console.log("Client record already exists in users table");
