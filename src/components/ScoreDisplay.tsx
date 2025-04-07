@@ -92,7 +92,7 @@ const ScoreDisplay = (props: ScoreDisplayProps) => {
                 alt={`Logo de ${url}`} 
                 className="w-10 h-10 object-contain rounded-md" 
                 loading="eager" 
-                fetchpriority="high"
+                fetchPriority="high"
               />
             ) : (
               <Globe className="w-8 h-8 text-primary" aria-hidden="true" />
