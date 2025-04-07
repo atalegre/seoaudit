@@ -20,7 +20,7 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     autoRefreshToken: true,
     detectSessionInUrl: true,
     flowType: 'pkce',
-    // Set this correctly in the auth config object
-    redirect_to: redirectUrl
+    // redirectTo is the correct property name - fixed from redirect_to
+    redirectTo: redirectUrl
   }
 });

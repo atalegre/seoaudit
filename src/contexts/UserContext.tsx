@@ -32,9 +32,11 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const profile = await getUserProfile(userId);
         
         // Check if profile is an error or valid profile data
-        if (profile && !('error' in profile)) {
+        if (profile && typeof profile === 'object' && !('error' in profile)) {
           setUserProfile(profile as UserProfile);
-          setRole(profile.role);
+          // Type assertion here to ensure role exists
+          const profileRole = (profile as UserProfile).role;
+          setRole(profileRole);
         } else {
           // If no profile exists yet but we have a user, default to user role
           // unless it's the admin email

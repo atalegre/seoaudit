@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Client } from './types';
 import { toast } from 'sonner';
@@ -35,18 +34,18 @@ export async function getClientsFromDatabase(): Promise<Client[]> {
       }
       
       return {
-        id: Number(client.id),
-        name: client.name || '',
-        website: client.website || '',
-        contactName: client.contactname || '', // Note the lowercase field name from DB
-        contactEmail: client.contactemail || '', // Note the lowercase field name from DB
-        notes: client.notes || '',
-        status: client.status || 'pending',
-        account: client.account || 'Admin',
-        seoScore: client.seoscore || 0, // Note the lowercase field name from DB
-        aioScore: client.aioscore || 0, // Note the lowercase field name from DB
-        lastAnalysis: client.lastanalysis || new Date().toISOString(), // Note the lowercase field name from DB
-        lastReport: client.lastreport || '' // Note the lowercase field name from DB
+        id: Number(client?.id || 0),
+        name: client?.name || '',
+        website: client?.website || '',
+        contactName: client?.contactname || '', // Note the lowercase field name from DB
+        contactEmail: client?.contactemail || '', // Note the lowercase field name from DB
+        notes: client?.notes || '',
+        status: client?.status || 'pending',
+        account: client?.account || 'Admin',
+        seoScore: client?.seoscore || 0, // Note the lowercase field name from DB
+        aioScore: client?.aioscore || 0, // Note the lowercase field name from DB
+        lastAnalysis: client?.lastanalysis || new Date().toISOString(), // Note the lowercase field name from DB
+        lastReport: client?.lastreport || '' // Note the lowercase field name from DB
       };
     });
     
@@ -191,7 +190,7 @@ export async function getClientFromDatabase(clientId: number): Promise<Client | 
       .from('clients')
       .select('*')
       .eq('id', clientId as any)
-      .single();
+      .maybeSingle();
     
     if (error) {
       console.error('Error fetching client from Supabase:', error);
@@ -212,18 +211,18 @@ export async function getClientFromDatabase(clientId: number): Promise<Client | 
     
     // Transform the data to ensure all properties match Client type
     const client: Client = {
-      id: Number(data.id),
-      name: data.name || '',
-      website: data.website || '',
-      contactName: data.contactname || '', // Note the lowercase field name from DB
-      contactEmail: data.contactemail || '', // Note the lowercase field name from DB
-      notes: data.notes || '',
-      status: data.status || 'pending',
-      account: data.account || 'Admin',
-      seoScore: data.seoscore || 0, // Note the lowercase field name from DB
-      aioScore: data.aioscore || 0, // Note the lowercase field name from DB
-      lastAnalysis: data.lastanalysis || new Date().toISOString(), // Note the lowercase field name from DB
-      lastReport: data.lastreport || '' // Note the lowercase field name from DB
+      id: Number(data?.id || 0),
+      name: data?.name || '',
+      website: data?.website || '',
+      contactName: data?.contactname || '', // Note the lowercase field name from DB
+      contactEmail: data?.contactemail || '', // Note the lowercase field name from DB
+      notes: data?.notes || '',
+      status: data?.status || 'pending',
+      account: data?.account || 'Admin',
+      seoScore: data?.seoscore || 0, // Note the lowercase field name from DB
+      aioScore: data?.aioscore || 0, // Note the lowercase field name from DB
+      lastAnalysis: data?.lastanalysis || new Date().toISOString(), // Note the lowercase field name from DB
+      lastReport: data?.lastreport || '' // Note the lowercase field name from DB
     };
     
     return client;

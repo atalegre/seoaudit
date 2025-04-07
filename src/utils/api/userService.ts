@@ -30,9 +30,12 @@ export async function getAllUsers(): Promise<User[]> {
         return {} as User; // Return empty user on error
       }
       
+      // Use safe property access with optional chaining
       return {
-        ...user,
-        role: user.role as 'admin' | 'editor' | 'user'
+        id: user?.id || '',
+        name: user?.name || '',
+        email: user?.email || '',
+        role: (user?.role as 'admin' | 'editor' | 'user') || 'user'
       };
     });
   } catch (error) {
@@ -59,10 +62,12 @@ export async function getUserById(userId: string): Promise<User | null> {
       return null; // Return null on error
     }
     
-    // Ensure the role is properly typed
+    // Ensure the role is properly typed using safe property access
     return data ? {
-      ...data,
-      role: data.role as 'admin' | 'editor' | 'user'
+      id: data?.id || '',
+      name: data?.name || '',
+      email: data?.email || '',
+      role: (data?.role as 'admin' | 'editor' | 'user') || 'user'
     } : null;
   } catch (error) {
     console.error('Erro ao buscar detalhes do usuário:', error);
@@ -96,10 +101,12 @@ export async function createUser(userData: {
       return null; // Return null on error
     }
     
-    // Ensure the role is properly typed
+    // Ensure the role is properly typed with safe property access
     return data?.[0] ? {
-      ...data[0],
-      role: data[0].role as 'admin' | 'editor' | 'user'
+      id: data[0]?.id || '',
+      name: data[0]?.name || '',
+      email: data[0]?.email || '',
+      role: (data[0]?.role as 'admin' | 'editor' | 'user') || 'user'
     } : null;
   } catch (error) {
     console.error('Erro ao criar usuário:', error);
@@ -129,10 +136,12 @@ export async function updateUser(userId: string, userData: { name?: string, emai
       return null; // Return null on error
     }
     
-    // Ensure the role is properly typed
+    // Ensure the role is properly typed with safe property access
     return data?.[0] ? {
-      ...data[0],
-      role: data[0].role as 'admin' | 'editor' | 'user'
+      id: data[0]?.id || '',
+      name: data[0]?.name || '',
+      email: data[0]?.email || '',
+      role: (data[0]?.role as 'admin' | 'editor' | 'user') || 'user'
     } : null;
   } catch (error) {
     console.error('Erro ao atualizar usuário:', error);

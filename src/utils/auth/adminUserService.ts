@@ -27,7 +27,7 @@ export async function createOrUpdateAdmin() {
         console.log("Admin found in users table:", existingAdmin);
         
         // If admin exists but doesn't have admin role, update it
-        if (existingAdmin.role !== 'admin') {
+        if (existingAdmin?.role !== 'admin') {
           await supabase
             .from('users')
             .update({ role: 'admin' } as any)
