@@ -25,6 +25,19 @@ export function createTimedRequest(url: string, timeout: number = 30000) {
 }
 
 /**
+ * Returns headers required for Google API authentication
+ * @param authToken Google OAuth token
+ * @returns Headers object with authorization
+ */
+export function getGoogleApiHeaders(authToken: string) {
+  return {
+    'Authorization': `Bearer ${authToken}`,
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  };
+}
+
+/**
  * Alternative approach to handle CORS issues via a proxy
  * @param url The URL to analyze
  * @param strategy Device strategy - 'desktop' or 'mobile'
