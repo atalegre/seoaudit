@@ -115,7 +115,18 @@
     @apply text-sm text-gray-500;
   }
   
-  /* Hide sidebar labels when collapsed */
+  /* Sidebar hover styles */
+  .hidden.group-hover\:inline {
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+  }
+  
+  .group:hover .hidden.group-hover\:inline {
+    opacity: 1;
+    display: inline;
+  }
+  
+  /* Keep existing sidebar label styles */
   .sidebar-label {
     @apply transition-opacity duration-200;
   }

@@ -2,16 +2,13 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from "@/lib/utils";
-import { BarChart, Users, Settings, FileText, Upload, LineChart, Globe, Bot, MapPin, Search, Pen } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { useSidebar } from '@/components/ui/sidebar/context';
+import { BarChart, LineChart, Bot, MapPin, Search, Pen, FileText, Settings, Globe } from "lucide-react";
 import { useUser } from '@/contexts/UserContext';
 
 // Define different sidebar items based on user role
 export const adminSidebarItems = [
   { name: "Dashboard", path: "/dashboard", icon: <BarChart className="w-5 h-5" /> },
-  { name: "Clientes", path: "/dashboard/clients", icon: <Users className="w-5 h-5" /> },
-  { name: "Importação em Massa", path: "/dashboard/bulk-import", icon: <Upload className="w-5 h-5" /> },
+  { name: "Clientes", path: "/dashboard/clients", icon: <Globe className="w-5 h-5" /> },
   { name: "Blog", path: "/dashboard/blog-posts", icon: <FileText className="w-5 h-5" /> },
   { name: "Configurações", path: "/dashboard/settings", icon: <Settings className="w-5 h-5" /> },
 ];
@@ -37,7 +34,6 @@ export const suiteSidebarItems = [
 
 const SidebarContent = () => {
   const location = useLocation();
-  const { state } = useSidebar();
   const { user } = useUser();
   
   // Determine which items to show based on the current path
@@ -58,30 +54,21 @@ const SidebarContent = () => {
   }
 
   return (
-    <nav className="space-y-1">
+    <>
       {sidebarItems.map((item) => (
-        <Tooltip key={item.path}>
-          <TooltipTrigger asChild>
-            <Link 
-              to={item.path}
-              className={cn(
-                "flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors",
-                "hover:bg-gray-100 dark:hover:bg-gray-800",
-                location.pathname === item.path 
-                  ? "bg-primary text-primary-foreground" 
-                  : "text-sidebar-foreground"
-              )}
-            >
-              {item.icon}
-              <span className="sidebar-label">{item.name}</span>
-            </Link>
-          </TooltipTrigger>
-          <TooltipContent side="right">
-            {item.name}
-          </TooltipContent>
-        </Tooltip>
+        <Link 
+          key={item.path}
+          to={item.path}
+          className={cn(
+            "flex items-center gap-3 px-2 py-2 rounded-md text-sm font-medium text-gray-800 hover:bg-gray-100",
+            location.pathname === item.path && "bg-gray-100 text-primary"
+          )}
+        >
+          {item.icon}
+          <span className="hidden group-hover:inline">{item.name}</span>
+        </Link>
       ))}
-    </nav>
+    </>
   );
 };
 
