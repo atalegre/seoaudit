@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,6 +20,7 @@ const UserManagement = () => {
     try {
       setLoading(true);
       const data = await getAllUsers();
+      console.log('Fetched users:', data);
       setUsers(data);
     } catch (error) {
       console.error('Erro ao buscar usuários:', error);
@@ -92,16 +92,44 @@ const UserManagement = () => {
         });
       } else {
         // Criar novo usuário - all fields are required based on the schema
-        await createUser({
-          name: values.name,
-          email: values.email, 
-          role: values.role
-        });
-        
-        toast({
-          title: 'Usuário criado',
-          description: 'O novo usuário foi criado com sucesso',
-        });
+        try {
+          await createUser({
+            name: values.name,
+            email: values.email, 
+            role: values.role
+          });
+          
+          toast({
+            title: 'Usuário criado',
+            description: 'O novo usuário foi criado com sucesso',
+          });
+        } catch (error: any) {
+          console.error('Erro detalhado ao criar usuário:', error);
+          
+          // Handle specific errors with better user messages
+          if (error.message?.includes('email já está em uso')) {
+            toast({
+              title: 'Email já cadastrado',
+              description: 'Este email já está sendo utilizado por outro usuário.',
+              variant: 'destructive',
+            });
+          } else if (error.message?.includes('RLS')) {
+            toast({
+              title: 'Permissão negada',
+              description: 'Você não tem permissão para criar usuários. Entre em contato com um administrador.',
+              variant: 'destructive',
+            });
+          } else {
+            toast({
+              title: 'Erro',
+              description: error.message || 'Não foi possível criar o usuário',
+              variant: 'destructive',
+            });
+          }
+          
+          // Keep dialog open when there's an error so user can fix it
+          return;
+        }
       }
 
       // Fechar o formulário e atualizar a lista

@@ -1,5 +1,5 @@
-
 import { supabase } from '@/integrations/supabase/client';
+import { checkEmailExists } from '@/utils/auth/userProfileService';
 
 // Tipo para o usuário
 export interface User {
@@ -75,26 +75,6 @@ export async function getUserById(userId: string): Promise<User | null> {
   } catch (error) {
     console.error('Erro ao buscar detalhes do usuário:', error);
     return null;
-  }
-}
-
-/**
- * Check if email already exists
- */
-export async function checkEmailExists(email: string): Promise<boolean> {
-  try {
-    const { data, error } = await supabase
-      .from('users')
-      .select('id')
-      .eq('email', email)
-      .maybeSingle();
-    
-    if (error) throw error;
-    
-    return !!data;
-  } catch (error) {
-    console.error('Erro ao verificar email:', error);
-    return false;
   }
 }
 

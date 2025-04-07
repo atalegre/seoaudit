@@ -67,8 +67,14 @@ export async function ensureUserInDb(
       });
     
     if (error) {
-      console.error("Error ensuring user in database:", error);
-      throw error;
+      // Special handling for duplicate email error
+      if (error.code === '23505' && error.message?.includes('users_email_key')) {
+        console.error("Email already exists:", email);
+        throw new Error("Este email já está em uso por outro usuário.");
+      } else {
+        console.error("Error ensuring user in database:", error);
+        throw error;
+      }
     }
     
     console.log(`User ${email} successfully created or updated with role ${role}`);
@@ -98,5 +104,28 @@ export async function getUserProfile(userId: string) {
   } catch (error) {
     console.error("Error getting user profile:", error);
     return null;
+  }
+}
+
+/**
+ * Checks if an email already exists in users table
+ */
+export async function checkEmailExists(email: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle();
+    
+    if (error) {
+      console.error("Error checking email existence:", error);
+      return false;
+    }
+    
+    return !!data;
+  } catch (error) {
+    console.error("Error checking if email exists:", error);
+    return false;
   }
 }
