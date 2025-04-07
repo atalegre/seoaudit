@@ -1,9 +1,11 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Zap, AlertTriangle } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import MetricCard from './MetricCard';
+import { Zap } from 'lucide-react';
+import WebVitalsGrid from './web-vitals/WebVitalsGrid';
+import StatusBadge from './web-vitals/StatusBadge';
+import WebVitalsLegend from './web-vitals/WebVitalsLegend';
+import { MetricStatus } from './MetricCard';
 
 interface CoreWebVitalsPanelProps {
   lcp: number;
@@ -17,9 +19,9 @@ const CoreWebVitalsPanel: React.FC<CoreWebVitalsPanelProps> = ({
   fid
 }) => {
   // Analisar o status dos Core Web Vitals
-  const lcpStatus = lcp <= 2.5 ? "good" : lcp <= 4 ? "needs-improvement" : "poor";
-  const clsStatus = cls <= 0.1 ? "good" : cls <= 0.25 ? "needs-improvement" : "poor";
-  const fidStatus = fid <= 100 ? "good" : fid <= 300 ? "needs-improvement" : "poor";
+  const lcpStatus: MetricStatus = lcp <= 2.5 ? "good" : lcp <= 4 ? "needs-improvement" : "poor";
+  const clsStatus: MetricStatus = cls <= 0.1 ? "good" : cls <= 0.25 ? "needs-improvement" : "poor";
+  const fidStatus: MetricStatus = fid <= 100 ? "good" : fid <= 300 ? "needs-improvement" : "poor";
   
   // Determinar o status geral dos Core Web Vitals
   const getOverallStatus = () => {
@@ -46,64 +48,21 @@ const CoreWebVitalsPanel: React.FC<CoreWebVitalsPanelProps> = ({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className={cn(
-          "p-4 rounded-lg border text-sm flex items-start gap-3",
-          overallStatus.status === "passed" ? "bg-green-50 border-green-100 text-green-800" : 
-          overallStatus.status === "failed" ? "bg-red-50 border-red-100 text-red-800" : 
-          "bg-amber-50 border-amber-100 text-amber-800"
-        )}>
-          {overallStatus.status === "passed" ? (
-            <Zap className="h-5 w-5 flex-shrink-0 mt-0.5" />
-          ) : (
-            <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" />
-          )}
-          <div>
-            <p className="font-medium">
-              {overallStatus.status === "passed" ? "Core Web Vitals aprovados" : 
-               overallStatus.status === "failed" ? "Core Web Vitals reprovados" : 
-               "Core Web Vitals precisam de atenção"}
-            </p>
-            <p className="mt-1">{overallStatus.message}</p>
-          </div>
-        </div>
+        <StatusBadge 
+          status={overallStatus.status}
+          message={overallStatus.message}
+        />
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <MetricCard
-            title="LCP"
-            value={`${lcp.toFixed(1)}s`}
-            icon={<Zap className="h-4 w-4" />}
-            description="Largest Contentful Paint: tempo até o maior elemento visível renderizar"
-            status={lcpStatus}
-          />
-          
-          <MetricCard
-            title="CLS"
-            value={cls.toFixed(2)}
-            icon={<Zap className="h-4 w-4" />}
-            description="Cumulative Layout Shift: estabilidade visual durante o carregamento"
-            status={clsStatus}
-          />
-          
-          <MetricCard
-            title="FID"
-            value={`${fid}ms`}
-            icon={<Zap className="h-4 w-4" />}
-            description="First Input Delay: tempo de resposta ao primeiro clique"
-            status={fidStatus}
-          />
-        </div>
+        <WebVitalsGrid 
+          lcp={lcp}
+          cls={cls}
+          fid={fid}
+          lcpStatus={lcpStatus}
+          clsStatus={clsStatus}
+          fidStatus={fidStatus}
+        />
         
-        <div className="text-xs text-gray-500 mt-2">
-          <p>
-            <span className="font-medium">Bom:</span> LCP ≤ 2,5s • CLS ≤ 0,1 • FID ≤ 100ms
-          </p>
-          <p>
-            <span className="font-medium">Precisa melhorar:</span> LCP ≤ 4,0s • CLS ≤ 0,25 • FID ≤ 300ms
-          </p>
-          <p>
-            <span className="font-medium">Ruim:</span> LCP {">"} 4,0s • CLS {">"} 0,25 • FID {">"} 300ms
-          </p>
-        </div>
+        <WebVitalsLegend />
       </CardContent>
     </Card>
   );
