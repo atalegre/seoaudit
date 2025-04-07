@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2, Check, AlertCircle, Plus, Search } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { getAllIndexedUrls, checkIndexedUrls } from '@/utils/api/searchConsoleService';
+import { getAllIndexedUrls, checkIndexedUrls } from '@/utils/api/searchConsole';
 import { toast } from 'sonner';
 
 interface IndexationSectionProps {

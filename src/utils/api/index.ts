@@ -9,7 +9,7 @@ export * from './userService';
 export * from './clientService';
 export * from './logoService';
 export * from './bulkImportService';
-export * from './searchConsoleService';
+export * from './searchConsole';  // Updated to use new modular structure
 
 // Supabase Client
 export { 
