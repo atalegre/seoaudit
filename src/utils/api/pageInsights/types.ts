@@ -32,3 +32,27 @@ export interface PageInsightsData {
     category: string;
   }[];
 }
+
+// Google PageSpeed Insights API response interface
+export interface GooglePageInsightsResponse {
+  lighthouseResult?: {
+    categories?: {
+      performance?: { score?: number };
+      seo?: { score?: number };
+      'best-practices'?: { score?: number };
+    };
+    audits?: Record<string, {
+      score?: number;
+      numericValue?: number;
+      title?: string;
+      description?: string;
+    }>;
+  };
+  loadingExperience?: {
+    metrics?: {
+      FIRST_CONTENTFUL_PAINT_MS?: {
+        percentile: number;
+      };
+    };
+  };
+}
