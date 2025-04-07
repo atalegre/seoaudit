@@ -3,6 +3,8 @@ import React from 'react';
 import { useUser } from '@/contexts/UserContext';
 import LogoutButton from './buttons/LogoutButton';
 import DashboardButton from './buttons/DashboardButton';
+import LoginButton from './buttons/LoginButton';
+import RegisterButton from './buttons/RegisterButton';
 
 const AuthButtons = () => {
   const { user, role } = useUser();
@@ -14,10 +16,19 @@ const AuthButtons = () => {
 
   return (
     <div className="flex items-center gap-4">
-      {user && <LogoutButton />}
-      
-      {/* Show dashboard button with the appropriate path based on user role */}
-      {user && <DashboardButton dashboardPath={getDashboardPath()} />}
+      {user ? (
+        // User is logged in, show logout and dashboard buttons
+        <>
+          <LogoutButton />
+          <DashboardButton dashboardPath={getDashboardPath()} />
+        </>
+      ) : (
+        // User is not logged in, show login and register buttons
+        <>
+          <LoginButton />
+          <RegisterButton />
+        </>
+      )}
     </div>
   );
 };
