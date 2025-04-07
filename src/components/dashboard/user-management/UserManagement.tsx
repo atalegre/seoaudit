@@ -62,11 +62,11 @@ const UserManagement = () => {
       
       // Atualizar a lista
       setUsers(users.filter(user => user.id !== userId));
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao remover usuário:', error);
       toast({
         title: 'Erro',
-        description: 'Não foi possível remover o usuário',
+        description: error.message || 'Não foi possível remover o usuário',
         variant: 'destructive',
       });
     }
@@ -107,11 +107,11 @@ const UserManagement = () => {
       // Fechar o formulário e atualizar a lista
       setIsFormDialogOpen(false);
       fetchUsers();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao salvar usuário:', error);
       toast({
         title: 'Erro',
-        description: 'Não foi possível salvar as informações do usuário',
+        description: error.message || 'Não foi possível salvar as informações do usuário',
         variant: 'destructive',
       });
     }

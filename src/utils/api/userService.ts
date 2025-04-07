@@ -49,7 +49,6 @@ export async function getAllUsers(): Promise<User[]> {
  */
 export async function getUserById(userId: string): Promise<User | null> {
   try {
-    // @ts-ignore - Ignoring type issues with the filter
     const { data, error } = await supabase
       .from('users')
       .select('*')
@@ -80,6 +79,26 @@ export async function getUserById(userId: string): Promise<User | null> {
 }
 
 /**
+ * Check if email already exists
+ */
+export async function checkEmailExists(email: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle();
+    
+    if (error) throw error;
+    
+    return !!data;
+  } catch (error) {
+    console.error('Erro ao verificar email:', error);
+    return false;
+  }
+}
+
+/**
  * Cria um novo usuário
  */
 export async function createUser(userData: { 
@@ -94,13 +113,25 @@ export async function createUser(userData: {
       throw new Error('Todos os campos obrigatórios devem ser fornecidos');
     }
     
-    // @ts-ignore - Necessary due to schema type mismatch
+    // Check if email already exists
+    const emailExists = await checkEmailExists(userData.email);
+    if (emailExists) {
+      throw new Error('Este email já está em uso por outro usuário');
+    }
+    
+    // Create the user
     const { data, error } = await supabase
       .from('users')
       .insert([userData])
       .select();
     
-    if (error) throw error;
+    if (error) {
+      // Better error handling for constraints
+      if (error.code === '23505') {
+        throw new Error('Este email já está em uso por outro usuário');
+      }
+      throw error;
+    }
     
     if (!data || !data[0] || typeof data[0] !== 'object' || 'error' in data[0]) {
       return null; // Return null on error
@@ -130,14 +161,34 @@ export async function updateUser(userId: string, userData: { name?: string, emai
       throw new Error('Pelo menos um campo deve ser fornecido para atualização');
     }
     
-    // @ts-ignore - Necessary due to schema type mismatch
+    // Check if email already exists (if changing email)
+    if (userData.email) {
+      const { data } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', userData.email)
+        .neq('id', userId)
+        .maybeSingle();
+      
+      if (data) {
+        throw new Error('Este email já está em uso por outro usuário');
+      }
+    }
+    
+    // Update the user
     const { data, error } = await supabase
       .from('users')
       .update(userData)
       .eq('id', userId)
       .select();
     
-    if (error) throw error;
+    if (error) {
+      // Better error handling for constraints
+      if (error.code === '23505') {
+        throw new Error('Este email já está em uso por outro usuário');
+      }
+      throw error;
+    }
     
     if (!data || !data[0] || typeof data[0] !== 'object' || 'error' in data[0]) {
       return null; // Return null on error
@@ -162,7 +213,6 @@ export async function updateUser(userId: string, userData: { name?: string, emai
  */
 export async function deleteUser(userId: string): Promise<boolean> {
   try {
-    // @ts-ignore - Ignoring type issues with the filter
     const { error } = await supabase
       .from('users')
       .delete()

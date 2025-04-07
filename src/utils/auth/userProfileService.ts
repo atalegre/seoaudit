@@ -10,24 +10,11 @@ export async function checkUserRole(userId: string): Promise<UserRole> {
     // For demo admin email
     const { data: userInfo } = await supabase.auth.getUser();
     if (userInfo?.user?.email === 'atalegre@me.com') {
-      // Ensure admin role in database
-      // @ts-ignore - Necessary due to schema type mismatch
-      await supabase
-        .from('users')
-        .upsert([
-          {
-            id: userId,
-            name: 'Admin User',
-            email: 'atalegre@me.com',
-            role: 'admin'
-          }
-        ], { onConflict: 'id' });
-      
+      // Ensure admin role in database - using RLS this is now handled by trigger
       return 'admin';
     }
     
     // For other users, check the users table
-    // @ts-ignore - Necessary due to schema type mismatch
     const { data, error } = await supabase
       .from('users')
       .select('role')
@@ -66,7 +53,6 @@ export async function ensureUserInDb(
     }
     
     // Use upsert to create or update user
-    // @ts-ignore - Necessary due to schema type mismatch
     const { error } = await supabase
       .from('users')
       .upsert([{
@@ -75,7 +61,10 @@ export async function ensureUserInDb(
         email: email,
         role: role,
         updated_at: new Date().toISOString()
-      }], { onConflict: 'id' });
+      }], { 
+        onConflict: 'id',
+        ignoreDuplicates: false
+      });
     
     if (error) {
       console.error("Error ensuring user in database:", error);
@@ -94,7 +83,6 @@ export async function ensureUserInDb(
  */
 export async function getUserProfile(userId: string) {
   try {
-    // @ts-ignore - Necessary due to schema type mismatch
     const { data, error } = await supabase
       .from('users')
       .select('*')
