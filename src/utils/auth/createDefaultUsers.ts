@@ -18,3 +18,4 @@ export async function createDefaultUsers() {
     console.error('Error in createDefaultUsers:', error);
   }
 }
+

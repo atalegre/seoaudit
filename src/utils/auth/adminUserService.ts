@@ -64,6 +64,54 @@ export async function handleAdminUser(userId: string, email: string, name: strin
 }
 
 /**
+ * Create or update the admin user
+ * This function is specifically used for setup/seeding purposes
+ */
+export async function createOrUpdateAdmin(
+  name: string = 'Admin User', 
+  email: string = ADMIN_EMAIL
+): Promise<void> {
+  try {
+    console.log("Setting up admin user:", email);
+    
+    // Check if admin user exists in auth
+    const { data: existingUsers, error: searchError } = await supabase.auth.admin.listUsers({
+      filter: {
+        email: email
+      }
+    });
+    
+    if (searchError) {
+      console.error("Error searching for admin user:", searchError);
+      // Continue with creation attempt even if search fails
+    }
+    
+    let adminUserId: string | null = null;
+    
+    // If admin exists in auth system
+    if (existingUsers?.users && existingUsers.users.length > 0) {
+      adminUserId = existingUsers.users[0].id;
+      console.log("Admin user exists in auth, ID:", adminUserId);
+    } else {
+      // If admin doesn't exist yet, we don't create it automatically
+      // as it requires a password. This will be handled during normal signup.
+      console.log("Admin user does not exist in auth yet");
+      return;
+    }
+    
+    // If we have an admin user ID, ensure they have admin role in users table
+    if (adminUserId) {
+      await handleAdminUser(adminUserId, email, name);
+    }
+    
+    console.log("Admin user setup complete");
+  } catch (error) {
+    console.error("Error in createOrUpdateAdmin:", error);
+    // Don't throw here as this is a setup function that should not break initialization
+  }
+}
+
+/**
  * Sign in or sign up admin user
  */
 export async function signInOrSignUpAdmin(email: string, password: string, name: string) {
@@ -146,3 +194,9 @@ export async function signInOrSignUpAdmin(email: string, password: string, name:
     throw error;
   }
 }
+
+// Export everything
+export {
+  ADMIN_EMAIL
+};
+

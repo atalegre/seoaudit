@@ -1,72 +1,70 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { UserWithEmail } from './commonTypes';
-
-const CLIENT_EMAIL = 'seoclient@exemplo.com';
-const CLIENT_PASSWORD = 'client123';
+import { createOrUpdateRegularUser } from './profileService';
 
 /**
- * Creates or updates the default client user
+ * Create or update the default client user
+ * This function is specifically used for setup/seeding purposes
  */
-export async function createOrUpdateClient() {
+export async function createOrUpdateClient(
+  name: string = 'Test Client',
+  email: string = 'client@example.com',
+  password: string = 'client123'
+): Promise<void> {
   try {
-    console.log("Setting up client user...");
+    console.log("Setting up client user:", email);
     
-    // First try to create the client account in auth
-    try {
-      console.log("Attempting to create client account");
-      
-      // Try to sign up the client user
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: CLIENT_EMAIL,
-        password: CLIENT_PASSWORD,
-        options: {
-          data: {
-            full_name: 'SEO Client',
-            role: 'user',
-          }
+    // Check if client user exists in auth
+    const { data: existingUsers, error: searchError } = await supabase.auth.admin.listUsers({
+      filter: {
+        email: email
+      }
+    });
+    
+    if (searchError) {
+      console.error("Error searching for client user:", searchError);
+      // Continue with creation attempt even if search fails
+    }
+    
+    let clientUserId: string | null = null;
+    
+    // If client exists in auth system
+    if (existingUsers?.users && existingUsers.users.length > 0) {
+      clientUserId = existingUsers.users[0].id;
+      console.log("Client user exists in auth, ID:", clientUserId);
+    } else {
+      // Create client user in auth system if it doesn't exist
+      const { data, error } = await supabase.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: {
+          full_name: name,
+          role: 'user'
         }
       });
       
-      if (signUpError) {
-        if (signUpError.message.includes("User already registered")) {
-          console.log("Client account already exists");
-        } else {
-          console.error("Error creating client user in auth:", signUpError);
-        }
-      } else {
-        console.log("Client account created");
+      if (error) {
+        console.error("Error creating client user in auth:", error);
+        return;
       }
-    } catch (error) {
-      console.error("Error setting up client auth account:", error);
+      
+      if (data?.user) {
+        clientUserId = data.user.id;
+        console.log("Client user created in auth, ID:", clientUserId);
+      }
     }
     
-    // Now ensure client exists in users table
-    try {
-      // Check if client exists in users table
-      const { data: existingClientInTable } = await supabase
-        .from('users')
-        .select('*')
-        .eq('email', CLIENT_EMAIL as any)
-        .maybeSingle();
-      
-      if (!existingClientInTable) {
-        // Create new users table entry with the client email
-        await supabase.from('users').insert([
-          {
-            name: 'SEO Client',
-            email: CLIENT_EMAIL,
-            role: 'user'
-          }
-        ] as any);
-        console.log("Created client user in users table");
-      } else {
-        console.log("Client record already exists in users table");
-      }
-    } catch (error) {
-      console.error("Error ensuring client in users table:", error);
+    // If we have a client user ID, ensure they exist in users table
+    if (clientUserId) {
+      await createOrUpdateRegularUser(clientUserId, email, name, 'user');
+      console.log("Client user updated in database");
     }
+    
+    console.log("Client user setup complete");
   } catch (error) {
-    console.error('Error in createOrUpdateClient:', error);
+    console.error("Error in createOrUpdateClient:", error);
+    // Don't throw here as this is a setup function that should not break initialization
   }
 }
+
