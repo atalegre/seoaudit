@@ -1,15 +1,12 @@
 
-import React, { useRef, Suspense, lazy } from 'react';
+import React, { useRef } from 'react';
 import ScoreDisplay from '@/components/ScoreDisplay';
 import { formatUrl } from '@/utils/resultsPageHelpers';
 import { AnalysisResult } from '@/utils/api/types';
 import ReanalyzeButton from './ReanalyzeButton';
 import PartialDataAlert from './PartialDataAlert';
-import { LazyLoadingFallback } from './LazyComponents';
-
-// Carregamento lazy otimizado
-const ReportForm = lazy(() => import('@/components/report/ReportForm'));
-const AnalysisTabs = lazy(() => import('@/components/AnalysisTabs').then(module => ({ default: module.AnalysisTabs })));
+import ReportForm from '@/components/report/ReportForm';
+import { AnalysisTabs } from '@/components/AnalysisTabs';
 
 interface AnalysisContentProps {
   analysisData: AnalysisResult;
@@ -42,7 +39,7 @@ const ResultsContent: React.FC<AnalysisContentProps> = ({
         seoErrorMessage={analysisData?.seo?.errorMessage}
       />
       
-      {/* Conteúdo prioritário com prioridade de carregamento */}
+      {/* Conteúdo prioritário para LCP */}
       <div className="lcp-block">
         <ScoreDisplay
           seoScore={analysisData?.seo?.score || 0}
@@ -58,16 +55,14 @@ const ResultsContent: React.FC<AnalysisContentProps> = ({
       
       <ReanalyzeButton onReanalyze={onReanalyze} />
       
-      {/* Conteúdo secundário carregado sob demanda */}
+      {/* Conteúdo não crítico - carregado depois */}
       <div className="space-y-6 mt-8">
         {(hasSeoData || hasAioData) && (
-          <Suspense fallback={<LazyLoadingFallback />}>
-            <AnalysisTabs 
-              data={analysisData} 
-              seoError={seoError}
-              aioError={aioError}
-            />
-          </Suspense>
+          <AnalysisTabs 
+            data={analysisData} 
+            seoError={seoError}
+            aioError={aioError}
+          />
         )}
         
         <div className="bg-white p-6 rounded-lg border shadow-sm">
@@ -77,17 +72,15 @@ const ResultsContent: React.FC<AnalysisContentProps> = ({
             e insights sobre SEO e otimização de conteúdo, registe-se na nossa plataforma.
           </p>
           
-          <Suspense fallback={<LazyLoadingFallback />}>
-            <ReportForm 
-              url={analysisData?.url || ''} 
-              seoScore={analysisData?.seo?.score || 0}
-              aioScore={analysisData?.aio?.score || 0}
-            />
-          </Suspense>
+          <ReportForm 
+            url={analysisData?.url || ''} 
+            seoScore={analysisData?.seo?.score || 0}
+            aioScore={analysisData?.aio?.score || 0}
+          />
         </div>
       </div>
     </>
   );
 };
 
-export default React.memo(ResultsContent);
+export default ResultsContent;

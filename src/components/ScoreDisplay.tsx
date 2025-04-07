@@ -1,9 +1,8 @@
 
-import React, { memo } from 'react';
+import React from 'react';
 import { Globe, Calendar, BarChart, BrainCircuit, Zap, Bot, ChevronDown, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useDashboardAccess } from '@/hooks/useDashboardAccess';
-import { useLLMPresence } from '@/components/llm-presence/useLLMPresence';
 
 interface ScoreDisplayProps {
   seoScore: number;
@@ -16,7 +15,8 @@ interface ScoreDisplayProps {
   onScrollToRecommendations: () => void;
 }
 
-const ScoreCard = memo(({ 
+// Componente de cartão de pontuação simplificado
+const ScoreCard = ({ 
   title, 
   score, 
   description, 
@@ -49,21 +49,19 @@ const ScoreCard = memo(({
       <p className="text-sm text-gray-500">{description}</p>
     </div>
   );
-});
+};
 
-ScoreCard.displayName = 'ScoreCard';
-
-const getStatusColor = (status: string): string => {
+// Função simplificada para determinar cor do status
+function getStatusColor(status: string): string {
   const statusLower = status.toLowerCase();
-  
   if (statusLower === 'excelente') return 'text-green-500';
   if (statusLower === 'bom') return 'text-blue-500';
   if (statusLower === 'medio') return 'text-yellow-500';
   if (statusLower === 'critico') return 'text-red-500';
   return 'text-gray-500';
-};
+}
 
-const ScoreDisplay = memo((props: ScoreDisplayProps) => {
+const ScoreDisplay = (props: ScoreDisplayProps) => {
   const {
     seoScore,
     aioScore,
@@ -77,13 +75,8 @@ const ScoreDisplay = memo((props: ScoreDisplayProps) => {
   
   const { handleDashboardAccess } = useDashboardAccess();
   
-  // Implementamos useLLMPresence apenas se não temos um score já calculado
-  const { presenceScore } = !llmPresenceScore ? useLLMPresence({ 
-    url, 
-    autoStart: false 
-  }) : { presenceScore: 0 };
-  
-  const actualLLMScore = llmPresenceScore || presenceScore || 0;
+  // Cálculo simplificado
+  const actualLLMScore = llmPresenceScore || 0;
   const overallScore = Math.round((seoScore * 0.4) + (aioScore * 0.3) + (performanceScore * 0.2) + (actualLLMScore * 0.1));
   
   const statusColorClass = getStatusColor(status);
@@ -99,7 +92,6 @@ const ScoreDisplay = memo((props: ScoreDisplayProps) => {
                 alt={`Logo de ${url}`} 
                 className="w-10 h-10 object-contain rounded-md" 
                 loading="eager" 
-                decoding="async"
                 fetchPriority="high"
               />
             ) : (
@@ -163,20 +155,6 @@ const ScoreDisplay = memo((props: ScoreDisplayProps) => {
           />
         </div>
         
-        {overallScore < 70 && (
-          <div className="mt-6 p-4 bg-red-50 text-red-800 rounded-md border border-red-100">
-            <p className="text-sm">
-              O seu site tem aspectos positivos, mas ainda há margem para melhorias.
-            </p>
-          </div>
-        )}
-        
-        <div className="mt-6 bg-gray-50 p-3 rounded-md">
-          <p className="text-sm text-gray-600 text-center">
-            Score global combinando SEO (40%), AIO (30%), Performance (20%) e Presença em IA (10%).
-          </p>
-        </div>
-        
         <div className="mt-6 flex justify-center">
           <Button
             onClick={handleDashboardAccess}
@@ -189,8 +167,6 @@ const ScoreDisplay = memo((props: ScoreDisplayProps) => {
       </div>
     </div>
   );
-});
-
-ScoreDisplay.displayName = 'ScoreDisplay';
+};
 
 export default ScoreDisplay;

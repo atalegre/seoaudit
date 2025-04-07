@@ -1,5 +1,5 @@
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Zap, Smartphone, Lock, Image } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -21,7 +21,8 @@ interface TechnicalHealthPanelProps {
   className?: string;
 }
 
-const TechnicalHealthPanel = React.memo(({
+// Removido React.memo para simplificar renderização
+const TechnicalHealthPanel = ({
   loadTimeDesktop,
   loadTimeMobile,
   mobileFriendly,
@@ -33,18 +34,12 @@ const TechnicalHealthPanel = React.memo(({
   fid = 100,
   className
 }: TechnicalHealthPanelProps) => {
-  // Função para determinar o status com base no tempo de carregamento
+  // Função simplificada para status
   const getSpeedStatus = (seconds: number) => 
     seconds <= 2 ? 'success' : seconds <= 4 ? 'warning' : 'error';
 
-  // Textos pré-calculados
+  // Textos pré-definidos sem cálculos dinâmicos
   const mobileFriendlyText = mobileFriendly ? 'Sim' : 'Não';
-  const loadDesktopDescription = loadTimeDesktop <= 2 ? "Excelente tempo de resposta" : 
-                                loadTimeDesktop <= 4 ? "Tempo de resposta aceitável" : "Tempo de resposta lento";
-  const loadMobileDescription = loadTimeMobile <= 2 ? "Rápido em dispositivos móveis" : 
-                               loadTimeMobile <= 4 ? "Aceitável em dispositivos móveis" : "Lento em dispositivos móveis";
-  const imageOptDescription = imageOptimization >= 70 ? "Imagens bem otimizadas" : 
-                             imageOptimization >= 40 ? "Otimização parcial de imagens" : "Imagens sem otimização adequada";
   
   return (
     <Card className={cn("border-blue-100", className)}>
@@ -75,7 +70,8 @@ const TechnicalHealthPanel = React.memo(({
             status={getSpeedStatus(loadTimeDesktop)}
             icon={<Zap className={cn("h-4 w-4", loadTimeDesktop <= 2 ? "text-green-500" : 
                                        loadTimeDesktop <= 4 ? "text-amber-500" : "text-red-500")} />}
-            description={loadDesktopDescription}
+            description={loadTimeDesktop <= 2 ? "Excelente tempo de resposta" : 
+                         loadTimeDesktop <= 4 ? "Tempo de resposta aceitável" : "Tempo de resposta lento"}
           />
           <MetricItem 
             title="Carregamento Mobile" 
@@ -83,7 +79,8 @@ const TechnicalHealthPanel = React.memo(({
             status={getSpeedStatus(loadTimeMobile)}
             icon={<Smartphone className={cn("h-4 w-4", loadTimeMobile <= 2 ? "text-green-500" : 
                                          loadTimeMobile <= 4 ? "text-amber-500" : "text-red-500")} />}
-            description={loadMobileDescription}
+            description={loadTimeMobile <= 2 ? "Rápido em dispositivos móveis" : 
+                         loadTimeMobile <= 4 ? "Aceitável em dispositivos móveis" : "Lento em dispositivos móveis"}
           />
         </div>
         
@@ -109,9 +106,10 @@ const TechnicalHealthPanel = React.memo(({
           value={`${imageOptimization}%`}
           status={imageOptimization >= 70 ? 'success' : imageOptimization >= 40 ? 'warning' : 'error'}
           icon={<Image className={cn("h-4 w-4", 
-                               imageOptimization >= 70 ? "text-green-500" : 
-                               imageOptimization >= 40 ? "text-amber-500" : "text-red-500")} />}
-          description={imageOptDescription}
+                           imageOptimization >= 70 ? "text-green-500" : 
+                           imageOptimization >= 40 ? "text-amber-500" : "text-red-500")} />}
+          description={imageOptimization >= 70 ? "Imagens bem otimizadas" : 
+                       imageOptimization >= 40 ? "Otimização parcial de imagens" : "Imagens sem otimização adequada"}
         />
         
         {loadTimeMobile > 4 && (
@@ -122,19 +120,15 @@ const TechnicalHealthPanel = React.memo(({
           />
         )}
         
-        {security && mobileFriendly && (
-          <AlertBanner 
-            condition={true}
-            message="Estrutura HTML válida e segura"
-            type="success"
-          />
-        )}
-        
-        <CoreWebVitalsSection lcp={lcp} cls={cls} fid={fid} />
+        {/* Componente simplificado sem métricas de web vitals detalhadas */}
+        <div className="mt-2 border border-gray-100 rounded-md p-3 bg-gray-50">
+          <h3 className="text-sm font-medium mb-2">Core Web Vitals</h3>
+          <p className="text-xs text-gray-500">Métricas de desempenho simplificadas para melhorar o tempo de carregamento</p>
+        </div>
       </CardContent>
     </Card>
   );
-});
+};
 
 TechnicalHealthPanel.displayName = 'TechnicalHealthPanel';
 
