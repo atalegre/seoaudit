@@ -63,10 +63,10 @@ const WebsitesSection: React.FC<WebsitesSectionProps> = ({
       <CardContent>
         <WebsitesStateDisplay 
           isLoading={isLoading} 
-          isEmpty={websites.length === 0} 
+          isEmpty={!websites || websites.length === 0} 
         />
         
-        {!isLoading && websites.length > 0 && (
+        {!isLoading && websites && websites.length > 0 && (
           <div className="space-y-4">
             {websites.map((website, index) => {
               const { url, status, lastAnalyzed } = normalizeWebsiteData(website);
@@ -89,6 +89,7 @@ const WebsitesSection: React.FC<WebsitesSectionProps> = ({
           isOpen={showAddDialog}
           onClose={handleDialogClose}
           onAddWebsite={handleWebsiteAdded}
+          userEmail={userEmail}
         />
       )}
     </Card>

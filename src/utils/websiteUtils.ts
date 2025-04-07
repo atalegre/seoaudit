@@ -12,8 +12,26 @@ export const normalizeWebsiteData = (website: WebsiteData | Client): {
   status: string;
   lastAnalyzed: string | Date | null;
 } => {
-  const url = 'website' in website ? website.website : website.url;
+  // Verificar se o objeto é válido
+  if (!website) {
+    return {
+      url: '',
+      status: 'Desconhecido',
+      lastAnalyzed: null
+    };
+  }
+  
+  // Determinar url baseado nos campos disponíveis
+  const url = 'website' in website && website.website 
+    ? website.website 
+    : 'url' in website && website.url 
+      ? website.url 
+      : '';
+  
+  // Determinar status
   const status = website.status || 'Ativo';
+  
+  // Determinar data de última análise
   const lastAnalyzed = 'lastAnalysis' in website 
     ? website.lastAnalysis 
     : 'lastAnalyzed' in website ? website.lastAnalyzed : null;

@@ -19,6 +19,7 @@ const ClientDashboardPage = () => {
   
   // Get url parameter if present
   const urlParam = searchParams.get('url');
+  const projectIdParam = searchParams.get('projectId');
   
   useEffect(() => {
     // Store URL parameter in localStorage for persistence
@@ -27,19 +28,21 @@ const ClientDashboardPage = () => {
       localStorage.setItem('lastAnalyzedUrl', urlParam);
     }
     
+    // Store projectId parameter in localStorage if present
+    if (projectIdParam) {
+      console.log("Storing projectId parameter in localStorage:", projectIdParam);
+      localStorage.setItem('lastProjectId', projectIdParam);
+    }
+    
     // Check auth state when component mounts
     const checkAuth = async () => {
       try {
         const { data } = await supabase.auth.getSession();
         if (!data.session) {
-          console.log("No active session, redirecting to signin");
-          // Save URL parameter in the redirect state
-          const redirectUrl = location.pathname + (urlParam ? `?url=${encodeURIComponent(urlParam)}` : location.search);
-          navigate('/signin', { 
-            state: { 
-              returnTo: redirectUrl,
-              message: "Faça login para acessar o dashboard"
-            }
+          console.log("No active session, proceeding as anonymous user");
+          setIsAuthChecked(true);
+          toast.success("Dashboard carregado (modo anônimo)", {
+            description: "Acesso limitado disponível para demonstração."
           });
         } else {
           setIsAuthChecked(true);
@@ -53,11 +56,12 @@ const ClientDashboardPage = () => {
         toast.error("Erro de autenticação", {
           description: "Ocorreu um erro ao verificar a sua sessão."
         });
+        setIsAuthChecked(true); // Ainda assim, consideramos checado para continuar
       }
     };
     
     checkAuth();
-  }, [navigate, location, urlParam]);
+  }, [navigate, location, urlParam, projectIdParam]);
   
   const {
     clients,
@@ -73,7 +77,7 @@ const ClientDashboardPage = () => {
     selectedClientId,
     fetchClientData,
     handleMarkAsRead
-  } = useDashboardData(undefined, userEmail);
+  } = useDashboardData(undefined, userEmail || "Anonymous");
 
   const handleLogout = () => {
     hookToast({
@@ -111,7 +115,7 @@ const ClientDashboardPage = () => {
           notifications={notifications}
           handleMarkAsRead={handleMarkAsRead}
           onWebsiteAdded={handleWebsiteAdded}
-          userEmail={userEmail}
+          userEmail={userEmail || "Anonymous"}
         />
       </main>
     </div>

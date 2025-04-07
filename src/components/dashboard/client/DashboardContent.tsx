@@ -44,11 +44,24 @@ const DashboardContent = ({
     return <LoadingState />;
   }
 
+  // Verificar se temos clientes para evitar erro
+  if (!clients || clients.length === 0) {
+    // Mostrar apenas a seção de websites se não houver clientes
+    return (
+      <WebsitesSection 
+        websites={[]} 
+        isLoading={false} 
+        onWebsiteAdded={onWebsiteAdded}
+        userEmail={userEmail}
+      />
+    );
+  }
+
   // Convert Client[] to be compatible with WebsiteData[]
   const websiteData = clients.map(client => ({
     id: client.id,
     url: client.website,
-    status: client.status,
+    status: client.status || 'pending',
     name: client.name,
     lastAnalyzed: typeof client.lastAnalysis === 'string' 
       ? client.lastAnalysis 
