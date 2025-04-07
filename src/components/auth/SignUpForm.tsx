@@ -14,7 +14,6 @@ import PasswordField from './PasswordField';
 import PasswordRequirements from './PasswordRequirements';
 import NameField from './NameField';
 import TermsCheckbox from './TermsCheckbox';
-import { checkEmailExists } from '@/utils/auth/userProfileService';
 
 type SignUpFormProps = {
   setAuthError: (error: string | null) => void;
@@ -43,27 +42,9 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
       // Special case for admin email
       const isAdminEmail = values.email === 'atalegre@me.com';
       
-      if (!isAdminEmail) {
-        // Only check for existing emails if not admin email
-        const emailExists = await checkEmailExists(values.email);
-        if (emailExists) {
-          toast({
-            title: "Usuário já registrado",
-            description: "Este email já está registrado. Por favor, faça login.",
-            duration: 5000,
-          });
-          navigate('/signin', { 
-            state: { email: values.email },
-            replace: true
-          });
-          return;
-        }
-      }
-      
-      // Set role to admin if email is atalegre@me.com, otherwise use user
-      const role = isAdminEmail ? 'admin' : 'user';
-      
       console.log('Submitting signup form with email:', values.email);
+      
+      const role = isAdminEmail ? 'admin' : 'user';
       
       const result = await signUpWithEmail({
         name: values.name,
@@ -94,11 +75,16 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
           duration: 8000,
         });
         
-        // Navigate to verification page
-        navigate('/verification', { 
-          state: { email: values.email },
-          replace: true
-        });
+        // For admin, try to redirect to dashboard
+        if (isAdminEmail) {
+          navigate('/dashboard');
+        } else {
+          // Navigate to verification page
+          navigate('/verification', { 
+            state: { email: values.email },
+            replace: true
+          });
+        }
       } else {
         // Unexpected result
         console.error('Unexpected signup result:', result);
@@ -112,17 +98,34 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
     } catch (error: any) {
       console.error("Exception during registration:", error);
       
-      // Handle specific admin login case
-      if (values.email === 'atalegre@me.com' && 
-          error.message?.includes('already registered')) {
-        toast({
-          title: "Admin já registrado",
-          description: "Conta de administrador já existe. Por favor, faça login.",
-        });
-        navigate('/signin', { 
-          state: { email: values.email },
-          replace: true
-        });
+      // Handle admin-specific authentication errors
+      if (values.email === 'atalegre@me.com') {
+        if (error.message?.includes('Credenciais inválidas')) {
+          toast({
+            variant: "destructive",
+            title: "Erro de Autenticação",
+            description: error.message,
+          });
+        } else if (error.message?.includes('já está registrado') || 
+                  error.message?.includes('already registered')) {
+          toast({
+            title: "Admin já registrado",
+            description: "Tentando fazer login como administrador...",
+          });
+          
+          // Try to directly navigate to login with admin credentials
+          navigate('/signin', { 
+            state: { email: values.email },
+            replace: true
+          });
+        } else {
+          setAuthError(error.message);
+          toast({
+            variant: "destructive",
+            title: "Erro no Admin",
+            description: error.message || "Ocorreu um erro durante o registo do administrador.",
+          });
+        }
         return;
       }
       

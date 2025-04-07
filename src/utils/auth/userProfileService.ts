@@ -10,7 +10,6 @@ export async function checkUserRole(userId: string): Promise<UserRole> {
     // For demo admin email
     const { data: userInfo } = await supabase.auth.getUser();
     if (userInfo?.user?.email === 'atalegre@me.com') {
-      // Ensure admin role in database - using RLS this is now handled by trigger
       return 'admin';
     }
     
@@ -52,23 +51,6 @@ export async function ensureUserInDb(
       role = 'admin';
     }
     
-    // Check if email already exists but with a different user ID
-    const { data: existingUser, error: checkError } = await supabase
-      .from('users')
-      .select('id')
-      .eq('email', email)
-      .neq('id', userId)
-      .maybeSingle();
-    
-    if (checkError) {
-      console.error("Error checking existing user:", checkError);
-    }
-    
-    if (existingUser) {
-      console.error("Email already in use by another user:", email);
-      throw new Error("Este email já está em uso por outro usuário.");
-    }
-    
     // Use upsert to create or update user
     const { error } = await supabase
       .from('users')
@@ -79,14 +61,29 @@ export async function ensureUserInDb(
         role: role,
         updated_at: new Date().toISOString()
       }], { 
-        onConflict: 'id',
-        ignoreDuplicates: false
+        onConflict: 'id'
       });
     
     if (error) {
-      // Special handling for duplicate email error
+      // If we got a unique constraint violation on email
       if (error.code === '23505' && error.message?.includes('users_email_key')) {
         console.error("Email already exists:", email);
+        
+        if (email === 'atalegre@me.com') {
+          // For admin email, attempt to update role to admin if record exists
+          const { error: updateError } = await supabase
+            .from('users')
+            .update({ role: 'admin', name: name, updated_at: new Date().toISOString() })
+            .eq('email', email);
+            
+          if (updateError) {
+            console.error("Error updating admin user role:", updateError);
+          } else {
+            console.log("Admin user role updated successfully");
+            return; // Successfully updated admin role
+          }
+        }
+        
         throw new Error("Este email já está em uso por outro usuário.");
       } else {
         console.error("Error ensuring user in database:", error);
@@ -133,43 +130,13 @@ export async function checkEmailExists(email: string): Promise<boolean> {
     return false;
   }
   
-  // Special handling for admin email
+  // For the admin email, we want to allow signup attempts
   if (email === 'atalegre@me.com') {
-    console.log("Admin email check - skipping checks for atalegre@me.com");
-    return false; // Always allow admin email to be used
+    return false;
   }
   
   try {
     console.log("Checking if email exists:", email);
-    
-    // Check in the auth.users table (note: we can't directly query this table via the client SDK)
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      // If current user has this email, it exists but is theirs
-      if (user && user.email === email) {
-        return false; // Don't count the user's own email
-      }
-      
-      // Try a sign-in to check if user exists (this is a workaround)
-      const { error: signInError } = await supabase.auth.signInWithOtp({
-        email: email,
-        options: {
-          shouldCreateUser: false
-        }
-      });
-      
-      if (signInError && signInError.message?.includes('User not found')) {
-        console.log("Email not found in auth system:", email);
-        // Not found in auth system, continue to check public.users
-      } else {
-        console.log("Email likely exists in auth system:", email);
-        return true;
-      }
-    } catch (authError) {
-      console.error("Error checking email in auth system:", authError);
-      // Continue to check public.users
-    }
     
     // Check in the public.users table
     const { data, error } = await supabase
@@ -179,14 +146,8 @@ export async function checkEmailExists(email: string): Promise<boolean> {
       .maybeSingle();
     
     if (error) {
-      if (error.code === 'PGRST116') {
-        // No record found
-        console.log("Email not found in users table:", email);
-        return false;
-      }
       console.error("Error checking email existence:", error);
-      // In case of error, assume email might exist to prevent duplicate entries
-      return true;
+      return true; // Assume it might exist to prevent duplicate entries
     }
     
     const exists = !!data;
@@ -194,7 +155,6 @@ export async function checkEmailExists(email: string): Promise<boolean> {
     return exists;
   } catch (error) {
     console.error("Error checking if email exists:", error);
-    // In case of error, assume email might exist to prevent duplicate entries
-    return true;
+    return true; // Assume it might exist to prevent duplicate entries
   }
 }
