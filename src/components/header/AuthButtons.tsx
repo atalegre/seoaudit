@@ -20,7 +20,6 @@ const AuthButtons = () => {
         // User is logged in, show logout and dashboard buttons
         <>
           <LogoutButton />
-          <DashboardButton dashboardPath={getDashboardPath()} />
         </>
       ) : (
         // User is not logged in, show login and register buttons
