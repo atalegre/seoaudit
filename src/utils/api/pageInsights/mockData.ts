@@ -8,19 +8,19 @@ import { PageInsightsData } from './types';
  */
 export function generateMockPageInsightsData(url: string): PageInsightsData {
   const performanceScore = Math.floor(Math.random() * 51) + 50; // 50-100
-  const fcp = (Math.random() * 2 + 1).toFixed(1); // 1.0-3.0
-  const lcp = (Math.random() * 2 + 2).toFixed(1); // 2.0-4.0
-  const cls = (Math.random() * 0.2).toFixed(2); // 0.00-0.20
+  const fcp = (Math.random() * 2 + 1); // 1.0-3.0
+  const lcp = (Math.random() * 2 + 2); // 2.0-4.0
+  const cls = (Math.random() * 0.2); // 0.00-0.20
   const fid = Math.floor(Math.random() * 100) + 50; // 50-150ms
   
   return {
     performanceScore,
-    fcp: parseFloat(fcp),
-    lcp: parseFloat(lcp),
+    fcp: parseFloat(fcp.toFixed(1)),
+    lcp: parseFloat(lcp.toFixed(1)),
     tbt: Math.floor(Math.random() * 300) + 100, // 100-400
-    cls: parseFloat(cls),
-    speedIndex: (Math.random() * 3 + 2).toFixed(1), // 2.0-5.0
-    tti: (Math.random() * 3 + 3).toFixed(1), // 3.0-6.0
+    cls: parseFloat(cls.toFixed(2)),
+    speedIndex: parseFloat((Math.random() * 3 + 2).toFixed(1)), // 2.0-5.0
+    tti: parseFloat((Math.random() * 3 + 3).toFixed(1)), // 3.0-6.0
     fid,
     mobileFriendly: Math.random() > 0.2, // 80% chance of being mobile friendly
     security: {

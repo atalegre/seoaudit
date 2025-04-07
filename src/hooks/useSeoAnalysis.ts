@@ -43,12 +43,12 @@ export function useSeoAnalysis() {
       // Salvar a URL no localStorage
       localStorage.setItem('lastAnalyzedUrl', urlToAnalyze);
       
-      // Obter dados para desktop e mobile usando a mesma API
+      // Obter dados para desktop e mobile usando a mesma API com estratégia diferente
       try {
-        const desktopInsights = await getPageInsightsData(normalizedUrl);
+        const desktopInsights = await getPageInsightsData(normalizedUrl, 'desktop');
         setDesktopData(desktopInsights);
         
-        const mobileInsights = await getPageInsightsData(normalizedUrl);
+        const mobileInsights = await getPageInsightsData(normalizedUrl, 'mobile');
         setMobileData(mobileInsights);
         
         toast.success("Análise concluída", {

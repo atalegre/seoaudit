@@ -22,10 +22,18 @@ const DevicePerformancePanel: React.FC<DevicePerformancePanelProps> = ({
     return "bg-red-500";
   };
   
-  // Function to format time values with proper units
-  const formatTime = (time: number) => {
-    if (time < 1) return `${Math.round(time * 1000)}ms`;
-    return `${time.toFixed(1)}s`;
+  // Function to format time values with proper units - with proper type checking
+  const formatTime = (time: number | string) => {
+    // Convert to number if it's a string
+    const timeNum = typeof time === 'string' ? parseFloat(time) : time;
+    
+    // Guard against NaN or invalid values
+    if (isNaN(timeNum) || timeNum === undefined || timeNum === null) {
+      return '0ms';
+    }
+    
+    if (timeNum < 1) return `${Math.round(timeNum * 1000)}ms`;
+    return `${timeNum.toFixed(1)}s`;
   };
   
   return (
