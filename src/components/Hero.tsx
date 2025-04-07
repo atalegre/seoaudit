@@ -1,15 +1,14 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Search, Sparkles, Zap, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { extractDomainFromUrl } from '@/utils/domainUtils';
 
 const Hero = () => {
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,8 +16,36 @@ const Hero = () => {
       toast.error('Por favor, insira um URL válido');
       return;
     }
+    
     setIsLoading(true);
-    navigate(`/results?url=${encodeURIComponent(url)}`);
+    
+    // Format URL if needed
+    let formattedUrl = url.trim();
+    if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+      formattedUrl = 'https://' + formattedUrl;
+    }
+    
+    // Save URL to localStorage
+    localStorage.setItem('lastAnalyzedUrl', formattedUrl);
+    
+    // Extract domain and create project ID
+    const domain = extractDomainFromUrl(formattedUrl);
+    const projectId = `${domain}-${Date.now()}`.replace(/[^a-zA-Z0-9]/g, '-');
+    
+    // Simulação de análise rápida
+    setTimeout(() => {
+      // Verificar se estamos em desenvolvimento ou produção
+      const isDevelopment = window.location.hostname === 'localhost' || 
+                          window.location.hostname.includes('lovable');
+      
+      if (isDevelopment) {
+        // Para ambiente de desenvolvimento
+        window.location.href = `/dashboard/client?url=${encodeURIComponent(formattedUrl)}&projectId=${projectId}`;
+      } else {
+        // Para produção - redireciona para o subdomínio suite
+        window.location.href = `https://suite.seoaudit.pt/projeto/${projectId}?url=${encodeURIComponent(formattedUrl)}`;
+      }
+    }, 1500);
   };
   
   return (
@@ -51,7 +78,9 @@ const Hero = () => {
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             </div>
             <Button type="submit" className="h-14 px-8 text-lg" size="lg" disabled={isLoading}>
-              {isLoading ? 'Analisando...' : 'Analisar agora'}
+              {isLoading ? (
+                <>Analisando<span className="loading-dots">...</span></>
+              ) : 'Analisar agora'}
             </Button>
           </form>
           

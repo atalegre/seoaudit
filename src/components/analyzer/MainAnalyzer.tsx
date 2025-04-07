@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, ArrowRight, BarChart3, Sparkles, Zap } from 'lucide-react';
@@ -10,7 +9,6 @@ import { extractDomainFromUrl } from '@/utils/domainUtils';
 const MainAnalyzer = () => {
   const [url, setUrl] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const navigate = useNavigate();
   
   const validateUrl = (inputUrl: string) => {
     const pattern = /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/;
@@ -41,8 +39,25 @@ const MainAnalyzer = () => {
       const domain = extractDomainFromUrl(formattedUrl);
       console.log(`Iniciando análise para: ${domain}`);
       
-      // Redirect to results page with URL parameter
-      navigate(`/results?url=${encodeURIComponent(formattedUrl)}`);
+      // Simulação de um breve processamento antes do redirecionamento
+      setTimeout(() => {
+        // Gerar um ID de projeto baseado no domínio e timestamp
+        const projectId = `${domain}-${Date.now()}`.replace(/[^a-zA-Z0-9]/g, '-');
+        
+        // Redirecionar para o dashboard no suite.seoaudit.pt
+        // Em ambiente de desenvolvimento, redirecionamos para o /dashboard com parâmetros
+        const isDevelopment = window.location.hostname === 'localhost' || 
+                             window.location.hostname.includes('lovable');
+        
+        if (isDevelopment) {
+          // Para ambiente de desenvolvimento - redireciona para o dashboard interno
+          window.location.href = `/dashboard/client?url=${encodeURIComponent(formattedUrl)}&projectId=${projectId}`;
+        } else {
+          // Para produção - redireciona para o subdomínio suite
+          window.location.href = `https://suite.seoaudit.pt/projeto/${projectId}?url=${encodeURIComponent(formattedUrl)}`;
+        }
+      }, 1500); // Aguarda 1.5 segundos para simular análise inicial
+      
     } catch (error) {
       console.error('Erro na análise:', error);
       toast.error("Ocorreu um erro ao iniciar a análise");
