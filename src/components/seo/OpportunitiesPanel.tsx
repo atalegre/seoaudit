@@ -1,26 +1,17 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { 
-  Lightbulb, 
-  ChevronDown, 
-  ChevronUp,
-  ExternalLink
-} from 'lucide-react';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Button } from '@/components/ui/button';
+import { Lightbulb, ChevronDown, ChevronUp, Zap, Shield, LayoutList } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
 
 interface Recommendation {
   id: string;
   title: string;
   description: string;
-  importance: number;
+  impact: 'high' | 'medium' | 'low';
+  category: string;
 }
 
 interface OpportunitiesPanelProps {
@@ -28,23 +19,57 @@ interface OpportunitiesPanelProps {
 }
 
 const OpportunitiesPanel: React.FC<OpportunitiesPanelProps> = ({ recommendations }) => {
-  if (!recommendations.length) {
+  const [openItems, setOpenItems] = useState<string[]>([]);
+  
+  const toggleItem = (id: string) => {
+    setOpenItems(current => 
+      current.includes(id) 
+        ? current.filter(item => item !== id) 
+        : [...current, id]
+    );
+  };
+  
+  const getCategoryIcon = (category: string) => {
+    switch (category.toLowerCase()) {
+      case 'performance':
+        return <Zap className="h-4 w-4" />;
+      case 'seo':
+        return <LayoutList className="h-4 w-4" />;
+      case 'security':
+        return <Shield className="h-4 w-4" />;
+      default:
+        return <Lightbulb className="h-4 w-4" />;
+    }
+  };
+  
+  const getImpactColor = (impact: 'high' | 'medium' | 'low') => {
+    switch (impact) {
+      case 'high':
+        return "bg-red-100 text-red-800 hover:bg-red-200";
+      case 'medium':
+        return "bg-amber-100 text-amber-800 hover:bg-amber-200";
+      case 'low':
+        return "bg-green-100 text-green-800 hover:bg-green-200";
+      default:
+        return "bg-blue-100 text-blue-800 hover:bg-blue-200";
+    }
+  };
+  
+  if (recommendations.length === 0) {
     return (
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Lightbulb className="h-5 w-5 text-primary" />
-            Oportunidades de Melhoria
+            Oportunidades de melhoria
           </CardTitle>
           <CardDescription>
-            Sugestões do Google PageSpeed Insights para melhorar o desempenho
+            Não encontramos oportunidades significativas de melhoria
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center py-8 text-center">
-            <p className="text-muted-foreground">
-              Não foram encontradas recomendações para esse site. Isso pode indicar que seu site já está bem otimizado ou que a análise não conseguiu encontrar melhorias específicas.
-            </p>
+          <div className="flex items-center justify-center p-8 text-center text-muted-foreground">
+            <p>Parabéns! Seu site parece estar bem otimizado nos aspectos analisados.</p>
           </div>
         </CardContent>
       </Card>
@@ -56,64 +81,61 @@ const OpportunitiesPanel: React.FC<OpportunitiesPanelProps> = ({ recommendations
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Lightbulb className="h-5 w-5 text-primary" />
-          Oportunidades de Melhoria
+          Oportunidades de melhoria
         </CardTitle>
         <CardDescription>
-          Sugestões do Google PageSpeed Insights para melhorar o desempenho
+          Sugestões baseadas na análise do PageSpeed Insights para melhorar seu site
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Accordion type="multiple" className="space-y-2">
-          {recommendations.map((item, index) => (
-            <AccordionItem 
-              key={item.id || index} 
-              value={item.id || index.toString()}
+        <div className="space-y-3">
+          {recommendations.map(recommendation => (
+            <Collapsible
+              key={recommendation.id}
+              open={openItems.includes(recommendation.id)}
+              onOpenChange={() => toggleItem(recommendation.id)}
               className="border rounded-lg overflow-hidden"
             >
-              <AccordionTrigger className="px-4 py-3 hover:bg-gray-50 flex items-center group">
-                <div className="flex flex-1 items-center justify-between gap-2">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-blue-50 p-1.5 rounded-full">
-                      <Lightbulb className="h-4 w-4 text-blue-600" />
-                    </div>
-                    <span className="font-medium text-sm">{item.title}</span>
+              <CollapsibleTrigger className="flex items-center justify-between w-full p-4 text-left">
+                <div className="flex items-center gap-3">
+                  <div className={cn(
+                    "p-1.5 rounded-full",
+                    recommendation.category.toLowerCase() === "performance" ? "bg-blue-50" :
+                    recommendation.category.toLowerCase() === "seo" ? "bg-violet-50" :
+                    "bg-emerald-50"
+                  )}>
+                    {getCategoryIcon(recommendation.category)}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge 
-                      variant={item.importance >= 3 ? "destructive" : item.importance >= 2 ? "warning" : "secondary"}
-                      className="text-xs"
-                    >
-                      {item.importance >= 3 ? "Alta Prioridade" : 
-                       item.importance >= 2 ? "Média Prioridade" : 
-                       "Baixa Prioridade"}
-                    </Badge>
-                    <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
-                  </div>
+                  <span className="font-medium">{recommendation.title}</span>
                 </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 py-3 border-t bg-gray-50">
-                <div className="text-sm text-gray-700">
-                  <p>{item.description}</p>
-                  <div className="mt-3 flex items-center">
-                    <Button 
-                      variant="link" 
-                      className="p-0 h-auto text-primary flex items-center gap-1"
-                      asChild
-                    >
-                      <a 
-                        href={`https://web.dev/articles/lighthouse-${item.id}`} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                      >
-                        Saiba mais <ExternalLink className="h-3 w-3" />
-                      </a>
-                    </Button>
-                  </div>
+                <div className="flex items-center gap-3">
+                  <Badge variant="outline" className={cn(
+                    "font-normal",
+                    getImpactColor(recommendation.impact)
+                  )}>
+                    {recommendation.impact === 'high' ? 'Alto impacto' : 
+                     recommendation.impact === 'medium' ? 'Médio impacto' : 
+                     'Baixo impacto'}
+                  </Badge>
+                  {openItems.includes(recommendation.id) ? (
+                    <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                  )}
                 </div>
-              </AccordionContent>
-            </AccordionItem>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="px-4 py-3 bg-muted/50 border-t">
+                  <p className="text-sm">{recommendation.description}</p>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
           ))}
-        </Accordion>
+        </div>
+        
+        <div className="mt-4 text-xs text-muted-foreground">
+          <p>Estas recomendações são geradas automaticamente com base na análise de desempenho e melhores práticas.</p>
+        </div>
       </CardContent>
     </Card>
   );

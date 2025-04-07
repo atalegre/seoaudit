@@ -1,156 +1,262 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Check, X, AlertTriangle, Shield, Smartphone, FileText } from 'lucide-react';
+import { Shield, CheckCircle, XCircle, AlertTriangle, FileText, ListChecks } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface TechnicalAuditsPanelProps {
   mobileFriendly: boolean;
-  security: boolean;
-  headingsStructure?: number;
-  metaTags?: number;
+  security: {
+    https: boolean;
+    mixedContent: boolean;
+  };
+  headingsStructure: {
+    hasH1: boolean;
+    multipleH1: boolean;
+    headingsOrder: boolean;
+  };
+  metaTags: {
+    title: string;
+    description: string;
+    titleLength: number;
+    descriptionLength: number;
+  };
 }
 
 const TechnicalAuditsPanel: React.FC<TechnicalAuditsPanelProps> = ({
   mobileFriendly,
   security,
-  headingsStructure = 0,
-  metaTags = 0
+  headingsStructure,
+  metaTags
 }) => {
-  // Avaliar status das métricas
-  const headingsStatus = headingsStructure >= 80 ? "good" : headingsStructure >= 50 ? "needs-improvement" : "poor";
-  const metaTagsStatus = metaTags >= 80 ? "good" : metaTags >= 50 ? "needs-improvement" : "poor";
+  // Function to determine status for title length
+  const getTitleStatus = () => {
+    if (metaTags.titleLength < 30) return "warning";
+    if (metaTags.titleLength > 60) return "warning";
+    return "success";
+  };
+  
+  // Function to determine status for description length
+  const getDescriptionStatus = () => {
+    if (metaTags.descriptionLength < 70) return "warning";
+    if (metaTags.descriptionLength > 160) return "warning";
+    return "success";
+  };
   
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Shield className="h-5 w-5 text-primary" />
-          Auditorias Técnicas
+          <ListChecks className="h-5 w-5 text-primary" />
+          Technical Audits
         </CardTitle>
         <CardDescription>
-          Verificações técnicas importantes para SEO e experiência do usuário
+          Verificações técnicas importantes para SEO e funcionamento do site
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Mobile Friendly Check */}
-          <div className="flex items-center gap-4 p-4 border rounded-lg">
-            <div className="bg-blue-50 p-2 rounded-full">
-              <Smartphone className="h-5 w-5 text-blue-600" />
-            </div>
-            <div className="flex-1">
-              <div className="flex justify-between">
-                <h3 className="text-sm font-medium">Mobile Friendly</h3>
-                <div className="flex items-center gap-1">
-                  {mobileFriendly ? (
-                    <Check className="h-5 w-5 text-green-600" />
-                  ) : (
-                    <X className="h-5 w-5 text-red-600" />
-                  )}
-                </div>
-              </div>
-              <p className="text-xs text-gray-500 mt-1">
-                {mobileFriendly 
-                  ? "O site é adaptado para dispositivos móveis" 
-                  : "O site não é adaptado para dispositivos móveis"}
-              </p>
-            </div>
-          </div>
-          
-          {/* HTTPS Security */}
-          <div className="flex items-center gap-4 p-4 border rounded-lg">
-            <div className="bg-blue-50 p-2 rounded-full">
-              <Shield className="h-5 w-5 text-blue-600" />
-            </div>
-            <div className="flex-1">
-              <div className="flex justify-between">
-                <h3 className="text-sm font-medium">Segurança HTTPS</h3>
-                <div className="flex items-center gap-1">
-                  {security ? (
-                    <Check className="h-5 w-5 text-green-600" />
-                  ) : (
-                    <X className="h-5 w-5 text-red-600" />
-                  )}
-                </div>
-              </div>
-              <p className="text-xs text-gray-500 mt-1">
-                {security 
-                  ? "Conexão segura estabelecida" 
-                  : "Site sem proteção HTTPS"}
-              </p>
-            </div>
-          </div>
-          
-          {/* Headings Structure */}
-          <div className="flex items-center gap-4 p-4 border rounded-lg">
-            <div className="bg-blue-50 p-2 rounded-full">
-              <FileText className="h-5 w-5 text-blue-600" />
-            </div>
-            <div className="flex-1">
-              <div className="flex justify-between">
-                <h3 className="text-sm font-medium">Estrutura de Headings</h3>
-                <div className="flex items-center gap-1">
-                  {headingsStatus === "good" ? (
-                    <Check className="h-5 w-5 text-green-600" />
-                  ) : headingsStatus === "needs-improvement" ? (
-                    <AlertTriangle className="h-5 w-5 text-amber-600" />
-                  ) : (
-                    <X className="h-5 w-5 text-red-600" />
-                  )}
-                  <span className={cn(
-                    "text-sm font-medium",
-                    headingsStatus === "good" ? "text-green-600" : 
-                    headingsStatus === "needs-improvement" ? "text-amber-600" : 
-                    "text-red-600"
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-5">
+            {/* Mobile Friendly Section */}
+            <div>
+              <h3 className="font-medium flex items-center gap-2 mb-3">
+                <Shield className="h-4 w-4 text-blue-600" />
+                Mobile & Security
+              </h3>
+              
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Mobile Friendly</span>
+                  <div className={cn(
+                    "flex items-center gap-1",
+                    mobileFriendly ? "text-green-600" : "text-red-600"
                   )}>
-                    {headingsStructure}%
-                  </span>
+                    {mobileFriendly ? (
+                      <>
+                        <CheckCircle className="h-4 w-4" />
+                        <span className="text-sm font-medium">Sim</span>
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="h-4 w-4" />
+                        <span className="text-sm font-medium">Não</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">HTTPS</span>
+                  <div className={cn(
+                    "flex items-center gap-1",
+                    security.https ? "text-green-600" : "text-red-600"
+                  )}>
+                    {security.https ? (
+                      <>
+                        <CheckCircle className="h-4 w-4" />
+                        <span className="text-sm font-medium">Sim</span>
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="h-4 w-4" />
+                        <span className="text-sm font-medium">Não</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Conteúdo Misto</span>
+                  <div className={cn(
+                    "flex items-center gap-1",
+                    !security.mixedContent ? "text-green-600" : "text-red-600"
+                  )}>
+                    {!security.mixedContent ? (
+                      <>
+                        <CheckCircle className="h-4 w-4" />
+                        <span className="text-sm font-medium">Não detectado</span>
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="h-4 w-4" />
+                        <span className="text-sm font-medium">Detectado</span>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                {headingsStatus === "good" 
-                  ? "Estrutura de headings bem organizada" 
-                  : headingsStatus === "needs-improvement"
-                  ? "Estrutura precisa de melhorias"
-                  : "Estrutura de headings inadequada"}
-              </p>
+            </div>
+            
+            {/* Headings Structure */}
+            <div>
+              <h3 className="font-medium flex items-center gap-2 mb-3">
+                <ListChecks className="h-4 w-4 text-violet-600" />
+                Estrutura de Headings
+              </h3>
+              
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Tag H1</span>
+                  <div className={cn(
+                    "flex items-center gap-1",
+                    headingsStructure.hasH1 ? "text-green-600" : "text-red-600"
+                  )}>
+                    {headingsStructure.hasH1 ? (
+                      <>
+                        <CheckCircle className="h-4 w-4" />
+                        <span className="text-sm font-medium">Presente</span>
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="h-4 w-4" />
+                        <span className="text-sm font-medium">Ausente</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Múltiplos H1</span>
+                  <div className={cn(
+                    "flex items-center gap-1",
+                    !headingsStructure.multipleH1 ? "text-green-600" : "text-amber-600"
+                  )}>
+                    {!headingsStructure.multipleH1 ? (
+                      <>
+                        <CheckCircle className="h-4 w-4" />
+                        <span className="text-sm font-medium">Não</span>
+                      </>
+                    ) : (
+                      <>
+                        <AlertTriangle className="h-4 w-4" />
+                        <span className="text-sm font-medium">Sim</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Ordem de Headings</span>
+                  <div className={cn(
+                    "flex items-center gap-1",
+                    headingsStructure.headingsOrder ? "text-green-600" : "text-amber-600"
+                  )}>
+                    {headingsStructure.headingsOrder ? (
+                      <>
+                        <CheckCircle className="h-4 w-4" />
+                        <span className="text-sm font-medium">Correta</span>
+                      </>
+                    ) : (
+                      <>
+                        <AlertTriangle className="h-4 w-4" />
+                        <span className="text-sm font-medium">Incorreta</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           
           {/* Meta Tags */}
-          <div className="flex items-center gap-4 p-4 border rounded-lg">
-            <div className="bg-blue-50 p-2 rounded-full">
-              <FileText className="h-5 w-5 text-blue-600" />
-            </div>
-            <div className="flex-1">
-              <div className="flex justify-between">
-                <h3 className="text-sm font-medium">Meta Tags</h3>
-                <div className="flex items-center gap-1">
-                  {metaTagsStatus === "good" ? (
-                    <Check className="h-5 w-5 text-green-600" />
-                  ) : metaTagsStatus === "needs-improvement" ? (
-                    <AlertTriangle className="h-5 w-5 text-amber-600" />
-                  ) : (
-                    <X className="h-5 w-5 text-red-600" />
-                  )}
-                  <span className={cn(
-                    "text-sm font-medium",
-                    metaTagsStatus === "good" ? "text-green-600" : 
-                    metaTagsStatus === "needs-improvement" ? "text-amber-600" : 
-                    "text-red-600"
+          <div>
+            <h3 className="font-medium flex items-center gap-2 mb-3">
+              <FileText className="h-4 w-4 text-emerald-600" />
+              Meta Tags
+            </h3>
+            
+            <div className="space-y-5">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm">Meta Title ({metaTags.titleLength} caracteres)</span>
+                  <div className={cn(
+                    "flex items-center gap-1",
+                    getTitleStatus() === "success" ? "text-green-600" : "text-amber-600"
                   )}>
-                    {metaTags}%
-                  </span>
+                    {getTitleStatus() === "success" ? (
+                      <CheckCircle className="h-4 w-4" />
+                    ) : (
+                      <AlertTriangle className="h-4 w-4" />
+                    )}
+                  </div>
                 </div>
+                <div className="text-sm p-2 bg-muted rounded border">
+                  {metaTags.title}
+                </div>
+                {getTitleStatus() === "warning" && (
+                  <p className="text-xs text-amber-600 mt-1">
+                    {metaTags.titleLength < 30 ? 
+                      "O título é muito curto. Recomendado: 30-60 caracteres." : 
+                      "O título é muito longo. Recomendado: até 60 caracteres."}
+                  </p>
+                )}
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                {metaTagsStatus === "good" 
-                  ? "Meta tags bem implementadas" 
-                  : metaTagsStatus === "needs-improvement"
-                  ? "Meta tags precisam de melhorias"
-                  : "Meta tags inadequadas ou ausentes"}
-              </p>
+              
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm">Meta Description ({metaTags.descriptionLength} caracteres)</span>
+                  <div className={cn(
+                    "flex items-center gap-1",
+                    getDescriptionStatus() === "success" ? "text-green-600" : "text-amber-600"
+                  )}>
+                    {getDescriptionStatus() === "success" ? (
+                      <CheckCircle className="h-4 w-4" />
+                    ) : (
+                      <AlertTriangle className="h-4 w-4" />
+                    )}
+                  </div>
+                </div>
+                <div className="text-sm p-2 bg-muted rounded border text-muted-foreground">
+                  {metaTags.description}
+                </div>
+                {getDescriptionStatus() === "warning" && (
+                  <p className="text-xs text-amber-600 mt-1">
+                    {metaTags.descriptionLength < 70 ? 
+                      "A descrição é muito curta. Recomendado: 70-160 caracteres." : 
+                      "A descrição é muito longa. Recomendado: até 160 caracteres."}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>

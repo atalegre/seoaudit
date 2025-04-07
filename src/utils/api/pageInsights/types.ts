@@ -1,62 +1,34 @@
 
-export interface AuditResultItem {
-  id: string;
-  title: string;
-  description: string;
-  score: number | null;
-  scoreDisplayMode: string;
-  explanation?: string;
-  warnings?: string;
-  details?: {
-    type: string;
-    headings: { key: string; itemType: string; text: string }[];
-    items: Record<string, any>[];
-  };
-}
-
 export interface PageInsightsData {
-  url: string;
-  score: number;
   performanceScore: number;
-  bestPracticesScore?: number;
-  loadTimeDesktop: number;
-  loadTimeMobile: number;
-  mobileFriendly: boolean;
-  security: boolean;
-  imageOptimization: number;
-  headingsStructure?: number;
-  metaTags?: number;
+  fcp: number;
   lcp: number;
+  tbt: number;
   cls: number;
+  speedIndex: number;
+  tti: number;
   fid: number;
-  tapTargetsScore?: number;
-  tapTargetsIssues?: number;
-  recommendations?: { id: string; title: string; description: string; importance: number }[];
-  auditResults?: AuditResultItem[];
-  errorMessage?: string;
-  isError?: boolean;
-}
-
-// Added GooglePageInsightsResponse interface for apiProcessor.ts
-export interface GooglePageInsightsResponse {
-  lighthouseResult?: {
-    categories?: {
-      performance?: { score: number };
-      seo?: { score: number };
-      'best-practices'?: { score: number };
-    };
-    audits?: Record<string, {
-      score: number | null;
-      numericValue?: number;
-      title?: string;
-      description?: string;
-    }>;
+  mobileFriendly: boolean;
+  security: {
+    https: boolean;
+    mixedContent: boolean;
   };
-  loadingExperience?: {
-    metrics?: {
-      FIRST_CONTENTFUL_PAINT_MS?: {
-        percentile: number;
-      };
-    };
+  headingsStructure: {
+    hasH1: boolean;
+    multipleH1: boolean;
+    headingsOrder: boolean;
   };
+  metaTags: {
+    title: string;
+    description: string;
+    titleLength: number;
+    descriptionLength: number;
+  };
+  recommendations?: {
+    id: string;
+    title: string;
+    description: string;
+    impact: 'high' | 'medium' | 'low';
+    category: string;
+  }[];
 }
