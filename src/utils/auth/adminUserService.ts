@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { UserRole } from './types';
+import { UserWithEmail } from './commonTypes';
 
 const ADMIN_EMAIL = 'atalegre@me.com';
 
@@ -91,7 +92,9 @@ export async function createOrUpdateAdmin(
     // If admin exists in auth system - find the admin user by email
     if (existingUsers?.users) {
       // Use type assertion to make TypeScript know the structure of the user object
-      const adminUser = existingUsers.users.find(user => user.email === email);
+      const adminUser = existingUsers.users.find(
+        (user: UserWithEmail) => user.email === email
+      );
       if (adminUser) {
         adminUserId = adminUser.id;
         console.log("Admin user exists in auth, ID:", adminUserId);
@@ -203,5 +206,6 @@ export async function signInOrSignUpAdmin(email: string, password: string, name:
 
 // Export everything
 export {
-  ADMIN_EMAIL
+  ADMIN_EMAIL,
+  createOrUpdateAdmin
 };

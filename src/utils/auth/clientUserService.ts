@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { createOrUpdateRegularUser } from './profileService';
+import { UserWithEmail } from './commonTypes';
 
 /**
  * Create or update the default client user
@@ -30,7 +31,9 @@ export async function createOrUpdateClient(
     
     // If client exists in auth system - find by email
     if (existingUsers?.users) {
-      const clientUser = existingUsers.users.find(user => user.email === email);
+      const clientUser = existingUsers.users.find(
+        (user: UserWithEmail) => user.email === email
+      );
       if (clientUser) {
         clientUserId = clientUser.id;
         console.log("Client user exists in auth, ID:", clientUserId);
