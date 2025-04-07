@@ -14,6 +14,7 @@ import PasswordField from './PasswordField';
 import PasswordRequirements from './PasswordRequirements';
 import NameField from './NameField';
 import TermsCheckbox from './TermsCheckbox';
+import { checkEmailExists } from '@/utils/auth/userProfileService';
 
 type SignUpFormProps = {
   setAuthError: (error: string | null) => void;
@@ -39,6 +40,20 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
     setAuthError(null);
     
     try {
+      // Check if email already exists before attempting signup
+      const emailExists = await checkEmailExists(values.email);
+      if (emailExists) {
+        toast({
+          title: "Usuário já registrado",
+          description: "Este email já está registrado. Por favor, faça login.",
+        });
+        navigate('/signin', { 
+          state: { email: values.email },
+          replace: true
+        });
+        return;
+      }
+      
       // Set role to admin if email is atalegre@me.com, otherwise use user
       const role = values.email === 'atalegre@me.com' ? 'admin' : 'user';
       
@@ -92,7 +107,9 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
       console.error("Exception during registration:", error);
       
       // Handle user already registered error
-      if (error.message?.includes('User already registered')) {
+      if (error.message?.includes('User already registered') || 
+          error.message?.includes('já está em uso') || 
+          error.message?.includes('já está registrado')) {
         toast({
           title: "Usuário já registrado",
           description: "Este email já está registrado. Por favor, faça login.",

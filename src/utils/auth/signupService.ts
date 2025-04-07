@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { SignUpData } from './types';
 import { ensureUserInDb } from './userProfileService';
+import { checkEmailExists } from './userProfileService';
 
 /**
  * Handles user signup with email
@@ -12,6 +13,13 @@ export async function signUpWithEmail(data: SignUpData) {
   console.log('Starting signup process for:', email);
 
   try {
+    // Check if the email already exists in the users table before attempting signup
+    const emailExists = await checkEmailExists(email);
+    if (emailExists) {
+      console.log('Email already exists in users table:', email);
+      throw new Error('Este email já está em uso por outro usuário.');
+    }
+    
     // Create new user in auth
     const { data: authData, error } = await supabase.auth.signUp({
       email,
@@ -27,6 +35,13 @@ export async function signUpWithEmail(data: SignUpData) {
 
     if (error) {
       console.error("SignUp error:", error);
+      
+      // Handle specific error for user already existing in auth but not in users table
+      if (error.message?.includes('User already registered')) {
+        console.log('User exists in auth but might not exist in users table');
+        throw new Error('Este email já está registrado. Por favor, faça login.');
+      }
+      
       throw error;
     }
     

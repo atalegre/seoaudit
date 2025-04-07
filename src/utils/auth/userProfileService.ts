@@ -52,6 +52,23 @@ export async function ensureUserInDb(
       role = 'admin';
     }
     
+    // Check if email already exists but with a different user ID
+    const { data: existingUser, error: checkError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .neq('id', userId)
+      .maybeSingle();
+    
+    if (checkError) {
+      console.error("Error checking existing user:", checkError);
+    }
+    
+    if (existingUser) {
+      console.error("Email already in use by another user:", email);
+      throw new Error("Este email já está em uso por outro usuário.");
+    }
+    
     // Use upsert to create or update user
     const { error } = await supabase
       .from('users')
@@ -111,7 +128,30 @@ export async function getUserProfile(userId: string) {
  * Checks if an email already exists in users table
  */
 export async function checkEmailExists(email: string): Promise<boolean> {
+  if (!email) {
+    console.error("No email provided to checkEmailExists");
+    return false;
+  }
+  
   try {
+    console.log("Checking if email exists:", email);
+    
+    // Also check in auth.users to avoid race conditions
+    const { data: userData, error: authError } = await supabase.auth.admin.listUsers({
+      filter: {
+        email: email
+      }
+    }).catch(err => {
+      console.error("Cannot access auth.users, fallback to only checking public.users", err);
+      return { data: null, error: err };
+    });
+    
+    if (userData?.users?.length > 0) {
+      console.log("Email exists in auth.users:", email);
+      return true;
+    }
+    
+    // Check in the public.users table
     const { data, error } = await supabase
       .from('users')
       .select('id')
@@ -119,13 +159,22 @@ export async function checkEmailExists(email: string): Promise<boolean> {
       .maybeSingle();
     
     if (error) {
+      if (error.code === 'PGRST116') {
+        // No record found
+        console.log("Email not found in users table:", email);
+        return false;
+      }
       console.error("Error checking email existence:", error);
-      return false;
+      // In case of error, assume email might exist to prevent duplicate entries
+      return true;
     }
     
-    return !!data;
+    const exists = !!data;
+    console.log("Email existence check result:", exists);
+    return exists;
   } catch (error) {
     console.error("Error checking if email exists:", error);
-    return false;
+    // In case of error, assume email might exist to prevent duplicate entries
+    return true;
   }
 }
