@@ -60,6 +60,7 @@
     </style>
     
     <!-- Optimized preconnects -->
+    <link rel="preconnect" href="https://logo.clearbit.com" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
@@ -73,56 +74,38 @@
     <meta property="og:description" content="Analise gratuitamente o seu site para motores de busca (SEO) e modelos de IA (AIO)." />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    
+    <!-- Google Tag Manager -->
+    <script>
+      (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+      })(window,document,'script','dataLayer','GTM-WHKJ76ZT');
+    </script>
   </head>
 
   <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript>
+      <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WHKJ76ZT" height="0" width="0" style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    
     <div id="root"></div>
+    
     <!-- Main application script -->
     <script type="module" src="/src/main.tsx"></script>
     
     <!-- Essential GPT Engineer script for Lovable features -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     
-    <!-- Deferred analytics loading -->
+    <!-- Google Analytics (carregado apenas após o conteúdo principal) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-33EYX0JZM1"></script>
     <script>
-      window.addEventListener('load', function() {
-        // Delay non-critical scripts
-        setTimeout(function() {
-          // Google Tag Manager
-          const gtmScript = document.createElement('script');
-          gtmScript.innerHTML = `
-            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-            })(window,document,'script','dataLayer','GTM-WHKJ76ZT');
-          `;
-          document.body.appendChild(gtmScript);
-          
-          // GTM noscript fallback
-          const noscript = document.createElement('noscript');
-          const iframe = document.createElement('iframe');
-          iframe.src = "https://www.googletagmanager.com/ns.html?id=GTM-WHKJ76ZT";
-          iframe.height = "0";
-          iframe.width = "0";
-          iframe.style = "display:none;visibility:hidden";
-          noscript.appendChild(iframe);
-          document.body.appendChild(noscript);
-          
-          // Google Analytics
-          setTimeout(() => {
-            const analyticsScript = document.createElement('script');
-            analyticsScript.src = "https://www.googletagmanager.com/gtag/js?id=G-33EYX0JZM1";
-            analyticsScript.async = true;
-            document.body.appendChild(analyticsScript);
-            
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-33EYX0JZM1', { 'send_page_view': false });
-          }, 5000);
-        }, 3000);
-      });
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-33EYX0JZM1', { 'send_page_view': false });
     </script>
   </body>
 </html>

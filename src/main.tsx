@@ -3,6 +3,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
+import { CookieConsentTracking } from './utils/cookie-consent/tracking';
 
 // Get the root element
 const rootElement = document.getElementById('root');
@@ -18,6 +19,9 @@ root.render(
     <App />
   </React.StrictMode>
 );
+
+// Inicialize GTM imediatamente para melhorar o rastreamento
+CookieConsentTracking.injectGTM();
 
 // Monitor LCP for performance diagnostics
 if ('PerformanceObserver' in window) {
