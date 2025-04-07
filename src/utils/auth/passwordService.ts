@@ -5,13 +5,18 @@ import { supabase } from '@/integrations/supabase/client';
  * Sends a password reset email
  */
 export async function resetPassword(email: string) {
+  const siteUrl = window.location.origin;
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}/reset-password`,
+    redirectTo: `${siteUrl}/reset-password`,
   });
 
   if (error) {
+    console.error("Reset password error:", error);
     throw error;
   }
+  
+  console.log(`Password reset email sent to ${email} with redirect to ${siteUrl}/reset-password`);
+  return { success: true };
 }
 
 /**
@@ -23,6 +28,10 @@ export async function updatePassword(password: string) {
   });
 
   if (error) {
+    console.error("Update password error:", error);
     throw error;
   }
+  
+  console.log("Password updated successfully");
+  return { success: true };
 }

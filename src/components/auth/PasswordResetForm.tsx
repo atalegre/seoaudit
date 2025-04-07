@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { resetPassword } from '@/utils/auth/passwordService';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import EmailField from './EmailField';
@@ -38,20 +37,10 @@ const PasswordResetForm = ({ setAuthError }: PasswordResetFormProps) => {
     setAuthError(null);
     
     try {
-      // Request password reset email from Supabase
-      const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
+      // Use the updated resetPassword function from our service
+      const result = await resetPassword(values.email);
 
-      if (error) {
-        console.error("Password reset error:", error);
-        setAuthError(error.message);
-        toast({
-          variant: "destructive",
-          title: "Erro ao enviar email",
-          description: error.message,
-        });
-      } else {
+      if (result.success) {
         // Success - email sent
         setEmailSent(true);
         toast({
