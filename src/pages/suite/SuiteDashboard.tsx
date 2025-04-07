@@ -4,18 +4,15 @@ import { useSearchParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { toast } from "sonner";
 import SuiteLayout from '@/components/suite/SuiteLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import ScoreCard from '@/components/suite/dashboard/ScoreCard';
-import CircularProgress from '@/components/suite/dashboard/CircularProgress';
-import RecommendationCard from '@/components/suite/dashboard/RecommendationCard';
-import { 
-  ArrowRight, Settings, Bot, Globe, MapPin, RefreshCw,
-  KeySquare, Brain, Zap
-} from 'lucide-react';
+import { Card } from '@/components/ui/card';
 import { useUser } from '@/contexts/UserContext';
 import { fetchSiteLogo } from '@/utils/api/logoService';
+
+// Import refactored components
+import OverallScore from '@/components/suite/dashboard/OverallScore';
+import ScoreCardsGrid from '@/components/suite/dashboard/ScoreCardsGrid';
+import RecommendationsSection from '@/components/suite/dashboard/RecommendationsSection';
+import HistoryTabs from '@/components/suite/dashboard/HistoryTabs';
 
 interface SampleRecommendation {
   id: number;
@@ -145,150 +142,31 @@ const SuiteDashboard = () => {
       </div>
       
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-6">
-        <Card className="col-span-full lg:col-span-1 row-span-2">
-          <CardHeader className="flex flex-row items-center gap-4">
-            <CardTitle>Pontuação Geral</CardTitle>
-            {logoUrl && (
-              <img 
-                src={logoUrl} 
-                alt={`Logo de ${domain}`} 
-                className="w-10 h-10 ml-auto object-contain rounded" 
-              />
-            )}
-          </CardHeader>
-          <CardContent className="flex flex-col items-center">
-            <CircularProgress 
-              value={totalScore} 
-              size={180} 
-              color="stroke-blue-600"
-            >
-              <div className="flex flex-col items-center">
-                <span className="text-4xl font-bold">{totalScore}</span>
-                <span className="text-sm text-muted-foreground">de 100</span>
-              </div>
-            </CircularProgress>
-          </CardContent>
-        </Card>
-        
-        <ScoreCard 
-          title="SEO Score" 
-          score={seoScore} 
-          icon={<Settings />} 
-          color="text-blue-600" 
-          bgColor="bg-blue-100" 
+        <OverallScore 
+          totalScore={totalScore} 
+          logoUrl={logoUrl} 
+          domain={domain} 
         />
         
-        <ScoreCard 
-          title="AIO Score" 
-          score={aioScore} 
-          icon={<Bot />} 
-          color="text-purple-600" 
-          bgColor="bg-purple-100" 
-        />
-        
-        <ScoreCard 
-          title="Presença em IA" 
-          score={llmScore} 
-          icon={<Globe />} 
-          color="text-indigo-600" 
-          bgColor="bg-indigo-100" 
-        />
-        
-        <ScoreCard 
-          title="Performance Técnica" 
-          score={performanceScore} 
-          icon={<Zap />} 
-          color="text-green-600" 
-          bgColor="bg-green-100" 
-        />
-        
-        <ScoreCard 
-          title="Presença em Diretórios" 
-          score={directoryScore} 
-          icon={<MapPin />} 
-          color="text-orange-600" 
-          bgColor="bg-orange-100" 
-        />
-        
-        <ScoreCard 
-          title="Keywords Tracking" 
-          score={keywordScore} 
-          icon={<KeySquare />} 
-          color="text-yellow-600" 
-          bgColor="bg-yellow-100" 
+        <ScoreCardsGrid 
+          seoScore={seoScore}
+          aioScore={aioScore}
+          llmScore={llmScore}
+          performanceScore={performanceScore}
+          directoryScore={directoryScore}
+          keywordScore={keywordScore}
         />
       </div>
       
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Recomendações Principais</h2>
-          
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleViewMoreRecommendations}
-          >
-            Ver todas 
-            <ArrowRight className="ml-1 h-4 w-4" />
-          </Button>
-        </div>
-        
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {recommendations.map(rec => (
-            <RecommendationCard
-              key={rec.id}
-              title={rec.title}
-              description={rec.description}
-              impact={rec.impact}
-              type={rec.type}
-              onLearnMore={handleViewMoreRecommendations}
-            />
-          ))}
-        </div>
-      </div>
+      <RecommendationsSection 
+        recommendations={recommendations}
+        onViewMore={handleViewMoreRecommendations}
+      />
       
-      {user ? (
-        <div className="mt-8">
-          <Tabs defaultValue="seo">
-            <TabsList className="grid w-full grid-cols-3 lg:w-auto">
-              <TabsTrigger value="seo">Evolução SEO</TabsTrigger>
-              <TabsTrigger value="aio">Evolução AIO</TabsTrigger>
-              <TabsTrigger value="llm">Evolução LLM</TabsTrigger>
-            </TabsList>
-            <TabsContent value="seo" className="mt-6">
-              <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-                <p className="text-muted-foreground">Gráfico de evolução SEO</p>
-              </div>
-            </TabsContent>
-            <TabsContent value="aio" className="mt-6">
-              <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-                <p className="text-muted-foreground">Gráfico de evolução AIO</p>
-              </div>
-            </TabsContent>
-            <TabsContent value="llm" className="mt-6">
-              <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-                <p className="text-muted-foreground">Gráfico de evolução LLM</p>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-      ) : (
-        <Card className="mt-8">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <h3 className="text-lg font-semibold mb-2">
-                Faça login para ver dados históricos e todas as recomendações
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                As informações detalhadas e o histórico de evolução estão disponíveis para utilizadores registados.
-              </p>
-              <Button>
-                Fazer Login
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <HistoryTabs 
+        isUserLoggedIn={!!user} 
+        onLogin={() => {}} // Add navigation to login page when needed
+      />
     </SuiteLayout>
   );
 };
