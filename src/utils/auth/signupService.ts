@@ -16,7 +16,7 @@ export async function signUpWithEmail(data: SignUpData) {
     // Check if the email already exists in the users table before attempting signup
     const emailExists = await checkEmailExists(email);
     if (emailExists) {
-      console.log('Email already exists in users table:', email);
+      console.log('Email already exists:', email);
       throw new Error('Este email já está em uso por outro usuário.');
     }
     
@@ -81,7 +81,7 @@ export async function signUpWithEmail(data: SignUpData) {
           
           if (response.error) {
             console.error('Error from email function:', response.error);
-            throw new Error(`Email function error: ${response.error}`);
+            // Continue with auth flow even if this fails
           }
           
           console.log('Custom confirmation email sent successfully');

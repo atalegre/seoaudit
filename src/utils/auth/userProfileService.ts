@@ -136,19 +136,33 @@ export async function checkEmailExists(email: string): Promise<boolean> {
   try {
     console.log("Checking if email exists:", email);
     
-    // Also check in auth.users to avoid race conditions
-    const { data: userData, error: authError } = await supabase.auth.admin.listUsers({
-      filter: {
-        email: email
+    // Check in the auth.users table (note: we can't directly query this table via the client SDK)
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      // If current user has this email, it exists but is theirs
+      if (user && user.email === email) {
+        return false; // Don't count the user's own email
       }
-    }).catch(err => {
-      console.error("Cannot access auth.users, fallback to only checking public.users", err);
-      return { data: null, error: err };
-    });
-    
-    if (userData?.users?.length > 0) {
-      console.log("Email exists in auth.users:", email);
-      return true;
+      
+      // Try a sign-in to check if user exists (this is a workaround)
+      const { error: signInError } = await supabase.auth.signInWithOtp({
+        email: email,
+        options: {
+          shouldCreateUser: false
+        }
+      });
+      
+      if (signInError && signInError.message?.includes('User not found')) {
+        console.log("Email not found in auth system:", email);
+        // Not found in auth system, continue to check public.users
+      } else {
+        console.log("Email likely exists in auth system:", email);
+        return true;
+      }
+    } catch (authError) {
+      console.error("Error checking email in auth system:", authError);
+      // Continue to check public.users
     }
     
     // Check in the public.users table

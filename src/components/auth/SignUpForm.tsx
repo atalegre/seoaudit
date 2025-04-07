@@ -46,6 +46,7 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
         toast({
           title: "Usuário já registrado",
           description: "Este email já está registrado. Por favor, faça login.",
+          duration: 5000,
         });
         navigate('/signin', { 
           state: { email: values.email },
