@@ -75,10 +75,10 @@ export async function createOrUpdateAdmin(
     console.log("Setting up admin user:", email);
     
     // Check if admin user exists in auth
+    // Using proper query parameters without filter
     const { data: existingUsers, error: searchError } = await supabase.auth.admin.listUsers({
-      filter: {
-        email: email
-      }
+      page: 1,
+      perPage: 1,
     });
     
     if (searchError) {
@@ -88,13 +88,18 @@ export async function createOrUpdateAdmin(
     
     let adminUserId: string | null = null;
     
-    // If admin exists in auth system
-    if (existingUsers?.users && existingUsers.users.length > 0) {
-      adminUserId = existingUsers.users[0].id;
-      console.log("Admin user exists in auth, ID:", adminUserId);
-    } else {
-      // If admin doesn't exist yet, we don't create it automatically
-      // as it requires a password. This will be handled during normal signup.
+    // If admin exists in auth system - find the admin user by email
+    if (existingUsers?.users) {
+      const adminUser = existingUsers.users.find(user => user.email === email);
+      if (adminUser) {
+        adminUserId = adminUser.id;
+        console.log("Admin user exists in auth, ID:", adminUserId);
+      }
+    }
+    
+    // If admin doesn't exist yet, we don't create it automatically
+    // as it requires a password. This will be handled during normal signup.
+    if (!adminUserId) {
       console.log("Admin user does not exist in auth yet");
       return;
     }

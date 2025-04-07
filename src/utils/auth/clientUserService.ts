@@ -15,10 +15,10 @@ export async function createOrUpdateClient(
     console.log("Setting up client user:", email);
     
     // Check if client user exists in auth
+    // Using proper query parameters without filter
     const { data: existingUsers, error: searchError } = await supabase.auth.admin.listUsers({
-      filter: {
-        email: email
-      }
+      page: 1,
+      perPage: 100, // Using a higher limit to ensure we can find the user
     });
     
     if (searchError) {
@@ -28,11 +28,17 @@ export async function createOrUpdateClient(
     
     let clientUserId: string | null = null;
     
-    // If client exists in auth system
-    if (existingUsers?.users && existingUsers.users.length > 0) {
-      clientUserId = existingUsers.users[0].id;
-      console.log("Client user exists in auth, ID:", clientUserId);
-    } else {
+    // If client exists in auth system - find by email
+    if (existingUsers?.users) {
+      const clientUser = existingUsers.users.find(user => user.email === email);
+      if (clientUser) {
+        clientUserId = clientUser.id;
+        console.log("Client user exists in auth, ID:", clientUserId);
+      }
+    }
+    
+    // If client doesn't exist yet, create it
+    if (!clientUserId) {
       // Create client user in auth system if it doesn't exist
       const { data, error } = await supabase.auth.admin.createUser({
         email,
@@ -67,4 +73,3 @@ export async function createOrUpdateClient(
     // Don't throw here as this is a setup function that should not break initialization
   }
 }
-
