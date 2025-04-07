@@ -94,7 +94,7 @@ const SuiteLayout = ({
         </Sidebar>
 
         {/* Main content area with proper spacing */}
-        <div className="flex-1 flex flex-col md:pl-[14rem] lg:pl-[14rem] group-data-[collapsible=icon]:md:pl-[3.5rem] group-data-[collapsible=icon]:lg:pl-[3.5rem] transition-all duration-200 ease-in-out">
+        <div className="flex-1 flex flex-col md:pl-[var(--sidebar-width)] lg:pl-[var(--sidebar-width)] group-data-[collapsible=icon]:md:pl-[var(--sidebar-width-icon)] group-data-[collapsible=icon]:lg:pl-[var(--sidebar-width-icon)] transition-all duration-200 ease-in-out">
           <header className="flex h-14 items-center border-b px-4 lg:px-6 sticky top-0 bg-background z-10">
             <SidebarTrigger />
             <div className="flex flex-1 items-center justify-between">
