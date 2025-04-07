@@ -33,10 +33,17 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         // Check if profile is an error or valid profile data
         if (profile && typeof profile === 'object' && !('error' in profile)) {
-          setUserProfile(profile as UserProfile);
-          // Type assertion here to ensure role exists
-          const profileRole = (profile as UserProfile).role;
-          setRole(profileRole);
+          // Use type assertion to ensure TypeScript knows this is a UserProfile
+          const userProfileData = profile as UserProfile;
+          setUserProfile(userProfileData);
+          
+          // Safely access the role property with nullish check
+          if (userProfileData && typeof userProfileData.role === 'string') {
+            setRole(userProfileData.role);
+          } else {
+            // Default if role is not found
+            setRole('user');
+          }
         } else {
           // If no profile exists yet but we have a user, default to user role
           // unless it's the admin email

@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Client } from './types';
 import { toast } from 'sonner';
@@ -92,7 +93,7 @@ export async function saveClientsToDatabase(clients: Client[]): Promise<{success
     // @ts-ignore - This is necessary because the auto-generated types don't include the clients table yet
     const { data, error } = await supabase
       .from('clients')
-      .upsert(clientsToSave as any, { 
+      .upsert(clientsToSave, { 
         onConflict: 'id',
         ignoreDuplicates: false 
       });
@@ -158,8 +159,8 @@ export async function updateClientInDatabase(client: Client): Promise<void> {
     // @ts-ignore - This is necessary because the auto-generated types don't include the clients table yet
     const { error } = await supabase
       .from('clients')
-      .update(clientToUpdate as any)
-      .eq('id', client.id as any);
+      .update(clientToUpdate)
+      .eq('id', client.id);
     
     if (error) {
       throw error;
@@ -189,7 +190,7 @@ export async function getClientFromDatabase(clientId: number): Promise<Client | 
     const { data, error } = await supabase
       .from('clients')
       .select('*')
-      .eq('id', clientId as any)
+      .eq('id', clientId)
       .maybeSingle();
     
     if (error) {
@@ -209,20 +210,21 @@ export async function getClientFromDatabase(clientId: number): Promise<Client | 
       return null;
     }
     
-    // Transform the data to ensure all properties match Client type
+    // Transform the data to ensure all properties match Client type with proper type safety
     const client: Client = {
+      // Use type assertions and default values to handle potential nulls
       id: Number(data?.id || 0),
       name: data?.name || '',
       website: data?.website || '',
-      contactName: data?.contactname || '', // Note the lowercase field name from DB
-      contactEmail: data?.contactemail || '', // Note the lowercase field name from DB
+      contactName: data?.contactname || '', 
+      contactEmail: data?.contactemail || '', 
       notes: data?.notes || '',
       status: data?.status || 'pending',
       account: data?.account || 'Admin',
-      seoScore: data?.seoscore || 0, // Note the lowercase field name from DB
-      aioScore: data?.aioscore || 0, // Note the lowercase field name from DB
-      lastAnalysis: data?.lastanalysis || new Date().toISOString(), // Note the lowercase field name from DB
-      lastReport: data?.lastreport || '' // Note the lowercase field name from DB
+      seoScore: data?.seoscore || 0, 
+      aioScore: data?.aioscore || 0, 
+      lastAnalysis: data?.lastanalysis || new Date().toISOString(), 
+      lastReport: data?.lastreport || '' 
     };
     
     return client;

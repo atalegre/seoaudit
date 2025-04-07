@@ -30,7 +30,7 @@ export async function getAllUsers(): Promise<User[]> {
         return {} as User; // Return empty user on error
       }
       
-      // Use safe property access with optional chaining
+      // Use safe property access with optional chaining and default values
       return {
         id: user?.id || '',
         name: user?.name || '',
@@ -52,7 +52,7 @@ export async function getUserById(userId: string): Promise<User | null> {
     const { data, error } = await supabase
       .from('users')
       .select('*')
-      .eq('id', userId as any)
+      .eq('id', userId)
       .single();
     
     if (error) throw error;
@@ -62,13 +62,13 @@ export async function getUserById(userId: string): Promise<User | null> {
       return null; // Return null on error
     }
     
-    // Ensure the role is properly typed using safe property access
-    return data ? {
+    // Ensure the role is properly typed using safe property access and default values
+    return {
       id: data?.id || '',
       name: data?.name || '',
       email: data?.email || '',
       role: (data?.role as 'admin' | 'editor' | 'user') || 'user'
-    } : null;
+    };
   } catch (error) {
     console.error('Erro ao buscar detalhes do usuário:', error);
     return null;
@@ -92,7 +92,7 @@ export async function createUser(userData: {
     
     const { data, error } = await supabase
       .from('users')
-      .insert([userData] as any)
+      .insert([userData])
       .select();
     
     if (error) throw error;
@@ -101,13 +101,14 @@ export async function createUser(userData: {
       return null; // Return null on error
     }
     
-    // Ensure the role is properly typed with safe property access
-    return data?.[0] ? {
-      id: data[0]?.id || '',
-      name: data[0]?.name || '',
-      email: data[0]?.email || '',
-      role: (data[0]?.role as 'admin' | 'editor' | 'user') || 'user'
-    } : null;
+    // Safe access with type assertions and default values
+    const createdUser = data[0];
+    return {
+      id: createdUser?.id || '',
+      name: createdUser?.name || '',
+      email: createdUser?.email || '',
+      role: (createdUser?.role as 'admin' | 'editor' | 'user') || 'user'
+    };
   } catch (error) {
     console.error('Erro ao criar usuário:', error);
     throw error;
@@ -126,8 +127,8 @@ export async function updateUser(userId: string, userData: { name?: string, emai
     
     const { data, error } = await supabase
       .from('users')
-      .update(userData as any)
-      .eq('id', userId as any)
+      .update(userData)
+      .eq('id', userId)
       .select();
     
     if (error) throw error;
@@ -136,13 +137,14 @@ export async function updateUser(userId: string, userData: { name?: string, emai
       return null; // Return null on error
     }
     
-    // Ensure the role is properly typed with safe property access
-    return data?.[0] ? {
-      id: data[0]?.id || '',
-      name: data[0]?.name || '',
-      email: data[0]?.email || '',
-      role: (data[0]?.role as 'admin' | 'editor' | 'user') || 'user'
-    } : null;
+    // Safe access with type assertions and default values
+    const updatedUser = data[0];
+    return {
+      id: updatedUser?.id || '',
+      name: updatedUser?.name || '',
+      email: updatedUser?.email || '',
+      role: (updatedUser?.role as 'admin' | 'editor' | 'user') || 'user'
+    };
   } catch (error) {
     console.error('Erro ao atualizar usuário:', error);
     throw error;
@@ -157,7 +159,7 @@ export async function deleteUser(userId: string): Promise<boolean> {
     const { error } = await supabase
       .from('users')
       .delete()
-      .eq('id', userId as any);
+      .eq('id', userId);
     
     if (error) throw error;
     return true;

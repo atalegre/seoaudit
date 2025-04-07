@@ -1,135 +1,188 @@
-
 import { supabase } from '@/integrations/supabase/client';
-import { CookieSettings, CONSENT_KEY } from './types';
 
 /**
- * Storage-related utilities for cookie consent
+ * Stores cookie consent preferences in Supabase
  */
-export const CookieConsentStorage = {
-  /**
-   * Get stored cookie consent settings from localStorage
-   */
-  getFromLocalStorage(): CookieSettings | null {
-    try {
-      const stored = localStorage.getItem(CONSENT_KEY);
-      return stored ? JSON.parse(stored) : null;
-    } catch (e) {
-      console.error('Error reading cookie consent from localStorage:', e);
-      return null;
-    }
-  },
-  
-  /**
-   * Save cookie consent settings to localStorage
-   */
-  saveToLocalStorage(settings: CookieSettings): void {
-    try {
-      localStorage.setItem(CONSENT_KEY, JSON.stringify(settings));
-    } catch (e) {
-      console.error('Error saving cookie consent to localStorage:', e);
-    }
-  },
-  
-  /**
-   * Remove cookie consent settings from localStorage
-   */
-  removeFromLocalStorage(): void {
-    localStorage.removeItem(CONSENT_KEY);
-  },
-  
-  /**
-   * Save cookie consent settings to database if user is authenticated
-   */
-  async saveToDatabase(settings: CookieSettings): Promise<boolean> {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
-        return false;
-      }
-      
-      const userId = session.user.id;
-      
-      // Store in the api_keys table under a special key_type
-      const { error } = await supabase
-        .from('api_keys')
-        .upsert({
-          key_type: 'cookie_consent',
-          key_value: JSON.stringify(settings),
-          user_id: userId,
-          updated_at: new Date().toISOString()
-        }, { onConflict: 'key_type, user_id' });
-        
-      if (error) {
-        console.error('Error saving cookie consent to database:', error);
-        return false;
-      }
-      
-      console.log('Cookie consent preferences saved to database');
-      return true;
-    } catch (e) {
-      console.error('Error saving cookie consent to database:', e);
-      return false;
-    }
-  },
-  
-  /**
-   * Remove cookie consent settings from database if user is authenticated
-   */
-  async removeFromDatabase(): Promise<boolean> {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
-        return false;
-      }
-      
-      const userId = session.user.id;
-      
-      const { error } = await supabase
-        .from('api_keys')
-        .delete()
-        .eq('key_type', 'cookie_consent')
-        .eq('user_id', userId);
-        
-      if (error) {
-        console.error('Error deleting cookie consent from database:', error);
-        return false;
-      }
-      
-      console.log('Cookie consent preferences removed from database');
-      return true;
-    } catch (e) {
-      console.error('Error removing cookie consent from database:', e);
-      return false;
-    }
-  },
-  
-  /**
-   * Load consent settings from database if user is authenticated
-   */
-  async loadFromDatabase(): Promise<CookieSettings | null> {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
-        return null;
-      }
-      
-      const userId = session.user.id;
-      
-      const { data, error } = await supabase
-        .from('api_keys')
-        .select('key_value')
-        .eq('key_type', 'cookie_consent')
-        .eq('user_id', userId)
-        .single();
-      
-      if (error || !data) {
-        return null;
-      }
-      
-      return JSON.parse(data.key_value);
-    } catch (e) {
-      console.error('Error loading cookie consent from database:', e);
-      return null;
-    }
+export async function storeCookieConsent(
+  userId: string,
+  preferences: {
+    necessary: boolean;
+    analytics: boolean;
+    marketing: boolean;
+    preferences: boolean;
   }
-};
+): Promise<boolean> {
+  try {
+    // First check if user exists
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('id', userId)
+      .maybeSingle();
+    
+    if (userError || !userData) {
+      console.error('User not found for cookie consent storage:', userError);
+      return false;
+    }
+    
+    // Store preferences in cookie_consents table
+    // @ts-ignore - This is necessary because the auto-generated types don't include this table yet
+    const { error } = await supabase
+      .from('cookie_consents')
+      .upsert({
+        user_id: userId,
+        necessary: preferences.necessary,
+        analytics: preferences.analytics,
+        marketing: preferences.marketing,
+        preferences: preferences.preferences,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'user_id' });
+    
+    if (error) {
+      console.error('Error storing cookie consent:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Exception storing cookie consent:', error);
+    return false;
+  }
+}
+
+/**
+ * Stores API key for a user
+ */
+export async function storeApiKeyConsent(
+  userId: string,
+  keyType: string,
+  keyValue: string
+): Promise<boolean> {
+  try {
+    // @ts-ignore - This is necessary because the auto-generated types don't include this table yet
+    const { error } = await supabase
+      .from('api_keys')
+      .upsert({
+        key_type: keyType,
+        key_value: keyValue,
+        user_id: userId,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'user_id,key_type' });
+    
+    if (error) {
+      console.error('Error storing API key consent:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Exception storing API key consent:', error);
+    return false;
+  }
+}
+
+/**
+ * Gets cookie consent preferences from Supabase
+ */
+export async function getCookieConsent(userId: string): Promise<any> {
+  try {
+    // @ts-ignore - This is necessary because the auto-generated types don't include this table yet
+    const { data, error } = await supabase
+      .from('cookie_consents')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle();
+    
+    if (error) {
+      console.error('Error getting cookie consent:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Exception getting cookie consent:', error);
+    return null;
+  }
+}
+
+/**
+ * Gets API key for a user
+ */
+export async function getApiKeyConsent(
+  userId: string,
+  keyType: string
+): Promise<string | null> {
+  try {
+    // @ts-ignore - This is necessary because the auto-generated types don't include this table yet
+    const { data, error } = await supabase
+      .from('api_keys')
+      .select('key_value')
+      .eq('key_type', keyType)
+      .eq('user_id', userId)
+      .maybeSingle();
+    
+    if (error) {
+      console.error('Error getting API key consent:', error);
+      return null;
+    }
+    
+    if (!data || typeof data !== 'object' || !('key_value' in data)) {
+      return null;
+    }
+    
+    return data.key_value;
+  } catch (error) {
+    console.error('Exception getting API key consent:', error);
+    return null;
+  }
+}
+
+/**
+ * Revokes cookie consent preferences in Supabase
+ */
+export async function revokeCookieConsent(userId: string): Promise<boolean> {
+  try {
+    // @ts-ignore - This is necessary because the auto-generated types don't include this table yet
+    const { error } = await supabase
+      .from('cookie_consents')
+      .delete()
+      .eq('user_id', userId);
+    
+    if (error) {
+      console.error('Error revoking cookie consent:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Exception revoking cookie consent:', error);
+    return false;
+  }
+}
+
+/**
+ * Revokes API key for a user
+ */
+export async function revokeApiKeyConsent(
+  userId: string,
+  keyType: string
+): Promise<boolean> {
+  try {
+    // @ts-ignore - This is necessary because the auto-generated types don't include this table yet
+    const { error } = await supabase
+      .from('api_keys')
+      .delete()
+      .eq('key_type', keyType)
+      .eq('user_id', userId);
+    
+    if (error) {
+      console.error('Error revoking API key consent:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Exception revoking API key consent:', error);
+    return false;
+  }
+}

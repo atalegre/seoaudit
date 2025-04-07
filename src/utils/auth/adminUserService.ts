@@ -20,7 +20,7 @@ export async function createOrUpdateAdmin() {
       const { data: existingAdmin } = await supabase
         .from('users')
         .select('*')
-        .eq('email', ADMIN_EMAIL as any)
+        .eq('email', ADMIN_EMAIL)
         .maybeSingle();
       
       if (existingAdmin && typeof existingAdmin === 'object' && !('error' in existingAdmin)) {
@@ -30,8 +30,8 @@ export async function createOrUpdateAdmin() {
         if (existingAdmin?.role !== 'admin') {
           await supabase
             .from('users')
-            .update({ role: 'admin' } as any)
-            .eq('email', ADMIN_EMAIL as any);
+            .update({ role: 'admin' })
+            .eq('email', ADMIN_EMAIL);
           console.log("Updated admin role in users table");
         }
       }
@@ -90,7 +90,7 @@ export async function createOrUpdateAdmin() {
           name: 'Admin User',
           role: 'admin',
           updated_at: new Date().toISOString()
-        } as any, { onConflict: 'email' });
+        }, { onConflict: 'email' });
       
       if (error) {
         console.error("Error upserting admin in users table:", error);
