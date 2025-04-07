@@ -21,6 +21,14 @@ const SeoAnalysisPage = () => {
   const [activeTab, setActiveTab] = useState('desktop');
   const { toast } = useToast();
 
+  // Load the last analyzed URL from localStorage if available
+  useEffect(() => {
+    const lastUrl = localStorage.getItem('lastAnalyzedUrl');
+    if (lastUrl) {
+      setUrl(lastUrl);
+    }
+  }, []);
+
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUrl(e.target.value);
   };
@@ -37,6 +45,9 @@ const SeoAnalysisPage = () => {
 
     try {
       setIsAnalyzing(true);
+      
+      // Save the URL to localStorage
+      localStorage.setItem('lastAnalyzedUrl', url);
       
       // Simular carregamento sequencial (desktop primeiro, depois mobile)
       // Na implementação real, você pode fazer ambas as chamadas de forma paralela

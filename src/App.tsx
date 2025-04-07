@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 
 import Index from "./pages/Index";
 import ResultsPage from "./pages/ResultsPage";
@@ -81,31 +81,27 @@ function App() {
                 <Route path="/verification" element={<VerificationPage />} />
                 <Route path="/auth/callback" element={<Navigate to="/dashboard" />} />
                 
-                <Route path="/dashboard" element={<DashboardLayout>
-                  <Routes>
-                    <Route path="" element={<DashboardPage />} />
-                    <Route path="client" element={<ClientDashboardPage />} />
-                    <Route path="client/:id" element={<ClientPage />} />
-                    <Route path="clients" element={<ClientsPage />} />
-                    <Route path="bulk-import" element={<BulkImportPage />} />
-                    <Route path="settings" element={<SettingsPage />} />
-                    <Route path="blog-posts" element={<BlogPostsPage />} />
-                  </Routes>
-                </DashboardLayout>} />
+                <Route path="/dashboard" element={<DashboardLayout><Outlet /></DashboardLayout>}>
+                  <Route index element={<DashboardPage />} />
+                  <Route path="client" element={<ClientDashboardPage />} />
+                  <Route path="client/:id" element={<ClientPage />} />
+                  <Route path="clients" element={<ClientsPage />} />
+                  <Route path="bulk-import" element={<BulkImportPage />} />
+                  <Route path="settings" element={<SettingsPage />} />
+                  <Route path="blog-posts" element={<BlogPostsPage />} />
+                </Route>
                 
-                <Route path="/suite" element={<SuiteLayout>
-                  <Routes>
-                    <Route index element={<SuiteDashboard />} />
-                    <Route path="seo" element={<SeoAnalysisPage />} />
-                    <Route path="aio" element={<SuiteDashboard />} />
-                    <Route path="llm" element={<SuiteDashboard />} />
-                    <Route path="directories" element={<SuiteDashboard />} />
-                    <Route path="keywords" element={<SuiteDashboard />} />
-                    <Route path="recommender" element={<SuiteDashboard />} />
-                    <Route path="writer" element={<SuiteDashboard />} />
-                    <Route path="reports" element={<SuiteDashboard />} />
-                  </Routes>
-                </SuiteLayout>} />
+                <Route path="/suite" element={<SuiteLayout><Outlet /></SuiteLayout>}>
+                  <Route index element={<SuiteDashboard />} />
+                  <Route path="seo" element={<SeoAnalysisPage />} />
+                  <Route path="aio" element={<SuiteDashboard />} />
+                  <Route path="llm" element={<SuiteDashboard />} />
+                  <Route path="directories" element={<SuiteDashboard />} />
+                  <Route path="keywords" element={<SuiteDashboard />} />
+                  <Route path="recommender" element={<SuiteDashboard />} />
+                  <Route path="writer" element={<SuiteDashboard />} />
+                  <Route path="reports" element={<SuiteDashboard />} />
+                </Route>
                 
                 <Route path="/blog" element={<BlogPage />} />
                 <Route path="/blog/:slug" element={<BlogPostPage />} />
