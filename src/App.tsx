@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -36,7 +37,7 @@ import { LanguageProvider } from "./contexts/LanguageContext";
 import CookieConsent from "./components/CookieConsent";
 import ScrollToTop from "./components/ScrollToTop";
 import SuiteDashboard from "./pages/suite/SuiteDashboard";
-import DashboardLayout from "./pages/dashboard/DashboardLayout";
+import DashboardLayout from "./components/dashboard/DashboardLayout";
 import SuiteLayout from "./pages/suite/SuiteLayout";
 import SeoAnalysisPage from "./pages/suite/SeoAnalysisPage";
 

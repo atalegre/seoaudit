@@ -101,7 +101,7 @@ const CoreWebVitalsPanel: React.FC<CoreWebVitalsPanelProps> = ({
             <span className="font-medium">Precisa melhorar:</span> LCP ≤ 4,0s • CLS ≤ 0,25 • FID ≤ 300ms
           </p>
           <p>
-            <span className="font-medium">Ruim:</span> LCP > 4,0s • CLS > 0,25 • FID > 300ms
+            <span className="font-medium">Ruim:</span> LCP {">"} 4,0s • CLS {">"} 0,25 • FID {">"} 300ms
           </p>
         </div>
       </CardContent>
