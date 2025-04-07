@@ -43,8 +43,9 @@ const AnalysisErrorView: React.FC<AnalysisErrorViewProps> = ({
                       Google Cloud Console <ExternalLink className="h-3 w-3 ml-1" />
                     </a></li>
                     <li>Crie um projeto ou selecione um existente</li>
-                    <li>Ative a API PageSpeed Insights</li>
-                    <li>Crie uma chave de API na seção Credenciais</li>
+                    <li>Ative a API PageSpeed Insights em "Biblioteca de APIs"</li>
+                    <li>Crie uma chave de API na seção "Credenciais"</li>
+                    <li>Copie a chave gerada e configure-a como variável de ambiente</li>
                   </ol>
                 </div>
               )}
