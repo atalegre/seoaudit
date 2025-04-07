@@ -6,7 +6,6 @@ import {
   KeySquare, Brain, Pencil, FileText, 
   Home
 } from 'lucide-react';
-import { cn } from "@/lib/utils";
 import { 
   SidebarMenu, 
   SidebarMenuButton, 
@@ -76,16 +75,17 @@ const SidebarContent = () => {
   const location = useLocation();
 
   return (
-    <SidebarGroupContent>
-      <SidebarMenu>
+    <SidebarGroupContent className="py-1">
+      <SidebarMenu className="space-y-1">
         {sidebarItems.map((item) => (
           <SidebarMenuItem key={item.path}>
             <SidebarMenuButton
               tooltip={item.tooltip}
               isActive={location.pathname === item.path}
               onClick={() => navigate(item.path)}
+              className="h-9"
             >
-              <item.icon className="w-5 h-5" />
+              <item.icon className="w-4 h-4" />
               <span>{item.label}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>

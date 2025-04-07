@@ -54,7 +54,7 @@ const SuiteLayout = ({
     <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full">
         <Sidebar>
-          <SidebarHeader className="flex items-center justify-center py-6">
+          <SidebarHeader className="flex items-center justify-center py-4">
             <img 
               src="/lovable-uploads/d5a32965-2a6a-49a6-8474-6efb96afd0f7.png" 
               alt="SEOAudit Logo" 
@@ -64,7 +64,7 @@ const SuiteLayout = ({
 
           <SidebarContent className="px-2">
             <SidebarGroup>
-              <SidebarGroupLabel>Menu Principal</SidebarGroupLabel>
+              <SidebarGroupLabel className="px-2 py-1">Menu Principal</SidebarGroupLabel>
               <SidebarContentItems />
             </SidebarGroup>
           </SidebarContent>
