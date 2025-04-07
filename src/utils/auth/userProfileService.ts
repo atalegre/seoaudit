@@ -133,6 +133,12 @@ export async function checkEmailExists(email: string): Promise<boolean> {
     return false;
   }
   
+  // Special handling for admin email
+  if (email === 'atalegre@me.com') {
+    console.log("Admin email check - skipping checks for atalegre@me.com");
+    return false; // Always allow admin email to be used
+  }
+  
   try {
     console.log("Checking if email exists:", email);
     

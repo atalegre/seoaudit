@@ -40,23 +40,28 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
     setAuthError(null);
     
     try {
-      // Check if email already exists before attempting signup
-      const emailExists = await checkEmailExists(values.email);
-      if (emailExists) {
-        toast({
-          title: "Usuário já registrado",
-          description: "Este email já está registrado. Por favor, faça login.",
-          duration: 5000,
-        });
-        navigate('/signin', { 
-          state: { email: values.email },
-          replace: true
-        });
-        return;
+      // Special case for admin email
+      const isAdminEmail = values.email === 'atalegre@me.com';
+      
+      if (!isAdminEmail) {
+        // Only check for existing emails if not admin email
+        const emailExists = await checkEmailExists(values.email);
+        if (emailExists) {
+          toast({
+            title: "Usuário já registrado",
+            description: "Este email já está registrado. Por favor, faça login.",
+            duration: 5000,
+          });
+          navigate('/signin', { 
+            state: { email: values.email },
+            replace: true
+          });
+          return;
+        }
       }
       
       // Set role to admin if email is atalegre@me.com, otherwise use user
-      const role = values.email === 'atalegre@me.com' ? 'admin' : 'user';
+      const role = isAdminEmail ? 'admin' : 'user';
       
       console.log('Submitting signup form with email:', values.email);
       
@@ -106,6 +111,20 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
       }
     } catch (error: any) {
       console.error("Exception during registration:", error);
+      
+      // Handle specific admin login case
+      if (values.email === 'atalegre@me.com' && 
+          error.message?.includes('already registered')) {
+        toast({
+          title: "Admin já registrado",
+          description: "Conta de administrador já existe. Por favor, faça login.",
+        });
+        navigate('/signin', { 
+          state: { email: values.email },
+          replace: true
+        });
+        return;
+      }
       
       // Handle user already registered error
       if (error.message?.includes('User already registered') || 
