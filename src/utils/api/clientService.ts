@@ -28,7 +28,7 @@ export async function getClientsFromDatabase(): Promise<Client[]> {
     
     console.log('Fetched clients:', data);
     // Transform the data to ensure all properties match Client type
-    const clients: Client[] = (data || []).map(client => {
+    const clients: Client[] = (data || []).map((client: any) => {
       // Check if client is an error object first
       if (!client || typeof client !== 'object' || 'error' in client) {
         return {} as Client; // Return empty client on error
@@ -157,7 +157,7 @@ export async function updateClientInDatabase(client: Client): Promise<void> {
     const { error } = await supabase
       .from('clients')
       .update(clientToUpdate)
-      .eq('id', String(client.id)); // Convert to string to match expected type
+      .eq('id', client.id.toString()); // Convert to string to match expected type
     
     if (error) {
       throw error;
@@ -187,7 +187,7 @@ export async function getClientFromDatabase(clientId: number): Promise<Client | 
     const { data, error } = await supabase
       .from('clients')
       .select('*')
-      .eq('id', String(clientId)) // Convert to string to match expected type
+      .eq('id', clientId.toString()) // Convert to string to match expected type
       .maybeSingle();
     
     if (error) {

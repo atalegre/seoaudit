@@ -31,7 +31,7 @@ export async function checkUserRole(userId: string): Promise<UserRole> {
     const { data, error } = await supabase
       .from('users')
       .select('role')
-      .eq('id', userId)
+      .eq('id', userId as any)
       .maybeSingle();
     
     if (error) {
@@ -69,13 +69,13 @@ export async function ensureUserInDb(
     // @ts-ignore - Necessary due to schema type mismatch
     const { error } = await supabase
       .from('users')
-      .upsert({
+      .upsert([{
         id: userId,
         name: name,
         email: email,
         role: role,
         updated_at: new Date().toISOString()
-      }, { onConflict: 'id' });
+      }], { onConflict: 'id' });
     
     if (error) {
       console.error("Error ensuring user in database:", error);
@@ -98,7 +98,7 @@ export async function getUserProfile(userId: string) {
     const { data, error } = await supabase
       .from('users')
       .select('*')
-      .eq('id', userId)
+      .eq('id', userId as any)
       .maybeSingle();
       
     if (error) {

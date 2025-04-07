@@ -38,7 +38,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUserProfile(userProfileData);
           
           // Safely access the role property with nullish check
-          if (userProfileData && typeof userProfileData?.role === 'string') {
+          if (userProfileData && userProfileData?.role) {
             setRole(userProfileData.role);
           } else {
             // Default if role is not found

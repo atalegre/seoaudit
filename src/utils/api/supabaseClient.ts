@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
  */
 export async function getClientAnalysisHistory(clientId: number): Promise<any[]> {
   try {
+    // @ts-ignore - Ignoring type issues with the filter
     const { data, error } = await supabase
       .from('analysis_results')
       .select('*')
@@ -35,10 +36,11 @@ export async function storeApiKey(
     }
     
     // Get user ID from email first
+    // @ts-ignore - Ignoring type issues with the filter
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('id')
-      .eq('email', userEmail)
+      .eq('email', userEmail as any)
       .single();
     
     if (userError) {
@@ -57,12 +59,12 @@ export async function storeApiKey(
     // @ts-ignore - Necessary due to schema type mismatch
     const { error } = await supabase
       .from('api_keys')
-      .upsert({
+      .upsert([{
         user_id: userId,
         key_type: 'google',
         key_value: apiKey || '', // Empty string for null values
         updated_at: new Date().toISOString()
-      });
+      }]);
     
     if (error) throw error;
   } catch (error) {
@@ -81,10 +83,11 @@ export async function getApiKey(userEmail: string): Promise<any | null> {
     }
     
     // Get user ID from email first
+    // @ts-ignore - Ignoring type issues with the filter
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('id')
-      .eq('email', userEmail)
+      .eq('email', userEmail as any)
       .single();
     
     if (userError) {
@@ -108,7 +111,7 @@ export async function getApiKey(userEmail: string): Promise<any | null> {
       .from('api_keys')
       .select('key_value')
       .eq('user_id', userId)
-      .eq('key_type', 'google')
+      .eq('key_type', 'google' as any)
       .single();
     
     if (error) {
@@ -148,7 +151,7 @@ export async function saveAnalysisResult(
     // @ts-ignore - Necessary due to schema type mismatch
     const { error } = await supabase
       .from('analysis_results')
-      .insert({
+      .insert([{
         client_id: clientId.toString(), // Convert to string as the API expects
         url: url,
         seo_data: seo,
@@ -157,7 +160,7 @@ export async function saveAnalysisResult(
         aio_score: aio?.score || 0,
         overall_status: 'completed',
         created_at: new Date().toISOString()
-      });
+      }]);
     
     if (error) throw error;
   } catch (error) {

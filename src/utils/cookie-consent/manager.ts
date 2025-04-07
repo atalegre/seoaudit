@@ -1,7 +1,5 @@
-
-import { CookieSettings } from './types';
 import { CookieConsentStorage } from './storage';
-import { CookieConsentTracking } from './tracking';
+import { CookieSettings } from './types';
 
 /**
  * Main cookie consent manager that coordinates storage and tracking

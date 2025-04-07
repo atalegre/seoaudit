@@ -1,11 +1,17 @@
 
-// Re-export types
-export * from './types';
+// Export types
+export type { CookieSettings } from './types';
 
-// Re-export the main manager
-export { CookieConsentManager } from './manager';
+// Export manager
 export { default } from './manager';
 
-// Export other modules for direct access if needed
-export { CookieConsentStorage } from './storage';
-export { CookieConsentTracking } from './tracking';
+// Export storage
+export { 
+  storeCookieConsent, 
+  getCookieConsent, 
+  revokeCookieConsent,
+  storeApiKeyConsent,
+  getApiKeyConsent,
+  revokeApiKeyConsent,
+  CookieConsentStorage
+} from './storage';

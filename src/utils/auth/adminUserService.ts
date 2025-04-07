@@ -21,7 +21,7 @@ export async function createOrUpdateAdmin() {
       const { data: existingAdmin } = await supabase
         .from('users')
         .select('*')
-        .eq('email', ADMIN_EMAIL)
+        .eq('email', ADMIN_EMAIL as any)
         .maybeSingle();
       
       if (existingAdmin && typeof existingAdmin === 'object' && !('error' in existingAdmin)) {
@@ -33,7 +33,7 @@ export async function createOrUpdateAdmin() {
           await supabase
             .from('users')
             .update({ role: 'admin' })
-            .eq('email', ADMIN_EMAIL);
+            .eq('email', ADMIN_EMAIL as any);
           console.log("Updated admin role in users table");
         }
       }
@@ -88,12 +88,13 @@ export async function createOrUpdateAdmin() {
       // @ts-ignore - Necessary due to schema type mismatch
       const { error } = await supabase
         .from('users')
-        .upsert({
+        .upsert([{
           email: ADMIN_EMAIL,
           name: 'Admin User',
           role: 'admin',
           updated_at: new Date().toISOString()
-        }, { onConflict: 'email' });
+        }])
+        .select();
       
       if (error) {
         console.error("Error upserting admin in users table:", error);
