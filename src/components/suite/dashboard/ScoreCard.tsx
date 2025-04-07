@@ -9,6 +9,7 @@ interface ScoreCardProps {
   icon: React.ReactNode;
   color?: string;
   bgColor?: string;
+  description?: string;
 }
 
 const ScoreCard = ({ 
@@ -16,12 +17,14 @@ const ScoreCard = ({
   score, 
   icon, 
   color = "text-primary", 
-  bgColor = "bg-primary/10" 
+  bgColor = "bg-primary/10",
+  description
 }: ScoreCardProps) => {
   return (
     <Card className="overflow-hidden">
       <CardHeader className="p-4 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        {description && <p className="text-xs text-muted-foreground">{description}</p>}
       </CardHeader>
       <CardContent className="p-4 pt-0">
         <div className="flex items-end justify-between">

@@ -11,7 +11,8 @@ import ScoreCard from '@/components/suite/dashboard/ScoreCard';
 import CircularProgress from '@/components/suite/dashboard/CircularProgress';
 import RecommendationCard from '@/components/suite/dashboard/RecommendationCard';
 import { 
-  ArrowRight, Settings, Bot, Globe, MapPin, RefreshCw 
+  ArrowRight, Settings, Bot, Globe, MapPin, RefreshCw,
+  KeySquare, Brain, Zap
 } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 
@@ -36,6 +37,7 @@ const SuiteDashboard = () => {
   const llmScore = 45;
   const performanceScore = 80;
   const directoryScore = 30;
+  const keywordScore = 58;
   const totalScore = Math.round((seoScore + aioScore + llmScore + performanceScore + directoryScore) / 5);
   
   // Sample recommendations
@@ -97,7 +99,6 @@ const SuiteDashboard = () => {
     }
     
     // Navigate to recommendations page
-    // (This would be implemented with react-router)
   };
   
   const formatDomain = (url: string) => {
@@ -117,6 +118,8 @@ const SuiteDashboard = () => {
       title="Dashboard" 
       domain={domain} 
       lastAnalysisDate={lastAnalysisDate}
+      onRerunAnalysis={handleRerunAnalysis}
+      isAnalyzing={isLoading}
     >
       <div className="mb-6">
         <h1 className="text-2xl font-bold mb-1">Visão Geral do Site</h1>
@@ -141,26 +144,6 @@ const SuiteDashboard = () => {
                 <span className="text-sm text-muted-foreground">de 100</span>
               </div>
             </CircularProgress>
-            
-            <div className="mt-6 w-full">
-              <Button 
-                onClick={handleRerunAnalysis} 
-                className="w-full" 
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                    Analisando...
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                    Reexecutar auditoria
-                  </>
-                )}
-              </Button>
-            </div>
           </CardContent>
         </Card>
         
@@ -191,7 +174,7 @@ const SuiteDashboard = () => {
         <ScoreCard 
           title="Performance Técnica" 
           score={performanceScore} 
-          icon={<Settings />} 
+          icon={<Zap />} 
           color="text-green-600" 
           bgColor="bg-green-100" 
         />
@@ -202,6 +185,14 @@ const SuiteDashboard = () => {
           icon={<MapPin />} 
           color="text-orange-600" 
           bgColor="bg-orange-100" 
+        />
+        
+        <ScoreCard 
+          title="Keywords Tracking" 
+          score={keywordScore} 
+          icon={<KeySquare />} 
+          color="text-yellow-600" 
+          bgColor="bg-yellow-100" 
         />
       </div>
       

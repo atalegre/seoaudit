@@ -16,20 +16,24 @@ import {
 } from "@/components/ui/sidebar";
 import SidebarContentItems from './SidebarContent';
 import { Button } from '@/components/ui/button';
-import { Calendar, LogOut } from 'lucide-react';
+import { Calendar, LogOut, RefreshCw } from 'lucide-react';
 
 interface SuiteLayoutProps {
   children: ReactNode;
   title?: string;
   domain?: string;
   lastAnalysisDate?: string;
+  onRerunAnalysis?: () => void;
+  isAnalyzing?: boolean;
 }
 
 const SuiteLayout = ({ 
   children, 
   title = "Dashboard", 
   domain = "", 
-  lastAnalysisDate = ""
+  lastAnalysisDate = "",
+  onRerunAnalysis,
+  isAnalyzing = false
 }: SuiteLayoutProps) => {
   const navigate = useNavigate();
   const { user } = useUser();
@@ -96,12 +100,33 @@ const SuiteLayout = ({
                 <h2 className="text-lg font-semibold">{title}</h2>
                 {domain && <p className="text-sm text-muted-foreground">{domain}</p>}
               </div>
-              {lastAnalysisDate && (
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <Calendar className="mr-1 h-4 w-4" />
-                  <span>Última análise: {lastAnalysisDate}</span>
-                </div>
-              )}
+              <div className="flex items-center gap-4">
+                {lastAnalysisDate && (
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Calendar className="mr-1 h-4 w-4" />
+                    <span>Última análise: {lastAnalysisDate}</span>
+                  </div>
+                )}
+                {onRerunAnalysis && (
+                  <Button 
+                    onClick={onRerunAnalysis} 
+                    size="sm"
+                    disabled={isAnalyzing}
+                  >
+                    {isAnalyzing ? (
+                      <>
+                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                        Analisando...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                        Executar nova auditoria
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
           <div className="flex-1 p-4 lg:p-6">

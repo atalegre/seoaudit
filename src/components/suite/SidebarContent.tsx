@@ -2,9 +2,9 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
-  Home, Settings, Bot, Globe, MapPin, 
+  Settings, Bot, Globe, MapPin, 
   KeySquare, Brain, Pencil, FileText, 
-  Info, ArrowRight 
+  Home
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { 
