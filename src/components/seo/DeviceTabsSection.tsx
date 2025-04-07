@@ -66,9 +66,6 @@ const DeviceTabsSection: React.FC<DeviceTabsSectionProps> = ({
     );
   }
 
-  // Renderizar componentes com dados disponíveis
-  const currentData = activeTab === 'desktop' ? desktopData : mobileData;
-
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
       <TabsList className="grid w-full grid-cols-2 mb-4">
@@ -79,10 +76,24 @@ const DeviceTabsSection: React.FC<DeviceTabsSectionProps> = ({
       <TabsContent value="desktop" className="space-y-4">
         {desktopData ? (
           <>
-            <DevicePerformancePanel data={desktopData} />
-            <CoreWebVitalsPanel data={desktopData} />
-            <TechnicalAuditsPanel data={desktopData} />
-            <OpportunitiesPanel data={desktopData} />
+            <DevicePerformancePanel 
+              data={desktopData} 
+              deviceType="desktop" 
+            />
+            <CoreWebVitalsPanel 
+              lcp={desktopData.lcp} 
+              cls={desktopData.cls} 
+              fid={desktopData.fid} 
+            />
+            <TechnicalAuditsPanel 
+              mobileFriendly={desktopData.mobileFriendly}
+              security={desktopData.security}
+              headingsStructure={desktopData.headingsStructure}
+              metaTags={desktopData.metaTags}
+            />
+            <OpportunitiesPanel 
+              recommendations={desktopData.recommendations || []} 
+            />
           </>
         ) : (
           <Alert>
@@ -97,10 +108,24 @@ const DeviceTabsSection: React.FC<DeviceTabsSectionProps> = ({
       <TabsContent value="mobile" className="space-y-4">
         {mobileData ? (
           <>
-            <DevicePerformancePanel data={mobileData} />
-            <CoreWebVitalsPanel data={mobileData} />
-            <TechnicalAuditsPanel data={mobileData} />
-            <OpportunitiesPanel data={mobileData} />
+            <DevicePerformancePanel 
+              data={mobileData} 
+              deviceType="mobile" 
+            />
+            <CoreWebVitalsPanel 
+              lcp={mobileData.lcp} 
+              cls={mobileData.cls} 
+              fid={mobileData.fid} 
+            />
+            <TechnicalAuditsPanel 
+              mobileFriendly={mobileData.mobileFriendly}
+              security={mobileData.security}
+              headingsStructure={mobileData.headingsStructure}
+              metaTags={mobileData.metaTags}
+            />
+            <OpportunitiesPanel 
+              recommendations={mobileData.recommendations || []} 
+            />
           </>
         ) : (
           <Alert>
