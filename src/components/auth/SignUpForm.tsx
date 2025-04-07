@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { UserPlus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
-import { signUpWithEmail } from '@/utils/auth/signupService';
+import { signUpWithEmail } from '@/utils/auth/authService';
 import { signupFormSchema, SignUpFormValues } from './schemas/signupSchema';
 import EmailField from './EmailField';
 import PasswordField from './PasswordField';
@@ -41,10 +41,9 @@ const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
     try {
       // Special case for admin email
       const isAdminEmail = values.email === 'atalegre@me.com';
+      const role = isAdminEmail ? 'admin' : 'user';
       
       console.log('Submitting signup form with email:', values.email);
-      
-      const role = isAdminEmail ? 'admin' : 'user';
       
       const result = await signUpWithEmail({
         name: values.name,

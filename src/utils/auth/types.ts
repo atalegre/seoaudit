@@ -20,3 +20,22 @@ export interface UserProfile {
   created_at?: string;
   updated_at?: string;
 }
+
+// Supabase user interface with email
+export interface SupabaseUser {
+  id: string;
+  email?: string;
+  user_metadata?: {
+    full_name?: string;
+    name?: string;
+  };
+}
+
+// Auth result interface
+export interface AuthResult {
+  user: any;
+  session: any;
+  isNewUser?: boolean;
+  needsEmailVerification?: boolean;
+  error?: any;
+}

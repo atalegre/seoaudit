@@ -1,6 +1,6 @@
+
 import { supabase } from '@/integrations/supabase/client';
-import { UserRole } from './types';
-import { UserWithEmail } from './commonTypes';
+import { UserRole, SupabaseUser } from './types';
 
 const ADMIN_EMAIL = 'atalegre@me.com';
 
@@ -16,7 +16,6 @@ export function isAdminEmail(email: string): boolean {
  */
 export async function handleAdminUser(userId: string, email: string, name: string): Promise<void> {
   try {
-    // Special handling for admin account - ensure admin role
     console.log("Handling admin user creation/update for:", email);
     
     // Use upsert to create or update admin user
@@ -35,11 +34,9 @@ export async function handleAdminUser(userId: string, email: string, name: strin
     if (error) {
       console.error("Error handling admin user:", error);
       
-      // If we got a unique constraint violation on email
       if (error.code === '23505' && error.message?.includes('users_email_key')) {
         console.log("Admin email exists, updating role for existing record");
         
-        // For admin email, attempt to update role to admin if record exists
         const { error: updateError } = await supabase
           .from('users')
           .update({ role: 'admin', name: name, updated_at: new Date().toISOString() })
@@ -75,7 +72,6 @@ export async function createOrUpdateAdmin(
     console.log("Setting up admin user:", email);
     
     // Check if admin user exists in auth
-    // Using proper query parameters without filter
     const { data: existingUsers, error: searchError } = await supabase.auth.admin.listUsers({
       page: 1,
       perPage: 1,
@@ -88,11 +84,10 @@ export async function createOrUpdateAdmin(
     
     let adminUserId: string | null = null;
     
-    // If admin exists in auth system - find the admin user by email
+    // Find the admin user by email
     if (existingUsers?.users) {
-      // Use type assertion to make TypeScript know the structure of the user object
       const adminUser = existingUsers.users.find(
-        (user: UserWithEmail) => user.email === email
+        (user: SupabaseUser) => user.email === email
       );
       if (adminUser) {
         adminUserId = adminUser.id;
@@ -165,7 +160,6 @@ export async function signInOrSignUpAdmin(email: string, password: string, name:
     });
 
     if (error) {
-      // If user exists but password doesn't match
       if (error.message?.includes('User already registered')) {
         console.error("Admin exists but password doesn't match:", error);
         throw new Error('Credenciais inválidas para o usuário administrador. Por favor, verifique a senha.');
@@ -203,7 +197,5 @@ export async function signInOrSignUpAdmin(email: string, password: string, name:
   }
 }
 
-// Export everything
-export {
-  ADMIN_EMAIL
-};
+// Export only once
+export { ADMIN_EMAIL };

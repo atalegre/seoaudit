@@ -4,15 +4,21 @@ import { UserRole, UserProfile } from './types';
 import { handleAdminUser, isAdminEmail } from './adminUserService';
 
 /**
- * Creates or updates a regular (non-admin) user record in the database
+ * Creates or updates a user profile in the database
  */
-export async function createOrUpdateRegularUser(
+export async function createUserProfile(
   userId: string,
   email: string,
   name: string,
   role: string = 'user'
 ): Promise<void> {
   try {
+    // Special handling for admin account
+    if (isAdminEmail(email)) {
+      await handleAdminUser(userId, email, name);
+      return;
+    }
+    
     // Use upsert to create or update user
     const { error } = await supabase
       .from('users')
@@ -39,32 +45,7 @@ export async function createOrUpdateRegularUser(
     
     console.log(`User ${email} successfully created or updated with role ${role}`);
   } catch (error) {
-    console.error("Error in createOrUpdateRegularUser:", error);
-    throw error;
-  }
-}
-
-/**
- * Creates or updates a user record in the database
- * This is the main entry point that decides between admin and regular users
- */
-export async function ensureUserInDb(
-  userId: string,
-  email: string,
-  name: string,
-  role: string = 'user'
-): Promise<void> {
-  try {
-    // Special handling for admin account
-    if (isAdminEmail(email)) {
-      await handleAdminUser(userId, email, name);
-      return;
-    }
-    
-    // For regular users
-    await createOrUpdateRegularUser(userId, email, name, role);
-  } catch (error) {
-    console.error("Error ensuring user in DB:", error);
+    console.error("Error in createUserProfile:", error);
     throw error;
   }
 }
@@ -72,7 +53,7 @@ export async function ensureUserInDb(
 /**
  * Gets user profile from the database
  */
-export async function getUserProfile(userId: string) {
+export async function getUserProfile(userId: string): Promise<UserProfile | null> {
   try {
     const { data, error } = await supabase
       .from('users')
@@ -85,9 +66,22 @@ export async function getUserProfile(userId: string) {
       throw error;
     }
     
-    return data;
+    return data as UserProfile;
   } catch (error) {
     console.error("Error getting user profile:", error);
     return null;
+  }
+}
+
+/**
+ * Checks if a user has a specific role
+ */
+export async function checkUserRole(userId: string, expectedRole: UserRole): Promise<boolean> {
+  try {
+    const profile = await getUserProfile(userId);
+    return profile?.role === expectedRole;
+  } catch (error) {
+    console.error("Error checking user role:", error);
+    return false;
   }
 }

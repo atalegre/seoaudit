@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { ensureUserInDb } from './profileService';
+import { createUserProfile } from './profileService';
 import { isAdminEmail } from './adminUserService';
 
 /**
@@ -30,7 +30,7 @@ export async function signInWithEmail(email: string, password: string) {
         // Special handling for admin email
         const role = isAdminEmail(email) ? 'admin' : 'user';
         
-        await ensureUserInDb(
+        await createUserProfile(
           data.user.id,
           email,
           fullName,

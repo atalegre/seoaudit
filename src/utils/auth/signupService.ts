@@ -1,14 +1,51 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { SignUpData } from './types';
-import { ensureUserInDb } from './profileService';
+import { SignUpData, AuthResult } from './types';
+import { createUserProfile } from './profileService';
 import { isAdminEmail, signInOrSignUpAdmin } from './adminUserService';
-import { checkEmailExists } from './emailValidationService';
+
+/**
+ * Checks if an email already exists in users table
+ */
+export async function checkEmailExists(email: string): Promise<boolean> {
+  if (!email) {
+    console.error("No email provided to checkEmailExists");
+    return false;
+  }
+  
+  // For the admin email, we want to allow signup attempts
+  if (isAdminEmail(email)) {
+    return false;
+  }
+  
+  try {
+    console.log("Checking if email exists:", email);
+    
+    // Check in the public.users table
+    const { data, error } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle();
+    
+    if (error) {
+      console.error("Error checking email existence:", error);
+      return true; // Assume it might exist to prevent duplicate entries
+    }
+    
+    const exists = !!data;
+    console.log("Email existence check result:", exists);
+    return exists;
+  } catch (error) {
+    console.error("Error checking if email exists:", error);
+    return true; // Assume it might exist to prevent duplicate entries
+  }
+}
 
 /**
  * Handles user signup with email
  */
-export async function signUpWithEmail(data: SignUpData) {
+export async function signUpWithEmail(data: SignUpData): Promise<AuthResult> {
   const { name, email, password, role = 'user' } = data;
   
   console.log('Starting signup process for:', email);
@@ -42,7 +79,6 @@ export async function signUpWithEmail(data: SignUpData) {
     if (error) {
       console.error("SignUp error:", error);
       
-      // Handle specific error for user already existing in auth
       if (error.message?.includes('User already registered')) {
         throw new Error('Este email já está registrado. Por favor, faça login.');
       }
@@ -55,7 +91,7 @@ export async function signUpWithEmail(data: SignUpData) {
       console.log('Auth user created, now creating user record in database');
       
       try {
-        await ensureUserInDb(
+        await createUserProfile(
           authData.user.id,
           email,
           name,

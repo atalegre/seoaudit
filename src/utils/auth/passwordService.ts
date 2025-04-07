@@ -2,42 +2,43 @@
 import { supabase } from '@/integrations/supabase/client';
 
 /**
- * Sends a password reset email
+ * Send a password reset email
  */
 export async function resetPassword(email: string) {
-  // Determine if we're in production or development
-  const isProd = window.location.hostname === 'seoaudit.pt' || 
-                 window.location.hostname.includes('suite.seoaudit.pt');
-  
-  // Set the appropriate site URL for redirection
-  const siteUrl = isProd ? 'https://seoaudit.pt' : window.location.origin;
-  
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${siteUrl}/reset-password`,
-  });
-
-  if (error) {
-    console.error("Reset password error:", error);
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    
+    if (error) {
+      console.error("Error sending reset password email:", error);
+      throw error;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Exception during password reset:", error);
     throw error;
   }
-  
-  console.log(`Password reset email sent to ${email} with redirect to ${siteUrl}/reset-password`);
-  return { success: true };
 }
 
 /**
- * Updates the user's password
+ * Update the user's password
  */
-export async function updatePassword(password: string) {
-  const { error } = await supabase.auth.updateUser({
-    password,
-  });
-
-  if (error) {
-    console.error("Update password error:", error);
+export async function updatePassword(newPassword: string) {
+  try {
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+    
+    if (error) {
+      console.error("Error updating password:", error);
+      throw error;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Exception during password update:", error);
     throw error;
   }
-  
-  console.log("Password updated successfully");
-  return { success: true };
 }

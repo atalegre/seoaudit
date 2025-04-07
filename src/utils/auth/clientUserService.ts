@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { createOrUpdateRegularUser } from './profileService';
-import { UserWithEmail } from './commonTypes';
+import { createUserProfile } from './profileService';
+import { SupabaseUser } from './types';
 
 /**
  * Create or update the default client user
@@ -16,7 +16,6 @@ export async function createOrUpdateClient(
     console.log("Setting up client user:", email);
     
     // Check if client user exists in auth
-    // Using proper query parameters without filter
     const { data: existingUsers, error: searchError } = await supabase.auth.admin.listUsers({
       page: 1,
       perPage: 100, // Using a higher limit to ensure we can find the user
@@ -32,7 +31,7 @@ export async function createOrUpdateClient(
     // If client exists in auth system - find by email
     if (existingUsers?.users) {
       const clientUser = existingUsers.users.find(
-        (user: UserWithEmail) => user.email === email
+        (user: SupabaseUser) => user.email === email
       );
       if (clientUser) {
         clientUserId = clientUser.id;
@@ -66,7 +65,7 @@ export async function createOrUpdateClient(
     
     // If we have a client user ID, ensure they exist in users table
     if (clientUserId) {
-      await createOrUpdateRegularUser(clientUserId, email, name, 'user');
+      await createUserProfile(clientUserId, email, name, 'user');
       console.log("Client user updated in database");
     }
     
