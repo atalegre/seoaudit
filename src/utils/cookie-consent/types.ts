@@ -14,6 +14,7 @@ export interface CookieSettings {
  */
 export const CROSS_DOMAIN_SITES = [
   'seoaudit.pt',
+  'suite.seoaudit.pt',
   'd6620331-1d39-4571-9d7c-1ad62798af11.lovableproject.com',
   'id-preview-5c8dd228--d6620331-1d39-4571-9d7c-1ad62798af11.lovable.app'
 ];

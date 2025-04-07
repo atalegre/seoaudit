@@ -5,7 +5,13 @@ import { supabase } from '@/integrations/supabase/client';
  * Sends a password reset email
  */
 export async function resetPassword(email: string) {
-  const siteUrl = window.location.origin;
+  // Determine if we're in production or development
+  const isProd = window.location.hostname === 'seoaudit.pt' || 
+                 window.location.hostname.includes('suite.seoaudit.pt');
+  
+  // Set the appropriate site URL for redirection
+  const siteUrl = isProd ? 'https://seoaudit.pt' : window.location.origin;
+  
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${siteUrl}/reset-password`,
   });

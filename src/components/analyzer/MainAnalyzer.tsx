@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -44,17 +43,15 @@ const MainAnalyzer = () => {
         // Gerar um ID de projeto baseado no domínio e timestamp
         const projectId = `${domain}-${Date.now()}`.replace(/[^a-zA-Z0-9]/g, '-');
         
-        // Redirecionar para o dashboard no suite.seoaudit.pt
-        // Em ambiente de desenvolvimento, redirecionamos para o /dashboard com parâmetros
-        const isDevelopment = window.location.hostname === 'localhost' || 
-                             window.location.hostname.includes('lovable');
+        // Check if we're in production or development environment
+        const isProd = window.location.hostname === 'seoaudit.pt';
         
-        if (isDevelopment) {
-          // Para ambiente de desenvolvimento - redireciona para o dashboard interno
-          window.location.href = `/dashboard/client?url=${encodeURIComponent(formattedUrl)}&projectId=${projectId}`;
-        } else {
-          // Para produção - redireciona para o subdomínio suite
+        if (isProd) {
+          // For production - redirect to the suite subdomain
           window.location.href = `https://suite.seoaudit.pt/projeto/${projectId}?url=${encodeURIComponent(formattedUrl)}`;
+        } else {
+          // For development - redirect to the local dashboard
+          window.location.href = `/dashboard/client?url=${encodeURIComponent(formattedUrl)}&projectId=${projectId}`;
         }
       }, 1500); // Aguarda 1.5 segundos para simular análise inicial
       
