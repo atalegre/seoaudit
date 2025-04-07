@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -34,9 +35,9 @@
  
     --radius: 0.5rem;
     
-    /* Custom sidebar width - adjusted for better spacing */
-    --sidebar-width: 14rem;
-    --sidebar-width-icon: 3rem;
+    /* Adjusted sidebar width for better spacing */
+    --sidebar-width: 14.5rem;
+    --sidebar-width-icon: 3.5rem;
   }
  
   .dark {
