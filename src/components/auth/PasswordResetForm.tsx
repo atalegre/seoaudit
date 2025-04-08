@@ -1,110 +1,94 @@
 
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Button } from '@/components/ui/button';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { toast } from '@/hooks/use-toast';
 import { Loader2, Mail } from 'lucide-react';
-import { resetPassword } from '@/utils/auth/passwordService';
-import { useToast } from '@/hooks/use-toast';
-
-const schema = z.object({
-  email: z.string().email({ message: 'Email inválido' })
-});
-
-type FormValues = z.infer<typeof schema>;
 
 type PasswordResetFormProps = {
   setAuthError: (error: string | null) => void;
 };
 
 const PasswordResetForm = ({ setAuthError }: PasswordResetFormProps) => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
-    defaultValues: {
-      email: '',
-    },
-  });
-  
-  const onSubmit = async (values: FormValues) => {
-    setIsSubmitting(true);
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  const handleReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
     setAuthError(null);
-    
+
     try {
-      const result = await resetPassword(values.email);
-      
-      if (result.success) {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) {
+        setAuthError(error.message);
         toast({
-          title: "Email enviado",
-          description: "Verifique seu email para redefinir sua password",
+          variant: "destructive",
+          title: "Erro ao enviar email de recuperação",
+          description: error.message,
         });
-        
-        navigate('/signin', { 
-          state: { 
-            message: "Um email de recuperação foi enviado. Verifique sua caixa de entrada."
-          }
+      } else {
+        setSent(true);
+        toast({
+          title: "Email de recuperação enviado!",
+          description: "Verifique sua caixa de entrada para redefinir sua senha.",
         });
       }
     } catch (error: any) {
-      console.error("Password reset error:", error);
-      setAuthError(error.message || "Erro ao enviar email de recuperação");
+      console.error("Exception during password reset:", error);
+      setAuthError(error.message);
       
       toast({
         variant: "destructive",
         title: "Erro",
-        description: error.message || "Não foi possível enviar o email de recuperação",
+        description: error.message || "Erro ao enviar email de recuperação",
       });
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
-  
+
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                  <Input
-                    type="email"
-                    placeholder="seu@email.com"
-                    className="pl-10"
-                    {...field}
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <Button 
-          type="submit" 
-          className="w-full" 
-          size="lg"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? (
-            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enviando email...</>
-          ) : (
-            "Recuperar Password"
-          )}
-        </Button>
-      </form>
-    </Form>
+    <form onSubmit={handleReset} className="space-y-6">
+      {sent ? (
+        <div className="text-center py-4 px-6 bg-green-50 border border-green-200 rounded-lg">
+          <p className="text-green-800">
+            Email de recuperação enviado para <strong>{email}</strong>. Verifique sua caixa de entrada.
+          </p>
+        </div>
+      ) : (
+        <>
+          <div>
+            <Input
+              type="email"
+              placeholder="O teu email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full"
+            />
+          </div>
+
+          <Button 
+            type="submit" 
+            disabled={loading} 
+            className="w-full"
+            size="lg"
+          >
+            {loading ? (
+              <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> A enviar...</>
+            ) : (
+              <><Mail className="mr-2 h-4 w-4" /> Recuperar Palavra-passe</>
+            )}
+          </Button>
+        </>
+      )}
+    </form>
   );
 };
 

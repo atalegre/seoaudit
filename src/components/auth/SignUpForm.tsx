@@ -1,106 +1,108 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { UserPlus, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Form } from '@/components/ui/form';
 import { toast } from '@/hooks/use-toast';
-import { signUpWithEmail } from '@/utils/auth/signupService';
-import NameField from './NameField';
-import EmailField from './EmailField';
-import PasswordField from './PasswordField';
-import TermsCheckbox from './TermsCheckbox';
-import { signupFormSchema, SignUpFormValues } from './schemas/signupSchema';
+import { Loader2 } from 'lucide-react';
+import { Form } from '@/components/ui/form';
 
-type SignUpFormProps = {
-  setAuthError: (error: string | null) => void;
-};
-
-const SignUpForm = ({ setAuthError }: SignUpFormProps) => {
+const SignUpForm = ({ setAuthError }: { setAuthError: (error: string | null) => void }) => {
   const navigate = useNavigate();
-  const [isRegistering, setIsRegistering] = useState(false);
-  
-  const form = useForm<SignUpFormValues>({
-    resolver: zodResolver(signupFormSchema),
-    defaultValues: {
-      name: '',
-      email: '',
-      password: '',
-      acceptTerms: false,
-    },
-  });
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const onSubmit = async (values: SignUpFormValues) => {
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setAuthError(null);
+
     try {
-      setIsRegistering(true);
-      setAuthError(null);
-      
-      console.log('Submitting signup form with email:', values.email);
-      
-      const result = await signUpWithEmail({
-        name: values.name,
-        email: values.email,
-        password: values.password,
-        acceptTerms: values.acceptTerms
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`
+        }
       });
-      
-      if (result.needsEmailVerification) {
+
+      if (error) {
+        setAuthError(error.message);
         toast({
-          title: "Verificação de email necessária",
-          description: "Por favor, verifique o seu email para continuar.",
+          variant: "destructive",
+          title: "Erro ao registar",
+          description: error.message,
+        });
+      } else if (data.user) {
+        toast({
+          title: "Conta criada com sucesso!",
+          description: "Verifique seu e-mail para confirmar o cadastro.",
         });
         
-        navigate('/verification', { 
-          state: { email: values.email } 
-        });
-      } else if (result.user) {
-        toast({
-          title: "Conta criada com sucesso",
-          description: "Bem-vindo à nossa plataforma!",
-        });
-        
-        // Check role for redirect
-        const role = result.user.user_metadata?.role || 'user';
-        navigate(role === 'admin' ? '/dashboard' : '/dashboard/client');
+        if (data.session) {
+          // User was auto-signed in
+          navigate('/suite');
+        } else {
+          // Email verification required
+          navigate('/verification', { 
+            state: { email: email } 
+          });
+        }
       }
     } catch (error: any) {
-      console.error("Exception during registration:", error);
-      setAuthError(error.message || "Erro ao criar conta");
+      console.error("Exception during signup:", error);
+      setAuthError(error.message);
       
       toast({
         variant: "destructive",
         title: "Erro",
-        description: error.message || "Não foi possível criar a sua conta",
+        description: error.message || "Erro ao criar conta",
       });
     } finally {
-      setIsRegistering(false);
+      setLoading(false);
     }
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <NameField form={form} />
-        <EmailField form={form} />
-        <PasswordField form={form} name="password" />
-        <TermsCheckbox form={form} />
-        
-        <Button 
-          type="submit" 
-          className="w-full" 
-          size="lg"
-          disabled={isRegistering}
-        >
-          {isRegistering ? (
-            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Criando conta...</>
-          ) : (
-            <><UserPlus className="mr-2 h-4 w-4" /> Criar Conta</>
-          )}
-        </Button>
-      </form>
-    </Form>
+    <form onSubmit={handleSignup} className="space-y-6">
+      <div className="space-y-4">
+        <div>
+          <Input
+            type="email"
+            placeholder="O teu email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="w-full"
+          />
+        </div>
+        <div>
+          <Input
+            type="password"
+            placeholder="Cria uma palavra-passe"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="w-full"
+          />
+        </div>
+      </div>
+
+      <Button 
+        type="submit" 
+        disabled={loading} 
+        className="w-full"
+        size="lg"
+      >
+        {loading ? (
+          <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> A criar conta...</>
+        ) : (
+          'Criar Conta'
+        )}
+      </Button>
+    </form>
   );
 };
 

@@ -1,16 +1,11 @@
 
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Link } from 'react-router-dom';
-import { LogIn, Loader2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Form } from '@/components/ui/form';
-import EmailField from './EmailField';
-import PasswordField from './PasswordField';
-import { signinFormSchema, SigninFormValues } from './schemas/signinSchema';
-import { useSignIn } from './hooks/useSignIn';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { toast } from '@/hooks/use-toast';
+import { Loader2, LogIn } from 'lucide-react';
 
 type SignInFormProps = {
   email?: string;
@@ -19,49 +14,97 @@ type SignInFormProps = {
 };
 
 const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
-  const form = useForm<SigninFormValues>({
-    resolver: zodResolver(signinFormSchema),
-    defaultValues: {
-      email: email || '',
-      password: '',
-    },
-  });
+  const navigate = useNavigate();
+  const [emailValue, setEmailValue] = useState(email || '');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const { isLoggingIn, handleSignIn } = useSignIn(setAuthError);
-  const { t } = useLanguage();
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setAuthError(null);
 
-  const onSubmit = (values: SigninFormValues) => {
-    handleSignIn(values);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: emailValue,
+        password,
+      });
+
+      if (error) {
+        setAuthError(error.message);
+        toast({
+          variant: "destructive",
+          title: "Erro ao iniciar sessão",
+          description: error.message,
+        });
+      } else if (data.session) {
+        toast({
+          title: "Sessão iniciada com sucesso!",
+          description: "Bem-vindo de volta.",
+        });
+        
+        // Check user role for redirect
+        const role = data.user?.user_metadata?.role || 'user';
+        navigate(returnTo || (role === 'admin' ? '/dashboard' : '/suite'));
+      }
+    } catch (error: any) {
+      console.error("Exception during login:", error);
+      setAuthError(error.message);
+      
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: error.message || "Erro ao iniciar sessão",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <EmailField form={form} />
-        <PasswordField form={form} name="password" />
-        
-        <Button 
-          type="submit" 
-          className="w-full" 
-          size="lg"
-          disabled={isLoggingIn}
-        >
-          {isLoggingIn ? (
-            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t('logging-in')}...</>
-          ) : (
-            <>
-              <LogIn className="mr-2 h-4 w-4" /> {t('sign-in')}
-            </>
-          )}
-        </Button>
-
-        <div className="mt-4 text-center text-sm">
-          <Link to="/recuperar-password" className="text-primary hover:underline">
-            {t('forgot-password') || "Esqueceu a password?"}
-          </Link>
+    <form onSubmit={handleLogin} className="space-y-6">
+      <div className="space-y-4">
+        <div>
+          <Input
+            type="email"
+            placeholder="O teu email"
+            value={emailValue}
+            onChange={(e) => setEmailValue(e.target.value)}
+            required
+            className="w-full"
+          />
         </div>
-      </form>
-    </Form>
+        <div>
+          <Input
+            type="password"
+            placeholder="A tua palavra-passe"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="w-full"
+          />
+        </div>
+      </div>
+
+      <Button 
+        type="submit" 
+        disabled={loading} 
+        className="w-full"
+        size="lg"
+      >
+        {loading ? (
+          <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> A iniciar sessão...</>
+        ) : (
+          <><LogIn className="mr-2 h-4 w-4" /> Iniciar Sessão</>
+        )}
+      </Button>
+
+      <div className="mt-4 text-center text-sm">
+        <Link to="/recuperar-password" className="text-primary hover:underline">
+          Esqueceu a password?
+        </Link>
+      </div>
+    </form>
   );
 };
 
