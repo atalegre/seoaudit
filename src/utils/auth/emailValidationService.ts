@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { SupabaseUser } from '../auth/types';
 
 /**
  * Checks if an email already exists in the users table
@@ -17,7 +18,7 @@ export async function checkEmailExists(email: string): Promise<boolean> {
     }
     
     // Look for the email in the returned users
-    const emailExists = authData?.users.some(user => user.email === email);
+    const emailExists = authData?.users && authData.users.some((user: any) => user.email === email);
     if (emailExists) {
       return true;
     }
