@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { checkEmailExists } from '@/utils/auth/emailValidationService';
 import { toast } from 'sonner';
@@ -110,7 +109,7 @@ export async function createUser(userData: {
   name: string;
   email: string;
   role: 'admin' | 'editor' | 'user' 
-}): Promise<User | null> {
+}): Promise<{ id: string; password: string } | null> {
   try {
     // Make sure all required fields are provided
     if (!userData.name || !userData.email || !userData.role) {
@@ -167,16 +166,10 @@ export async function createUser(userData: {
       toast.warning('Usuário criado, mas não foi possível adicionar aos registros internos');
     }
     
-    // Log the temporary password so admin can see it
-    console.log(`Usuário criado com senha temporária: ${password}`);
-    toast.info(`Senha temporária: ${password} - Anote esta senha!`);
-    
-    // Return user data
+    // Return user data with password
     return {
       id: authData.user.id,
-      name: userData.name,
-      email: userData.email,
-      role: userData.role
+      password: password
     };
   } catch (error: any) {
     console.error('Erro ao criar usuário:', error);

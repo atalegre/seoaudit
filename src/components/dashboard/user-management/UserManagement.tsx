@@ -10,6 +10,8 @@ import UserFormDialog from './UserFormDialog';
 import { User, getAllUsers, createUser, updateUser, deleteUser } from '@/utils/api/userService';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useUser } from '@/contexts/UserContext';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 
 const UserManagement = () => {
   const { role: currentUserRole } = useUser();
@@ -19,6 +21,8 @@ const UserManagement = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [tempPassword, setTempPassword] = useState<string | null>(null);
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
 
   // Carregar usuários
   const fetchUsers = async () => {
@@ -67,6 +71,15 @@ const UserManagement = () => {
     }
   };
 
+  // Função para copiar a senha para a área de transferência
+  const copyPasswordToClipboard = () => {
+    if (tempPassword) {
+      navigator.clipboard.writeText(tempPassword)
+        .then(() => toast.success('Senha copiada para a área de transferência'))
+        .catch(err => console.error('Erro ao copiar senha:', err));
+    }
+  };
+
   // Enviar formulário
   const onSubmit = async (values: UserFormValues) => {
     try {
@@ -93,10 +106,15 @@ const UserManagement = () => {
             role: values.role
           });
           
-          if (result) {
-            toast.success('Usuário criado com sucesso. Uma senha aleatória foi gerada.');
-            // Fechar o formulário e atualizar a lista
+          if (result && result.password) {
+            // Guardar senha temporária e mostrar diálogo
+            setTempPassword(result.password);
+            setIsPasswordDialogOpen(true);
+            
+            // Fechar o formulário de criação
             setIsFormDialogOpen(false);
+            
+            // Atualizar a lista de usuários
             fetchUsers();
           }
         } catch (error: any) {
@@ -119,14 +137,22 @@ const UserManagement = () => {
         }
       }
 
-      // Fechar o formulário se não fechamos antes
-      setIsFormDialogOpen(false);
+      // Fechar o formulário se não fechamos antes e não há diálogo de senha aberto
+      if (!isPasswordDialogOpen) {
+        setIsFormDialogOpen(false);
+      }
     } catch (error: any) {
       console.error('Erro ao salvar usuário:', error);
       toast.error(error.message || 'Não foi possível salvar as informações do usuário');
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Fechar diálogo de senha
+  const closePasswordDialog = () => {
+    setIsPasswordDialogOpen(false);
+    setTempPassword(null);
   };
 
   return (
@@ -184,6 +210,34 @@ const UserManagement = () => {
           onSubmit={onSubmit}
           isSubmitting={isSubmitting}
         />
+
+        {/* Diálogo de exibição de senha temporária */}
+        <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Senha Temporária Gerada</DialogTitle>
+              <DialogDescription>
+                Por favor, anote esta senha e compartilhe com o usuário. 
+                Ela só será mostrada uma vez.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="p-4 bg-gray-100 rounded-md flex items-center justify-between">
+              <Input 
+                value={tempPassword || ''} 
+                readOnly 
+                className="font-mono bg-transparent border-none focus-visible:ring-0"
+              />
+              <Button variant="outline" size="sm" onClick={copyPasswordToClipboard}>
+                Copiar
+              </Button>
+            </div>
+            
+            <DialogFooter>
+              <Button onClick={closePasswordDialog}>Entendi</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );
