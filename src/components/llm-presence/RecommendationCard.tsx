@@ -1,35 +1,27 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { CheckCircle } from 'lucide-react';
+import { Lightbulb } from 'lucide-react';
 
 interface RecommendationCardProps {
-  title: string;
-  description: string;
-  actionLabel?: string;
-  onAction?: () => void;
+  recommendation: string;
+  onClick?: () => void;
 }
 
-const RecommendationCard: React.FC<RecommendationCardProps> = ({ 
-  title, 
-  description, 
-  actionLabel = "Começar agora", 
-  onAction 
-}) => {
+const RecommendationCard: React.FC<RecommendationCardProps> = ({ recommendation, onClick }) => {
   return (
-    <div className="flex items-start gap-4 p-4 border rounded-md">
-      <div className="p-2 bg-green-100 rounded-full text-green-600">
-        <CheckCircle className="h-5 w-5" />
+    <div className="flex items-start gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:shadow-sm transition-shadow">
+      <div className="p-2 bg-purple-50 rounded-full text-purple-600 shrink-0">
+        <Lightbulb className="h-5 w-5" />
       </div>
       <div className="flex-1">
-        <h3 className="font-medium mb-1">{title}</h3>
-        <p className="text-sm text-muted-foreground mb-2">
-          {description}
-        </p>
-        {onAction && (
-          <Button size="sm" variant="outline" onClick={onAction}>
-            {actionLabel}
-          </Button>
+        <p className="text-sm text-gray-800 mb-2">{recommendation}</p>
+        {onClick && (
+          <button 
+            onClick={onClick}
+            className="text-xs font-medium text-purple-600 hover:text-purple-700"
+          >
+            Criar conteúdo →
+          </button>
         )}
       </div>
     </div>

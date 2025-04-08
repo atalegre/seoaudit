@@ -4,11 +4,13 @@ import { Loader2 } from 'lucide-react';
 
 const LoadingState: React.FC = () => {
   return (
-    <div className="flex justify-center items-center py-12">
-      <div className="flex flex-col items-center gap-3">
-        <Loader2 className="h-8 w-8 animate-spin text-aio" />
-        <p className="text-muted-foreground">Analisando presença em LLMs...</p>
-      </div>
+    <div className="p-8 flex flex-col items-center justify-center space-y-4">
+      <Loader2 className="h-8 w-8 text-primary animate-spin" />
+      <p className="text-center text-muted-foreground">
+        Analisando a presença da marca em modelos de IA...
+        <br />
+        <span className="text-sm">Isto pode demorar alguns segundos.</span>
+      </p>
     </div>
   );
 };

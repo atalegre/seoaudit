@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Brain } from 'lucide-react';
 
@@ -10,12 +9,12 @@ interface ModelCardProps {
 }
 
 const ModelCard: React.FC<ModelCardProps> = ({ modelName, presencePercentage }) => {
-  const getProgressColor = (score: number) => {
-    if (score > 70) return 'bg-aio';  // Good
-    if (score > 30) return 'bg-amber-500';  // Medium
-    return 'bg-red-500';  // Poor
+  const getColorClass = (percentage: number) => {
+    if (percentage >= 70) return 'bg-green-500';
+    if (percentage >= 40) return 'bg-amber-500';
+    return 'bg-red-500';
   };
-
+  
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
@@ -28,7 +27,7 @@ const ModelCard: React.FC<ModelCardProps> = ({ modelName, presencePercentage }) 
       <Progress 
         value={presencePercentage} 
         className="h-2" 
-        indicatorClassName={getProgressColor(presencePercentage)} 
+        indicatorClassName={getColorClass(presencePercentage)} 
       />
     </div>
   );

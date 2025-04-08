@@ -1,71 +1,55 @@
 
 import { useState, useEffect } from 'react';
-import { extractDomainFromUrl, generateConsistentScore, generateConsistentReport } from './utils';
-import { LLMPresenceReport, ModelPresence } from './types';
+import { LLMReport, ModelPresence } from './types';
+import { generateMockReport } from './utils';
+import { extractDomainFromUrl } from '@/utils/domainUtils';
 
 interface UseLLMPresenceProps {
-  url?: string;
+  url: string;
   autoStart?: boolean;
 }
 
-export const useLLMPresence = ({ url = "", autoStart = false }: UseLLMPresenceProps) => {
-  const [domain, setDomain] = useState("");
-  const [report, setReport] = useState("");
+export const useLLMPresence = ({ url, autoStart = false }: UseLLMPresenceProps) => {
   const [loading, setLoading] = useState(false);
-  const [presenceScore, setPresenceScore] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isDomainMentioned, setIsDomainMentioned] = useState(false);
+  const [presenceScore, setPresenceScore] = useState<number | null>(null);
+  const [report, setReport] = useState<LLMReport | null>(null);
+  const [domain, setDomain] = useState<string>('');
   const [modelPresence, setModelPresence] = useState<ModelPresence[]>([]);
 
-  useEffect(() => {
-    if (url && autoStart) {
-      const extractedDomain = extractDomainFromUrl(url);
-      if (extractedDomain) {
-        setDomain(extractedDomain);
-        handleCheckPresence();
-      }
-    }
-  }, [url, autoStart]);
-
   const handleCheckPresence = async () => {
-    if (!domain && !url) return;
-    
     setLoading(true);
     setError(null);
     
-    const domainToUse = domain || extractDomainFromUrl(url);
-    
-    // Generate consistent score for the domain
-    const domainScore = generateConsistentScore(domainToUse);
-    const domainReport = generateConsistentReport(domainToUse, domainScore);
-    
-    // Generate model-specific scores
-    const models = [
-      { name: 'ChatGPT', score: Math.min(domainScore + 15, 100)},
-      { name: 'Gemini', score: Math.max(Math.floor(domainScore * 0.65), 0)},
-      { name: 'Perplexity', score: Math.max(Math.floor(domainScore * 0.4), 0)},
-      { name: 'Claude', score: Math.max(Math.floor(domainScore * 0.3), 0)},
-      { name: 'Bing Copilot', score: Math.max(Math.floor(domainScore * 0.2), 0)}
-    ];
-    
-    // Simulate processing time
-    setTimeout(() => {
-      setReport(domainReport);
-      setPresenceScore(domainScore);
-      setIsDomainMentioned(domainScore > 50);
-      setModelPresence(models);
+    try {
+      // Extract domain from URL
+      const extractedDomain = extractDomainFromUrl(url);
+      setDomain(extractedDomain || '');
+      
+      // In a real implementation, this would be an API call to analyze LLM presence
+      // For now, using mock data
+      setTimeout(() => {
+        const mockReport = generateMockReport(extractedDomain || '');
+        setReport(mockReport);
+        setPresenceScore(mockReport.score);
+        setModelPresence(mockReport.models);
+        setLoading(false);
+      }, 2000);
+      
+    } catch (err) {
+      console.error('Error checking LLM presence:', err);
+      setError('Failed to check LLM presence');
       setLoading(false);
-    }, 1500);
+    }
   };
-
-  const result: LLMPresenceReport = {
-    domain,
-    score: presenceScore || 0,
-    report,
-    isDomainMentioned: isDomainMentioned,
-    modelPresence: modelPresence
-  };
-
+  
+  // Auto-start the analysis if needed
+  useEffect(() => {
+    if (autoStart && url) {
+      handleCheckPresence();
+    }
+  }, [autoStart, url]);
+  
   return {
     loading,
     error,
@@ -73,7 +57,6 @@ export const useLLMPresence = ({ url = "", autoStart = false }: UseLLMPresencePr
     report,
     domain,
     modelPresence,
-    result,
     handleCheckPresence
   };
 };
