@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Search, Sparkles, Zap, BarChart3 } from 'lucide-react';
+import { Search, Sparkles, Zap, BarChart3, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -49,23 +49,23 @@ const Hero = () => {
   };
   
   return (
-    <div className="relative bg-gradient-to-b from-gray-50 to-white pt-10 pb-12 md:pt-16 md:pb-20">
+    <div className="relative bg-gradient-to-b from-gray-50 to-white pt-16 pb-20">
       <div className="container px-4 mx-auto">
-        <div className="max-w-4xl mx-auto text-center mb-10">
+        <div className="max-w-4xl mx-auto text-center mb-12">
           <div className="inline-flex items-center px-4 py-2 bg-blue-50 rounded-full text-blue-600 text-sm font-medium mb-6 animate-fade-in">
             <Sparkles className="h-4 w-4 mr-2" />
-            Ferramenta gratuita de análise para SEO e IA
+            Análise completa para SEO e Inteligência Artificial
           </div>
           
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6 text-gray-900 md:leading-tight">
-            O seu site está otimizado para o <span className="text-blue-600">Google</span> e para a <span className="text-purple-600">IA</span>?
+            Otimize seu site para <span className="text-blue-600">Google</span> e <span className="text-purple-600">IA</span> com uma análise inteligente
           </h1>
           
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Analise gratuitamente o seu site e descubra como melhorar a sua presença digital nos motores de busca e nos novos modelos de inteligência artificial.
+            Descubra como melhorar a visibilidade do seu site tanto nos motores de busca tradicionais quanto nos novos modelos de inteligência artificial com nossa análise abrangente.
           </p>
           
-          <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto flex flex-col md:flex-row gap-3 md:gap-2 mb-10">
+          <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto flex flex-col md:flex-row gap-3 md:gap-2 mb-10" data-analyze-form="true">
             <div className="flex-1 relative">
               <Input
                 type="text"
@@ -80,52 +80,67 @@ const Hero = () => {
             <Button type="submit" className="h-14 px-8 text-lg" size="lg" disabled={isLoading}>
               {isLoading ? (
                 <>Analisando<span className="loading-dots">...</span></>
-              ) : 'Analisar agora'}
+              ) : 'Analisar gratuitamente'}
             </Button>
           </form>
           
           <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-500">
             <div className="flex items-center">
               <div className="w-2 h-2 rounded-full bg-green-400 mr-2"></div>
-              Análise rápida e gratuita
+              Análise técnica profunda
             </div>
             <div className="flex items-center">
               <div className="w-2 h-2 rounded-full bg-blue-400 mr-2"></div>
-              Sem necessidade de registo
+              Pontuação SEO e AIO
             </div>
             <div className="flex items-center">
               <div className="w-2 h-2 rounded-full bg-purple-400 mr-2"></div>
-              Resultados instantâneos
+              Recomendações personalizadas
             </div>
           </div>
         </div>
       </div>
       
-      {/* Floating cards */}
+      {/* Feature cards with improved content */}
       <div className="container px-4 mx-auto relative">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col hover:shadow-md transition-shadow">
             <div className="rounded-full bg-blue-50 p-3 w-14 h-14 flex items-center justify-center mb-4">
               <BarChart3 className="w-8 h-8 text-blue-600" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">Análise SEO</h3>
-            <p className="text-gray-600 flex-grow">Avalie a otimização técnica do seu site para motores de busca como Google.</p>
+            <h3 className="text-xl font-semibold mb-2">Análise SEO Completa</h3>
+            <p className="text-gray-600 flex-grow">Avalie a otimização técnica, velocidade, estrutura e metadata do seu site para maximizar a visibilidade nos motores de busca.</p>
+            <Button variant="link" className="mt-4 p-0 justify-start text-blue-600 hover:text-blue-700" asChild>
+              <a href="/como-funciona">
+                Saiba mais <ArrowRight className="ml-1 h-4 w-4" />
+              </a>
+            </Button>
           </div>
           
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col hover:shadow-md transition-shadow">
             <div className="rounded-full bg-purple-50 p-3 w-14 h-14 flex items-center justify-center mb-4">
               <Sparkles className="w-8 h-8 text-purple-600" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">Análise AIO</h3>
-            <p className="text-gray-600 flex-grow">Verifique se o seu conteúdo está otimizado para modelos de inteligência artificial.</p>
+            <h3 className="text-xl font-semibold mb-2">Otimização para IA</h3>
+            <p className="text-gray-600 flex-grow">Descubra como o ChatGPT e outros LLMs interpretam seu conteúdo e otimize-o para aparecer em resultados baseados em IA.</p>
+            <Button variant="link" className="mt-4 p-0 justify-start text-purple-600 hover:text-purple-700" asChild>
+              <a href="/glossario">
+                Explorar glossário AIO <ArrowRight className="ml-1 h-4 w-4" />
+              </a>
+            </Button>
           </div>
           
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col hover:shadow-md transition-shadow">
             <div className="rounded-full bg-green-50 p-3 w-14 h-14 flex items-center justify-center mb-4">
               <Zap className="w-8 h-8 text-green-600" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">Performance</h3>
-            <p className="text-gray-600 flex-grow">Teste a velocidade do seu site e a experiência do utilizador em dispositivos móveis.</p>
+            <h3 className="text-xl font-semibold mb-2">Dashboard Profissional</h3>
+            <p className="text-gray-600 flex-grow">Acesse relatórios detalhados, ferramentas de otimização de conteúdo e monitore o progresso do seu site ao longo do tempo.</p>
+            <Button variant="link" className="mt-4 p-0 justify-start text-green-600 hover:text-green-700" asChild>
+              <a href="/signin">
+                Acessar dashboard <ArrowRight className="ml-1 h-4 w-4" />
+              </a>
+            </Button>
           </div>
         </div>
       </div>
