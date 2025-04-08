@@ -6,20 +6,19 @@ import { supabase } from '@/integrations/supabase/client';
  */
 export async function checkEmailExists(email: string): Promise<boolean> {
   try {
-    // Check auth table
+    // Check auth table - using the correct parameters for listUsers
     const { data: authData, error: authError } = await supabase.auth.admin.listUsers({
       page: 1,
       perPage: 1,
-      filters: {
-        email: email
-      }
     });
     
     if (authError) {
       console.error("Error checking auth for email:", authError);
     }
     
-    if (authData?.users && authData.users.length > 0) {
+    // Look for the email in the returned users
+    const emailExists = authData?.users.some(user => user.email === email);
+    if (emailExists) {
       return true;
     }
     
