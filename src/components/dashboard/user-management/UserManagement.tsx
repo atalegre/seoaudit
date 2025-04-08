@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { UserPlus, AlertCircle } from 'lucide-react';
+import { UserPlus, AlertCircle, Info } from 'lucide-react';
 import { UserFormValues } from './schemas/userFormSchema';
 import UserTable from './UserTable';
 import UserFormDialog from './UserFormDialog';
@@ -56,7 +57,6 @@ const UserManagement = () => {
   const handleDeleteUser = async (userId: string) => {
     try {
       await deleteUser(userId);
-
       toast.success('Usuário removido com sucesso');
       
       // Atualizar a lista
@@ -87,13 +87,18 @@ const UserManagement = () => {
       } else {
         // Criar novo usuário - all fields are required based on the schema
         try {
-          await createUser({
+          const result = await createUser({
             name: values.name,
             email: values.email, 
             role: values.role
           });
           
-          toast.success('Usuário criado com sucesso. Uma senha aleatória foi gerada.');
+          if (result) {
+            toast.success('Usuário criado com sucesso. Uma senha aleatória foi gerada.');
+            // Fechar o formulário e atualizar a lista
+            setIsFormDialogOpen(false);
+            fetchUsers();
+          }
         } catch (error: any) {
           console.error('Erro detalhado ao criar usuário:', error);
           
@@ -114,9 +119,8 @@ const UserManagement = () => {
         }
       }
 
-      // Fechar o formulário e atualizar a lista
+      // Fechar o formulário se não fechamos antes
       setIsFormDialogOpen(false);
-      fetchUsers();
     } catch (error: any) {
       console.error('Erro ao salvar usuário:', error);
       toast.error(error.message || 'Não foi possível salvar as informações do usuário');
@@ -153,12 +157,15 @@ const UserManagement = () => {
 
         <div className="mb-4">
           <Alert>
-            <AlertCircle className="h-4 w-4" />
+            <Info className="h-4 w-4" />
             <AlertTitle>Informação</AlertTitle>
             <AlertDescription>
               Os usuários com função de Administrador terão acesso completo ao painel de administração.
               Usuários com função de Editor podem gerenciar conteúdo e ver relatórios.
               Usuários regulares têm acesso limitado à plataforma.
+              <br /><br />
+              <strong>Nota:</strong> Ao criar um novo usuário, uma senha aleatória será gerada e mostrada apenas uma vez.
+              Anote-a e compartilhe com o usuário, que poderá alterá-la posteriormente.
             </AlertDescription>
           </Alert>
         </div>

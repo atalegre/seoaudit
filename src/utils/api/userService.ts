@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { checkEmailExists } from '@/utils/auth/emailValidationService';
+import { toast } from 'sonner';
 
 // Tipo para o usuário
 export interface User {
@@ -10,6 +11,28 @@ export interface User {
   role: 'admin' | 'editor' | 'user';
   created_at?: string;
   updated_at?: string;
+}
+
+/**
+ * Generate a random password
+ */
+function generateRandomPassword(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+  let password = '';
+  
+  // Ensure at least one uppercase, one lowercase, one number, and one special char
+  password += chars.charAt(Math.floor(Math.random() * 26)); // Uppercase
+  password += chars.charAt(Math.floor(Math.random() * 26) + 26); // Lowercase
+  password += chars.charAt(Math.floor(Math.random() * 10) + 52); // Number
+  password += chars.charAt(Math.floor(Math.random() * 8) + 62); // Special char
+  
+  // Add more random characters to reach at least 8 characters
+  for (let i = 0; i < 4; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  
+  // Shuffle the password
+  return password.split('').sort(() => 0.5 - Math.random()).join('');
 }
 
 /**
@@ -100,36 +123,36 @@ export async function createUser(userData: {
       throw new Error('Este email já está em uso por outro usuário');
     }
     
-    // Use service role key for admin operations to bypass RLS
-    // Create the user
-    const { data, error } = await supabase.auth.admin.createUser({
+    // Generate a random password
+    const password = generateRandomPassword();
+    
+    // Create the user with standard signup (not admin API)
+    const { data: authData, error: signupError } = await supabase.auth.signUp({
       email: userData.email,
-      email_confirm: true,
-      user_metadata: {
-        full_name: userData.name,
-        role: userData.role
-      },
-      app_metadata: {
-        role: userData.role
+      password: password,
+      options: {
+        data: {
+          full_name: userData.name,
+          role: userData.role
+        },
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`
       }
     });
     
-    if (error) {
-      if (error.message?.includes('duplicate key') || error.message?.includes('already exists')) {
-        throw new Error('Este email já está em uso por outro usuário');
-      }
-      throw error;
+    if (signupError) {
+      console.error('Signup error:', signupError);
+      throw signupError;
     }
     
-    if (!data || !data.user) {
+    if (!authData.user) {
       throw new Error('Erro ao criar usuário');
     }
     
-    // Insert into users table
+    // Insert the user data into the users table
     const { data: insertedUser, error: insertError } = await supabase
       .from('users')
       .insert([{
-        id: data.user.id,
+        id: authData.user.id,
         name: userData.name,
         email: userData.email,
         role: userData.role
@@ -139,12 +162,18 @@ export async function createUser(userData: {
     
     if (insertError) {
       console.error('Erro ao inserir usuário na tabela users:', insertError);
-      // Continue anyway as we've created the auth user
+      
+      // If we can't add to the users table, we should at least show a warning
+      toast.warning('Usuário criado, mas não foi possível adicionar aos registros internos');
     }
+    
+    // Log the temporary password so admin can see it
+    console.log(`Usuário criado com senha temporária: ${password}`);
+    toast.info(`Senha temporária: ${password} - Anote esta senha!`);
     
     // Return user data
     return {
-      id: data.user.id,
+      id: authData.user.id,
       name: userData.name,
       email: userData.email,
       role: userData.role
@@ -217,21 +246,15 @@ export async function updateUser(userId: string, userData: { name?: string, emai
  */
 export async function deleteUser(userId: string): Promise<boolean> {
   try {
-    // First delete from auth users
-    const { error: authError } = await supabase.auth.admin.deleteUser(userId);
-    
-    if (authError) {
-      console.error('Erro ao excluir usuário da autenticação:', authError);
-      throw authError;
-    }
-    
-    // Then delete from users table
+    // For now we'll just remove from the users table since we don't have admin access
     const { error } = await supabase
       .from('users')
       .delete()
       .eq('id', userId);
     
     if (error) throw error;
+    
+    toast.warning('O usuário foi removido da tabela de usuários, mas a conta de autenticação permanece ativa.');
     return true;
   } catch (error) {
     console.error('Erro ao excluir usuário:', error);
