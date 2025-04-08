@@ -1,4 +1,3 @@
-
 import { LLMReport, ModelPresence, LLMMention } from './types';
 
 // Generate mock data for demo purposes
@@ -95,20 +94,4 @@ export const getAlertMessage = (score: number): string => {
     return 'Presença moderada nos modelos de IA. Considere implementar as recomendações sugeridas.';
   }
   return 'Presença baixa nos modelos de IA. É altamente recomendado implementar as sugestões de melhoria.';
-};
-
-// Highlight text with the domain name
-export const highlightDomain = (text: string, domain: string): JSX.Element => {
-  if (!domain || !text.includes(domain)) return <>{text}</>;
-  
-  const parts = text.split(new RegExp(`(${domain})`, 'gi'));
-  
-  return (
-    <>
-      {parts.map((part, i) => 
-        part.toLowerCase() === domain.toLowerCase() ? 
-          <span key={i} className="bg-yellow-100 font-medium">{part}</span> : part
-      )}
-    </>
-  );
 };

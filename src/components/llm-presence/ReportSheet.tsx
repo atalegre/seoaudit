@@ -9,10 +9,10 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { FileText, CheckCircle, AlertTriangle } from "lucide-react";
+import { FileText, CheckCircle, AlertTriangle, Lightbulb } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { LLMReport } from "./types";
-import { highlightDomain } from "./utils";
+import { highlightDomain } from "./jsxUtils";
 
 interface ReportSheetProps {
   domain: string;
