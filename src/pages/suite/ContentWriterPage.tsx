@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
-import ContentLayout from '@/components/content/ContentLayout';
+import SuiteLayout from '@/components/suite/SuiteLayout';
 import ContentWriterForm from '@/components/content-writer/ContentWriterForm';
 import LoadingContent from '@/components/content-writer/LoadingContent';
 import GeneratedContentCard from '@/components/content-writer/GeneratedContentCard';
@@ -48,7 +48,7 @@ O formato de ${formData.contentType.toLowerCase()} determina a estrutura e o com
   };
   
   return (
-    <>
+    <SuiteLayout title="Gerador de Conteúdo">
       <Helmet>
         <title>Gerador de Conteúdo SEO | SEOAudit</title>
         <meta 
@@ -57,51 +57,49 @@ O formato de ${formData.contentType.toLowerCase()} determina a estrutura e o com
         />
       </Helmet>
       
-      <ContentLayout>
-        <div className="max-w-4xl mx-auto">
-          {/* Cabeçalho */}
-          <div className="mb-8 text-center">
-            <h1 className="text-3xl md:text-4xl font-bold mb-2">
-              Gerador de Conteúdo SEO com IA
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              Crie conteúdos otimizados para motores de busca e modelos de IA em segundos.
+      <div className="max-w-4xl mx-auto">
+        {/* Cabeçalho */}
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">
+            Gerador de Conteúdo SEO com IA
+          </h1>
+          <p className="text-lg text-muted-foreground">
+            Crie conteúdos otimizados para motores de busca e modelos de IA em segundos.
+          </p>
+        </div>
+        
+        {/* Formulário ou Resultado */}
+        {!isGenerating && !generatedContent && (
+          <ContentWriterForm onSubmit={handleGenerateContent} />
+        )}
+        
+        {/* Estado de carregamento */}
+        {isGenerating && <LoadingContent />}
+        
+        {/* Resultado gerado */}
+        {!isGenerating && generatedContent && (
+          <GeneratedContentCard 
+            content={generatedContent} 
+            onCreateNewVersion={handleCreateNewVersion}
+          />
+        )}
+        
+        {/* Seção de instruções/info - mantida da versão anterior */}
+        {!generatedContent && !isGenerating && (
+          <div className="space-y-4 text-sm mt-8">
+            <h3 className="font-medium text-lg">Como funciona o gerador de conteúdo?</h3>
+            <p>
+              O gerador de conteúdo SEO utiliza inteligência artificial avançada para criar textos otimizados 
+              tanto para motores de busca (SEO) quanto para modelos de IA (AIO).
+            </p>
+            <p>
+              Ao fornecer algumas informações básicas sobre o tema, nosso sistema gera 
+              conteúdo relevante, estruturado e otimizado para melhorar seu posicionamento nos resultados de busca.
             </p>
           </div>
-          
-          {/* Formulário ou Resultado */}
-          {!isGenerating && !generatedContent && (
-            <ContentWriterForm onSubmit={handleGenerateContent} />
-          )}
-          
-          {/* Estado de carregamento */}
-          {isGenerating && <LoadingContent />}
-          
-          {/* Resultado gerado */}
-          {!isGenerating && generatedContent && (
-            <GeneratedContentCard 
-              content={generatedContent} 
-              onCreateNewVersion={handleCreateNewVersion}
-            />
-          )}
-          
-          {/* Seção de instruções/info - mantida da versão anterior */}
-          {!generatedContent && !isGenerating && (
-            <div className="space-y-4 text-sm mt-8">
-              <h3 className="font-medium text-lg">Como funciona o gerador de conteúdo?</h3>
-              <p>
-                O gerador de conteúdo SEO utiliza inteligência artificial avançada para criar textos otimizados 
-                tanto para motores de busca (SEO) quanto para modelos de IA (AIO).
-              </p>
-              <p>
-                Ao fornecer algumas informações básicas sobre o tema, nosso sistema gera 
-                conteúdo relevante, estruturado e otimizado para melhorar seu posicionamento nos resultados de busca.
-              </p>
-            </div>
-          )}
-        </div>
-      </ContentLayout>
-    </>
+        )}
+      </div>
+    </SuiteLayout>
   );
 };
 
