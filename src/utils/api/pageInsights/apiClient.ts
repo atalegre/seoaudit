@@ -6,8 +6,8 @@ import { createTimedRequest, handleCorsRequest } from './corsHandlers';
 // Desativar completamente o uso de dados simulados
 const USE_MOCK_DATA_ON_FAILURE = false;
 
-// Chave temporária para desenvolvimento (será substituída pela variável de ambiente em produção)
-const TEMP_API_KEY = 'AIzaSyBufWRXPTJGrGgATN-_ir2hR74Czmju6Js';
+// Atualizar com a chave fornecida pelo usuário
+const TEMP_API_KEY = 'AIzaSyCFVgBqjPaV1-aOx4vFGkwwGQF_2Iwaqw4';
 
 /**
  * Cache helper para armazenar resultados por URL com TTL
