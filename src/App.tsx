@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -43,6 +44,7 @@ import ContentWriterPage from "./pages/suite/ContentWriterPage";
 import ContentRecommenderPage from "./pages/suite/ContentRecommenderPage";
 import LLMPresencePage from "./pages/suite/LLMPresencePage";
 import KeywordsPage from "./pages/suite/KeywordsPage";
+import DirectoriesPage from "./pages/suite/DirectoriesPage";
 
 const queryClient = new QueryClient();
 
@@ -100,7 +102,7 @@ function App() {
                 <Route path="/suite/writer" element={<ContentWriterPage />} />
                 <Route path="/suite/recommender" element={<ContentRecommenderPage />} />
                 <Route path="/suite/llm" element={<LLMPresencePage />} />
-                <Route path="/suite/directories" element={<SuiteDashboard />} />
+                <Route path="/suite/directories" element={<DirectoriesPage />} />
                 <Route path="/suite/keywords" element={<KeywordsPage />} />
                 <Route path="/suite/reports" element={<SuiteDashboard />} />
                 
