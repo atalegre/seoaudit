@@ -10,8 +10,8 @@ export const useDashboardAccess = () => {
 
   const handleDashboardAccess = () => {
     if (user) {
-      // If user is already logged in, navigate directly to dashboard
-      navigate('/dashboard/client');
+      // Redirect to suite instead of client dashboard
+      navigate('/suite');
       
       toast({
         title: "Acesso ao relatório",
@@ -21,7 +21,7 @@ export const useDashboardAccess = () => {
       // If not logged in, redirect to sign in page
       navigate('/signin', { 
         state: { 
-          returnTo: '/dashboard/client',
+          returnTo: '/suite',
           message: "Faça login ou registe-se para aceder ao relatório completo"
         }
       });

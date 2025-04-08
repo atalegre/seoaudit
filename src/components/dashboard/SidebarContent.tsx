@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { cn } from "@/lib/utils";
 import { BarChart, Users, Settings, FileText, Upload } from "lucide-react";
 
-// Define different sidebar items based on user role
+// Define sidebar items for admin
 export const adminSidebarItems = [
   { name: "Dashboard", path: "/dashboard", icon: <BarChart className="w-5 h-5" /> },
   { name: "Clientes", path: "/dashboard/clients", icon: <Users className="w-5 h-5" /> },
@@ -13,18 +13,15 @@ export const adminSidebarItems = [
   { name: "Configurações", path: "/dashboard/settings", icon: <Settings className="w-5 h-5" /> },
 ];
 
-export const clientSidebarItems = [
-  { name: "Dashboard", path: "/dashboard/client", icon: <BarChart className="w-5 h-5" /> },
-  { name: "Relatórios", path: "/dashboard/client/reports", icon: <FileText className="w-5 h-5" /> },
-  { name: "Configurações", path: "/dashboard/client/settings", icon: <Settings className="w-5 h-5" /> },
-];
-
 interface SidebarContentProps {
-  items: typeof adminSidebarItems;
+  items?: typeof adminSidebarItems;
   onMobileMenuClose?: () => void;
 }
 
-const SidebarContent: React.FC<SidebarContentProps> = ({ items, onMobileMenuClose }) => {
+const SidebarContent: React.FC<SidebarContentProps> = ({ 
+  items = adminSidebarItems, 
+  onMobileMenuClose 
+}) => {
   const location = useLocation();
 
   return (

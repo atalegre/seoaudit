@@ -13,8 +13,6 @@ import HowItWorksPage from "./pages/HowItWorksPage";
 import FAQPage from "./pages/FAQPage";
 import ContactPage from "./pages/ContactPage";
 import DashboardPage from "./pages/dashboard/DashboardPage";
-import ClientDashboardPage from "./pages/dashboard/ClientDashboardPage";
-import ClientPage from "./pages/dashboard/ClientPage";
 import SignInPage from "./pages/SignInPage";
 import SignUpPage from "./pages/SignUpPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
@@ -86,16 +84,16 @@ function App() {
                 <Route path="/verification" element={<VerificationPage />} />
                 <Route path="/auth/callback" element={<Navigate to="/dashboard" />} />
                 
+                {/* Admin Dashboard Routes */}
                 <Route path="/dashboard" element={<DashboardLayout><Outlet /></DashboardLayout>}>
                   <Route index element={<DashboardPage />} />
-                  <Route path="client" element={<ClientDashboardPage />} />
-                  <Route path="client/:id" element={<ClientPage />} />
                   <Route path="clients" element={<ClientsPage />} />
                   <Route path="bulk-import" element={<BulkImportPage />} />
                   <Route path="settings" element={<SettingsPage />} />
                   <Route path="blog-posts" element={<BlogPostsPage />} />
                 </Route>
                 
+                {/* Suite Routes */}
                 <Route path="/suite" element={<SuiteDashboard />} />
                 <Route path="/suite/seo" element={<SeoAnalysisPage />} />
                 <Route path="/suite/aio" element={<AioOptimizationPage />} />
