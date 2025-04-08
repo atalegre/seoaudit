@@ -171,7 +171,6 @@ export const enTranslations = {
   'remove-image': 'Remove image',
   'drag-drop': 'Drag and drop an image or click to select',
   'accepted-formats': 'Accepted formats: JPG, PNG, WebP, max 2MB',
-  'cancel': 'Cancel',
   'saving': 'Saving...',
   'update-post': 'Update Post',
   'create-post': 'Create Post',
