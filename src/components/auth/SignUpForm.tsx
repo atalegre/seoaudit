@@ -6,9 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import { Form } from '@/components/ui/form';
 
-const SignUpForm = ({ setAuthError }: { setAuthError: (error: string | null) => void }) => {
+interface SignUpFormProps {
+  setAuthError: (error: string | null) => void;
+  onSuccess?: () => void;
+}
+
+const SignUpForm = ({ setAuthError, onSuccess }: SignUpFormProps) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -41,7 +45,9 @@ const SignUpForm = ({ setAuthError }: { setAuthError: (error: string | null) => 
           description: "Verifique seu e-mail para confirmar o cadastro.",
         });
         
-        if (data.session) {
+        if (onSuccess) {
+          onSuccess();
+        } else if (data.session) {
           // User was auto-signed in
           navigate('/suite');
         } else {

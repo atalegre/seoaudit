@@ -1,8 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import RecommendationCard from '@/components/suite/dashboard/RecommendationCard';
 import { ArrowRight } from 'lucide-react';
+import { useUser } from '@/contexts/UserContext';
+import LoginDialog from '@/components/auth/LoginDialog';
 
 interface Recommendation {
   id: number;
@@ -18,6 +20,19 @@ interface RecommendationsSectionProps {
 }
 
 const RecommendationsSection = ({ recommendations, onViewMore }: RecommendationsSectionProps) => {
+  const { user } = useUser();
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  
+  const handleViewMoreClick = () => {
+    if (user) {
+      // User is logged in, proceed to view more
+      onViewMore();
+    } else {
+      // User is not logged in, show login dialog
+      setShowLoginDialog(true);
+    }
+  };
+
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between mb-4">
@@ -26,7 +41,7 @@ const RecommendationsSection = ({ recommendations, onViewMore }: Recommendations
         <Button 
           variant="outline" 
           size="sm" 
-          onClick={onViewMore}
+          onClick={handleViewMoreClick}
         >
           Ver todas 
           <ArrowRight className="ml-1 h-4 w-4" />
@@ -41,10 +56,17 @@ const RecommendationsSection = ({ recommendations, onViewMore }: Recommendations
             description={rec.description}
             impact={rec.impact}
             type={rec.type}
-            onLearnMore={onViewMore}
+            onLearnMore={handleViewMoreClick}
           />
         ))}
       </div>
+
+      {/* Login Dialog */}
+      <LoginDialog 
+        isOpen={showLoginDialog} 
+        onClose={() => setShowLoginDialog(false)}
+        returnTo="/suite/recommendations"
+      />
     </div>
   );
 };

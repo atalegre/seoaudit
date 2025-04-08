@@ -11,9 +11,10 @@ type SignInFormProps = {
   email?: string;
   returnTo?: string;
   setAuthError: (error: string | null) => void;
+  onSuccess?: () => void;
 };
 
-const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
+const SignInForm = ({ email, returnTo, setAuthError, onSuccess }: SignInFormProps) => {
   const navigate = useNavigate();
   const [emailValue, setEmailValue] = useState(email || '');
   const [password, setPassword] = useState('');
@@ -43,9 +44,14 @@ const SignInForm = ({ email, returnTo, setAuthError }: SignInFormProps) => {
           description: "Bem-vindo de volta.",
         });
         
-        // Check user role for redirect
-        const role = data.user?.user_metadata?.role || 'user';
-        navigate(returnTo || (role === 'admin' ? '/dashboard' : '/suite'));
+        // Check if there's an onSuccess callback
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          // Default navigation behavior
+          const role = data.user?.user_metadata?.role || 'user';
+          navigate(returnTo || (role === 'admin' ? '/dashboard' : '/suite'));
+        }
       }
     } catch (error: any) {
       console.error("Exception during login:", error);
