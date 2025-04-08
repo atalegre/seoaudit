@@ -47,6 +47,11 @@ const UserDropdownMenu: React.FC<UserDropdownMenuProps> = ({
     }
   };
 
+  const handleChangePassword = () => {
+    // Navigate to the correct change password page based on role
+    navigate(userRole === 'admin' ? '/dashboard/change-password' : '/dashboard/client/change-password');
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -71,7 +76,7 @@ const UserDropdownMenu: React.FC<UserDropdownMenuProps> = ({
           <Settings className="mr-2 h-4 w-4" />
           <span>Configurações</span>
         </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer" onClick={() => navigate(userRole === 'admin' ? '/dashboard/change-password' : '/dashboard/client/change-password')}>
+        <DropdownMenuItem className="cursor-pointer" onClick={handleChangePassword}>
           <Lock className="mr-2 h-4 w-4" />
           <span>Alterar senha</span>
         </DropdownMenuItem>
