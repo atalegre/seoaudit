@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from '@/lib/utils';
 
 interface ScoreCardProps {
@@ -16,33 +15,33 @@ const ScoreCard = ({
   title, 
   score, 
   icon, 
-  color = "text-primary", 
-  bgColor = "bg-primary/10",
+  color = "text-indigo-600", 
+  bgColor = "bg-indigo-50",
   description
 }: ScoreCardProps) => {
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="p-4 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        {description && <p className="text-xs text-muted-foreground">{description}</p>}
-      </CardHeader>
-      <CardContent className="p-4 pt-0">
-        <div className="flex items-end justify-between">
-          <span className="text-2xl font-bold">{score}</span>
-          <div className={cn("p-2 rounded-md", bgColor)}>
-            {React.cloneElement(icon as React.ReactElement, { 
-              className: cn("h-5 w-5", color) 
-            })}
-          </div>
+    <div className="bg-white rounded-lg border border-gray-100 p-4 hover:shadow-sm transition-shadow">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-sm font-medium">{title}</h3>
+        <div className={cn("p-2 rounded-md", bgColor)}>
+          {React.cloneElement(icon as React.ReactElement, { 
+            className: cn("h-4 w-4", color) 
+          })}
         </div>
-        <div className="mt-4 h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+      </div>
+      
+      {description && <p className="text-xs text-muted-foreground mb-2">{description}</p>}
+      
+      <div className="flex flex-col">
+        <span className="text-2xl font-bold">{score}</span>
+        <div className="mt-2 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
           <div 
-            className={cn("h-full transition-all duration-500", color.replace('text-', 'bg-'))} 
+            className={cn("h-full rounded-full transition-all duration-500", color.replace('text-', 'bg-'))} 
             style={{ width: `${score}%` }}
           />
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 

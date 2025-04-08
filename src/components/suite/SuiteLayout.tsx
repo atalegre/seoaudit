@@ -3,10 +3,10 @@ import React, { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
 import { toast } from 'sonner';
-import { SidebarTrigger, SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import SidebarContentItems from './SidebarContent';
 import { Button } from '@/components/ui/button';
-import { Calendar, LogOut, RefreshCw } from 'lucide-react';
+import { Calendar, LogOut, RefreshCw, Menu, ChevronRight } from 'lucide-react';
 
 interface SuiteLayoutProps {
   children: ReactNode;
@@ -42,67 +42,65 @@ const SuiteLayout = ({
   
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full">
-        {/* Sidebar */}
-        <div className="group peer hidden md:block" data-state="expanded" data-collapsible="" data-variant="sidebar" data-side="left">
-          {/* Sidebar spacing element */}
-          <div className="relative h-svh w-[4rem] hover:w-[14rem] transition-all duration-200 ease-in-out"></div>
-
-          {/* Fixed sidebar container */}
-          <div className="fixed inset-y-0 z-30 hidden h-svh w-[4rem] hover:w-[14rem] transition-all duration-200 ease-in-out md:flex left-0">
-            {/* Sidebar content */}
-            <div data-sidebar="sidebar" className="flex h-full w-full flex-col border-r border-gray-200 bg-white">
-              {/* Sidebar header with logo */}
-              <div className="flex items-center justify-center h-14 border-b py-2 px-2">
-                <img 
-                  src="/lovable-uploads/d5a32965-2a6a-49a6-8474-6efb96afd0f7.png" 
-                  alt="SEOAudit Logo" 
-                  className="h-6" 
-                />
-              </div>
-              
-              {/* Sidebar menu items */}
-              <nav className="flex-1 px-2 py-4 space-y-2">
-                <SidebarContentItems />
-              </nav>
-              
-              {/* Sidebar footer */}
-              <div className="px-2 py-2 border-t">
-                {!user ? (
-                  <Button 
-                    onClick={handleLogin} 
-                    variant="outline" 
-                    className="w-full justify-start text-xs h-7 py-1"
-                    size="sm"
-                  >
-                    <LogOut className="mr-2 h-3.5 w-3.5" />
-                    <span className="sidebar-label">Login</span>
-                  </Button>
-                ) : (
-                  <Button 
-                    onClick={handleLogout} 
-                    variant="outline" 
-                    className="w-full justify-start text-xs h-7 py-1"
-                    size="sm"
-                  >
-                    <LogOut className="mr-2 h-3.5 w-3.5" />
-                    <span className="sidebar-label">Logout</span>
-                  </Button>
-                )}
-              </div>
+      <div className="flex min-h-screen w-full bg-gray-50">
+        {/* Sidebar - Fixed narrow sidebar */}
+        <div className="fixed inset-y-0 left-0 z-50 w-16 bg-white border-r border-gray-200 flex flex-col items-center py-4">
+          <div className="flex-1 flex flex-col items-center space-y-4">
+            {/* Logo at top */}
+            <div className="p-2">
+              <img 
+                src="/lovable-uploads/d5a32965-2a6a-49a6-8474-6efb96afd0f7.png" 
+                alt="SEOAudit Logo" 
+                className="h-8 w-auto" 
+              />
             </div>
+            
+            {/* Icon navigation */}
+            <nav className="flex-1 w-full px-2 mt-6">
+              <SidebarContentItems />
+            </nav>
+          </div>
+          
+          {/* User/login at bottom */}
+          <div className="mt-auto">
+            {!user ? (
+              <Button 
+                onClick={handleLogin} 
+                variant="ghost" 
+                size="icon"
+                className="h-10 w-10 rounded-full"
+              >
+                <LogOut className="h-5 w-5 text-gray-500" />
+              </Button>
+            ) : (
+              <Button 
+                onClick={handleLogout} 
+                variant="ghost" 
+                size="icon"
+                className="h-10 w-10 rounded-full"
+              >
+                <LogOut className="h-5 w-5 text-gray-500" />
+              </Button>
+            )}
           </div>
         </div>
 
-        {/* Main content */}
-        <div className="flex-1 flex flex-col md:pl-[4rem]">
-          {/* Header */}
-          <header className="flex h-14 items-center border-b px-4 lg:px-6 sticky top-0 bg-background z-10">
-            <SidebarTrigger />
+        {/* Main content - with left padding to account for sidebar */}
+        <div className="flex-1 flex flex-col pl-16">
+          {/* Top header bar */}
+          <header className="h-16 bg-white border-b border-gray-200 px-6 flex items-center">
             <div className="flex flex-1 items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold">{title}</h2>
-                {domain && <p className="text-sm text-muted-foreground">{domain}</p>}
+              <div className="flex items-center">
+                <Button variant="ghost" size="icon" className="mr-2 md:hidden">
+                  <Menu className="h-5 w-5" />
+                </Button>
+                <h2 className="text-lg font-medium">{title}</h2>
+                {domain && (
+                  <div className="flex items-center ml-2 text-sm text-muted-foreground">
+                    <ChevronRight className="h-4 w-4" />
+                    <span>{domain}</span>
+                  </div>
+                )}
               </div>
               <div className="flex items-center gap-4">
                 {lastAnalysisDate && (
@@ -116,6 +114,7 @@ const SuiteLayout = ({
                     onClick={onRerunAnalysis} 
                     size="sm"
                     disabled={isAnalyzing}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white"
                   >
                     {isAnalyzing ? (
                       <>
@@ -135,7 +134,7 @@ const SuiteLayout = ({
           </header>
           
           {/* Page content */}
-          <div className="flex-1 p-4 lg:p-6">
+          <div className="flex-1 p-6 overflow-auto">
             {children}
           </div>
         </div>

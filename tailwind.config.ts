@@ -75,6 +75,24 @@ export default {
 					light: '#a78bfa',
 					DEFAULT: '#8B5CF6',
 					dark: '#7c3aed',
+				},
+				// New colors inspired by the image
+				suite: {
+					purple: {
+						light: '#c4b5fd',
+						DEFAULT: '#8b5cf6',
+						dark: '#6d28d9',
+					},
+					indigo: {
+						light: '#a5b4fc',
+						DEFAULT: '#6366f1',
+						dark: '#4f46e5',
+					},
+					lavender: {
+						light: '#ddd6fe',
+						DEFAULT: '#a78bfa',
+						dark: '#7c3aed',
+					},
 				}
 			},
 			borderRadius: {

@@ -1,72 +1,66 @@
 
-import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import RecommendationCard from '@/components/suite/dashboard/RecommendationCard';
-import { ArrowRight } from 'lucide-react';
-import { useUser } from '@/contexts/UserContext';
-import LoginDialog from '@/components/auth/LoginDialog';
-
-interface Recommendation {
-  id: number;
-  title: string;
-  description: string;
-  impact: 'high' | 'medium' | 'low';
-  type: 'technical' | 'content' | 'structure' | 'ai';
-}
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import RecommendationCard from './RecommendationCard';
+import { SampleRecommendation } from '@/hooks/suite/useDashboardState';
+import { AlertTriangle, AlertCircle, Info } from 'lucide-react';
 
 interface RecommendationsSectionProps {
-  recommendations: Recommendation[];
+  recommendations: SampleRecommendation[];
   onViewMore: () => void;
 }
 
 const RecommendationsSection = ({ recommendations, onViewMore }: RecommendationsSectionProps) => {
-  const { user } = useUser();
-  const [showLoginDialog, setShowLoginDialog] = useState(false);
-  
-  const handleViewMoreClick = () => {
-    if (user) {
-      // User is logged in, proceed to view more
-      onViewMore();
-    } else {
-      // User is not logged in, show login dialog
-      setShowLoginDialog(true);
+  const getImpactIcon = (impact: string) => {
+    switch (impact) {
+      case 'high':
+        return <AlertTriangle className="h-5 w-5 text-red-500" />;
+      case 'medium':
+        return <AlertCircle className="h-5 w-5 text-amber-500" />;
+      case 'low':
+        return <Info className="h-5 w-5 text-blue-500" />;
+      default:
+        return <Info className="h-5 w-5 text-blue-500" />;
+    }
+  };
+
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case 'technical':
+        return 'Técnico';
+      case 'content':
+        return 'Conteúdo';
+      case 'structure':
+        return 'Estrutura';
+      case 'ai':
+        return 'IA';
+      default:
+        return type;
     }
   };
 
   return (
-    <div className="mb-8">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold">Recomendações Principais</h2>
-        
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={handleViewMoreClick}
-        >
-          Ver todas 
-          <ArrowRight className="ml-1 h-4 w-4" />
-        </Button>
-      </div>
-      
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {recommendations.map(rec => (
-          <RecommendationCard
-            key={rec.id}
-            title={rec.title}
-            description={rec.description}
-            impact={rec.impact}
-            type={rec.type}
-            onLearnMore={handleViewMoreClick}
-          />
-        ))}
-      </div>
-
-      {/* Login Dialog */}
-      <LoginDialog 
-        isOpen={showLoginDialog} 
-        onClose={() => setShowLoginDialog(false)}
-        returnTo="/suite/recommendations"
-      />
+    <div className="space-y-4">
+      {recommendations.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">
+            Nenhuma recomendação disponível. Execute uma análise para obter recomendações.
+          </p>
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {recommendations.map((recommendation) => (
+            <RecommendationCard
+              key={recommendation.id}
+              title={recommendation.title}
+              description={recommendation.description}
+              impact={recommendation.impact}
+              type={getTypeLabel(recommendation.type)}
+              icon={getImpactIcon(recommendation.impact)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

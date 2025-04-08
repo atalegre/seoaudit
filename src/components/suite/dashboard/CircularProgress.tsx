@@ -5,57 +5,64 @@ import { cn } from '@/lib/utils';
 interface CircularProgressProps {
   value: number;
   size?: number;
-  strokeWidth?: number;
   color?: string;
   bgColor?: string;
-  className?: string;
+  thickness?: number;
   children?: React.ReactNode;
 }
 
-const CircularProgress = ({
+const CircularProgress: React.FC<CircularProgressProps> = ({
   value,
   size = 120,
-  strokeWidth = 8,
-  color = "stroke-primary",
-  bgColor = "stroke-gray-200",
-  className,
+  color = 'stroke-primary',
+  bgColor = 'stroke-gray-200',
+  thickness = 8,
   children
-}: CircularProgressProps) => {
-  const radius = (size - strokeWidth) / 2;
+}) => {
+  // Ensure value is between 0 and 100
+  const safeValue = Math.min(100, Math.max(0, value));
+  
+  // Calculate SVG parameters
+  const radius = (size - thickness) / 2;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (value / 100) * circumference;
-
+  const strokeDashoffset = circumference - (safeValue / 100) * circumference;
+  
   return (
-    <div 
-      className={cn("relative inline-flex items-center justify-center", className)}
-      style={{ width: size, height: size }}
-    >
-      <svg width={size} height={size} className="rotate-[-90deg]">
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg 
+        className="w-full h-full transform -rotate-90"
+        viewBox={`0 0 ${size} ${size}`}
+      >
+        {/* Background circle */}
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           fill="none"
-          strokeWidth={strokeWidth}
-          className={bgColor}
+          strokeWidth={thickness}
+          className={cn(bgColor)}
         />
+        
+        {/* Progress circle */}
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           fill="none"
-          strokeWidth={strokeWidth}
+          strokeWidth={thickness}
           strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          className={cn(color, "transition-all duration-1000 ease-out")}
+          strokeDashoffset={strokeDashoffset}
           strokeLinecap="round"
+          className={cn('transition-all ease-in-out duration-1000', color)}
         />
       </svg>
-      <div className="absolute inset-0 flex items-center justify-center">
-        {children || (
-          <span className="text-2xl font-bold">{value}</span>
-        )}
-      </div>
+      
+      {/* Center content */}
+      {children && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          {children}
+        </div>
+      )}
     </div>
   );
 };
