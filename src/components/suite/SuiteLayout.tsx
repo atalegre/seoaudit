@@ -55,7 +55,7 @@ const SuiteLayout = ({
               {/* Sidebar header with logo */}
               <div className="flex items-center justify-center h-14 border-b py-2 px-2">
                 <img 
-                  src="/lovable-uploads/4b0e451b-bcd1-4279-8dce-f9da22670979.png" 
+                  src="/lovable-uploads/d5a32965-2a6a-49a6-8474-6efb96afd0f7.png" 
                   alt="SEOAudit Logo" 
                   className="h-6" 
                 />
