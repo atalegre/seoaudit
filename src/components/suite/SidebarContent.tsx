@@ -9,7 +9,7 @@ import {
   Search,
   Lightbulb,
   FileText,
-  BarChart4,
+  BarChart2,
   Pen
 } from 'lucide-react';
 
@@ -23,7 +23,7 @@ const SidebarContentItems = () => {
     },
     {
       to: '/suite/seo',
-      icon: <BarChart4 className="h-4 w-4" />,
+      icon: <BarChart2 className="h-4 w-4" />,
       label: 'SEO Analysis'
     },
     {
