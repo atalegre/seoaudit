@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { extractDomainFromUrl, generateConsistentScore, generateConsistentReport } from './utils';
-import { LLMPresenceReport } from './types';
+import { LLMPresenceReport, ModelPresence } from './types';
 
 interface UseLLMPresenceProps {
   url?: string;
@@ -15,6 +15,7 @@ export const useLLMPresence = ({ url = "", autoStart = false }: UseLLMPresencePr
   const [presenceScore, setPresenceScore] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isDomainMentioned, setIsDomainMentioned] = useState(false);
+  const [modelPresence, setModelPresence] = useState<ModelPresence[]>([]);
 
   useEffect(() => {
     if (url && autoStart) {
@@ -38,11 +39,21 @@ export const useLLMPresence = ({ url = "", autoStart = false }: UseLLMPresencePr
     const domainScore = generateConsistentScore(domainToUse);
     const domainReport = generateConsistentReport(domainToUse, domainScore);
     
+    // Generate model-specific scores
+    const models = [
+      { name: 'ChatGPT', score: Math.min(domainScore + 15, 100)},
+      { name: 'Gemini', score: Math.max(Math.floor(domainScore * 0.65), 0)},
+      { name: 'Perplexity', score: Math.max(Math.floor(domainScore * 0.4), 0)},
+      { name: 'Claude', score: Math.max(Math.floor(domainScore * 0.3), 0)},
+      { name: 'Bing Copilot', score: Math.max(Math.floor(domainScore * 0.2), 0)}
+    ];
+    
     // Simulate processing time
     setTimeout(() => {
       setReport(domainReport);
       setPresenceScore(domainScore);
       setIsDomainMentioned(domainScore > 50);
+      setModelPresence(models);
       setLoading(false);
     }, 1500);
   };
@@ -51,7 +62,8 @@ export const useLLMPresence = ({ url = "", autoStart = false }: UseLLMPresencePr
     domain,
     score: presenceScore || 0,
     report,
-    isDomainMentioned: isDomainMentioned
+    isDomainMentioned: isDomainMentioned,
+    modelPresence: modelPresence
   };
 
   return {
@@ -60,6 +72,7 @@ export const useLLMPresence = ({ url = "", autoStart = false }: UseLLMPresencePr
     presenceScore,
     report,
     domain,
+    modelPresence,
     result,
     handleCheckPresence
   };

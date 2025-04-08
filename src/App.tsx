@@ -42,6 +42,7 @@ import SeoAnalysisPage from "./pages/suite/SeoAnalysisPage";
 import AioOptimizationPage from "./pages/suite/AioOptimizationPage";
 import ContentWriterPage from "./pages/suite/ContentWriterPage";
 import ContentRecommenderPage from "./pages/suite/ContentRecommenderPage";
+import LLMPresencePage from "./pages/suite/LLMPresencePage";
 
 const queryClient = new QueryClient();
 
@@ -98,7 +99,7 @@ function App() {
                 <Route path="/suite/aio" element={<AioOptimizationPage />} />
                 <Route path="/suite/writer" element={<ContentWriterPage />} />
                 <Route path="/suite/recommender" element={<ContentRecommenderPage />} />
-                <Route path="/suite/llm" element={<SuiteDashboard />} />
+                <Route path="/suite/llm" element={<LLMPresencePage />} />
                 <Route path="/suite/directories" element={<SuiteDashboard />} />
                 <Route path="/suite/keywords" element={<SuiteDashboard />} />
                 <Route path="/suite/reports" element={<SuiteDashboard />} />
