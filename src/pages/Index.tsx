@@ -2,13 +2,14 @@
 import React, { useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import MainAnalyzer from '@/components/analyzer/MainAnalyzer';
-import AnalyzerWrapper from '@/components/analyzer/AnalyzerWrapper';
 import FeatureHighlights from '@/components/home/FeatureHighlights';
 import HowItWorks from '@/components/home/HowItWorks';
 import WhyChooseUs from '@/components/home/WhyChooseUs';
 import CTASection from '@/components/home/CTASection';
 import TestimonialsSection from '@/components/home/TestimonialsSection';
+import Hero from '@/components/Hero';
+import ClientLogos from '@/components/home/ClientLogos';
+import FeatureCards from '@/components/home/FeatureCards';
 
 const Index = () => {
   // Move the useEffect inside the component
@@ -54,15 +55,14 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-white">
       <Header />
       <main className="flex-1">
-        <AnalyzerWrapper>
-          <MainAnalyzer />
-        </AnalyzerWrapper>
+        <Hero />
+        <ClientLogos />
+        <FeatureCards />
         <HowItWorks />
         <FeatureHighlights />
-        <WhyChooseUs />
         <TestimonialsSection />
         <CTASection />
       </main>

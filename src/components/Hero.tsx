@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Search, Sparkles, Zap, BarChart3, ArrowRight } from 'lucide-react';
+import { Search, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -49,98 +49,120 @@ const Hero = () => {
   };
   
   return (
-    <div className="relative bg-gradient-to-b from-gray-50 to-white pt-16 pb-20">
-      <div className="container px-4 mx-auto">
-        <div className="max-w-4xl mx-auto text-center mb-12">
-          <div className="inline-flex items-center px-4 py-2 bg-blue-50 rounded-full text-blue-600 text-sm font-medium mb-6 animate-fade-in">
-            <Sparkles className="h-4 w-4 mr-2" />
-            Análise completa para SEO e Inteligência Artificial
-          </div>
-          
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6 text-gray-900 md:leading-tight">
-            Otimize seu site para <span className="text-blue-600">Google</span> e <span className="text-purple-600">IA</span> com uma análise inteligente
-          </h1>
-          
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Descubra como melhorar a visibilidade do seu site tanto nos motores de busca tradicionais quanto nos novos modelos de inteligência artificial com nossa análise abrangente.
-          </p>
-          
-          <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto flex flex-col md:flex-row gap-3 md:gap-2 mb-10" data-analyze-form="true">
-            <div className="flex-1 relative">
-              <Input
-                type="text"
-                placeholder="www.exemplo.pt"
-                className="w-full h-14 pl-12 rounded-lg text-lg"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                disabled={isLoading}
-              />
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            </div>
-            <Button type="submit" className="h-14 px-8 text-lg" size="lg" disabled={isLoading}>
-              {isLoading ? (
-                <>Analisando<span className="loading-dots">...</span></>
-              ) : 'Analisar gratuitamente'}
-            </Button>
-          </form>
-          
-          <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-500">
-            <div className="flex items-center">
-              <div className="w-2 h-2 rounded-full bg-green-400 mr-2"></div>
-              Análise técnica profunda
-            </div>
-            <div className="flex items-center">
-              <div className="w-2 h-2 rounded-full bg-blue-400 mr-2"></div>
-              Pontuação SEO e AIO
-            </div>
-            <div className="flex items-center">
-              <div className="w-2 h-2 rounded-full bg-purple-400 mr-2"></div>
-              Recomendações personalizadas
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="relative py-20 lg:py-28 overflow-hidden">
+      {/* Background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-purple-50 to-white z-0"></div>
       
-      {/* Feature cards with improved content */}
-      <div className="container px-4 mx-auto relative">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col hover:shadow-md transition-shadow">
-            <div className="rounded-full bg-blue-50 p-3 w-14 h-14 flex items-center justify-center mb-4">
-              <BarChart3 className="w-8 h-8 text-blue-600" />
+      {/* Decorative shapes */}
+      <div className="absolute top-20 right-0 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+      <div className="absolute bottom-20 left-0 w-96 h-96 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+      
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center gap-10">
+            <div className="w-full md:w-7/12">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 mb-6">
+                Otimize seu site para <span className="text-blue-600">Google</span> e <span className="text-purple-600">IA</span>
+              </h1>
+              
+              <p className="text-xl text-gray-600 mb-8">
+                Descubra como melhorar a visibilidade do seu site tanto nos motores de busca tradicionais quanto nos novos modelos de inteligência artificial.
+              </p>
+              
+              <form onSubmit={handleSubmit} className="w-full flex flex-col sm:flex-row gap-3 mb-10" data-analyze-form="true">
+                <div className="flex-1 relative">
+                  <Input
+                    type="text"
+                    placeholder="www.exemplo.pt"
+                    className="w-full h-14 pl-12 rounded-lg text-lg"
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    disabled={isLoading}
+                  />
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                </div>
+                <Button type="submit" className="h-14 px-8 text-lg bg-indigo-600 hover:bg-indigo-700" size="lg" disabled={isLoading}>
+                  {isLoading ? (
+                    <>Analisando<span className="loading-dots">...</span></>
+                  ) : 'Analisar gratuitamente'}
+                </Button>
+              </form>
+              
+              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                <div className="flex items-center">
+                  <div className="w-2 h-2 rounded-full bg-green-400 mr-2"></div>
+                  <span>Análise técnica profunda</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 rounded-full bg-blue-400 mr-2"></div>
+                  <span>Pontuação SEO e AIO</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 rounded-full bg-purple-400 mr-2"></div>
+                  <span>Recomendações personalizadas</span>
+                </div>
+              </div>
+              
+              <div className="mt-8">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-sm font-medium text-gray-600">Confiado por mais de 1.400 utilizadores</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="flex">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <svg key={star} className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    ))}
+                  </div>
+                  <span className="ml-2 text-sm font-medium text-gray-600">4.8/5 (344 avaliações)</span>
+                </div>
+              </div>
             </div>
-            <h3 className="text-xl font-semibold mb-2">Análise SEO Completa</h3>
-            <p className="text-gray-600 flex-grow">Avalie a otimização técnica, velocidade, estrutura e metadata do seu site para maximizar a visibilidade nos motores de busca.</p>
-            <Button variant="link" className="mt-4 p-0 justify-start text-blue-600 hover:text-blue-700" asChild>
-              <a href="/como-funciona">
-                Saiba mais <ArrowRight className="ml-1 h-4 w-4" />
-              </a>
-            </Button>
-          </div>
-          
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col hover:shadow-md transition-shadow">
-            <div className="rounded-full bg-purple-50 p-3 w-14 h-14 flex items-center justify-center mb-4">
-              <Sparkles className="w-8 h-8 text-purple-600" />
+            
+            <div className="w-full md:w-5/12">
+              <div className="relative">
+                {/* Main image - mockup of application */}
+                <div className="relative z-10 rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+                  <img 
+                    src="/lovable-uploads/50c418bb-5a2e-4af3-b3b9-a03697b89e44.png" 
+                    alt="SEO Audit Dashboard" 
+                    className="w-full h-auto"
+                  />
+                </div>
+                
+                {/* Floating notification card */}
+                <div className="absolute -top-6 -left-6 bg-white rounded-xl shadow-lg p-3 border border-gray-100 z-20 w-64 transform -rotate-2">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                      <span className="text-purple-600 text-lg font-bold">+</span>
+                    </div>
+                    <div>
+                      <div className="font-medium text-sm">Análise finalizada</div>
+                      <div className="text-xs text-gray-500">seusite.com.br</div>
+                    </div>
+                  </div>
+                  <div className="mt-2 text-center bg-green-50 rounded-lg py-1 text-xs text-green-600 font-medium">
+                    Pontuação SEO: 92/100
+                  </div>
+                </div>
+                
+                {/* Floating success card */}
+                <div className="absolute -bottom-4 -right-4 bg-white rounded-xl shadow-lg p-3 border border-gray-100 z-20 w-56 transform rotate-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <div className="font-medium text-sm">Otimização IA</div>
+                  </div>
+                  <div className="mt-2 text-xs text-gray-600">
+                    Presença nos LLMs melhorada em 35%
+                  </div>
+                </div>
+              </div>
             </div>
-            <h3 className="text-xl font-semibold mb-2">Otimização para IA</h3>
-            <p className="text-gray-600 flex-grow">Descubra como o ChatGPT e outros LLMs interpretam seu conteúdo e otimize-o para aparecer em resultados baseados em IA.</p>
-            <Button variant="link" className="mt-4 p-0 justify-start text-purple-600 hover:text-purple-700" asChild>
-              <a href="/glossario">
-                Explorar glossário AIO <ArrowRight className="ml-1 h-4 w-4" />
-              </a>
-            </Button>
-          </div>
-          
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col hover:shadow-md transition-shadow">
-            <div className="rounded-full bg-green-50 p-3 w-14 h-14 flex items-center justify-center mb-4">
-              <Zap className="w-8 h-8 text-green-600" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Dashboard Profissional</h3>
-            <p className="text-gray-600 flex-grow">Acesse relatórios detalhados, ferramentas de otimização de conteúdo e monitore o progresso do seu site ao longo do tempo.</p>
-            <Button variant="link" className="mt-4 p-0 justify-start text-green-600 hover:text-green-700" asChild>
-              <a href="/signin">
-                Acessar dashboard <ArrowRight className="ml-1 h-4 w-4" />
-              </a>
-            </Button>
           </div>
         </div>
       </div>
