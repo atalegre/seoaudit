@@ -45,14 +45,16 @@ const MainAnalyzer = () => {
         const projectId = `${domain}-${Date.now()}`.replace(/[^a-zA-Z0-9]/g, '-');
         
         // Check if we're in production or development environment
-        const isProd = window.location.hostname === 'seoaudit.pt';
+        const isDevelopment = window.location.hostname === 'localhost' || 
+                            window.location.hostname.includes('lovable');
         
-        if (isProd) {
-          // For production - redirect to the suite subdomain
-          window.location.href = `https://suite.seoaudit.pt/projeto/${projectId}?url=${encodeURIComponent(formattedUrl)}`;
-        } else {
+        if (isDevelopment) {
           // For development - redirect to the local suite
           window.location.href = `/suite?url=${encodeURIComponent(formattedUrl)}&projectId=${projectId}`;
+        } else {
+          // For production - redirect to the suite subdomain in a new tab
+          const suiteUrl = `https://suite.seoaudit.pt/projeto/${projectId}?url=${encodeURIComponent(formattedUrl)}`;
+          window.open(suiteUrl, '_blank');
         }
       }, 1500); // Aguarda 1.5 segundos para simular análise inicial
       

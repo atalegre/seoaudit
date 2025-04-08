@@ -48,9 +48,22 @@ const SignInForm = ({ email, returnTo, setAuthError, onSuccess }: SignInFormProp
         if (onSuccess) {
           onSuccess();
         } else {
-          // Default navigation behavior
-          const role = data.user?.user_metadata?.role || 'user';
-          navigate(returnTo || (role === 'admin' ? '/dashboard' : '/suite'));
+          // Check if we should redirect to a specific path or to the subdomain
+          const isDevelopment = window.location.hostname === 'localhost' || 
+                             window.location.hostname.includes('lovable');
+          
+          if (isDevelopment) {
+            // For development - navigate to local route
+            navigate(returnTo || '/suite');
+          } else {
+            // For production - redirect to the suite subdomain in a new tab
+            const lastAnalyzedUrl = localStorage.getItem('lastAnalyzedUrl');
+            const queryParam = lastAnalyzedUrl ? `?url=${encodeURIComponent(lastAnalyzedUrl)}` : '';
+            window.open(`https://suite.seoaudit.pt${queryParam}`, '_blank');
+            
+            // Navigate to the homepage in the current tab
+            navigate('/');
+          }
         }
       }
     } catch (error: any) {

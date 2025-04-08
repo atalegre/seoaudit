@@ -43,8 +43,9 @@ const CTASection = () => {
         // Para ambiente de desenvolvimento
         window.location.href = `/suite?url=${encodeURIComponent(formattedUrl)}&projectId=${projectId}`;
       } else {
-        // Para produção - redireciona para o subdomínio suite
-        window.location.href = `https://suite.seoaudit.pt/projeto/${projectId}?url=${encodeURIComponent(formattedUrl)}`;
+        // Para produção - redireciona para o subdomínio suite em uma nova aba
+        const suiteUrl = `https://suite.seoaudit.pt/projeto/${projectId}?url=${encodeURIComponent(formattedUrl)}`;
+        window.open(suiteUrl, '_blank');
       }
     }, 1500);
   };

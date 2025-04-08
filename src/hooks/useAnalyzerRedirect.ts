@@ -25,8 +25,22 @@ export const useAnalyzerRedirect = () => {
     setTimeout(() => {
       setIsAnalyzing(false);
       
-      // Redirect to suite dashboard with the URL
-      navigate(`/suite?url=${encodeURIComponent(url)}`);
+      // Extract domain for project ID creation
+      const domain = url.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+      const projectId = `${domain}-${Date.now()}`.replace(/[^a-zA-Z0-9]/g, '-');
+      
+      // Check if we're in development or production environment
+      const isDevelopment = window.location.hostname === 'localhost' || 
+                         window.location.hostname.includes('lovable');
+      
+      if (isDevelopment) {
+        // For development environment - redirect to local route
+        navigate(`/suite?url=${encodeURIComponent(url)}`);
+      } else {
+        // For production - redirect to the subdomain in a new tab
+        const suiteUrl = `https://suite.seoaudit.pt/projeto/${projectId}?url=${encodeURIComponent(url)}`;
+        window.open(suiteUrl, '_blank');
+      }
     }, 2000);
   };
 
