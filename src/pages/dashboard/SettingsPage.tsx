@@ -1,92 +1,29 @@
 
-import React, { useContext, useState, useEffect } from 'react';
-import DashboardLayout from '@/components/dashboard/DashboardLayout';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { storeApiKey, getApiKey } from '@/utils/api';
-import { toast } from 'sonner';
-import { UserContext } from '@/contexts/UserContext';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import UserManagement from '@/components/dashboard/UserManagement';
 
 const SettingsPage = () => {
-  const userContext = useContext(UserContext);
-  const [googleApiKey, setGoogleApiKey] = useState('');
-  const [openaiApiKey, setOpenaiApiKey] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  
-  useEffect(() => {
-    const loadApiKeys = async () => {
-      setIsLoading(true);
-      try {
-        // Make sure to check if user email exists before trying to use it
-        const email = userContext?.user?.email;
-        if (!email) {
-          console.warn('User email not available');
-          return;
-        }
-        
-        const googleKeyData = await getApiKey(email);
-        if (googleKeyData && googleKeyData.apiKey) {
-          setGoogleApiKey(googleKeyData.apiKey);
-        }
-        
-        // Load other API keys here
-        
-      } catch (error) {
-        console.error('Error loading API keys:', error);
-        toast.error('Erro ao carregar as chaves API');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    loadApiKeys();
-  }, [userContext?.user?.email]);
-  
-  const handleSaveApiKeys = async () => {
-    setIsSaving(true);
-    try {
-      // Check if user email exists
-      const email = userContext?.user?.email;
-      if (!email) {
-        toast.error('Você precisa estar logado para salvar as configurações');
-        return;
-      }
-      
-      // Save Google API key
-      await storeApiKey(email, googleApiKey);
-      
-      // Save other API keys here
-      
-      toast.success('Configurações salvas com sucesso');
-    } catch (error) {
-      console.error('Error saving API keys:', error);
-      toast.error('Erro ao salvar as configurações');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-  
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Configurações</h1>
-          <p className="text-muted-foreground mt-1">
-            Configure suas integrações e preferências
-          </p>
-        </div>
+    <div>
+      <h1 className="text-3xl font-bold tracking-tight mb-4">Configurações</h1>
+      <p className="text-muted-foreground mb-6">
+        Configure suas integrações e preferências
+      </p>
+      
+      <Tabs defaultValue="api-keys">
+        <TabsList className="mb-6">
+          <TabsTrigger value="api-keys">Chaves API</TabsTrigger>
+          <TabsTrigger value="notifications">Notificações</TabsTrigger>
+          <TabsTrigger value="preferences">Preferências</TabsTrigger>
+          <TabsTrigger value="users">Usuários</TabsTrigger>
+        </TabsList>
         
-        <Tabs defaultValue="api">
-          <TabsList>
-            <TabsTrigger value="api">Chaves API</TabsTrigger>
-            <TabsTrigger value="notifications">Notificações</TabsTrigger>
-            <TabsTrigger value="preferences">Preferências</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="api" className="space-y-4">
+        <TabsContent value="api-keys">
+          <div className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Google API</CardTitle>
@@ -95,18 +32,22 @@ const SettingsPage = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Chave de API</label>
-                  <Input
-                    value={googleApiKey}
-                    onChange={(e) => setGoogleApiKey(e.target.value)}
-                    placeholder="Insira sua chave de API do Google"
-                    type="password"
-                    disabled={isLoading}
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    Obtenha sua chave em <a href="https://console.cloud.google.com/apis" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-700">Google Cloud Console</a>
-                  </p>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Chave de API</label>
+                    <Input type="password" placeholder="Insira sua chave de API do Google" />
+                  </div>
+                  <div className="flex items-center">
+                    <a 
+                      href="https://console.cloud.google.com/apis/credentials" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-sm text-primary hover:underline mr-auto"
+                    >
+                      Obtenha sua chave em Google Cloud Console
+                    </a>
+                    <Button>Salvar</Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -119,59 +60,65 @@ const SettingsPage = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Chave de API</label>
-                  <Input
-                    value={openaiApiKey}
-                    onChange={(e) => setOpenaiApiKey(e.target.value)}
-                    placeholder="Insira sua chave de API do OpenAI"
-                    type="password"
-                    disabled={isLoading}
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    Obtenha sua chave em <a href="https://platform.openai.com/account/api-keys" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-700">OpenAI API</a>
-                  </p>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Chave de API</label>
+                    <Input type="password" placeholder="Insira sua chave de API do OpenAI" />
+                  </div>
+                  <div className="flex items-center">
+                    <a 
+                      href="https://platform.openai.com/api-keys" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-sm text-primary hover:underline mr-auto"
+                    >
+                      Obtenha sua chave em OpenAI API
+                    </a>
+                    <Button>Salvar</Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
-            
-            <div className="flex justify-end">
-              <Button onClick={handleSaveApiKeys} disabled={isSaving || isLoading}>
-                {isSaving ? 'Salvando...' : 'Salvar Configurações'}
-              </Button>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="notifications">
-            <Card>
-              <CardHeader>
-                <CardTitle>Configurações de Notificações</CardTitle>
-                <CardDescription>
-                  Configure como e quando você deseja receber notificações
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p>Configurações de notificações serão implementadas em breve.</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="preferences">
-            <Card>
-              <CardHeader>
-                <CardTitle>Preferências Gerais</CardTitle>
-                <CardDescription>
-                  Configure suas preferências de uso do sistema
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p>Preferências gerais serão implementadas em breve.</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </DashboardLayout>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="notifications">
+          <Card>
+            <CardHeader>
+              <CardTitle>Configurações de Notificações</CardTitle>
+              <CardDescription>
+                Escolha quais notificações você deseja receber
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Esta funcionalidade estará disponível em breve.
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="preferences">
+          <Card>
+            <CardHeader>
+              <CardTitle>Preferências do Sistema</CardTitle>
+              <CardDescription>
+                Personalize a aparência e o comportamento do sistema
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Esta funcionalidade estará disponível em breve.
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="users">
+          <UserManagement />
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };
 
