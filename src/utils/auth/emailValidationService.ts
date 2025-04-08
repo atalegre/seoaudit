@@ -15,7 +15,7 @@ export async function checkEmailExists(email: string): Promise<boolean> {
     
     if (error) {
       console.error("Error checking users for email:", error);
-      throw error;
+      // Continue even if there's an error to check auth users
     }
     
     // If found in users table, return true
@@ -23,9 +23,18 @@ export async function checkEmailExists(email: string): Promise<boolean> {
       return true;
     }
     
-    // Fallback: Just return false since auth admin API requires service role
-    // which we likely don't have in the client
-    return false;
+    // Also check auth users (using admin API)
+    const { data: users, error: authError } = await supabase.auth.admin.listUsers();
+    
+    if (authError) {
+      console.error("Error checking auth users for email:", authError);
+      // Return false in case of errors to avoid blocking registration
+      return false;
+    }
+    
+    // Check if the email exists in the auth users list
+    const emailExists = users.users.some((user: any) => user.email === email);
+    return emailExists;
   } catch (error) {
     console.error('Error checking if email exists:', error);
     // Return false to avoid blocking registration in case of errors

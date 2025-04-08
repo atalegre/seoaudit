@@ -10,9 +10,16 @@ interface UserFormDialogProps {
   onOpenChange: (open: boolean) => void;
   currentUser: User | null;
   onSubmit: (values: UserFormValues) => Promise<void>;
+  isSubmitting?: boolean;
 }
 
-const UserFormDialog: React.FC<UserFormDialogProps> = ({ open, onOpenChange, currentUser, onSubmit }) => {
+const UserFormDialog: React.FC<UserFormDialogProps> = ({ 
+  open, 
+  onOpenChange, 
+  currentUser, 
+  onSubmit,
+  isSubmitting = false
+}) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -23,14 +30,15 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({ open, onOpenChange, cur
           <DialogDescription>
             {currentUser 
               ? 'Atualize as informações deste usuário.'
-              : 'Preencha os campos para criar um novo usuário.'}
+              : 'Preencha os campos para criar um novo usuário. Uma senha aleatória será gerada.'}
           </DialogDescription>
         </DialogHeader>
         
         <UserForm 
           currentUser={currentUser} 
           onSubmit={onSubmit} 
-          onCancel={() => onOpenChange(false)} 
+          onCancel={() => onOpenChange(false)}
+          isSubmitting={isSubmitting}
         />
       </DialogContent>
     </Dialog>

@@ -10,14 +10,21 @@ import { DialogFooter } from '@/components/ui/dialog';
 import { User } from '@/utils/api/userService';
 import { userFormSchema, UserFormValues } from './schemas/userFormSchema';
 import { useUser } from '@/contexts/UserContext';
+import { Loader2 } from 'lucide-react';
 
 interface UserFormProps {
   currentUser: User | null;
   onSubmit: (values: UserFormValues) => Promise<void>;
   onCancel: () => void;
+  isSubmitting?: boolean;
 }
 
-const UserForm: React.FC<UserFormProps> = ({ currentUser, onSubmit, onCancel }) => {
+const UserForm: React.FC<UserFormProps> = ({ 
+  currentUser, 
+  onSubmit, 
+  onCancel, 
+  isSubmitting = false 
+}) => {
   const { role: currentUserRole } = useUser();
   const isAdmin = currentUserRole === 'admin';
 
@@ -42,7 +49,7 @@ const UserForm: React.FC<UserFormProps> = ({ currentUser, onSubmit, onCancel }) 
             <FormItem>
               <FormLabel>Nome</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input {...field} disabled={isSubmitting} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -56,8 +63,13 @@ const UserForm: React.FC<UserFormProps> = ({ currentUser, onSubmit, onCancel }) 
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input {...field} disabled={isSubmitting || (currentUser !== null)} />
               </FormControl>
+              {currentUser && (
+                <FormDescription>
+                  O email não pode ser alterado depois que o usuário é criado.
+                </FormDescription>
+              )}
               <FormMessage />
             </FormItem>
           )}
@@ -73,7 +85,7 @@ const UserForm: React.FC<UserFormProps> = ({ currentUser, onSubmit, onCancel }) 
                 onValueChange={field.onChange} 
                 defaultValue={field.value}
                 value={field.value}
-                disabled={!isAdmin}
+                disabled={!isAdmin || isSubmitting}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -103,11 +115,19 @@ const UserForm: React.FC<UserFormProps> = ({ currentUser, onSubmit, onCancel }) 
             type="button" 
             variant="outline" 
             onClick={onCancel}
+            disabled={isSubmitting}
           >
             Cancelar
           </Button>
-          <Button type="submit">
-            {currentUser ? 'Salvar Alterações' : 'Criar Usuário'}
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {currentUser ? 'Salvando...' : 'Criando...'}
+              </>
+            ) : (
+              currentUser ? 'Salvar Alterações' : 'Criar Usuário'
+            )}
           </Button>
         </DialogFooter>
       </form>

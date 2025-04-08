@@ -17,6 +17,7 @@ const UserManagement = () => {
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Carregar usuários
   const fetchUsers = async () => {
@@ -69,6 +70,8 @@ const UserManagement = () => {
   // Enviar formulário
   const onSubmit = async (values: UserFormValues) => {
     try {
+      setIsSubmitting(true);
+      
       if (currentUser) {
         // Make sure all required fields are present when updating
         const updateData = {
@@ -90,13 +93,15 @@ const UserManagement = () => {
             role: values.role
           });
           
-          toast.success('Usuário criado com sucesso');
+          toast.success('Usuário criado com sucesso. Uma senha aleatória foi gerada.');
         } catch (error: any) {
           console.error('Erro detalhado ao criar usuário:', error);
           
           // Handle specific errors with better user messages
           if (error.message?.includes('email já está em uso')) {
             toast.error('Este email já está sendo utilizado por outro usuário.');
+          } else if (error.message?.includes('permission denied')) {
+            toast.error('Permissão negada. O serviço está temporariamente indisponível. Tente novamente mais tarde.');
           } else if (error.message?.includes('RLS') || error.code === '42501') {
             toast.error('Permissão negada. Você não tem permissão para criar usuários. Entre em contato com um administrador.');
           } else {
@@ -104,6 +109,7 @@ const UserManagement = () => {
           }
           
           // Keep dialog open when there's an error so user can fix it
+          setIsSubmitting(false);
           return;
         }
       }
@@ -114,6 +120,8 @@ const UserManagement = () => {
     } catch (error: any) {
       console.error('Erro ao salvar usuário:', error);
       toast.error(error.message || 'Não foi possível salvar as informações do usuário');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -167,6 +175,7 @@ const UserManagement = () => {
           onOpenChange={setIsFormDialogOpen}
           currentUser={currentUser}
           onSubmit={onSubmit}
+          isSubmitting={isSubmitting}
         />
       </CardContent>
     </Card>

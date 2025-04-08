@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { checkEmailExists } from '@/utils/auth/userProfileService';
+import { checkEmailExists } from '@/utils/auth/emailValidationService';
 
 // Tipo para o usuário
 export interface User {
@@ -100,33 +100,56 @@ export async function createUser(userData: {
       throw new Error('Este email já está em uso por outro usuário');
     }
     
+    // Use service role key for admin operations to bypass RLS
     // Create the user
-    const { data, error } = await supabase
-      .from('users')
-      .insert([userData])
-      .select();
+    const { data, error } = await supabase.auth.admin.createUser({
+      email: userData.email,
+      email_confirm: true,
+      user_metadata: {
+        full_name: userData.name,
+        role: userData.role
+      },
+      app_metadata: {
+        role: userData.role
+      }
+    });
     
     if (error) {
-      // Better error handling for constraints
-      if (error.code === '23505') {
+      if (error.message?.includes('duplicate key') || error.message?.includes('already exists')) {
         throw new Error('Este email já está em uso por outro usuário');
       }
       throw error;
     }
     
-    if (!data || !data[0] || typeof data[0] !== 'object' || 'error' in data[0]) {
-      return null; // Return null on error
+    if (!data || !data.user) {
+      throw new Error('Erro ao criar usuário');
     }
     
-    // Safe access with type assertions and default values
-    const createdUser = data[0] as any;
+    // Insert into users table
+    const { data: insertedUser, error: insertError } = await supabase
+      .from('users')
+      .insert([{
+        id: data.user.id,
+        name: userData.name,
+        email: userData.email,
+        role: userData.role
+      }])
+      .select()
+      .single();
+    
+    if (insertError) {
+      console.error('Erro ao inserir usuário na tabela users:', insertError);
+      // Continue anyway as we've created the auth user
+    }
+    
+    // Return user data
     return {
-      id: createdUser?.id || '',
-      name: createdUser?.name || '',
-      email: createdUser?.email || '',
-      role: (createdUser?.role as 'admin' | 'editor' | 'user') || 'user'
+      id: data.user.id,
+      name: userData.name,
+      email: userData.email,
+      role: userData.role
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Erro ao criar usuário:', error);
     throw error;
   }
@@ -194,6 +217,15 @@ export async function updateUser(userId: string, userData: { name?: string, emai
  */
 export async function deleteUser(userId: string): Promise<boolean> {
   try {
+    // First delete from auth users
+    const { error: authError } = await supabase.auth.admin.deleteUser(userId);
+    
+    if (authError) {
+      console.error('Erro ao excluir usuário da autenticação:', authError);
+      throw authError;
+    }
+    
+    // Then delete from users table
     const { error } = await supabase
       .from('users')
       .delete()
