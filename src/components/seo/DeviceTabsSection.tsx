@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -70,7 +71,7 @@ const DeviceTabsSection: React.FC<DeviceTabsSectionProps> = ({
             <TabsList className="bg-transparent h-14">
               <TabsTrigger 
                 value="desktop" 
-                className="data-[state=active]:bg-blue-50 flex items-center gap-2 px-4"
+                className="data-[state=active]:bg-muted flex items-center gap-2 px-4"
                 disabled={isAnalyzing || !hasDesktopData}
               >
                 <Monitor className="h-4 w-4" />
@@ -78,7 +79,7 @@ const DeviceTabsSection: React.FC<DeviceTabsSectionProps> = ({
               </TabsTrigger>
               <TabsTrigger 
                 value="mobile" 
-                className="data-[state=active]:bg-blue-50 flex items-center gap-2 px-4"
+                className="data-[state=active]:bg-muted flex items-center gap-2 px-4"
                 disabled={isAnalyzing || !hasMobileData}
               >
                 <Smartphone className="h-4 w-4" />

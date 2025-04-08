@@ -16,7 +16,18 @@ const AnalysisErrorView: React.FC<AnalysisErrorViewProps> = ({
   onReanalyze 
 }) => {
   // Check if the error relates to PageSpeed API key
-  const isPageSpeedKeyError = seoError && seoError.includes('VITE_PAGESPEED_API_KEY');
+  const isPageSpeedKeyError = seoError && (
+    seoError.includes('VITE_PAGESPEED_API_KEY') || 
+    seoError.includes('PageSpeed Insights API has not been used') ||
+    seoError.includes('API has not been enabled')
+  );
+  
+  // Extract project ID from error message if available
+  let projectId = '';
+  if (isPageSpeedKeyError && seoError) {
+    const match = seoError.match(/project=(\d+)/);
+    projectId = match ? match[1] : '';
+  }
   
   return (
     <div className="max-w-6xl mx-auto">
@@ -37,13 +48,24 @@ const AnalysisErrorView: React.FC<AnalysisErrorViewProps> = ({
               
               {isPageSpeedKeyError && (
                 <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-amber-800">
-                  <p className="text-sm font-medium">Para obter uma chave de API do Google PageSpeed:</p>
+                  <p className="text-sm font-medium">Para resolver o problema:</p>
                   <ol className="list-decimal list-inside space-y-1 text-xs mt-1">
                     <li>Acesse o <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline inline-flex items-center">
                       Google Cloud Console <ExternalLink className="h-3 w-3 ml-1" />
                     </a></li>
                     <li>Crie um projeto ou selecione um existente</li>
-                    <li>Ative a API PageSpeed Insights em "Biblioteca de APIs"</li>
+                    <li>Ative a API PageSpeed Insights em "Biblioteca de APIs"
+                      {projectId && (
+                        <a 
+                          href={`https://console.developers.google.com/apis/api/pagespeedonline.googleapis.com/overview?project=${projectId}`}
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="ml-2 text-blue-600 hover:underline inline-flex items-center"
+                        >
+                          Link direto <ExternalLink className="h-3 w-3 ml-1" />
+                        </a>
+                      )}
+                    </li>
                     <li>Crie uma chave de API na seção "Credenciais"</li>
                     <li>Copie a chave gerada e configure-a como variável de ambiente</li>
                   </ol>

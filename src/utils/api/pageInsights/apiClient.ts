@@ -113,6 +113,7 @@ export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mo
       
       // Tentar via proxy CORS alternativo
       try {
+        console.log('Using CORS proxy fallback for:', url);
         const corsData = await handleCorsRequest(url, strategy);
         if (corsData) {
           const processedData = processPageInsightsData(corsData, url);
@@ -141,6 +142,16 @@ export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mo
       }
       
       errorMessage += '\n\nCertifique-se de que a URL é válida e acessível publicamente.';
+      
+      // Se o erro contém informações sobre ativação da API, fornecer instruções
+      if (directApiError.message.includes('API has not been used') || 
+          directApiError.message.includes('API has not been enabled')) {
+        errorMessage += '\n\nA API do PageSpeed Insights precisa ser ativada no console do Google Cloud:';
+        errorMessage += '\n1. Acesse https://console.cloud.google.com/apis/library/pagespeedonline.googleapis.com';
+        errorMessage += '\n2. Selecione seu projeto';
+        errorMessage += '\n3. Clique em "Ativar"';
+        errorMessage += '\n4. Aguarde alguns minutos para a ativação se propagar';
+      }
       
       throw new Error(errorMessage);
     }
