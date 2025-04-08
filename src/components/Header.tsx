@@ -5,6 +5,7 @@ import AuthButtons from './header/AuthButtons';
 import HeaderNavigation from './header/HeaderNavigation';
 import LanguageSwitcher from './LanguageSwitcher';
 import DashboardButton from './header/buttons/DashboardButton';
+import { DirectAdminButton } from './header/buttons';
 import { useUser } from '@/contexts/UserContext';
 
 const Header = () => {
@@ -29,6 +30,7 @@ const Header = () => {
         <HeaderNavigation />
         
         <div className="ml-auto flex items-center gap-2">
+          <DirectAdminButton />
           <LanguageSwitcher />
           {user && <DashboardButton />}
           <AuthButtons />
