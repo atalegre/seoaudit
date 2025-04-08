@@ -14,7 +14,10 @@ const DashboardPage = () => {
     if (user) {
       if (user.role === 'admin') {
         // Admin stays on this dashboard
-        toast.success('Bem-vindo ao Dashboard de Administração');
+        toast({
+          title: 'Bem-vindo ao Dashboard de Administração',
+          description: 'Gerencie clientes, conteúdos e configurações do sistema.'
+        });
       } else {
         // Regular users get redirected to suite
         navigate('/suite');

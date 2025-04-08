@@ -10,7 +10,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import UserDropdownMenu from './UserDropdownMenu';
-import SidebarContent, { adminSidebarItems, clientSidebarItems } from './SidebarContent';
+import SidebarContent, { adminSidebarItems } from './SidebarContent';
 
 interface TopNavbarProps {
   isMobile: boolean;
@@ -31,8 +31,8 @@ const TopNavbar: React.FC<TopNavbarProps> = ({
   userEmail,
   user
 }) => {
-  // Use appropriate sidebar items based on role
-  const sidebarItems = userRole === 'admin' ? adminSidebarItems : clientSidebarItems;
+  // Always use admin sidebar items
+  const sidebarItems = adminSidebarItems;
 
   return (
     <header className="bg-white border-b h-14 md:h-16 flex items-center justify-between px-4 md:px-6">
@@ -46,8 +46,8 @@ const TopNavbar: React.FC<TopNavbarProps> = ({
             </SheetTrigger>
             <SheetContent side="left" className="w-64 p-0">
               <div className="p-4 border-b">
-                <Link to={userRole === 'admin' ? "/dashboard" : "/dashboard/client"} className="font-bold text-lg text-primary">
-                  SEOAudit {userRole === 'admin' ? 'Admin' : 'Client'}
+                <Link to="/dashboard" className="font-bold text-lg text-primary">
+                  SEOAudit Admin
                 </Link>
               </div>
               <SidebarContent 
@@ -58,8 +58,8 @@ const TopNavbar: React.FC<TopNavbarProps> = ({
           </Sheet>
         )}
         
-        <Link to={userRole === 'admin' ? "/dashboard" : "/dashboard/client"} className="font-bold text-xl text-primary">
-          {isMobile ? "SEOAudit" : `SEOAudit ${userRole === 'admin' ? 'Admin' : 'Client'}`}
+        <Link to="/dashboard" className="font-bold text-xl text-primary">
+          {isMobile ? "SEOAudit" : "SEOAudit Admin"}
         </Link>
       </div>
       

@@ -4,7 +4,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuthCheck } from '@/hooks/useAuthCheck';
 import TopNavbar from './TopNavbar';
-import SidebarContent, { adminSidebarItems, clientSidebarItems } from './SidebarContent';
+import SidebarContent, { adminSidebarItems } from './SidebarContent';
 import { useUser } from '@/contexts/UserContext';
 import { Loader2 } from 'lucide-react';
 
@@ -48,8 +48,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     return null;
   }
   
-  // Choose appropriate sidebar items based on user role
-  const sidebarItems = userRole === 'admin' ? adminSidebarItems : clientSidebarItems;
+  // Use admin sidebar items regardless of user role since we've removed the client dashboard
+  const sidebarItems = adminSidebarItems;
   
   return (
     <div className="min-h-screen flex flex-col">
