@@ -28,15 +28,15 @@ const DeviceTabsSection: React.FC<DeviceTabsSectionProps> = ({
   error
 }) => {
   const handleRetry = () => {
-    toast.info("Limpando cache e reiniciando análise", {
-      duration: 3000
-    });
-    
     // Limpar cache do sessionStorage
     Object.keys(sessionStorage).forEach(key => {
       if (key.startsWith('psi_')) {
         sessionStorage.removeItem(key);
       }
+    });
+    
+    toast.info("Limpando cache e reiniciando análise", {
+      description: "Tentando obter dados atualizados da API"
     });
     
     // Recarregar a página para forçar uma nova análise

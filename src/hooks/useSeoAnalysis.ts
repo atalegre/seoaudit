@@ -111,6 +111,19 @@ export function useSeoAnalysis() {
   };
 
   const handleReanalyze = () => {
+    // Limpar o cache do sessionStorage para o URL analisado
+    Object.keys(sessionStorage).forEach(key => {
+      if (key.startsWith('psi_')) {
+        console.log('Limpando cache:', key);
+        sessionStorage.removeItem(key);
+      }
+    });
+    
+    toast.info("Cache limpo, iniciando nova análise", {
+      description: "Tentando obter dados atualizados da API"
+    });
+    
+    // Analisar novamente
     analyzeUrl();
   };
 

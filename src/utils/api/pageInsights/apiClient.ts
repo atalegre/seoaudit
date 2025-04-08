@@ -66,15 +66,30 @@ export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mo
     
     console.log('Usando chave API PageSpeed:', apiKey.substring(0, 8) + '...');
     
-    // Use fetch API with optimized settings
+    // Verificar se a API está ativada - fazer uma requisição preliminar
+    const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&strategy=${strategy}&category=performance&category=accessibility&category=best-practices&category=seo`;
+    
+    // Usar fetch com timeout reduzido - 25 segundos para evitar AbortError com signal
+    const timeoutMs = 25000;
+    
     try {
-      const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&strategy=${strategy}&category=performance&category=accessibility&category=best-practices&category=seo`;
+      console.log(`Iniciando requisição com timeout de ${timeoutMs}ms`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        console.log('Timeout excedido, abortando requisição');
+        controller.abort();
+      }, timeoutMs);
       
-      // Usar fetch com timeout otimizado
-      const { fetchProps, clearTimeout } = createTimedRequest(apiUrl, 20000);
+      const response = await fetch(apiUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+        signal: controller.signal
+      });
       
-      const response = await fetch(apiUrl, fetchProps);
-      clearTimeout();
+      // Limpar o timeout pois a resposta foi recebida
+      clearTimeout(timeoutId);
       
       if (response.ok) {
         const data = await response.json();
@@ -101,14 +116,36 @@ export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mo
         return processedData;
       } else {
         // Extrair a mensagem de erro da resposta quando possível
-        const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.error?.message || `Erro HTTP: ${response.status}`;
+        let errorMessage = `Erro HTTP: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          if (errorData.error?.message) {
+            errorMessage = errorData.error.message;
+            
+            // Check for specific API not enabled error
+            if (errorMessage.includes('API has not been used') || 
+                errorMessage.includes('API has not been enabled')) {
+              throw new Error(`A API PageSpeed Insights não está ativada. Acesse o console do Google Cloud e ative-a para o projeto associado à sua chave API. Erro original: ${errorMessage}`);
+            }
+          }
+        } catch (e) {
+          console.warn('Failed to parse error response:', e);
+        }
+        
         throw new Error(`Falha na API PageSpeed: ${errorMessage}`);
       }
-    } catch (directApiError) {
-      console.warn('Direct API call failed:', directApiError);
-      if (directApiError.name === 'AbortError') {
+    } catch (apiError: any) {
+      console.warn('Direct API call failed:', apiError);
+      
+      if (apiError.name === 'AbortError') {
         console.warn('Request timeout exceeded');
+        throw new Error('Timeout excedido ao conectar com a API PageSpeed Insights. Tente novamente mais tarde.');
+      }
+      
+      if (apiError.message.includes('API has not been used') || 
+          apiError.message.includes('API has not been enabled')) {
+        // API not enabled error
+        throw apiError;
       }
       
       // Tentar via proxy CORS alternativo
@@ -135,23 +172,13 @@ export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mo
       
       if (!apiKey) {
         errorMessage += 'Chave API PageSpeed não configurada. Configure a variável de ambiente VITE_PAGESPEED_API_KEY';
-      } else if (directApiError.message.includes('network') || directApiError.message.includes('fetch')) {
+      } else if (apiError.message.includes('network') || apiError.message.includes('fetch')) {
         errorMessage += 'Erro de rede ao conectar com a API. Verifique sua conexão à internet.';
       } else {
-        errorMessage += directApiError.message;
+        errorMessage += apiError.message;
       }
       
       errorMessage += '\n\nCertifique-se de que a URL é válida e acessível publicamente.';
-      
-      // Se o erro contém informações sobre ativação da API, fornecer instruções
-      if (directApiError.message.includes('API has not been used') || 
-          directApiError.message.includes('API has not been enabled')) {
-        errorMessage += '\n\nA API do PageSpeed Insights precisa ser ativada no console do Google Cloud:';
-        errorMessage += '\n1. Acesse https://console.cloud.google.com/apis/library/pagespeedonline.googleapis.com';
-        errorMessage += '\n2. Selecione seu projeto';
-        errorMessage += '\n3. Clique em "Ativar"';
-        errorMessage += '\n4. Aguarde alguns minutos para a ativação se propagar';
-      }
       
       throw new Error(errorMessage);
     }
