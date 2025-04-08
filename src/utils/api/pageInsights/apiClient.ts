@@ -74,31 +74,32 @@ export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mo
     // Verificar se a API está ativada - fazer uma requisição preliminar
     const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&strategy=${strategy}&category=performance&category=accessibility&category=best-practices&category=seo`;
     
-    // Usar fetch com timeout reduzido - 25 segundos para evitar AbortError com signal
-    const timeoutMs = 25000;
+    // Reduzir o timeout para 18 segundos para evitar o timeout do navegador
+    // que geralmente acontece em torno de 20-25 segundos
+    const timeoutMs = 18000;
+    
+    console.log(`Iniciando requisição com timeout de ${timeoutMs}ms para ${strategy}`);
     
     try {
-      console.log(`Iniciando requisição com timeout de ${timeoutMs}ms`);
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => {
-        console.log('Timeout excedido, abortando requisição');
-        controller.abort();
-      }, timeoutMs);
-      
-      const response = await fetch(apiUrl, {
+      // Usar uma abordagem diferente para evitar problemas de AbortController
+      const fetchPromise = fetch(apiUrl, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
         },
-        signal: controller.signal
       });
       
-      // Limpar o timeout pois a resposta foi recebida
-      clearTimeout(timeoutId);
+      // Criar um timeout manual
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Timeout')), timeoutMs);
+      });
+      
+      // Race entre o fetch e o timeout
+      const response = await Promise.race([fetchPromise, timeoutPromise]) as Response;
       
       if (response.ok) {
         const data = await response.json();
-        console.log('PageSpeed Insights API response received');
+        console.log(`PageSpeed Insights API response received for ${strategy}`);
         
         const processedData = processPageInsightsData(data, url);
         
@@ -140,11 +141,31 @@ export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mo
         throw new Error(`Falha na API PageSpeed: ${errorMessage}`);
       }
     } catch (apiError: any) {
-      console.warn('Direct API call failed:', apiError);
+      console.warn(`Direct API call failed for ${strategy}:`, apiError.message);
       
-      if (apiError.name === 'AbortError') {
-        console.warn('Request timeout exceeded');
-        throw new Error('Timeout excedido ao conectar com a API PageSpeed Insights. Tente novamente mais tarde.');
+      if (apiError.message === 'Timeout') {
+        console.warn(`Request timeout exceeded for ${strategy}`);
+        
+        // Tentar alternativa com CORS Proxy para timeouts
+        try {
+          console.log(`Using CORS proxy fallback for ${strategy}:`, url);
+          const corsData = await handleCorsRequest(url, strategy);
+          if (corsData) {
+            const processedData = processPageInsightsData(corsData, url);
+            
+            // Armazenar resultados do proxy
+            apiCache.set(cacheKey, {
+              data: processedData,
+              timestamp: Date.now()
+            });
+            
+            return processedData;
+          }
+        } catch (corsError) {
+          console.warn(`CORS proxy failed for ${strategy}:`, corsError);
+        }
+        
+        throw new Error(`Timeout excedido ao conectar com a API PageSpeed Insights para ${strategy}. Tente novamente mais tarde.`);
       }
       
       if (apiError.message.includes('API has not been used') || 
@@ -155,7 +176,7 @@ export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mo
       
       // Tentar via proxy CORS alternativo
       try {
-        console.log('Using CORS proxy fallback for:', url);
+        console.log(`Using CORS proxy fallback for ${strategy}:`, url);
         const corsData = await handleCorsRequest(url, strategy);
         if (corsData) {
           const processedData = processPageInsightsData(corsData, url);
@@ -169,11 +190,11 @@ export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mo
           return processedData;
         }
       } catch (corsError) {
-        console.warn('CORS proxy failed:', corsError);
+        console.warn(`CORS proxy failed for ${strategy}:`, corsError);
       }
       
       // Adicionar detalhes importantes à mensagem de erro
-      let errorMessage = 'Falha ao obter dados reais da API Google PageSpeed Insights. ';
+      let errorMessage = `Falha ao obter dados reais da API Google PageSpeed Insights para ${strategy}. `;
       
       if (!apiKey) {
         errorMessage += 'Chave API PageSpeed não configurada. Configure a variável de ambiente VITE_PAGESPEED_API_KEY';
@@ -188,7 +209,7 @@ export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mo
       throw new Error(errorMessage);
     }
   } catch (error) {
-    console.error('Error in getPageInsightsData:', error);
+    console.error(`Error in getPageInsightsData for ${strategy}:`, error);
     throw error; // Propaga o erro para ser tratado pelo componente
   }
 }

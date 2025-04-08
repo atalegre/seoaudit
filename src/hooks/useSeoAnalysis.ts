@@ -33,8 +33,9 @@ export function useSeoAnalysis() {
     try {
       setIsAnalyzing(true);
       setError(null);
-      setDesktopData(null);
-      setMobileData(null);
+      
+      // Limpar apenas os dados que vamos analisar novamente, mantendo os dados existentes
+      // para exibição parcial se necessário
       
       // Normalizar URL (adicionar https:// se não especificado)
       let normalizedUrl = urlToAnalyze;
@@ -51,40 +52,42 @@ export function useSeoAnalysis() {
       });
       
       try {
-        const desktopPromise = getPageInsightsData(normalizedUrl, 'desktop');
-        const mobilePromise = getPageInsightsData(normalizedUrl, 'mobile');
-        
-        // Tentar obter ambos os dados, mas não falhar se apenas um deles funcionar
-        const [desktopResult, mobileResult] = await Promise.allSettled([desktopPromise, mobilePromise]);
-        
-        if (desktopResult.status === 'fulfilled') {
-          setDesktopData(desktopResult.value);
-        } else {
-          console.error("Erro ao analisar desktop:", desktopResult.reason);
-          // Não definir erro global ainda, apenas se ambos falharem
+        // Analisar desktop primeiro
+        try {
+          const desktopResult = await getPageInsightsData(normalizedUrl, 'desktop');
+          setDesktopData(desktopResult);
+          console.log("Análise desktop concluída com sucesso");
+        } catch (desktopError: any) {
+          console.error("Erro ao analisar desktop:", desktopError);
+          // Não definir erro global ainda, tentar mobile
         }
         
-        if (mobileResult.status === 'fulfilled') {
-          setMobileData(mobileResult.value);
-        } else {
-          console.error("Erro ao analisar mobile:", mobileResult.reason);
-          // Não definir erro global ainda, apenas se ambos falharem
+        // Agora analisar mobile
+        try {
+          const mobileResult = await getPageInsightsData(normalizedUrl, 'mobile');
+          setMobileData(mobileResult);
+          console.log("Análise mobile concluída com sucesso");
+        } catch (mobileError: any) {
+          console.error("Erro ao analisar mobile:", mobileError);
+          // Não definir erro global ainda, verificar se temos dados de desktop
         }
         
-        // Se ambos falharem, definir o erro
-        if (desktopResult.status === 'rejected' && mobileResult.status === 'rejected') {
-          // Usar a mensagem de erro mais informativa
-          const errorMessage = desktopResult.reason.message || mobileResult.reason.message;
-          setError(errorMessage || 'Ocorreu um erro desconhecido');
-          
-          toast.error("Erro na análise", {
-            description: "Não foi possível obter dados reais. Verifique as configurações de API."
-          });
-        } else {
+        // Verificar se temos algum dado
+        if (desktopData || mobileData) {
           // Pelo menos um foi bem-sucedido
           toast.success("Análise concluída", {
             description: "Os resultados da análise SEO estão prontos."
           });
+          
+          // Se um falhou mas temos o outro, definir um erro específico
+          if (!desktopData && mobileData) {
+            setError("A análise desktop falhou, mas os dados mobile estão disponíveis.");
+          } else if (desktopData && !mobileData) {
+            setError("A análise mobile falhou, mas os dados desktop estão disponíveis.");
+          }
+        } else {
+          // Ambos falharam
+          throw new Error("Não foi possível obter dados para desktop ou mobile. Verifique as configurações de API.");
         }
       } catch (apiError: any) {
         console.error("Erro ao analisar URL:", apiError);
@@ -119,9 +122,14 @@ export function useSeoAnalysis() {
       }
     });
     
+    // Limpar também o cache em memória (apiCache)
     toast.info("Cache limpo, iniciando nova análise", {
       description: "Tentando obter dados atualizados da API"
     });
+    
+    // Limpar os dados atuais para forçar uma nova análise completa
+    setDesktopData(null);
+    setMobileData(null);
     
     // Analisar novamente
     analyzeUrl();

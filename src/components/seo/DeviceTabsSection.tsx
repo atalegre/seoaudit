@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Monitor, Smartphone, AlertTriangle } from 'lucide-react';
@@ -27,6 +27,16 @@ const DeviceTabsSection: React.FC<DeviceTabsSectionProps> = ({
   isAnalyzing,
   error
 }) => {
+  // Automatically switch to mobile tab if desktop isn't available
+  useEffect(() => {
+    if (!desktopData && mobileData && activeTab === 'desktop') {
+      setActiveTab('mobile');
+      toast.info("Mostrando dados mobile", {
+        description: "A análise desktop falhou, mostrando resultados mobile."
+      });
+    }
+  }, [desktopData, mobileData, activeTab, setActiveTab]);
+
   const handleRetry = () => {
     // Limpar cache do sessionStorage
     Object.keys(sessionStorage).forEach(key => {
@@ -76,6 +86,9 @@ const DeviceTabsSection: React.FC<DeviceTabsSectionProps> = ({
               >
                 <Monitor className="h-4 w-4" />
                 <span>Desktop</span>
+                {!hasDesktopData && hasMobileData && (
+                  <span className="ml-1 text-xs text-red-500">(Falha)</span>
+                )}
               </TabsTrigger>
               <TabsTrigger 
                 value="mobile" 
@@ -84,16 +97,25 @@ const DeviceTabsSection: React.FC<DeviceTabsSectionProps> = ({
               >
                 <Smartphone className="h-4 w-4" />
                 <span>Mobile</span>
+                {!hasMobileData && hasDesktopData && (
+                  <span className="ml-1 text-xs text-red-500">(Falha)</span>
+                )}
               </TabsTrigger>
             </TabsList>
           </div>
           
           {error && hasAnyData && (
             <div className="p-4 bg-amber-50 text-amber-800 border-b border-amber-200 flex items-start gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5" />
+              <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
               <div className="text-sm">
                 <p className="font-medium">Aviso: Dados parciais disponíveis</p>
                 <p className="text-xs">{error}</p>
+                <button 
+                  onClick={handleRetry}
+                  className="text-xs mt-1 text-blue-600 hover:text-blue-800 underline"
+                >
+                  Tentar novamente
+                </button>
               </div>
             </div>
           )}
