@@ -7,7 +7,7 @@ import { isAdminEmail } from './adminUserService';
  * Handles user signin with email
  */
 export async function signInWithEmail(email: string, password: string) {
-  console.log("Attempting to sign in with email:", email);
+  console.log("Tentando fazer login com email:", email);
   
   try {
     // Regular login flow
@@ -17,9 +17,11 @@ export async function signInWithEmail(email: string, password: string) {
     });
     
     if (error) {
-      console.error("Login error:", error);
+      console.error("Erro de login:", error);
       return { data: null, error };
     }
+    
+    console.log("Login bem-sucedido:", data.user?.email);
     
     // Ensure user data exists in database
     if (data?.user) {
@@ -37,14 +39,14 @@ export async function signInWithEmail(email: string, password: string) {
           role
         );
       } catch (err) {
-        console.error("Error ensuring user in database during login:", err);
+        console.error("Erro ao garantir usuário no banco de dados durante login:", err);
         // Continue login flow even if this fails
       }
     }
     
     return { data, error: null };
   } catch (error: any) {
-    console.error("Exception during login:", error);
+    console.error("Exceção durante login:", error);
     return { data: null, error };
   }
 }
