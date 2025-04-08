@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
 import { User } from '@/utils/api/userService';
 import { userFormSchema, UserFormValues } from './schemas/userFormSchema';
+import { useUser } from '@/contexts/UserContext';
 
 interface UserFormProps {
   currentUser: User | null;
@@ -17,6 +18,9 @@ interface UserFormProps {
 }
 
 const UserForm: React.FC<UserFormProps> = ({ currentUser, onSubmit, onCancel }) => {
+  const { role: currentUserRole } = useUser();
+  const isAdmin = currentUserRole === 'admin';
+
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
     defaultValues: {
@@ -25,6 +29,8 @@ const UserForm: React.FC<UserFormProps> = ({ currentUser, onSubmit, onCancel }) 
       role: currentUser?.role || 'user',
     },
   });
+
+  const selectedRole = form.watch('role');
 
   return (
     <Form {...form}>
@@ -67,6 +73,7 @@ const UserForm: React.FC<UserFormProps> = ({ currentUser, onSubmit, onCancel }) 
                 onValueChange={field.onChange} 
                 defaultValue={field.value}
                 value={field.value}
+                disabled={!isAdmin}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -80,7 +87,11 @@ const UserForm: React.FC<UserFormProps> = ({ currentUser, onSubmit, onCancel }) 
                 </SelectContent>
               </Select>
               <FormDescription>
-                Os administradores têm acesso completo ao sistema.
+                {selectedRole === 'admin' 
+                  ? 'Administradores têm acesso completo ao sistema, incluindo todas as configurações.'
+                  : selectedRole === 'editor'
+                  ? 'Editores podem gerenciar conteúdo e ver relatórios.'
+                  : 'Usuários têm acesso básico à plataforma.'}
               </FormDescription>
               <FormMessage />
             </FormItem>

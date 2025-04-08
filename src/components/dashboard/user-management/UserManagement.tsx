@@ -1,34 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { UserPlus } from 'lucide-react';
+import { toast } from 'sonner';
+import { UserPlus, AlertCircle } from 'lucide-react';
 import { UserFormValues } from './schemas/userFormSchema';
 import UserTable from './UserTable';
 import UserFormDialog from './UserFormDialog';
 import { User, getAllUsers, createUser, updateUser, deleteUser } from '@/utils/api/userService';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useUser } from '@/contexts/UserContext';
 
 const UserManagement = () => {
-  const { toast } = useToast();
+  const { role: currentUserRole } = useUser();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Carregar usuários
   const fetchUsers = async () => {
     try {
       setLoading(true);
+      setError(null);
       const data = await getAllUsers();
       console.log('Fetched users:', data);
       setUsers(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao buscar usuários:', error);
-      toast({
-        title: 'Erro',
-        description: 'Não foi possível carregar os usuários',
-        variant: 'destructive',
-      });
+      setError('Não foi possível carregar os usuários. Verifique suas permissões.');
+      toast.error('Erro ao carregar usuários');
     } finally {
       setLoading(false);
     }
@@ -55,20 +56,13 @@ const UserManagement = () => {
     try {
       await deleteUser(userId);
 
-      toast({
-        title: 'Usuário removido',
-        description: 'O usuário foi removido com sucesso',
-      });
+      toast.success('Usuário removido com sucesso');
       
       // Atualizar a lista
       setUsers(users.filter(user => user.id !== userId));
     } catch (error: any) {
       console.error('Erro ao remover usuário:', error);
-      toast({
-        title: 'Erro',
-        description: error.message || 'Não foi possível remover o usuário',
-        variant: 'destructive',
-      });
+      toast.error(error.message || 'Não foi possível remover o usuário');
     }
   };
 
@@ -86,10 +80,7 @@ const UserManagement = () => {
         // Atualizar usuário
         await updateUser(currentUser.id, updateData);
         
-        toast({
-          title: 'Usuário atualizado',
-          description: 'As informações do usuário foram atualizadas com sucesso',
-        });
+        toast.success('Usuário atualizado com sucesso');
       } else {
         // Criar novo usuário - all fields are required based on the schema
         try {
@@ -99,32 +90,17 @@ const UserManagement = () => {
             role: values.role
           });
           
-          toast({
-            title: 'Usuário criado',
-            description: 'O novo usuário foi criado com sucesso',
-          });
+          toast.success('Usuário criado com sucesso');
         } catch (error: any) {
           console.error('Erro detalhado ao criar usuário:', error);
           
           // Handle specific errors with better user messages
           if (error.message?.includes('email já está em uso')) {
-            toast({
-              title: 'Email já cadastrado',
-              description: 'Este email já está sendo utilizado por outro usuário.',
-              variant: 'destructive',
-            });
-          } else if (error.message?.includes('RLS')) {
-            toast({
-              title: 'Permissão negada',
-              description: 'Você não tem permissão para criar usuários. Entre em contato com um administrador.',
-              variant: 'destructive',
-            });
+            toast.error('Este email já está sendo utilizado por outro usuário.');
+          } else if (error.message?.includes('RLS') || error.code === '42501') {
+            toast.error('Permissão negada. Você não tem permissão para criar usuários. Entre em contato com um administrador.');
           } else {
-            toast({
-              title: 'Erro',
-              description: error.message || 'Não foi possível criar o usuário',
-              variant: 'destructive',
-            });
+            toast.error(error.message || 'Não foi possível criar o usuário');
           }
           
           // Keep dialog open when there's an error so user can fix it
@@ -137,11 +113,7 @@ const UserManagement = () => {
       fetchUsers();
     } catch (error: any) {
       console.error('Erro ao salvar usuário:', error);
-      toast({
-        title: 'Erro',
-        description: error.message || 'Não foi possível salvar as informações do usuário',
-        variant: 'destructive',
-      });
+      toast.error(error.message || 'Não foi possível salvar as informações do usuário');
     }
   };
 
@@ -163,6 +135,26 @@ const UserManagement = () => {
         </div>
       </CardHeader>
       <CardContent>
+        {error ? (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Erro</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        ) : null}
+
+        <div className="mb-4">
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Informação</AlertTitle>
+            <AlertDescription>
+              Os usuários com função de Administrador terão acesso completo ao painel de administração.
+              Usuários com função de Editor podem gerenciar conteúdo e ver relatórios.
+              Usuários regulares têm acesso limitado à plataforma.
+            </AlertDescription>
+          </Alert>
+        </div>
+        
         <UserTable 
           users={users}
           loading={loading}
