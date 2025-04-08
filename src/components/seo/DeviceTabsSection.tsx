@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -101,11 +100,8 @@ const DeviceTabsSection: React.FC<DeviceTabsSectionProps> = ({
           <TabsContent value="desktop" className="m-0">
             {hasDesktopData && (
               <div className="p-4 space-y-6">
-                <DevicePerformancePanel 
-                  data={desktopData} 
-                  deviceType="desktop" 
-                />
-                
+                <DevicePerformancePanel data={desktopData} deviceType="desktop" />
+
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <CoreWebVitalsPanel 
                     lcp={desktopData.lcp} 
@@ -119,10 +115,8 @@ const DeviceTabsSection: React.FC<DeviceTabsSectionProps> = ({
                     metaTags={desktopData.metaTags}
                   />
                 </div>
-                
-                <OpportunitiesPanel 
-                  recommendations={desktopData.recommendations || []} 
-                />
+
+                <OpportunitiesPanel recommendations={desktopData.recommendations} />
               </div>
             )}
           </TabsContent>
@@ -130,11 +124,8 @@ const DeviceTabsSection: React.FC<DeviceTabsSectionProps> = ({
           <TabsContent value="mobile" className="m-0">
             {hasMobileData && (
               <div className="p-4 space-y-6">
-                <DevicePerformancePanel 
-                  data={mobileData} 
-                  deviceType="mobile" 
-                />
-                
+                <DevicePerformancePanel data={mobileData} deviceType="mobile" />
+
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <CoreWebVitalsPanel 
                     lcp={mobileData.lcp} 
@@ -148,10 +139,8 @@ const DeviceTabsSection: React.FC<DeviceTabsSectionProps> = ({
                     metaTags={mobileData.metaTags}
                   />
                 </div>
-                
-                <OpportunitiesPanel 
-                  recommendations={mobileData.recommendations || []} 
-                />
+
+                <OpportunitiesPanel recommendations={mobileData.recommendations} />
               </div>
             )}
           </TabsContent>
