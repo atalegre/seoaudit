@@ -43,6 +43,61 @@ export async function checkEmailExists(email: string): Promise<boolean> {
 }
 
 /**
+ * Envia email de verificação para um usuário recém registrado
+ */
+export async function sendVerificationEmail(email: string, name?: string): Promise<boolean> {
+  try {
+    console.log('Sending verification email to:', email);
+    
+    // Create confirmation URL
+    const confirmationUrl = `${window.location.origin}/auth/callback?next=/dashboard/client`;
+    console.log('Using confirmation URL:', confirmationUrl);
+    
+    // Tente enviar pelo edge function primeiro
+    try {
+      const functionResponse = await supabase.functions.invoke('send-email', {
+        body: {
+          type: 'confirmation',
+          email,
+          name: name || 'Utilizador',
+          confirmationUrl
+        }
+      });
+      
+      if (functionResponse.error) {
+        throw new Error(`Custom email error: ${JSON.stringify(functionResponse.error)}`);
+      }
+      
+      console.log('Custom verification email sent successfully via function');
+      return true;
+    } catch (customErr) {
+      console.error('Error sending custom verification email:', customErr);
+      // Continue with standard method as fallback
+    }
+    
+    // Fallback para o método padrão do Supabase
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: {
+        emailRedirectTo: confirmationUrl
+      }
+    });
+    
+    if (error) {
+      console.error('Error sending standard verification email:', error);
+      return false;
+    }
+    
+    console.log('Standard verification email sent successfully');
+    return true;
+  } catch (error) {
+    console.error('Error in sendVerificationEmail:', error);
+    return false;
+  }
+}
+
+/**
  * Handles user signup with email
  */
 export async function signUpWithEmail(data: SignUpData): Promise<AuthResult> {
@@ -106,6 +161,16 @@ export async function signUpWithEmail(data: SignUpData): Promise<AuthResult> {
       } catch (err) {
         console.error('Error creating user record in database:', err);
         // Continue with auth flow even if this fails
+      }
+      
+      // Enviar email de verificação automaticamente após o cadastro
+      try {
+        const emailSent = await sendVerificationEmail(email, name);
+        console.log('Verification email sent during signup:', emailSent);
+        // Continue anyway, verification page will show appropriate message
+      } catch (emailErr) {
+        console.error('Error sending verification email during signup:', emailErr);
+        // Continue with signup flow even if email sending fails
       }
     }
     

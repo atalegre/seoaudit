@@ -18,6 +18,62 @@ const SignUpForm = ({ setAuthError, onSuccess }: SignUpFormProps) => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const sendVerificationEmail = async (email: string) => {
+    try {
+      // Tenta enviar email personalizado via edge function
+      console.log('Enviando email de verificação para:', email);
+      
+      // Create confirmation URL - making sure it's absolute and includes origin
+      const confirmationUrl = `${window.location.origin}/auth/callback?next=/dashboard/client`;
+      console.log('URL de confirmação:', confirmationUrl);
+      
+      // Tente enviar usando a função personalizada
+      try {
+        const functionResponse = await supabase.functions.invoke('send-email', {
+          body: {
+            type: 'confirmation',
+            email,
+            name: 'Utilizador', // Nome genérico para o primeiro envio
+            confirmationUrl
+          }
+        });
+        
+        console.log('Resposta da função de email:', functionResponse);
+        
+        if (functionResponse.error) {
+          throw new Error(`Erro ao enviar email: ${JSON.stringify(functionResponse.error)}`);
+        }
+        
+        console.log('Email enviado com sucesso via função personalizada');
+        return true;
+      } catch (error) {
+        console.error('Erro ao enviar email via função personalizada:', error);
+        // Se falhar, tenta pelo método padrão do Supabase
+      }
+      
+      // Fallback para o método padrão do Supabase
+      console.log('Tentando método padrão de email do Supabase');
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+        options: {
+          emailRedirectTo: confirmationUrl
+        }
+      });
+      
+      if (error) {
+        console.error('Erro ao reenviar email pelo Supabase:', error);
+        return false;
+      }
+      
+      console.log('Email padrão enviado com sucesso');
+      return true;
+    } catch (error) {
+      console.error('Erro ao enviar email de verificação:', error);
+      return false;
+    }
+  };
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -40,6 +96,15 @@ const SignUpForm = ({ setAuthError, onSuccess }: SignUpFormProps) => {
           description: error.message,
         });
       } else if (data.user) {
+        // Enviar email de verificação automaticamente
+        const emailSent = await sendVerificationEmail(email);
+        
+        if (emailSent) {
+          console.log('Email de verificação enviado com sucesso durante o signup');
+        } else {
+          console.warn('Não foi possível enviar o email automaticamente durante o signup');
+        }
+        
         toast({
           title: "Conta criada com sucesso!",
           description: "Verifique seu e-mail para confirmar o cadastro.",
@@ -53,7 +118,7 @@ const SignUpForm = ({ setAuthError, onSuccess }: SignUpFormProps) => {
         } else {
           // Email verification required
           navigate('/verification', { 
-            state: { email: email } 
+            state: { email: email, emailSent: emailSent } 
           });
         }
       }

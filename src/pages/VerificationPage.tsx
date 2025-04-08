@@ -24,6 +24,12 @@ const VerificationPage = () => {
     const stateEmail = location.state?.email;
     const storedEmail = localStorage.getItem('pendingVerificationEmail');
     
+    // Verifique o status do email enviado do estado
+    const stateEmailSent = location.state?.emailSent;
+    if (stateEmailSent) {
+      setEmailSent(true);
+    }
+    
     if (queryEmail) {
       setEmail(queryEmail);
       localStorage.setItem('pendingVerificationEmail', queryEmail);
