@@ -30,7 +30,7 @@ const Header = () => {
         
         <div className="ml-auto flex items-center gap-2">
           <LanguageSwitcher />
-          {user && <DashboardButton dashboardPath={getDashboardPath()} />}
+          {user && <DashboardButton />}
           <AuthButtons />
         </div>
       </div>

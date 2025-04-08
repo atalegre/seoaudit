@@ -5,15 +5,21 @@ import { Button } from '@/components/ui/button';
 import { LayoutDashboard } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 
-const DashboardButton = () => {
+interface DashboardButtonProps {
+  dashboardPath?: string;
+}
+
+const DashboardButton = ({ dashboardPath }: DashboardButtonProps) => {
   const navigate = useNavigate();
   const { user, role } = useUser();
   
   if (!user) return null;
   
   const handleClick = () => {
-    // Redirecionamento para a área correta
-    if (role === 'admin') {
+    // Se dashboardPath for fornecido, use-o; caso contrário, use a lógica baseada no papel
+    if (dashboardPath) {
+      navigate(dashboardPath);
+    } else if (role === 'admin') {
       navigate('/dashboard');
     } else {
       navigate('/suite');
