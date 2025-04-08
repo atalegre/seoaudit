@@ -4,6 +4,9 @@ import { AlertCircle, Loader2, ExternalLink } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 
+// Import the API key from the same place it's defined
+import { getApiKey } from '@/utils/api/pageInsights/apiClient';
+
 interface AnalysisErrorViewProps {
   seoError: string | null;
   aioError: string | null;
@@ -39,6 +42,9 @@ const AnalysisErrorView: React.FC<AnalysisErrorViewProps> = ({
   const activateApiLink = projectId 
     ? `https://console.developers.google.com/apis/api/pagespeedonline.googleapis.com/overview?project=${projectId}`
     : 'https://console.cloud.google.com/apis/library/pagespeedonline.googleapis.com';
+
+  // Get the first 8 characters of the API key for display
+  const apiKeyPrefix = getApiKey().substring(0, 8);
   
   return (
     <div className="max-w-6xl mx-auto">
@@ -98,7 +104,7 @@ const AnalysisErrorView: React.FC<AnalysisErrorViewProps> = ({
           <div className="mt-4">
             <p className="font-semibold">Solução:</p>
             <ul className="list-disc list-inside space-y-1 text-sm">
-              <li>A sua chave API já foi configurada: <code className="bg-gray-100 px-1 py-0.5 rounded text-green-700">{TEMP_API_KEY.substring(0, 8)}...</code></li>
+              <li>A sua chave API já foi configurada: <code className="bg-gray-100 px-1 py-0.5 rounded text-green-700">{apiKeyPrefix}...</code></li>
               <li>Verifique se você <span className="font-medium">ativou a API no console do Google Cloud</span></li>
               <li>Certifique-se de que a URL é válida e acessível publicamente</li>
               <li>Tente analisar URLs populares como "google.com" para testar se a API está funcionando</li>

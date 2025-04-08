@@ -9,6 +9,11 @@ const USE_MOCK_DATA_ON_FAILURE = false;
 // Atualizar com a chave fornecida pelo usuário
 const TEMP_API_KEY = 'AIzaSyCFVgBqjPaV1-aOx4vFGkwwGQF_2Iwaqw4';
 
+// Export a function to get the API key for use in other components
+export function getApiKey() {
+  return import.meta.env.VITE_PAGESPEED_API_KEY || TEMP_API_KEY;
+}
+
 /**
  * Cache helper para armazenar resultados por URL com TTL
  */
@@ -59,7 +64,7 @@ export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mo
     }
     
     // Obter a chave API do PageSpeed - usar a chave temporária se a env não estiver disponível
-    const apiKey = import.meta.env.VITE_PAGESPEED_API_KEY || TEMP_API_KEY;
+    const apiKey = getApiKey();
     if (!apiKey) {
       throw new Error('Falha ao obter dados reais da API Google PageSpeed Insights. Chave API PageSpeed não configurada. Configure a variável de ambiente VITE_PAGESPEED_API_KEY');
     }
