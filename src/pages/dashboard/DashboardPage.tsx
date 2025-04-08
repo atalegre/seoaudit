@@ -10,24 +10,12 @@ const DashboardPage = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check user role and redirect accordingly
-    if (user) {
-      if (user.role === 'admin') {
-        // Admin stays on this dashboard
-        toast({
-          title: 'Bem-vindo ao Dashboard de Administração',
-          description: 'Gerencie clientes, conteúdos e configurações do sistema.'
-        });
-      } else {
-        // Regular users get redirected to suite
-        navigate('/suite');
-        toast({
-          title: "Redirecionando",
-          description: "A sua conta não tem permissões de administrador",
-        });
-      }
-    }
-  }, [user, navigate, toast]);
+    // Welcome toast without authentication check
+    toast({
+      title: 'Bem-vindo ao Dashboard de Administração',
+      description: 'Gerencie clientes, conteúdos e configurações do sistema.'
+    });
+  }, [toast]);
 
   return (
     <div className="p-6">

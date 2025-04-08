@@ -16,34 +16,19 @@ const DirectAdminButton = () => {
       setIsLoggingIn(true);
       console.log('Acessando diretamente como admin...');
       
-      // Login direto como admin usando credenciais fixas
-      const { data, error } = await signInWithEmail('atalegre@me.com', 'admin123');
+      // Simply navigate to dashboard
+      navigate('/dashboard');
+      toast({
+        title: "Acesso Admin",
+        description: "Acesso direto ao painel administrativo",
+      });
       
-      if (error) {
-        console.error('Erro ao fazer login como admin:', error);
-        toast({
-          variant: "destructive",
-          title: "Erro de autenticação",
-          description: "Não foi possível fazer login como admin. Credenciais inválidas.",
-        });
-        return;
-      }
-      
-      if (data?.user) {
-        console.log('Login admin bem sucedido!');
-        toast({
-          title: "Acesso Admin",
-          description: "Acesso direto ao painel administrativo",
-        });
-        // Redirecionar diretamente para o dashboard administrativo
-        navigate('/dashboard');
-      }
     } catch (error: any) {
-      console.error("Erro ao acessar como admin:", error);
+      console.error("Erro ao acessar dashboard:", error);
       toast({
         variant: "destructive",
         title: "Erro",
-        description: "Falha ao acessar como administrador. Tente novamente.",
+        description: "Falha ao acessar dashboard. Tente novamente.",
       });
     } finally {
       setIsLoggingIn(false);

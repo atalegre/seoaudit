@@ -19,18 +19,6 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Redirect to login if not authenticated, but store the current path to redirect back after login
-  useEffect(() => {
-    if (!isLoading && !user) {
-      // Save the current path to redirect back after login
-      navigate('/signin', { 
-        state: { 
-          returnTo: location.pathname + location.search
-        } 
-      });
-    }
-  }, [user, isLoading, navigate, location]);
-  
   // Show loading state while checking authentication
   if (isLoading) {
     return (
@@ -43,10 +31,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     );
   }
   
-  // If not loading and no user, we're redirecting, so don't render the dashboard
-  if (!user) {
-    return null;
-  }
+  // Remove authentication check - allow access even without login
   
   // Use admin sidebar items regardless of user role since we've removed the client dashboard
   const sidebarItems = adminSidebarItems;
