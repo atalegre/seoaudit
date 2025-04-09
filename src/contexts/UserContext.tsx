@@ -13,6 +13,7 @@ export type UserContextType = {
   setRole: (role: string) => void;
 };
 
+// Create context with default values
 export const UserContext = createContext<UserContextType>({
   user: null,
   userProfile: null,
@@ -21,9 +22,10 @@ export const UserContext = createContext<UserContextType>({
   setRole: () => {},
 });
 
+// Custom hook to use the user context
 export const useUser = () => useContext(UserContext);
 
-export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [role, setRole] = useState<string>('admin'); // Default to admin role for easier testing
