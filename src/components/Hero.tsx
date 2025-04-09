@@ -27,6 +27,15 @@ const Hero = () => {
             </button>
           </form>
         </div>
+
+        {/* Ilustração ou imagem à direita */}
+        <div className="hidden md:block w-full max-w-md">
+          <img
+            src="/illustrations/hero-mockup.png"
+            alt="SEOaudit preview"
+            className="w-full h-auto"
+          />
+        </div>
       </div>
     </section>
   );
