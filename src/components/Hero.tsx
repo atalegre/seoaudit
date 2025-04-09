@@ -1,7 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 
 const Hero = () => {
+  const [url, setUrl] = useState('');
+
   return (
     <section className="w-full bg-white py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-10">
@@ -17,6 +19,8 @@ const Hero = () => {
               type="url"
               placeholder="https://seusite.com"
               className="w-full sm:w-auto flex-1 px-4 py-2 border border-gray-300 rounded-md"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
               required
             />
             <button
