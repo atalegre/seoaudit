@@ -18,7 +18,7 @@ const Index = () => {
       <Header />
       <main className="flex-1">
         <Hero />
-        <ClientLogos />
+        {/* ClientLogos component removed from here */}
         <FeatureCards />
         <HowItWorks />
         <FeatureHighlights />
