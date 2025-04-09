@@ -38,6 +38,7 @@ const Index = () => {
                   detail: { url } 
                 });
                 window.dispatchEvent(customEvent);
+                console.log('Dispatched analyze event for URL:', url);
               }
             });
           }
