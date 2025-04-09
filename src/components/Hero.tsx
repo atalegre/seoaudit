@@ -46,7 +46,7 @@ const Hero = () => {
         {/* Dashboard image */}
         <div className="hidden md:block w-full max-w-md">
           <img
-            src="/illustrations/dashboard-preview.png"
+            src="/lovable-uploads/e3624e6a-4f50-4466-8683-959fc924fa1e.png"
             alt="SEO Dashboard Preview"
             className="w-full h-auto rounded-lg shadow-lg"
           />
