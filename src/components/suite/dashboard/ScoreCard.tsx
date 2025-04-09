@@ -21,6 +21,14 @@ const ScoreCard = ({
 }: ScoreCardProps) => {
   // Helper function to get the background color class from text color class
   const getBackgroundColorFromText = (textColor: string): string => {
+    // Extract color name and shade from text color
+    const match = textColor.match(/text-([a-z]+)-(\d+)/);
+    if (match) {
+      const [_, colorName, shade] = match;
+      return `bg-${colorName}-${shade}`;
+    }
+    
+    // Fallback for non-matching patterns
     return textColor.replace('text-', 'bg-');
   };
 
@@ -42,7 +50,7 @@ const ScoreCard = ({
         <div className="mt-2 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
           <div 
             className={cn("h-full rounded-full transition-all duration-500", getBackgroundColorFromText(color))} 
-            style={{ width: `${score}%` }}
+            style={{ width: `${Math.max(score, 1)}%` }}
           />
         </div>
       </div>
