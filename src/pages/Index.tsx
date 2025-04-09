@@ -2,15 +2,15 @@
 import React, { useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import FeatureHighlights from '@/components/home/FeatureHighlights';
+import Hero from '@/components/Hero';
+import FeatureCards from '@/components/home/FeatureCards';
 import HowItWorks from '@/components/home/HowItWorks';
 import CTASection from '@/components/home/CTASection';
 import TestimonialsSection from '@/components/home/TestimonialsSection';
-import Hero from '@/components/Hero';
 import ClientLogos from '@/components/home/ClientLogos';
 import WhyChooseUs from '@/components/home/WhyChooseUs';
+import FeatureHighlights from '@/components/home/FeatureHighlights';
 import FeaturesSection from '@/components/home/FeaturesSection';
-import FeatureCards from '@/components/home/FeatureCards';
 
 const Index = () => {
   // Move the useEffect inside the component
