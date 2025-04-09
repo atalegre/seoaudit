@@ -19,18 +19,20 @@ const ScoreCard = ({
   bgColor = "bg-indigo-50",
   description
 }: ScoreCardProps) => {
-  // Helper function to get the background color class from text color class
   const getBackgroundColorFromText = (textColor: string): string => {
-    // Extract color name and shade from text color
+    // First check for the tailwind color pattern
     const match = textColor.match(/text-([a-z]+)-(\d+)/);
     if (match) {
       const [_, colorName, shade] = match;
       return `bg-${colorName}-${shade}`;
     }
     
-    // Fallback for non-matching patterns
-    return textColor.replace('text-', 'bg-');
+    // Default fallback
+    return "bg-gray-500";
   };
+
+  // Ensure we have a valid percentage value for the progress bar width
+  const progressWidth = Math.max(Math.min(score, 100), 1);
 
   return (
     <div className="bg-white rounded-lg border border-gray-100 p-4 hover:shadow-sm transition-shadow">
@@ -50,7 +52,7 @@ const ScoreCard = ({
         <div className="mt-2 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
           <div 
             className={cn("h-full rounded-full transition-all duration-500", getBackgroundColorFromText(color))} 
-            style={{ width: `${Math.max(score, 1)}%` }}
+            style={{ width: `${progressWidth}%` }}
           />
         </div>
       </div>
