@@ -1,19 +1,16 @@
 
 import React, { useState } from 'react';
+import { useAnalyzerRedirect } from '@/hooks/useAnalyzerRedirect';
 
 const Hero = () => {
   const [url, setUrl] = useState('');
+  const { isAnalyzing, handleAnalyzeAndRedirect } = useAnalyzerRedirect();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     
     if (url) {
-      // Dispatch our custom event
-      const customEvent = new CustomEvent('seoaudit:analyze', { 
-        detail: { url } 
-      });
-      window.dispatchEvent(customEvent);
-      console.log('Dispatched analyze event for URL:', url);
+      handleAnalyzeAndRedirect(url);
     }
   };
 
@@ -39,8 +36,9 @@ const Hero = () => {
             <button
               type="submit"
               className="px-6 py-2 bg-violet-600 text-white font-semibold rounded-md hover:bg-violet-700"
+              disabled={isAnalyzing}
             >
-              Analisar site grátis
+              {isAnalyzing ? 'Analisando...' : 'Analisar site grátis'}
             </button>
           </form>
         </div>
