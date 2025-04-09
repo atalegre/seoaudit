@@ -19,6 +19,11 @@ const ScoreCard = ({
   bgColor = "bg-indigo-50",
   description
 }: ScoreCardProps) => {
+  // Helper function to get the background color class from text color class
+  const getBackgroundColorFromText = (textColor: string): string => {
+    return textColor.replace('text-', 'bg-');
+  };
+
   return (
     <div className="bg-white rounded-lg border border-gray-100 p-4 hover:shadow-sm transition-shadow">
       <div className="flex items-center justify-between mb-2">
@@ -36,7 +41,7 @@ const ScoreCard = ({
         <span className="text-2xl font-bold">{score}</span>
         <div className="mt-2 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
           <div 
-            className={cn("h-full rounded-full transition-all duration-500", color.replace('text-', 'bg-'))} 
+            className={cn("h-full rounded-full transition-all duration-500", getBackgroundColorFromText(color))} 
             style={{ width: `${score}%` }}
           />
         </div>
