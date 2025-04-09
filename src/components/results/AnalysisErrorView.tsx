@@ -4,7 +4,7 @@ import { AlertCircle, Loader2, ExternalLink } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 
-import { getApiKey } from '@/utils/api/pageInsights';
+import { getApiKey, isApiNotEnabledError } from '@/utils/api/pageInsights';
 
 interface AnalysisErrorViewProps {
   seoError: string | null;
@@ -22,16 +22,11 @@ const AnalysisErrorView: React.FC<AnalysisErrorViewProps> = ({
     seoError.includes('não configurada') ||
     seoError.includes('Chave API PageSpeed') ||
     seoError.includes('API Key não configurada') ||
-    seoError.includes('Chave API inválida')
+    seoError.includes('Chave API inválida') ||
+    seoError.includes('Não configurada')
   );
   
-  const isApiNotEnabledError = seoError && (
-    seoError.includes('API has not been used') ||
-    seoError.includes('API has not been enabled') ||
-    seoError.includes('não está ativada') ||
-    seoError.includes('has not been used in project') ||
-    seoError.includes('has not been enabled in project')
-  );
+  const isApiNotEnabled = seoError && isApiNotEnabledError(seoError);
   
   const isQuotaExceededError = seoError && (
     seoError.includes('quota') ||
@@ -78,7 +73,7 @@ const AnalysisErrorView: React.FC<AnalysisErrorViewProps> = ({
               <p className="font-semibold">Erro na API Google PageSpeed Insights (SEO):</p>
               <p className="text-sm break-words">{seoError}</p>
               
-              {isApiNotEnabledError && (
+              {isApiNotEnabled && (
                 <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-amber-800">
                   <p className="text-sm font-medium">A API PageSpeed Insights não está ativada!</p>
                   <ol className="list-decimal list-inside space-y-1 text-xs mt-1">
@@ -92,7 +87,7 @@ const AnalysisErrorView: React.FC<AnalysisErrorViewProps> = ({
                 </div>
               )}
               
-              {isPageSpeedKeyError && !isApiNotEnabledError && (
+              {isPageSpeedKeyError && !isApiNotEnabled && (
                 <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-amber-800">
                   <p className="text-sm font-medium">Problema com a chave da API:</p>
                   <ol className="list-decimal list-inside space-y-1 text-xs mt-1">

@@ -24,6 +24,8 @@ export function createDetailedErrorMessage(url: string, strategy: 'desktop' | 'm
     errorMessage += 'Chave API inválida ou não autorizada. Verifique se a chave está correta e tem as permissões necessárias.';
   } else if (error?.message?.includes('quota')) {
     errorMessage += 'Cota de requisições excedida. Aguarde alguns minutos ou aumente sua cota no Google Cloud Console.';
+  } else if (error?.message?.includes('Não configurada') || error?.message?.includes('não está definida')) {
+    errorMessage += 'Chave API não configurada. Configure a variável de ambiente VITE_PAGESPEED_API_KEY com sua chave Google API.';
   } else {
     errorMessage += error?.message || 'Erro desconhecido';
   }

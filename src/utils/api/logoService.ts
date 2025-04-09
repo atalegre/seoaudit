@@ -8,33 +8,25 @@ import { extractDomainFromUrl } from '../domainUtils';
 export async function fetchSiteLogo(url: string): Promise<string | null> {
   try {
     // Log para depuração - ver a URL recebida
-    console.log('Tentando obter logo para URL:', url);
+    console.log('🔍 Tentando obter logo para URL:', url);
     
     const domain = extractDomainFromUrl(url);
     if (!domain) {
-      console.warn('Não foi possível extrair domínio da URL:', url);
+      console.warn('⚠️ Não foi possível extrair domínio da URL:', url);
       return null;
     }
     
-    console.log('Domínio extraído:', domain);
+    console.log('🌐 Domínio extraído:', domain);
     
-    // Clearbit Logo API não requer autenticação para uso básico
+    // Correção: usar URL direta para o logo sem tentar fazer HEAD request
+    // que estava causando erros de CORS
     const apiUrl = `https://logo.clearbit.com/${domain}`;
+    console.log(`🖼️ Logo URL: ${apiUrl}`);
     
-    // Verificar primeiro se o logo existe com uma solicitação HEAD
-    const response = await fetch(apiUrl, {
-      method: 'HEAD',
-      redirect: 'follow',
-      // Para evitar problemas com CORS
-      mode: 'no-cors' 
-    });
-    
-    // Como estamos usando no-cors, não podemos verificar o status,
-    // então vamos assumir que está disponível e deixar a imagem tentar carregar
-    console.log(`Logo para ${domain}: ${apiUrl}`);
+    // Retornar a URL diretamente sem verificações prévias
     return apiUrl;
   } catch (error) {
-    console.error('Erro ao buscar logo do site:', error);
+    console.error('❌ Erro ao buscar logo do site:', error);
     return null;
   }
 }
