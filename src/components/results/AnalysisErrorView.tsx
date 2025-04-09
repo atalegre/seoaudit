@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { AlertCircle, Loader2, ExternalLink } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -20,13 +21,31 @@ const AnalysisErrorView: React.FC<AnalysisErrorViewProps> = ({
     seoError.includes('VITE_PAGESPEED_API_KEY') || 
     seoError.includes('não configurada') ||
     seoError.includes('Chave API PageSpeed') ||
-    seoError.includes('API Key não configurada')
+    seoError.includes('API Key não configurada') ||
+    seoError.includes('Chave API inválida')
   );
   
   const isApiNotEnabledError = seoError && (
     seoError.includes('API has not been used') ||
     seoError.includes('API has not been enabled') ||
-    seoError.includes('não está ativada')
+    seoError.includes('não está ativada') ||
+    seoError.includes('has not been used in project') ||
+    seoError.includes('has not been enabled in project')
+  );
+  
+  const isQuotaExceededError = seoError && (
+    seoError.includes('quota') ||
+    seoError.includes('cota') ||
+    seoError.includes('rate limit') ||
+    seoError.includes('limite de requisições')
+  );
+  
+  const isNetworkError = seoError && (
+    seoError.includes('network') ||
+    seoError.includes('rede') ||
+    seoError.includes('conexão') ||
+    seoError.includes('fetch') ||
+    seoError.includes('Timeout')
   );
   
   let projectId = '';
@@ -84,6 +103,30 @@ const AnalysisErrorView: React.FC<AnalysisErrorViewProps> = ({
                     <li>Ative a API PageSpeed Insights em "Biblioteca de APIs"</li>
                     <li>Crie uma chave de API na seção "Credenciais"</li>
                     <li>Configure a chave como variável de ambiente VITE_PAGESPEED_API_KEY</li>
+                  </ol>
+                </div>
+              )}
+              
+              {isQuotaExceededError && (
+                <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-amber-800">
+                  <p className="text-sm font-medium">Cota de requisições excedida:</p>
+                  <ol className="list-decimal list-inside space-y-1 text-xs mt-1">
+                    <li>Aguarde alguns minutos e tente novamente</li>
+                    <li>Acesse o <a href="https://console.cloud.google.com/apis/dashboard" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline inline-flex items-center">
+                      Google Cloud Console <ExternalLink className="h-3 w-3 ml-1" />
+                    </a> para aumentar sua cota</li>
+                    <li>Considere usar uma chave API diferente</li>
+                  </ol>
+                </div>
+              )}
+              
+              {isNetworkError && (
+                <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-amber-800">
+                  <p className="text-sm font-medium">Problema de conexão ou timeout:</p>
+                  <ol className="list-decimal list-inside space-y-1 text-xs mt-1">
+                    <li>Verifique sua conexão com a internet</li>
+                    <li>A análise de sites muito grandes pode demorar mais do que o esperado</li>
+                    <li>Tente novamente mais tarde ou analise um URL mais simples</li>
                   </ol>
                 </div>
               )}

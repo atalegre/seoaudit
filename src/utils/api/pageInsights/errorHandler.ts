@@ -20,6 +20,10 @@ export function createDetailedErrorMessage(url: string, strategy: 'desktop' | 'm
     errorMessage += 'A API PageSpeed Insights não está ativada. Acesse o console do Google Cloud e ative-a para o projeto associado à sua chave API.';
   } else if (error?.message?.includes('Timeout')) {
     errorMessage += 'Timeout excedido ao conectar com a API. Tente novamente mais tarde.';
+  } else if (error?.message?.includes('API key')) {
+    errorMessage += 'Chave API inválida ou não autorizada. Verifique se a chave está correta e tem as permissões necessárias.';
+  } else if (error?.message?.includes('quota')) {
+    errorMessage += 'Cota de requisições excedida. Aguarde alguns minutos ou aumente sua cota no Google Cloud Console.';
   } else {
     errorMessage += error?.message || 'Erro desconhecido';
   }
@@ -42,6 +46,14 @@ export async function extractHttpErrorDetails(response: Response): Promise<strin
     const errorData = await response.json();
     if (errorData.error?.message) {
       errorMessage = errorData.error.message;
+      
+      // Adicionar detalhes do projeto, se disponíveis
+      if (errorData.error?.details) {
+        const projectMatch = JSON.stringify(errorData.error.details).match(/project=(\d+)/);
+        if (projectMatch) {
+          errorMessage += ` (project=${projectMatch[1]})`;
+        }
+      }
     }
   } catch (e) {
     console.error('❌ Não foi possível processar resposta de erro:', e);
@@ -59,6 +71,8 @@ export function isApiNotEnabledError(errorMessage: string): boolean {
   return (
     errorMessage.includes('API has not been used') || 
     errorMessage.includes('API has not been enabled') ||
-    errorMessage.includes('API not enabled')
+    errorMessage.includes('API not enabled') ||
+    errorMessage.includes('has not been used in project') ||
+    errorMessage.includes('has not been enabled in project')
   );
 }
