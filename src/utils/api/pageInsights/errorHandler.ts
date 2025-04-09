@@ -102,8 +102,12 @@ export function isApiNotEnabledError(errorMessage: string): boolean {
     'não está ativada',
     'service not enabled',
     'The provided project ID',
-    'enable it by visiting'
+    'enable it by visiting',
+    'PagespeedService',
+    'is not available',
+    'is disabled',
+    'has been disabled'
   ];
   
-  return apiNotEnabledPatterns.some(pattern => errorMessage.includes(pattern));
+  return apiNotEnabledPatterns.some(pattern => errorMessage.toLowerCase().includes(pattern.toLowerCase()));
 }

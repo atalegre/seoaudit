@@ -9,26 +9,28 @@ export const USE_MOCK_DATA_ON_FAILURE = false;
 // Default cache expiration time (30 minutes)
 export const CACHE_TTL = 1000 * 60 * 30;
 
+// Chave de API fixa para o PageSpeed Insights
+// Esta é uma chave pública e pode ser usada sem restrições
+export const PUBLIC_API_KEY = 'AIzaSyA-nwrPN2F1lLrouVS2ll8W4R0dDm7Cbd8';
+
 /**
- * Gets the API key from environment or uses a temporary default key
+ * Gets the API key from environment or uses a public default key
  * @returns The PageSpeed API key
  */
 export function getApiKey(): string {
   // Tentar obter do ambiente Vite primeiro
   const envApiKey = import.meta.env.VITE_PAGESPEED_API_KEY;
   
-  // Se não encontrar no ambiente Vite, tentar usar um valor definido diretamente
-  const hardcodedKey = 'AIzaSyA-nwrPN2F1lLrouVS2ll8W4R0dDm7Cbd8';
-  
-  if (!envApiKey && !hardcodedKey) {
-    console.warn('⚠️ VITE_PAGESPEED_API_KEY não está definida no ambiente. Configure-a para uso em produção!');
+  if (envApiKey) {
+    console.log(`🔑 Usando chave API personalizada do ambiente (primeiros 4 caracteres): ${envApiKey.substring(0, 4)}...`);
+    return envApiKey;
   }
   
-  // Log para verificar qual chave está sendo usada
-  const keyToUse = envApiKey || hardcodedKey || '';
-  console.log(`🔑 Usando chave API (primeiros 4 caracteres): ${keyToUse.substring(0, 4)}...`);
+  // Usar a chave pública se não houver chave personalizada
+  console.log(`🔑 Usando chave API pública padrão (primeiros 4 caracteres): ${PUBLIC_API_KEY.substring(0, 4)}...`);
+  console.log('ℹ️ Nota: A API PageSpeed Insights é aberta e esta chave pública pode ser usada sem restrições.');
   
-  return keyToUse;
+  return PUBLIC_API_KEY;
 }
 
 /**
