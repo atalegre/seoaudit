@@ -4,6 +4,19 @@ import React, { useState } from 'react';
 const Hero = () => {
   const [url, setUrl] = useState('');
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    if (url) {
+      // Dispatch our custom event
+      const customEvent = new CustomEvent('seoaudit:analyze', { 
+        detail: { url } 
+      });
+      window.dispatchEvent(customEvent);
+      console.log('Dispatched analyze event for URL:', url);
+    }
+  };
+
   return (
     <section className="w-full bg-white py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-10">
@@ -14,7 +27,7 @@ const Hero = () => {
           <p className="mt-4 text-lg text-gray-600">
             Discover how to improve your search visibility in both traditional engines and new AI-driven models.
           </p>
-          <form data-analyze-form className="mt-6 flex flex-col sm:flex-row items-center gap-4">
+          <form onSubmit={handleSubmit} className="mt-6 flex flex-col sm:flex-row items-center gap-4">
             <input
               type="url"
               placeholder="https://seusite.com"
