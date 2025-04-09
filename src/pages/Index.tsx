@@ -13,7 +13,7 @@ import FeatureHighlights from '@/components/home/FeatureHighlights';
 import FeaturesSection from '@/components/home/FeaturesSection';
 
 const Index = () => {
-  // Move the useEffect inside the component
+  // Form submission handler
   useEffect(() => {
     // Find form elements that should be modified
     const formHandler = () => {
