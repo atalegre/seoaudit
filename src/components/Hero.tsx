@@ -16,15 +16,15 @@ const Hero = () => {
 
   return (
     <section className="w-full bg-white py-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-10">
-        <div className="max-w-2xl text-center md:text-left">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center">
+        <div className="max-w-2xl">
           <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl">
             Optimize your website for <span className="text-violet-600">Google</span> and <span className="text-blue-600">AI</span>
           </h1>
           <p className="mt-4 text-lg text-gray-600">
             Discover how to improve your search visibility in both traditional engines and new AI-driven models.
           </p>
-          <form onSubmit={handleSubmit} className="mt-6 flex flex-col sm:flex-row items-center gap-4">
+          <form onSubmit={handleSubmit} className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
             <input
               type="url"
               placeholder="https://seusite.com"
@@ -41,15 +41,6 @@ const Hero = () => {
               {isAnalyzing ? 'Analisando...' : 'Analisar site grátis'}
             </button>
           </form>
-        </div>
-
-        {/* Suite Dashboard image */}
-        <div className="hidden md:block w-full max-w-md">
-          <img
-            src="/lovable-uploads/4b0e451b-bcd1-4279-8dce-f9da22670979.png"
-            alt="SEO Suite Dashboard Preview"
-            className="w-full h-auto rounded-lg shadow-lg"
-          />
         </div>
       </div>
     </section>
