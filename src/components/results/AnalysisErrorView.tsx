@@ -22,7 +22,8 @@ const AnalysisErrorView: React.FC<AnalysisErrorViewProps> = ({
   const isPageSpeedKeyError = seoError && (
     seoError.includes('VITE_PAGESPEED_API_KEY') || 
     seoError.includes('não configurada') ||
-    seoError.includes('Chave API PageSpeed')
+    seoError.includes('Chave API PageSpeed') ||
+    seoError.includes('API Key não configurada')
   );
   
   const isApiNotEnabledError = seoError && (
@@ -43,8 +44,9 @@ const AnalysisErrorView: React.FC<AnalysisErrorViewProps> = ({
     ? `https://console.developers.google.com/apis/api/pagespeedonline.googleapis.com/overview?project=${projectId}`
     : 'https://console.cloud.google.com/apis/library/pagespeedonline.googleapis.com';
 
-  // Get the first 8 characters of the API key for display
-  const apiKeyPrefix = getApiKey().substring(0, 8);
+  // Get the first 4 characters of the API key for display (reduzido para maior privacidade)
+  const apiKey = getApiKey();
+  const apiKeyPrefix = apiKey ? apiKey.substring(0, 4) : 'Não configurada';
   
   return (
     <div className="max-w-6xl mx-auto">
@@ -104,7 +106,11 @@ const AnalysisErrorView: React.FC<AnalysisErrorViewProps> = ({
           <div className="mt-4">
             <p className="font-semibold">Solução:</p>
             <ul className="list-disc list-inside space-y-1 text-sm">
-              <li>A sua chave API já foi configurada: <code className="bg-gray-100 px-1 py-0.5 rounded text-green-700">{apiKeyPrefix}...</code></li>
+              <li>Status da sua chave API: {apiKey ? 
+                <code className="bg-gray-100 px-1 py-0.5 rounded text-green-700">{apiKeyPrefix}...</code> : 
+                <code className="bg-red-100 px-1 py-0.5 rounded text-red-700">Não configurada</code>}
+              </li>
+              <li>Configure a variável de ambiente <code className="bg-gray-100 px-1 py-0.5 rounded">VITE_PAGESPEED_API_KEY</code> com sua chave Google API</li>
               <li>Verifique se você <span className="font-medium">ativou a API no console do Google Cloud</span></li>
               <li>Certifique-se de que a URL é válida e acessível publicamente</li>
               <li>Tente analisar URLs populares como "google.com" para testar se a API está funcionando</li>

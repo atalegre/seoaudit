@@ -6,12 +6,18 @@ import { createTimedRequest, handleCorsRequest } from './corsHandlers';
 // Desativar completamente o uso de dados simulados
 const USE_MOCK_DATA_ON_FAILURE = false;
 
-// Atualizar com a chave fornecida pelo usuário
-const TEMP_API_KEY = 'AIzaSyCFVgBqjPaV1-aOx4vFGkwwGQF_2Iwaqw4';
-
-// Export a function to get the API key for use in other components
-export function getApiKey() {
-  return import.meta.env.VITE_PAGESPEED_API_KEY || TEMP_API_KEY;
+/**
+ * Obtém a chave de API do ambiente ou usa uma chave padrão temporária
+ * @returns A chave da API PageSpeed
+ */
+export function getApiKey(): string {
+  const envApiKey = import.meta.env.VITE_PAGESPEED_API_KEY;
+  
+  if (!envApiKey) {
+    console.warn('⚠️ VITE_PAGESPEED_API_KEY não está definida no ambiente. Configure-a para uso em produção!');
+  }
+  
+  return envApiKey || '';
 }
 
 /**
@@ -28,7 +34,7 @@ const CACHE_TTL = 1000 * 60 * 30; // 30 minutes
  */
 export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mobile' = 'mobile'): Promise<PageInsightsData> {
   try {
-    console.log(`Fetching PageSpeed Insights data for: ${url} on ${strategy}`);
+    console.log(`🔍 Iniciando análise PageSpeed para: ${url} (${strategy})`);
     
     // Normalizar URL para consistência no cache
     const normalizedUrl = url.toLowerCase().trim();
@@ -37,7 +43,7 @@ export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mo
     // Verificar cache em memória primeiro (mais rápido que sessionStorage)
     const cachedResult = apiCache.get(cacheKey);
     if (cachedResult && (Date.now() - cachedResult.timestamp < CACHE_TTL)) {
-      console.log('Using in-memory cached PSI data');
+      console.log('✅ Usando dados em cache da memória');
       return cachedResult.data;
     }
     
@@ -50,7 +56,7 @@ export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mo
         
         // Use cache if less than 30 minutes old
         if (Date.now() - cacheTime < CACHE_TTL) {
-          console.log('Using session storage cached PSI data');
+          console.log('✅ Usando dados em cache do sessionStorage');
           const result = parsedData.data;
           
           // Atualizar cache em memória também
@@ -59,26 +65,25 @@ export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mo
           return result;
         }
       } catch (e) {
-        console.warn('Error parsing cached data:', e);
+        console.warn('⚠️ Erro ao processar dados em cache:', e);
       }
     }
     
-    // Obter a chave API do PageSpeed - usar a chave temporária se a env não estiver disponível
+    // Obter a chave API do PageSpeed
     const apiKey = getApiKey();
     if (!apiKey) {
-      throw new Error('Falha ao obter dados reais da API Google PageSpeed Insights. Chave API PageSpeed não configurada. Configure a variável de ambiente VITE_PAGESPEED_API_KEY');
+      throw new Error('❌ API Key não configurada. Defina a variável de ambiente VITE_PAGESPEED_API_KEY com sua chave da Google API.');
     }
     
-    console.log('Usando chave API PageSpeed:', apiKey.substring(0, 8) + '...');
+    console.log('🔑 Usando chave API PageSpeed:', apiKey.substring(0, 4) + '...');
     
-    // Verificar se a API está ativada - fazer uma requisição preliminar
+    // Construir URL da API
     const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&strategy=${strategy}&category=performance&category=accessibility&category=best-practices&category=seo`;
     
     // Reduzir o timeout para 18 segundos para evitar o timeout do navegador
-    // que geralmente acontece em torno de 20-25 segundos
     const timeoutMs = 18000;
     
-    console.log(`Iniciando requisição com timeout de ${timeoutMs}ms para ${strategy}`);
+    console.log(`⏱️ Iniciando requisição com timeout de ${timeoutMs}ms`);
     
     try {
       // Usar uma abordagem diferente para evitar problemas de AbortController
@@ -97,58 +102,63 @@ export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mo
       // Race entre o fetch e o timeout
       const response = await Promise.race([fetchPromise, timeoutPromise]) as Response;
       
-      if (response.ok) {
-        const data = await response.json();
-        console.log(`PageSpeed Insights API response received for ${strategy}`);
+      if (!response.ok) {
+        // Extrair detalhes do erro da resposta
+        let errorData;
+        let errorMessage = `HTTP Error: ${response.status} ${response.statusText}`;
         
-        const processedData = processPageInsightsData(data, url);
-        
-        // Armazenar em cache de memória (mais rápido)
-        apiCache.set(cacheKey, {
-          data: processedData,
-          timestamp: Date.now()
-        });
-        
-        // Cache o resultado em sessionStorage também
         try {
-          sessionStorage.setItem(cacheKey, JSON.stringify({
-            data: processedData,
-            timestamp: Date.now()
-          }));
-        } catch (e) {
-          console.warn('Error caching PSI data in sessionStorage:', e);
-        }
-        
-        return processedData;
-      } else {
-        // Extrair a mensagem de erro da resposta quando possível
-        let errorMessage = `Erro HTTP: ${response.status}`;
-        try {
-          const errorData = await response.json();
+          errorData = await response.json();
           if (errorData.error?.message) {
             errorMessage = errorData.error.message;
-            
-            // Check for specific API not enabled error
-            if (errorMessage.includes('API has not been used') || 
-                errorMessage.includes('API has not been enabled')) {
-              throw new Error(`A API PageSpeed Insights não está ativada. Acesse o console do Google Cloud e ative-a para o projeto associado à sua chave API. Erro original: ${errorMessage}`);
-            }
           }
         } catch (e) {
-          console.warn('Failed to parse error response:', e);
+          console.error('❌ Não foi possível processar resposta de erro:', e);
         }
         
-        throw new Error(`Falha na API PageSpeed: ${errorMessage}`);
+        console.error(`❌ Erro na API PageSpeed: ${errorMessage}`);
+        
+        // Verificar erros específicos de API não ativada
+        if (errorMessage.includes('API has not been used') || 
+            errorMessage.includes('API has not been enabled')) {
+          throw new Error(`❌ A API PageSpeed Insights não está ativada. Acesse o console do Google Cloud e ative-a para o projeto associado à sua chave API. Erro original: ${errorMessage}`);
+        }
+        
+        throw new Error(`❌ Falha na API PageSpeed: ${errorMessage}`);
       }
+      
+      // Processar resposta bem-sucedida
+      const data = await response.json();
+      console.log(`✅ Resposta da API PageSpeed recebida para ${strategy}`);
+      
+      const processedData = processPageInsightsData(data, url);
+      
+      // Armazenar em cache de memória (mais rápido)
+      apiCache.set(cacheKey, {
+        data: processedData,
+        timestamp: Date.now()
+      });
+      
+      // Cache o resultado em sessionStorage também
+      try {
+        sessionStorage.setItem(cacheKey, JSON.stringify({
+          data: processedData,
+          timestamp: Date.now()
+        }));
+      } catch (e) {
+        console.warn('⚠️ Erro ao armazenar dados em sessionStorage:', e);
+      }
+      
+      return processedData;
     } catch (apiError: any) {
-      console.warn(`Direct API call failed for ${strategy}:`, apiError.message);
+      console.error(`❌ Falha na chamada à API para ${strategy}:`, apiError.message);
       
       if (apiError.message === 'Timeout') {
-        console.warn(`Request timeout exceeded for ${strategy}`);
+        console.warn(`⏱️ Timeout excedido para ${strategy}`);
         
         // Tentar alternativa com CORS Proxy para timeouts
         try {
-          console.log(`Using CORS proxy fallback for ${strategy}:`, url);
+          console.log(`🔄 Tentando via proxy CORS para ${strategy}`);
           const corsData = await handleCorsRequest(url, strategy);
           if (corsData) {
             const processedData = processPageInsightsData(corsData, url);
@@ -162,12 +172,13 @@ export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mo
             return processedData;
           }
         } catch (corsError) {
-          console.warn(`CORS proxy failed for ${strategy}:`, corsError);
+          console.warn(`❌ Falha no proxy CORS para ${strategy}:`, corsError);
         }
         
-        throw new Error(`Timeout excedido ao conectar com a API PageSpeed Insights para ${strategy}. Tente novamente mais tarde.`);
+        throw new Error(`⏱️ Timeout excedido ao conectar com a API PageSpeed Insights para ${strategy}. Tente novamente mais tarde.`);
       }
       
+      // Manter detecção de erros específicos
       if (apiError.message.includes('API has not been used') || 
           apiError.message.includes('API has not been enabled')) {
         // API not enabled error
@@ -176,7 +187,7 @@ export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mo
       
       // Tentar via proxy CORS alternativo
       try {
-        console.log(`Using CORS proxy fallback for ${strategy}:`, url);
+        console.log(`🔄 Tentando via proxy CORS para ${strategy}`);
         const corsData = await handleCorsRequest(url, strategy);
         if (corsData) {
           const processedData = processPageInsightsData(corsData, url);
@@ -190,11 +201,11 @@ export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mo
           return processedData;
         }
       } catch (corsError) {
-        console.warn(`CORS proxy failed for ${strategy}:`, corsError);
+        console.warn(`❌ Falha no proxy CORS para ${strategy}:`, corsError);
       }
       
       // Adicionar detalhes importantes à mensagem de erro
-      let errorMessage = `Falha ao obter dados reais da API Google PageSpeed Insights para ${strategy}. `;
+      let errorMessage = `❌ Falha ao obter dados da API Google PageSpeed Insights para ${strategy}. `;
       
       if (!apiKey) {
         errorMessage += 'Chave API PageSpeed não configurada. Configure a variável de ambiente VITE_PAGESPEED_API_KEY';
@@ -209,7 +220,7 @@ export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mo
       throw new Error(errorMessage);
     }
   } catch (error) {
-    console.error(`Error in getPageInsightsData for ${strategy}:`, error);
+    console.error(`❌ Erro crítico em getPageInsightsData para ${strategy}:`, error);
     throw error; // Propaga o erro para ser tratado pelo componente
   }
 }
