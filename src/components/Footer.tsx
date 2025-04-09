@@ -7,7 +7,7 @@ const Footer = () => {
   const { t, language } = useLanguage();
   const currentYear = new Date().getFullYear();
   
-  // Função auxiliar para obter links com base no idioma atual
+  // Helper function to get localized paths
   const getLocalizedPath = (ptPath: string, enPath: string) => {
     return language === 'pt' ? ptPath : enPath;
   };
@@ -28,11 +28,11 @@ const Footer = () => {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/" className="text-muted-foreground hover:text-foreground">
-                  Home
+                  {t('home')}
                 </Link>
               </li>
               <li>
-                <Link to={getLocalizedPath("/como-funciona", "/how-it-works")} className="text-muted-foreground hover:text-foreground">
+                <Link to={getLocalizedPath('/como-funciona', '/how-it-works')} className="text-muted-foreground hover:text-foreground">
                   {t('how-it-works')}
                 </Link>
               </li>
@@ -48,12 +48,12 @@ const Footer = () => {
             <h3 className="font-medium mb-3">{t('legal')}</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/termos" className="text-muted-foreground hover:text-foreground">
+                <Link to={getLocalizedPath('/termos', '/terms')} className="text-muted-foreground hover:text-foreground">
                   {t('terms')}
                 </Link>
               </li>
               <li>
-                <Link to="/privacidade" className="text-muted-foreground hover:text-foreground">
+                <Link to={getLocalizedPath('/privacidade', '/privacy')} className="text-muted-foreground hover:text-foreground">
                   {t('privacy')}
                 </Link>
               </li>

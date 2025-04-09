@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
@@ -64,7 +63,7 @@ const FAQPage = () => {
       },
       {
         question: "Como posso obter ajuda para implementar as recomendações?",
-        answer: "Após receber o relatório completo por email, você pode entrar em contacto com nossa equipe de especialistas que oferece serviços de consultoria e implementação para ajudar a melhorar seu site conforme as recomendações fornecidas. Basta responder ao email do relatório ou utilizar nosso formulário de contacto."
+        answer: "Após receber o relatório completo por email, você pode entrar em contato com nossa equipe de especialistas que oferece serviços de consultoria e implementação para ajudar a melhorar seu site conforme as recomendações fornecidas. Basta responder ao email do relatório ou utilizar nosso formulário de contacto."
       },
       {
         question: "O que é Schema Markup e por que é importante?",
@@ -157,10 +156,8 @@ const FAQPage = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Helmet>
-        <title>{language === 'pt' ? 'Perguntas Frequentes | SEO AI Checker' : 'Frequently Asked Questions | SEO AI Checker'}</title>
-        <meta name="description" content={language === 'pt' ? 
-          "Encontre respostas para as perguntas mais frequentes sobre SEO, AIO e como o SEO AI Checker pode ajudar a melhorar a visibilidade do seu site." : 
-          "Find answers to the most frequently asked questions about SEO, AIO, and how SEO AI Checker can help improve your site's visibility."} />
+        <title>{t('faq-title')} | SEO AI Checker</title>
+        <meta name="description" content={t('faq-description')} />
         <meta name="keywords" content={language === 'pt' ? 
           "FAQ, perguntas frequentes, SEO, AIO, otimização para IA, SEO AI Checker" : 
           "FAQ, frequently asked questions, SEO, AIO, AI optimization, SEO AI Checker"} />
@@ -176,7 +173,7 @@ const FAQPage = () => {
               <BreadcrumbList>
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild>
-                    <Link to="/">{language === 'pt' ? 'Início' : 'Home'}</Link>
+                    <Link to="/">{t('home')}</Link>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
@@ -193,10 +190,10 @@ const FAQPage = () => {
           <div className="mb-8 p-4 border rounded-lg bg-secondary/20">
             <h2 className="text-lg font-semibold mb-2">{t('faq-summary')}</h2>
             <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-              <li>{language === 'pt' ? 'O SEO AI Checker analisa sites para SEO (motores de busca) e AIO (modelos de IA)' : 'SEO AI Checker analyzes sites for SEO (search engines) and AIO (AI models)'}</li>
-              <li>{language === 'pt' ? 'A versão básica é gratuita e fornece recomendações de melhoria' : 'The basic version is free and provides improvement recommendations'}</li>
-              <li>{language === 'pt' ? 'Recomenda-se analisar seu site a cada 3-6 meses' : 'It is recommended to analyze your site every 3-6 months'}</li>
-              <li>{language === 'pt' ? 'Oferecemos serviços premium para implementação das recomendações' : 'We offer premium services for implementing recommendations'}</li>
+              <li>{t('faq-summary-1')}</li>
+              <li>{t('faq-summary-2')}</li>
+              <li>{t('faq-summary-3')}</li>
+              <li>{t('faq-summary-4')}</li>
             </ul>
           </div>
           
@@ -221,18 +218,18 @@ const FAQPage = () => {
             <h2 className="text-2xl font-bold mb-4">{t('faq-more-questions')}</h2>
             <p className="mb-6 text-muted-foreground">{t('faq-help-text')}</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a 
-                href="/contacto" 
+              <Link 
+                to={language === 'pt' ? '/contacto' : '/contact'} 
                 className="inline-flex items-center justify-center gap-2 bg-primary text-white px-6 py-3 rounded-md hover:bg-primary/90 transition-colors"
               >
                 {t('faq-contact-us')} <ArrowRight className="h-4 w-4" />
-              </a>
-              <a 
-                href="/" 
+              </Link>
+              <Link 
+                to="/" 
                 className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-6 py-3 rounded-md hover:bg-secondary/90 transition-colors"
               >
                 {t('faq-analyze-site')}
-              </a>
+              </Link>
             </div>
           </div>
         </div>

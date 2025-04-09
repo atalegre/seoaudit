@@ -26,74 +26,16 @@ const HeaderNavigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { t, language } = useLanguage();
 
-  const getLocalizedPath = (path: string) => {
-    // Mapear caminhos entre idiomas
-    const pathMap: Record<string, Record<string, string>> = {
-      '/como-funciona': {
-        'pt': '/como-funciona',
-        'en': '/how-it-works'
-      },
-      '/how-it-works': {
-        'pt': '/como-funciona',
-        'en': '/how-it-works'
-      },
-      '/contacto': {
-        'pt': '/contacto',
-        'en': '/contact'
-      },
-      '/contact': {
-        'pt': '/contacto',
-        'en': '/contact'
-      },
-      '/glossario': {
-        'pt': '/glossario',
-        'en': '/glossary'
-      },
-      '/glossary': {
-        'pt': '/glossario',
-        'en': '/glossary'
-      },
-      '/guias': {
-        'pt': '/guias',
-        'en': '/guides'
-      },
-      '/guides': {
-        'pt': '/guias',
-        'en': '/guides'
-      },
-      '/guias/seo-aio-checklist': {
-        'pt': '/guias/seo-aio-checklist',
-        'en': '/guides/seo-aio-checklist'
-      },
-      '/guides/seo-aio-checklist': {
-        'pt': '/guias/seo-aio-checklist',
-        'en': '/guides/seo-aio-checklist'
-      },
-      '/recuperar-password': {
-        'pt': '/recuperar-password',
-        'en': '/forgot-password'
-      },
-      '/forgot-password': {
-        'pt': '/recuperar-password',
-        'en': '/forgot-password'
-      }
-    };
-
-    // Se o caminho existe no mapa, retornar o caminho para o idioma atual
-    if (path in pathMap) {
-      return pathMap[path][language];
-    }
-
-    // Para outros caminhos, manter o original
-    return path;
+  const getLocalizedPath = (ptPath: string, enPath: string) => {
+    return language === 'pt' ? ptPath : enPath;
   };
 
   const navigationLinks = [
     { title: t('home'), path: '/' },
-    { title: t('how-it-works'), path: getLocalizedPath('/como-funciona') },
+    { title: t('how-it-works'), path: getLocalizedPath('/como-funciona', '/how-it-works') },
     { title: t('faq'), path: '/faq' },
     { title: t('blog'), path: '/blog' },
-    { title: t('contact'), path: getLocalizedPath('/contacto') },
+    { title: t('contact'), path: getLocalizedPath('/contacto', '/contact') },
   ];
 
   const resourcesDropdown = (
@@ -105,7 +47,7 @@ const HeaderNavigation = () => {
             <NavigationMenuLink asChild>
               <Link
                 className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-br from-seo to-aio p-6 no-underline outline-none focus:shadow-md text-white"
-                to={getLocalizedPath('/guias/seo-aio-checklist')}
+                to={getLocalizedPath('/guias/seo-aio-checklist', '/guides/seo-aio-checklist')}
               >
                 <div className="mb-2 mt-4 text-lg font-medium">
                   {t('checklist')}
@@ -118,7 +60,7 @@ const HeaderNavigation = () => {
           </li>
           <li>
             <NavigationMenuLink asChild>
-              <Link to={getLocalizedPath('/guias')} className={cn("block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-seo/10 hover:text-seo focus:bg-seo/10 focus:text-seo")}>
+              <Link to={getLocalizedPath('/guias', '/guides')} className={cn("block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-seo/10 hover:text-seo focus:bg-seo/10 focus:text-seo")}>
                 <div className="text-sm font-medium leading-none">{t('guides')}</div>
                 <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
                   {t('guides-desc')}
@@ -138,7 +80,7 @@ const HeaderNavigation = () => {
           </li>
           <li>
             <NavigationMenuLink asChild>
-              <Link to={getLocalizedPath('/glossario')} className={cn("block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-aio/10 hover:text-aio focus:bg-aio/10 focus:text-aio")}>
+              <Link to={getLocalizedPath('/glossario', '/glossary')} className={cn("block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-aio/10 hover:text-aio focus:bg-aio/10 focus:text-aio")}>
                 <div className="text-sm font-medium leading-none">{t('glossary')}</div>
                 <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
                   {t('glossary-desc')}
@@ -173,14 +115,14 @@ const HeaderNavigation = () => {
             <p className="font-medium text-sm text-muted-foreground mb-1">{t('resources')}</p>
             <div className="pl-3 border-l border-gray-200 space-y-3">
               <Link 
-                to={getLocalizedPath('/guias/seo-aio-checklist')} 
+                to={getLocalizedPath('/guias/seo-aio-checklist', '/guides/seo-aio-checklist')} 
                 className="block text-sm"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {t('checklist')}
               </Link>
               <Link 
-                to={getLocalizedPath('/guias')} 
+                to={getLocalizedPath('/guias', '/guides')} 
                 className="block text-sm"
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -194,7 +136,7 @@ const HeaderNavigation = () => {
                 {t('blog')}
               </Link>
               <Link 
-                to={getLocalizedPath('/glossario')} 
+                to={getLocalizedPath('/glossario', '/glossary')} 
                 className="block text-sm"
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -230,7 +172,7 @@ const HeaderNavigation = () => {
         {resourcesDropdown}
 
         <NavigationMenuItem>
-          <Link to={getLocalizedPath('/como-funciona')} className={navigationMenuTriggerStyle()}>
+          <Link to={getLocalizedPath('/como-funciona', '/how-it-works')} className={navigationMenuTriggerStyle()}>
             {t('how-it-works')}
           </Link>
         </NavigationMenuItem>
@@ -242,7 +184,7 @@ const HeaderNavigation = () => {
         </NavigationMenuItem>
         
         <NavigationMenuItem>
-          <Link to={getLocalizedPath('/contacto')} className={navigationMenuTriggerStyle()}>
+          <Link to={getLocalizedPath('/contacto', '/contact')} className={navigationMenuTriggerStyle()}>
             {t('contact')}
           </Link>
         </NavigationMenuItem>
