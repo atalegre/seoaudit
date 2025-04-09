@@ -37,9 +37,12 @@ const HowItWorks = () => {
   ];
   
   return (
-    <section className="py-24 bg-gray-50">
+    <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center mb-16">
+          <span className="inline-block text-indigo-600 font-semibold mb-2">
+            {language === 'pt' ? 'PROCESSO SIMPLES' : 'SIMPLE PROCESS'}
+          </span>
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             {language === 'pt' ? 'Como Funciona' : 'How It Works'}
           </h2>
@@ -51,30 +54,27 @@ const HowItWorks = () => {
           </p>
         </div>
         
-        <div className="relative">
-          {/* Progress Line */}
-          <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-0.5 bg-gray-200 transform -translate-x-1/2"></div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative">
-            {steps.map((step, index) => (
-              <div key={index} className={`relative ${index % 2 === 0 ? 'lg:pr-16' : 'lg:pl-16 lg:row-start-1'} ${index === 1 ? 'lg:col-start-2' : ''} ${index === 3 ? 'lg:col-start-2' : ''}`}>
-                {/* Circle on timeline */}
-                <div className="hidden lg:flex absolute top-10 w-12 h-12 rounded-full bg-white border-4 border-indigo-500 items-center justify-center right-0 transform translate-x-1/2 z-10">
-                  <span className="font-bold text-indigo-500">{index + 1}</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+          {steps.map((step, index) => (
+            <div key={index} className="relative">
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 h-full flex flex-col">
+                <div className="mb-6">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg flex items-center justify-center font-bold text-xl">
+                    {step.number}
+                  </div>
+                  
+                  {index < steps.length - 1 && (
+                    <div className="hidden lg:block absolute top-6 left-full w-full h-0.5 bg-gray-200 transform -translate-x-6 z-0 mt-5">
+                      <div className="w-3 h-3 bg-indigo-500 rounded-full absolute right-0 top-1/2 transform translate-x-1.5 -translate-y-1.5"></div>
+                    </div>
+                  )}
                 </div>
                 
-                <div className="bg-white p-8 rounded-2xl shadow-md border border-gray-100 relative">
-                  <div className="flex items-center mb-4">
-                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl flex items-center justify-center font-bold text-xl mr-4 lg:hidden">
-                      {step.number}
-                    </div>
-                    <h3 className="text-xl font-bold">{step.title}</h3>
-                  </div>
-                  <p className="text-gray-600">{step.description}</p>
-                </div>
+                <h3 className="text-xl font-bold mb-3">{step.title}</h3>
+                <p className="text-gray-600">{step.description}</p>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>

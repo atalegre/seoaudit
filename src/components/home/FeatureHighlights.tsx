@@ -52,10 +52,10 @@ const FeatureHighlights = () => {
   ];
 
   return (
-    <section className="py-24 bg-white">
+    <section className="py-16 bg-gradient-to-b from-white to-gray-50">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
             {language === 'pt' ? 'Recursos da Plataforma' : 'Platform Features'}
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -68,12 +68,18 @@ const FeatureHighlights = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {features.map((feature, index) => (
-            <div key={index} className="group bg-white p-8 rounded-2xl shadow-md border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-              <div className="w-14 h-14 rounded-2xl bg-gray-50 p-3 flex items-center justify-center mb-6 group-hover:bg-gray-100 transition-colors">
-                {feature.icon}
+            <div 
+              key={index} 
+              className="group relative bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative z-10">
+                <div className="w-14 h-14 rounded-full bg-gray-50 p-3 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  {feature.icon}
+                </div>
+                <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
+                <p className="text-gray-600">{feature.description}</p>
               </div>
-              <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-              <p className="text-gray-600">{feature.description}</p>
             </div>
           ))}
         </div>

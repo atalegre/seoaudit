@@ -4,12 +4,10 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import FeatureHighlights from '@/components/home/FeatureHighlights';
 import HowItWorks from '@/components/home/HowItWorks';
-import WhyChooseUs from '@/components/home/WhyChooseUs';
 import CTASection from '@/components/home/CTASection';
 import TestimonialsSection from '@/components/home/TestimonialsSection';
 import Hero from '@/components/Hero';
 import ClientLogos from '@/components/home/ClientLogos';
-import FeatureCards from '@/components/home/FeatureCards';
 
 const Index = () => {
   // Move the useEffect inside the component
@@ -60,7 +58,6 @@ const Index = () => {
       <main className="flex-1">
         <Hero />
         <ClientLogos />
-        <FeatureCards />
         <HowItWorks />
         <FeatureHighlights />
         <TestimonialsSection />
