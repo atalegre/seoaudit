@@ -20,15 +20,15 @@ const ScoreCard = ({
   description
 }: ScoreCardProps) => {
   const getBackgroundColorFromText = (textColor: string): string => {
-    // First check for the tailwind color pattern
+    // Extract color name and shade from text color
     const match = textColor.match(/text-([a-z]+)-(\d+)/);
     if (match) {
       const [_, colorName, shade] = match;
-      return `bg-${colorName}-${shade}`;
+      return `bg-${colorName}-${parseInt(shade) < 500 ? shade : '500'}`;
     }
     
     // Default fallback
-    return "bg-gray-500";
+    return "bg-indigo-500";
   };
 
   // Ensure we have a valid percentage value for the progress bar width

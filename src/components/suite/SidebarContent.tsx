@@ -86,14 +86,17 @@ const SidebarContentItems = () => {
               "transition-colors duration-200 relative group",
               isActive 
                 ? "bg-indigo-100 text-indigo-700" 
-                : "text-gray-500 hover:text-indigo-600 hover:bg-indigo-50"
+                : "text-gray-500 hover:bg-indigo-50"
             )
           }
           title={link.label}
         >
           {({ isActive }) => (
             <>
-              <div className={cn(isActive ? link.color : "text-inherit")}>
+              <div className={cn(
+                isActive ? link.color : "text-inherit",
+                "group-hover:text-inherit group-hover:" + link.color
+              )}>
                 {link.icon}
               </div>
               <div className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity whitespace-nowrap">
