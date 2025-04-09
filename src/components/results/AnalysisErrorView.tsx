@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { AlertCircle, Loader2, ExternalLink } from 'lucide-react';
+import { AlertCircle, Loader2, ExternalLink, Key } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 
@@ -55,6 +55,7 @@ const AnalysisErrorView: React.FC<AnalysisErrorViewProps> = ({
 
   const apiKey = getApiKey();
   const apiKeyPrefix = apiKey ? apiKey.substring(0, 4) : 'Não configurada';
+  const apiKeySuffix = apiKey ? apiKey.substring(apiKey.length - 4) : '';
   
   return (
     <div className="max-w-6xl mx-auto">
@@ -138,15 +139,29 @@ const AnalysisErrorView: React.FC<AnalysisErrorViewProps> = ({
           <div className="mt-4">
             <p className="font-semibold">Solução:</p>
             <ul className="list-disc list-inside space-y-1 text-sm">
-              <li>Status da sua chave API: {apiKey ? 
-                <code className="bg-gray-100 px-1 py-0.5 rounded text-green-700">{apiKeyPrefix}...</code> : 
-                <code className="bg-red-100 px-1 py-0.5 rounded text-red-700">Não configurada</code>}
+              <li className="flex items-center">Status da sua chave API: {apiKey ? 
+                <code className="bg-gray-100 px-1 py-0.5 rounded text-green-700 ml-1 inline-flex items-center">
+                  <Key className="h-3 w-3 mr-1" />
+                  {apiKeyPrefix}...{apiKeySuffix}
+                </code> : 
+                <code className="bg-red-100 px-1 py-0.5 rounded text-red-700 ml-1">Não configurada</code>}
               </li>
-              <li>Configure a variável de ambiente <code className="bg-gray-100 px-1 py-0.5 rounded">VITE_PAGESPEED_API_KEY</code> com sua chave Google API</li>
               <li>Verifique se você <span className="font-medium">ativou a API no console do Google Cloud</span></li>
               <li>Certifique-se de que a URL é válida e acessível publicamente</li>
               <li>Tente analisar URLs populares como "google.com" para testar se a API está funcionando</li>
             </ul>
+          </div>
+          
+          <div className="mt-4 p-2 bg-blue-50 border border-blue-200 rounded text-blue-800">
+            <p className="text-sm font-medium">Chave API configurada manualmente:</p>
+            <p className="text-xs mt-1">
+              Para este projeto, definimos uma chave API diretamente no código: <code>AIzaSyA-nwrPN2F1lLrouVS2ll8W4R0dDm7Cbd8</code>
+            </p>
+            <p className="text-xs mt-1">
+              Se estiver enfrentando problemas, acesse o <a href="https://console.cloud.google.com/apis/api/pagespeedonline.googleapis.com/overview" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline inline-flex items-center">
+                Google Cloud Console <ExternalLink className="h-3 w-3 ml-1" />
+              </a> e certifique-se de que a API PageSpeed Insights está ativada para esta chave.
+            </p>
           </div>
         </AlertDescription>
       </Alert>

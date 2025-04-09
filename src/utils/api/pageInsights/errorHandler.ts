@@ -8,6 +8,9 @@
  * @returns Formatted error message
  */
 export function createDetailedErrorMessage(url: string, strategy: 'desktop' | 'mobile', error: any, apiKey?: string): string {
+  // Log completo do erro para depuração
+  console.error(`❌ Erro detalhado na API PageSpeed (${strategy}):`, error);
+  
   // Base error message
   let errorMessage = `❌ Falha ao obter dados da API Google PageSpeed Insights para ${strategy}. `;
 
@@ -16,7 +19,7 @@ export function createDetailedErrorMessage(url: string, strategy: 'desktop' | 'm
     errorMessage += 'Chave API PageSpeed não configurada. Configure a variável de ambiente VITE_PAGESPEED_API_KEY';
   } else if (error?.message?.includes('network') || error?.message?.includes('fetch')) {
     errorMessage += 'Erro de rede ao conectar com a API. Verifique sua conexão à internet.';
-  } else if (error?.message?.includes('API has not been used') || error?.message?.includes('API has not been enabled')) {
+  } else if (isApiNotEnabledError(error?.message || '')) {
     errorMessage += 'A API PageSpeed Insights não está ativada. Acesse o console do Google Cloud e ative-a para o projeto associado à sua chave API.';
   } else if (error?.message?.includes('Timeout')) {
     errorMessage += 'Timeout excedido ao conectar com a API. Tente novamente mais tarde.';
@@ -26,12 +29,28 @@ export function createDetailedErrorMessage(url: string, strategy: 'desktop' | 'm
     errorMessage += 'Cota de requisições excedida. Aguarde alguns minutos ou aumente sua cota no Google Cloud Console.';
   } else if (error?.message?.includes('Não configurada') || error?.message?.includes('não está definida')) {
     errorMessage += 'Chave API não configurada. Configure a variável de ambiente VITE_PAGESPEED_API_KEY com sua chave Google API.';
+  } else if (error?.message?.includes('400')) {
+    errorMessage += 'Erro 400: Requisição inválida. Verifique se a URL é válida e acessível publicamente.';
+  } else if (error?.message?.includes('403')) {
+    errorMessage += 'Erro 403: Acesso negado. Sua chave API pode estar restrita ou não ter as permissões adequadas.';
+  } else if (error?.message?.includes('404')) {
+    errorMessage += 'Erro 404: Recurso não encontrado. A URL que você está tentando analisar pode não existir.';
+  } else if (error?.message?.includes('429')) {
+    errorMessage += 'Erro 429: Muitas requisições. Você excedeu o limite de requisições permitidas. Aguarde alguns minutos.';
+  } else if (error?.message?.includes('500') || error?.message?.includes('502') || error?.message?.includes('503')) {
+    errorMessage += 'Erro do servidor Google. Os servidores do Google PageSpeed Insights estão enfrentando problemas. Tente novamente mais tarde.';
   } else {
     errorMessage += error?.message || 'Erro desconhecido';
   }
 
   // Add helpful advice
   errorMessage += '\n\nCertifique-se de que a URL é válida e acessível publicamente.';
+  
+  // Adicionar informação sobre a chave API
+  if (apiKey) {
+    const maskedKey = apiKey.substring(0, 4) + '...' + apiKey.substring(apiKey.length - 4);
+    errorMessage += `\nChave API usada (mascarada): ${maskedKey}`;
+  }
 
   return errorMessage;
 }
@@ -46,6 +65,8 @@ export async function extractHttpErrorDetails(response: Response): Promise<strin
   
   try {
     const errorData = await response.json();
+    console.log('Dados de erro da resposta HTTP:', errorData);
+    
     if (errorData.error?.message) {
       errorMessage = errorData.error.message;
       
@@ -70,11 +91,19 @@ export async function extractHttpErrorDetails(response: Response): Promise<strin
  * @returns Boolean indicating if this is an API not enabled error
  */
 export function isApiNotEnabledError(errorMessage: string): boolean {
-  return (
-    errorMessage.includes('API has not been used') || 
-    errorMessage.includes('API has not been enabled') ||
-    errorMessage.includes('API not enabled') ||
-    errorMessage.includes('has not been used in project') ||
-    errorMessage.includes('has not been enabled in project')
-  );
+  if (!errorMessage) return false;
+  
+  const apiNotEnabledPatterns = [
+    'API has not been used',
+    'API has not been enabled',
+    'API not enabled',
+    'has not been used in project',
+    'has not been enabled in project',
+    'não está ativada',
+    'service not enabled',
+    'The provided project ID',
+    'enable it by visiting'
+  ];
+  
+  return apiNotEnabledPatterns.some(pattern => errorMessage.includes(pattern));
 }

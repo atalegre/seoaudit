@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import { getPageInsightsData } from '@/utils/api/pageInsights';
+import { getPageInsightsData, getApiKey } from '@/utils/api/pageInsights';
 import type { PageInsightsData } from '@/utils/api/pageInsights/types';
 import { toast } from 'sonner';
 
@@ -34,14 +34,26 @@ export function useSeoAnalysis() {
       setIsAnalyzing(true);
       setError(null);
       
-      // Limpar apenas os dados que vamos analisar novamente, mantendo os dados existentes
-      // para exibição parcial se necessário
+      // Verificar se a chave API está configurada
+      const apiKey = getApiKey();
+      if (!apiKey) {
+        toast.error("Chave API não configurada", {
+          description: "Configure a variável de ambiente VITE_PAGESPEED_API_KEY com sua chave Google API."
+        });
+        setError("Chave API PageSpeed não configurada. Configure a variável de ambiente VITE_PAGESPEED_API_KEY.");
+        setIsAnalyzing(false);
+        return;
+      }
+      
+      console.log(`🔑 Chave API configurada (primeiros 4 caracteres): ${apiKey.substring(0, 4)}...`);
       
       // Normalizar URL (adicionar https:// se não especificado)
       let normalizedUrl = urlToAnalyze;
       if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
         normalizedUrl = 'https://' + normalizedUrl;
       }
+      
+      console.log(`🔍 URL normalizada para análise: ${normalizedUrl}`);
       
       // Salvar a URL no localStorage
       localStorage.setItem('lastAnalyzedUrl', urlToAnalyze);
@@ -54,21 +66,23 @@ export function useSeoAnalysis() {
       try {
         // Analisar desktop primeiro
         try {
+          console.log('🖥️ Iniciando análise desktop...');
           const desktopResult = await getPageInsightsData(normalizedUrl, 'desktop');
           setDesktopData(desktopResult);
-          console.log("Análise desktop concluída com sucesso");
+          console.log("✅ Análise desktop concluída com sucesso");
         } catch (desktopError: any) {
-          console.error("Erro ao analisar desktop:", desktopError);
+          console.error("❌ Erro ao analisar desktop:", desktopError);
           // Não definir erro global ainda, tentar mobile
         }
         
         // Agora analisar mobile
         try {
+          console.log('📱 Iniciando análise mobile...');
           const mobileResult = await getPageInsightsData(normalizedUrl, 'mobile');
           setMobileData(mobileResult);
-          console.log("Análise mobile concluída com sucesso");
+          console.log("✅ Análise mobile concluída com sucesso");
         } catch (mobileError: any) {
-          console.error("Erro ao analisar mobile:", mobileError);
+          console.error("❌ Erro ao analisar mobile:", mobileError);
           // Não definir erro global ainda, verificar se temos dados de desktop
         }
         
@@ -90,7 +104,7 @@ export function useSeoAnalysis() {
           throw new Error("Não foi possível obter dados para desktop ou mobile. Verifique as configurações de API.");
         }
       } catch (apiError: any) {
-        console.error("Erro ao analisar URL:", apiError);
+        console.error("❌ Erro ao analisar URL:", apiError);
         setError(apiError.message || 'Ocorreu um erro desconhecido');
         
         toast.error("Erro na análise", {
@@ -98,7 +112,7 @@ export function useSeoAnalysis() {
         });
       }
     } catch (error: any) {
-      console.error("Erro ao analisar URL:", error);
+      console.error("❌ Erro ao analisar URL:", error);
       setError(error.message || 'Ocorreu um erro desconhecido');
       
       toast.error("Erro na análise", {
@@ -117,7 +131,7 @@ export function useSeoAnalysis() {
     // Limpar o cache do sessionStorage para o URL analisado
     Object.keys(sessionStorage).forEach(key => {
       if (key.startsWith('psi_')) {
-        console.log('Limpando cache:', key);
+        console.log('🧹 Limpando cache:', key);
         sessionStorage.removeItem(key);
       }
     });
@@ -130,6 +144,7 @@ export function useSeoAnalysis() {
     // Limpar os dados atuais para forçar uma nova análise completa
     setDesktopData(null);
     setMobileData(null);
+    setError(null);
     
     // Analisar novamente
     analyzeUrl();
