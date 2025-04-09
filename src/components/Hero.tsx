@@ -43,11 +43,11 @@ const Hero = () => {
           </form>
         </div>
 
-        {/* Dashboard image */}
+        {/* Suite Dashboard image */}
         <div className="hidden md:block w-full max-w-md">
           <img
-            src="/lovable-uploads/e3624e6a-4f50-4466-8683-959fc924fa1e.png"
-            alt="SEO Dashboard Preview"
+            src="/lovable-uploads/4b0e451b-bcd1-4279-8dce-f9da22670979.png"
+            alt="SEO Suite Dashboard Preview"
             className="w-full h-auto rounded-lg shadow-lg"
           />
         </div>
