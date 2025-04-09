@@ -1,11 +1,9 @@
-
 import React from 'react';
 import { AlertCircle, Loader2, ExternalLink } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 
-// Import the API key from the same place it's defined
-import { getApiKey } from '@/utils/api/pageInsights/apiClient';
+import { getApiKey } from '@/utils/api/pageInsights';
 
 interface AnalysisErrorViewProps {
   seoError: string | null;
@@ -18,7 +16,6 @@ const AnalysisErrorView: React.FC<AnalysisErrorViewProps> = ({
   aioError, 
   onReanalyze 
 }) => {
-  // Check if the error relates to PageSpeed API key or API enablement
   const isPageSpeedKeyError = seoError && (
     seoError.includes('VITE_PAGESPEED_API_KEY') || 
     seoError.includes('não configurada') ||
@@ -32,19 +29,16 @@ const AnalysisErrorView: React.FC<AnalysisErrorViewProps> = ({
     seoError.includes('não está ativada')
   );
   
-  // Extract project ID from error message if available
   let projectId = '';
   if (seoError) {
     const match = seoError.match(/project=(\d+)/);
     projectId = match ? match[1] : '';
   }
   
-  // Create a direct link to activate the API if project ID is available
   const activateApiLink = projectId 
     ? `https://console.developers.google.com/apis/api/pagespeedonline.googleapis.com/overview?project=${projectId}`
     : 'https://console.cloud.google.com/apis/library/pagespeedonline.googleapis.com';
 
-  // Get the first 4 characters of the API key for display (reduzido para maior privacidade)
   const apiKey = getApiKey();
   const apiKeyPrefix = apiKey ? apiKey.substring(0, 4) : 'Não configurada';
   
