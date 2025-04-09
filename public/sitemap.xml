@@ -1,3 +1,4 @@
+
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
@@ -19,6 +20,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://seoaudit.pt/how-it-works</loc>
+    <lastmod>2025-04-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://seoaudit.pt/faq</loc>
     <lastmod>2025-04-09</lastmod>
     <changefreq>monthly</changefreq>
@@ -26,6 +33,12 @@
   </url>
   <url>
     <loc>https://seoaudit.pt/contacto</loc>
+    <lastmod>2025-04-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://seoaudit.pt/contact</loc>
     <lastmod>2025-04-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -43,13 +56,31 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://seoaudit.pt/glossary</loc>
+    <lastmod>2025-04-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://seoaudit.pt/guias</loc>
     <lastmod>2025-04-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://seoaudit.pt/guides</loc>
+    <lastmod>2025-04-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://seoaudit.pt/guias/seo-aio-checklist</loc>
+    <lastmod>2025-04-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://seoaudit.pt/guides/seo-aio-checklist</loc>
     <lastmod>2025-04-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
@@ -68,6 +99,12 @@
   </url>
   <url>
     <loc>https://seoaudit.pt/recuperar-password</loc>
+    <lastmod>2025-04-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>https://seoaudit.pt/forgot-password</loc>
     <lastmod>2025-04-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>

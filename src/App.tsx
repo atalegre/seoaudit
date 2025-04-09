@@ -75,12 +75,22 @@ function App() {
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/results" element={<ResultsPage />} />
+                
+                {/* Rotas em português e inglês para compatibilidade com os dois idiomas */}
                 <Route path="/como-funciona" element={<HowItWorksPage />} />
+                <Route path="/how-it-works" element={<HowItWorksPage />} />
+                
                 <Route path="/faq" element={<FAQPage />} />
+                
                 <Route path="/contacto" element={<ContactPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+                
                 <Route path="/signin" element={<SignInPage />} />
                 <Route path="/signup" element={<SignUpPage />} />
+                
                 <Route path="/recuperar-password" element={<ForgotPasswordPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/verification" element={<VerificationPage />} />
                 <Route path="/auth/callback" element={<Navigate to="/dashboard" />} />
@@ -107,12 +117,21 @@ function App() {
                 <Route path="/suite/keywords" element={<KeywordsPage />} />
                 <Route path="/suite/reports" element={<SuiteDashboard />} />
                 
+                {/* Content Routes - Dual language */}
                 <Route path="/blog" element={<BlogPage />} />
                 <Route path="/blog/:slug" element={<BlogPostPage />} />
+                
                 <Route path="/glossario" element={<GlossaryPage />} />
+                <Route path="/glossary" element={<GlossaryPage />} />
+                
                 <Route path="/glossario/:slug" element={<GlossaryTermPage />} />
+                <Route path="/glossary/:slug" element={<GlossaryTermPage />} />
+                
                 <Route path="/guias" element={<GuidesPage />} />
+                <Route path="/guides" element={<GuidesPage />} />
+                
                 <Route path="/guias/seo-aio-checklist" element={<SeoAioChecklistPage />} />
+                <Route path="/guides/seo-aio-checklist" element={<SeoAioChecklistPage />} />
                 
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>

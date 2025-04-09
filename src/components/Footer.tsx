@@ -4,8 +4,13 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const Footer = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const currentYear = new Date().getFullYear();
+  
+  // Função auxiliar para obter links com base no idioma atual
+  const getLocalizedPath = (ptPath: string, enPath: string) => {
+    return language === 'pt' ? ptPath : enPath;
+  };
   
   return (
     <footer className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 mt-auto">
@@ -27,7 +32,7 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/como-funciona" className="text-muted-foreground hover:text-foreground">
+                <Link to={getLocalizedPath("/como-funciona", "/how-it-works")} className="text-muted-foreground hover:text-foreground">
                   {t('how-it-works')}
                 </Link>
               </li>
