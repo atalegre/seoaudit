@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
@@ -8,11 +7,11 @@ import { formatDomainFromUrl } from '@/utils/domainUtils';
 
 // Export the interface for use in other components
 export interface SampleRecommendation {
-  id: number;
+  id: number | string;
   title: string;
   description: string;
   impact: 'high' | 'medium' | 'low';
-  type: 'technical' | 'content' | 'structure' | 'ai';
+  type: 'technical' | 'content' | 'structure' | 'ai' | 'seo' | 'aio';
 }
 
 export const useDashboardState = () => {
@@ -33,21 +32,21 @@ export const useDashboardState = () => {
   const keywordScore = 58;
   const totalScore = Math.round((seoScore + aioScore + llmScore + performanceScore + directoryScore) / 5);
   
-  // Sample recommendations
+  // Sample recommendations com tipos adequados
   const recommendations: SampleRecommendation[] = [
     {
       id: 1,
       title: 'Meta descrição muito curta',
       description: 'A meta descrição da sua página inicial tem apenas 45 caracteres. Recomendamos expandir para 120-155 caracteres.',
       impact: 'medium',
-      type: 'technical'
+      type: 'seo'
     },
     {
       id: 2,
       title: 'Conteúdo pouco otimizado para IA',
       description: 'O conteúdo da página não utiliza linguagem natural suficiente para ser bem interpretado por sistemas de IA.',
       impact: 'high',
-      type: 'ai'
+      type: 'aio'
     },
     {
       id: 3,
@@ -55,6 +54,20 @@ export const useDashboardState = () => {
       description: 'Foram encontradas 12 imagens sem atributo alt definido, o que prejudica a acessibilidade e SEO.',
       impact: 'medium',
       type: 'technical'
+    },
+    {
+      id: 4,
+      title: 'Falta estrutura de cabeçalhos',
+      description: 'Seu site não usa uma hierarquia clara de H1-H6, o que dificulta o entendimento por sistemas de IA.',
+      impact: 'high',
+      type: 'aio'
+    },
+    {
+      id: 5,
+      title: 'Velocidade mobile insatisfatória',
+      description: 'O tempo de carregamento em dispositivos móveis está acima do recomendado, prejudicando o ranqueamento.',
+      impact: 'high',
+      type: 'seo'
     }
   ];
   

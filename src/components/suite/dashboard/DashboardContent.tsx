@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import BlurredSection from './BlurredSection';
-import OnboardingTour from './OnboardingTour';
+import SuiteOnboarding from './SuiteOnboarding';
 
 interface RecommendationType {
   id: string;
@@ -48,42 +48,17 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   onViewMoreRecommendations
 }) => {
   const navigate = useNavigate();
-  const [showOnboarding, setShowOnboarding] = useState(() => {
-    const isFirstVisit = !localStorage.getItem('onboardingCompleted');
-    return isFirstVisit && !isUserLoggedIn;
+  
+  const [showOnboardingCompleted, setShowOnboardingCompleted] = useState(false);
+  const [isFirstVisit, setIsFirstVisit] = useState(() => {
+    return !localStorage.getItem('suiteOnboardingCompleted');
   });
 
-  const onboardingSteps = [
-    {
-      title: 'Pontuação do seu site',
-      description: 'Aqui pode ver a pontuação geral do seu website tanto em SEO como em otimização para IA.',
-      targetId: 'dashboard-scores',
-      position: 'bottom' as const
-    },
-    {
-      title: 'Métricas principais',
-      description: 'Esta secção mostra as métricas mais importantes para o sucesso do seu site.',
-      targetId: 'dashboard-metrics',
-      position: 'right' as const
-    },
-    {
-      title: 'Recomendações personalizadas',
-      description: 'Receba sugestões práticas para melhorar o seu site. Algumas recomendações avançadas requerem conta.',
-      targetId: 'dashboard-recommendations',
-      position: 'top' as const
-    },
-    {
-      title: 'Navegação rápida',
-      description: 'Aceda facilmente a todas as ferramentas disponíveis para analisar e melhorar seu site.',
-      targetId: 'quick-actions',
-      position: 'left' as const
-    }
-  ];
-
-  const handleCompleteOnboarding = () => {
-    setShowOnboarding(false);
-    localStorage.setItem('onboardingCompleted', 'true');
-    toast.success("Bem-vindo à SEOaudit! Explore todas as ferramentas disponíveis.");
+  const handleOnboardingComplete = () => {
+    setShowOnboardingCompleted(true);
+    toast.success("Bem-vindo à SEOaudit!", {
+      description: "Explore todas as ferramentas disponíveis para melhorar seu site."
+    });
   };
 
   const navigateTo = (path: string) => {
@@ -122,10 +97,9 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
       initial="hidden"
       animate="show"
     >
-      <OnboardingTour 
-        steps={onboardingSteps} 
-        onComplete={handleCompleteOnboarding} 
-        isOpen={showOnboarding}
+      <SuiteOnboarding 
+        isFirstVisit={isFirstVisit} 
+        onComplete={handleOnboardingComplete} 
       />
 
       <motion.div variants={itemVariants} className="flex items-center gap-4 mb-4">
