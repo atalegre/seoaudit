@@ -1,13 +1,13 @@
 
 import React, { useState } from 'react';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getLocalizedPath } from './navigation/PathUtils';
 import MobileMenu from './navigation/MobileMenu';
 import DesktopMenu from './navigation/DesktopMenu';
 
 const HeaderNavigation = () => {
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { t, language } = useLanguage();
 

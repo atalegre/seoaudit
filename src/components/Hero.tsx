@@ -22,7 +22,7 @@ const Hero = () => {
   };
 
   return (
-    <section className="w-full bg-white py-6 md:py-12 lg:py-16 flex items-center min-h-[65vh] md:min-h-[70vh]">
+    <section className="w-full bg-white py-6 md:py-12 lg:py-16 flex items-center min-h-[60vh] md:min-h-[70vh]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center">
         <div className="max-w-2xl">
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight">

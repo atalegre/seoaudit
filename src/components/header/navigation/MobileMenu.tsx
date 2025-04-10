@@ -28,12 +28,12 @@ export const MobileMenu = ({
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="md:hidden">
+        <Button variant="ghost" size="icon" className="md:hidden flex">
           <Menu className="h-6 w-6" />
           <span className="sr-only">{t('open-menu')}</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-[280px] sm:w-[350px]">
+      <SheetContent side="left" className="w-[280px] sm:w-[350px] z-50">
         <div className="flex flex-col gap-4 mt-8">
           <Link 
             to="/" 
