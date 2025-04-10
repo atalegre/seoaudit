@@ -1,33 +1,34 @@
 
 import React from 'react';
-import { Bot } from 'lucide-react';
-import FeatureCard from './FeatureCard';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Button } from '@/components/ui/button';
+import { LayoutDashboard } from 'lucide-react';
 
 const DashboardCard = () => {
   const { language } = useLanguage();
   
-  const items = [
-    language === 'pt' ? 'Recomendações personalizadas' : 'Personalized recommendations',
-    language === 'pt' ? 'Histórico de análises' : 'Analysis history',
-    language === 'pt' ? 'Gerador de conteúdo com IA' : 'AI content generator'
-  ];
-  
   return (
-    <FeatureCard
-      title={language === 'pt' ? 'Dashboard Profissional' : 'Professional Dashboard'}
-      description={language === 'pt'
-        ? 'Acesse relatórios detalhados, ferramentas de otimização de conteúdo e monitore o progresso do seu site ao longo do tempo.'
-        : 'Access detailed reports, content optimization tools and monitor your site\'s progress over time.'
-      }
-      icon={<Bot className="h-7 w-7 text-green-600" />}
-      items={items}
-      linkText={language === 'pt' ? 'Acessar dashboard' : 'Access dashboard'}
-      linkUrl="/signin"
-      linkColor="green"
-      gradientFrom="green"
-      gradientTo="teal"
-    />
+    <div className="p-6 rounded-xl border border-gray-100 hover:border-violet-100 transition-all duration-300 hover:shadow-md bg-white">
+      <div className="flex flex-col h-full">
+        <div className="mb-6 bg-green-50 w-16 h-16 rounded-full flex items-center justify-center">
+          <LayoutDashboard className="h-8 w-8 text-green-600" />
+        </div>
+        
+        <h3 className="text-xl font-bold mb-3">
+          {language === 'pt' ? 'Dashboard Completo' : 'Complete Dashboard'}
+        </h3>
+        
+        <p className="text-gray-600 mb-6 flex-grow">
+          {language === 'pt'
+            ? 'Acesso a um painel de controle completo com análises detalhadas, recomendações e ferramentas avançadas.'
+            : 'Access to a complete dashboard with detailed analysis, recommendations and advanced tools.'}
+        </p>
+        
+        <Button variant="outline" className="w-full mt-auto">
+          {language === 'pt' ? 'Explorar' : 'Explore'}
+        </Button>
+      </div>
+    </div>
   );
 };
 

@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { Globe, BrainCircuit, Smartphone, Zap, Shield, Bot } from 'lucide-react';
+import { Globe, BrainCircuit, Smartphone, Zap, Shield, Bot, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const featuresList = [
   {
@@ -22,22 +23,12 @@ const featuresList = [
     icon: <Zap className="h-6 w-6 text-orange-600" />,
     title: 'Performance',
     description: 'Analise a velocidade de carregamento e outros fatores de desempenho que afetam o ranking.'
-  },
-  {
-    icon: <Shield className="h-6 w-6 text-indigo-600" />,
-    title: 'Acessibilidade',
-    description: 'Verifique se o seu site segue as melhores práticas de acessibilidade.'
-  },
-  {
-    icon: <Bot className="h-6 w-6 text-red-600" />,
-    title: 'Presença em LLMs',
-    description: 'Avalie como o seu site é interpretado pelos modelos de linguagem de última geração.'
-  },
+  }
 ];
 
 const FeaturesSection = () => {
   return (
-    <section className="py-16 px-4 bg-white">
+    <section className="py-16 px-4 bg-gray-50">
       <div className="container mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">Análise Completa do Seu Site</h2>
@@ -46,9 +37,9 @@ const FeaturesSection = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {featuresList.map((feature, index) => (
-            <div key={index} className="p-6 border border-gray-100 rounded-lg hover:shadow-md transition-shadow">
+            <div key={index} className="p-6 border border-gray-100 bg-white rounded-lg hover:shadow-md transition-shadow">
               <div className="rounded-full bg-gray-50 p-3 w-12 h-12 flex items-center justify-center mb-4">
                 {feature.icon}
               </div>
@@ -56,6 +47,13 @@ const FeaturesSection = () => {
               <p className="text-gray-600">{feature.description}</p>
             </div>
           ))}
+        </div>
+        
+        <div className="mt-10 text-center">
+          <Button variant="outline" className="flex items-center gap-2">
+            Ver mais detalhes
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </section>

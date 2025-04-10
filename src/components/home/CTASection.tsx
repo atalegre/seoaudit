@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Search } from 'lucide-react';
+import { ArrowRight, Search, Play } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { extractDomainFromUrl } from '@/utils/domainUtils';
@@ -58,9 +58,9 @@ const CTASection = () => {
   };
   
   return (
-    <section className="py-20">
+    <section className="py-16">
       <div className="container mx-auto px-4">
-        <div className="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-3xl p-12 md:p-16">
+        <div className="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-3xl p-10 md:p-14">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
               {language === 'pt' 
@@ -68,14 +68,14 @@ const CTASection = () => {
                 : 'Ready to transform your digital presence?'
               }
             </h2>
-            <p className="text-xl mb-10 text-white/90">
+            <p className="text-xl mb-8 text-white/90">
               {language === 'pt'
                 ? 'Analise seu site agora e descubra como melhorar seu ranking nos motores de busca e nos modelos de IA.'
                 : 'Analyze your site now and discover how to improve your ranking in search engines and AI models.'
               }
             </p>
             
-            <form onSubmit={handleAnalyze} className="flex flex-col sm:flex-row mb-8 gap-3 max-w-xl mx-auto">
+            <form onSubmit={handleAnalyze} className="flex flex-col sm:flex-row mb-6 gap-3 max-w-xl mx-auto">
               <div className="relative flex-1">
                 <Input
                   type="text"
@@ -89,21 +89,34 @@ const CTASection = () => {
               </div>
               <Button 
                 type="submit" 
-                className="h-14 font-medium bg-white text-indigo-700 hover:bg-gray-100 rounded-lg"
+                className="h-14 font-medium bg-white text-indigo-700 hover:bg-gray-100 rounded-lg flex items-center gap-2"
                 disabled={isAnalyzing}
               >
                 {isAnalyzing ? (
                   <>{language === 'pt' ? "Analisando" : "Analyzing"}<span className="loading-dots">...</span></>
                 ) : (
-                  language === 'pt' ? 'Analisar agora' : 'Analyze now'
+                  <>
+                    <Search className="h-5 w-5" />
+                    {language === 'pt' ? 'Analisar agora' : 'Analyze now'}
+                  </>
                 )}
               </Button>
             </form>
             
-            <p className="mt-6 text-sm text-white/80">
+            <div className="flex justify-center gap-4 mb-6">
+              <Button 
+                variant="outline" 
+                className="bg-transparent border-white/30 text-white hover:bg-white/10 flex items-center gap-2"
+              >
+                <Play className="h-4 w-4" />
+                {language === 'pt' ? 'Ver demo' : 'Watch demo'}
+              </Button>
+            </div>
+            
+            <p className="mt-2 text-sm text-white/80">
               {language === 'pt'
-                ? 'Sem necessidade de cadastro. Resultados instantâneos no seu dashboard.'
-                : 'No registration required. Instant results in your dashboard.'
+                ? 'Verifica o SEO do teu site em segundos – sem registo necessário.'
+                : 'Check your website SEO in seconds – no registration required.'
               }
             </p>
           </div>

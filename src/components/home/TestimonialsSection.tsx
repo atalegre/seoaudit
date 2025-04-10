@@ -1,10 +1,14 @@
 
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Star } from 'lucide-react';
+import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const TestimonialsSection = () => {
   const { language } = useLanguage();
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const timerRef = useRef(null);
   
   const testimonials = [
     {
@@ -33,6 +37,29 @@ const TestimonialsSection = () => {
     }
   ];
   
+  const nextTestimonial = () => {
+    setActiveIndex((prev) => (prev + 1) % testimonials.length);
+  };
+  
+  const prevTestimonial = () => {
+    setActiveIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+  };
+  
+  useEffect(() => {
+    // Auto-slide effect
+    if (!isPaused) {
+      timerRef.current = setInterval(() => {
+        nextTestimonial();
+      }, 5000);
+    }
+    
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [isPaused, testimonials.length]);
+  
   return (
     <section className="py-20 bg-gradient-to-b from-indigo-50 to-white">
       <div className="container mx-auto px-4">
@@ -51,30 +78,82 @@ const TestimonialsSection = () => {
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {testimonials.map((testimonial, index) => (
-            <div key={index} className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 flex flex-col h-full">
-              <div className="flex-1">
-                <div className="flex mb-6">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star key={star} className="w-5 h-5 text-yellow-400 fill-current" />
-                  ))}
+        <div 
+          className="max-w-4xl mx-auto relative" 
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
+          <div className="overflow-hidden">
+            <div 
+              className="transition-transform duration-500 ease-in-out"
+              style={{ transform: `translateX(-${activeIndex * 100}%)`, display: 'flex' }}
+            >
+              {testimonials.map((testimonial, index) => (
+                <div 
+                  key={index} 
+                  className="w-full flex-shrink-0 px-4"
+                >
+                  <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300">
+                    <div className="flex mb-6">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star key={star} className="w-5 h-5 text-yellow-400 fill-current" />
+                      ))}
+                    </div>
+                    <p className="text-gray-700 mb-6 font-medium italic min-h-[100px]">"{testimonial.content}"</p>
+                    <div className="flex items-center mt-4 pt-4 border-t border-gray-100">
+                      <img 
+                        src={testimonial.image} 
+                        alt={testimonial.author} 
+                        className="w-14 h-14 rounded-full mr-4 object-cover"
+                      />
+                      <div>
+                        <h4 className="font-bold text-lg">{testimonial.author}</h4>
+                        <p className="text-sm text-gray-500">{testimonial.role}</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-gray-700 mb-6 font-medium italic">"{testimonial.content}"</p>
-              </div>
-              <div className="flex items-center mt-4 pt-4 border-t border-gray-100">
-                <img 
-                  src={testimonial.image} 
-                  alt={testimonial.author} 
-                  className="w-12 h-12 rounded-full mr-4 object-cover"
-                />
-                <div>
-                  <h4 className="font-bold">{testimonial.author}</h4>
-                  <p className="text-sm text-gray-500">{testimonial.role}</p>
-                </div>
-              </div>
+              ))}
             </div>
-          ))}
+          </div>
+          
+          <div className="flex justify-center mt-8 items-center gap-4">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              onClick={prevTestimonial}
+              className="rounded-full"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+            
+            <div className="flex space-x-2">
+              {testimonials.map((_, index) => (
+                <button
+                  key={index}
+                  className={`w-2.5 h-2.5 rounded-full ${
+                    index === activeIndex ? 'bg-indigo-600' : 'bg-gray-300'
+                  }`}
+                  onClick={() => setActiveIndex(index)}
+                />
+              ))}
+            </div>
+            
+            <Button 
+              variant="outline" 
+              size="icon" 
+              onClick={nextTestimonial}
+              className="rounded-full"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </Button>
+          </div>
+          
+          <div className="text-center mt-8">
+            <Button variant="outline">
+              {language === 'pt' ? 'Ver mais histórias de clientes' : 'See more client stories'}
+            </Button>
+          </div>
         </div>
         
         <div className="mt-12 text-center">

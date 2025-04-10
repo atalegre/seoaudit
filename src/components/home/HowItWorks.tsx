@@ -1,9 +1,15 @@
 
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useMobile } from '@/hooks/use-mobile';
+import { Button } from '@/components/ui/button';
 
 const HowItWorks = () => {
   const { language } = useLanguage();
+  const isMobile = useMobile();
+  const [activeStep, setActiveStep] = useState(0);
+  const carouselRef = useRef(null);
   
   const steps = [
     {
@@ -36,6 +42,14 @@ const HowItWorks = () => {
     }
   ];
   
+  const nextStep = () => {
+    setActiveStep((prev) => (prev < steps.length - 1 ? prev + 1 : prev));
+  };
+  
+  const prevStep = () => {
+    setActiveStep((prev) => (prev > 0 ? prev - 1 : prev));
+  };
+  
   return (
     <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
@@ -54,28 +68,77 @@ const HowItWorks = () => {
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-          {steps.map((step, index) => (
-            <div key={index} className="relative">
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 h-full flex flex-col">
-                <div className="mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg flex items-center justify-center font-bold text-xl">
-                    {step.number}
-                  </div>
-                  
-                  {index < steps.length - 1 && (
-                    <div className="hidden lg:block absolute top-6 left-full w-full h-0.5 bg-gray-200 transform -translate-x-6 z-0 mt-5">
-                      <div className="w-3 h-3 bg-indigo-500 rounded-full absolute right-0 top-1/2 transform translate-x-1.5 -translate-y-1.5"></div>
+        {isMobile ? (
+          <div className="relative">
+            <div 
+              ref={carouselRef}
+              className="overflow-hidden"
+            >
+              <div className="flex items-center justify-center">
+                <div key={steps[activeStep].number} className="w-full px-4">
+                  <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300">
+                    <div className="mb-6">
+                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg flex items-center justify-center font-bold text-xl">
+                        {steps[activeStep].number}
+                      </div>
                     </div>
-                  )}
+                    <h3 className="text-xl font-bold mb-3">{steps[activeStep].title}</h3>
+                    <p className="text-gray-600">{steps[activeStep].description}</p>
+                  </div>
                 </div>
-                
-                <h3 className="text-xl font-bold mb-3">{step.title}</h3>
-                <p className="text-gray-600">{step.description}</p>
               </div>
             </div>
-          ))}
-        </div>
+            
+            <div className="flex items-center justify-between mt-6">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={prevStep} 
+                disabled={activeStep === 0}
+                className="rounded-full"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+              
+              <div className="text-center">
+                <span className="text-sm font-medium">{activeStep + 1}/{steps.length}</span>
+              </div>
+              
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={nextStep} 
+                disabled={activeStep === steps.length - 1}
+                className="rounded-full"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+            {steps.map((step, index) => (
+              <div key={index} className="relative">
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 h-full flex flex-col">
+                  <div className="mb-6">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg flex items-center justify-center font-bold text-xl">
+                      {step.number}
+                    </div>
+                    
+                    {index < steps.length - 1 && (
+                      <div className="hidden lg:block absolute top-12 left-full w-[calc(100%-3rem)] h-0.5 bg-gray-200 transform -translate-x-6 z-0">
+                        <ArrowRight className="h-6 w-6 text-indigo-500 absolute right-0 top-1/2 transform translate-x-2 -translate-y-1/2 animate-pulse" />
+                      </div>
+                    )}
+                  </div>
+                  
+                  <h3 className="text-xl font-bold mb-3">{step.title}</h3>
+                  <p className="text-gray-600">{step.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

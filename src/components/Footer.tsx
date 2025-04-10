@@ -14,7 +14,7 @@ const Footer = () => {
   return (
     <footer className="bg-gray-50 pt-16 border-t">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-4">
           <div className="space-y-4">
             <div className="font-bold text-2xl">SEOAudit</div>
             <p className="text-gray-600">
@@ -46,7 +46,7 @@ const Footer = () => {
           
           <div>
             <h3 className="font-bold text-lg mb-4">{t('navigation')}</h3>
-            <ul className="space-y-3">
+            <ul className="space-y-2">
               <li>
                 <Link to="/" className="text-gray-600 hover:text-gray-900 transition-colors">
                   {t('home')}
@@ -72,7 +72,7 @@ const Footer = () => {
           
           <div>
             <h3 className="font-bold text-lg mb-4">{t('resources')}</h3>
-            <ul className="space-y-3">
+            <ul className="space-y-2">
               <li>
                 <Link to={getLocalizedPath('/guias', '/guides')} className="text-gray-600 hover:text-gray-900 transition-colors">
                   {t('guides')}
@@ -93,7 +93,7 @@ const Footer = () => {
           
           <div>
             <h3 className="font-bold text-lg mb-4">{t('contact')}</h3>
-            <ul className="space-y-3">
+            <ul className="space-y-2">
               <li className="text-gray-600">
                 Email: info@seoaudit.pt
               </li>
@@ -114,7 +114,7 @@ const Footer = () => {
           </div>
         </div>
         
-        <div className="border-t mt-12 pt-8 pb-8 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="border-t mt-12 pt-6 pb-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-gray-600 text-sm">
             &copy; {new Date().getFullYear()} SEOAudit. {t('rights-reserved')}
           </p>

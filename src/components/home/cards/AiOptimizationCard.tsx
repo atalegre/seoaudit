@@ -1,37 +1,34 @@
 
 import React from 'react';
-import { Sparkles } from 'lucide-react';
-import FeatureCard from './FeatureCard';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Button } from '@/components/ui/button';
+import { Sparkles } from 'lucide-react';
 
 const AiOptimizationCard = () => {
   const { language } = useLanguage();
   
-  const getLocalizedPath = (ptPath: string, enPath: string) => {
-    return language === 'pt' ? ptPath : enPath;
-  };
-  
-  const items = [
-    language === 'pt' ? 'Monitoramento de menções em LLMs' : 'LLM mentions monitoring',
-    language === 'pt' ? 'Detecção de informações incorretas' : 'Incorrect information detection',
-    language === 'pt' ? 'Estruturação de conteúdo para IA' : 'Content structuring for AI'
-  ];
-  
   return (
-    <FeatureCard
-      title={language === 'pt' ? 'Otimização para IA' : 'AI Optimization'}
-      description={language === 'pt'
-        ? 'Descubra como o ChatGPT e outros LLMs interpretam seu conteúdo e otimize-o para aparecer em resultados baseados em IA.'
-        : 'Discover how ChatGPT and other LLMs interpret your content and optimize it to appear in AI-based results.'
-      }
-      icon={<Sparkles className="h-7 w-7 text-purple-600" />}
-      items={items}
-      linkText={language === 'pt' ? 'Explorar recursos' : 'Explore resources'}
-      linkUrl={getLocalizedPath('/guias', '/guides')}
-      linkColor="purple"
-      gradientFrom="purple"
-      gradientTo="indigo"
-    />
+    <div className="p-6 rounded-xl border border-gray-100 hover:border-violet-100 transition-all duration-300 hover:shadow-md bg-white">
+      <div className="flex flex-col h-full">
+        <div className="mb-6 bg-purple-50 w-16 h-16 rounded-full flex items-center justify-center">
+          <Sparkles className="h-8 w-8 text-purple-600" />
+        </div>
+        
+        <h3 className="text-xl font-bold mb-3">
+          {language === 'pt' ? 'Otimização para IA' : 'AI Optimization'}
+        </h3>
+        
+        <p className="text-gray-600 mb-6 flex-grow">
+          {language === 'pt'
+            ? 'Descubra como o ChatGPT e outros LLMs interpretam seu conteúdo e como melhorar sua visibilidade.'
+            : 'Find out how ChatGPT and other LLMs interpret your content and how to improve your visibility.'}
+        </p>
+        
+        <Button variant="outline" className="w-full mt-auto">
+          {language === 'pt' ? 'Ver exemplo' : 'See example'}
+        </Button>
+      </div>
+    </div>
   );
 };
 

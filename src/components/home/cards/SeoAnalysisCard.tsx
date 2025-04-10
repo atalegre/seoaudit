@@ -1,37 +1,34 @@
 
 import React from 'react';
-import { BarChart3 } from 'lucide-react';
-import FeatureCard from './FeatureCard';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Button } from '@/components/ui/button';
+import { BarChart } from 'lucide-react';
 
 const SeoAnalysisCard = () => {
   const { language } = useLanguage();
   
-  const getLocalizedPath = (ptPath: string, enPath: string) => {
-    return language === 'pt' ? ptPath : enPath;
-  };
-  
-  const items = [
-    language === 'pt' ? 'Análise de Core Web Vitals' : 'Core Web Vitals Analysis',
-    language === 'pt' ? 'Verificação de meta tags' : 'Meta tags verification',
-    language === 'pt' ? 'Estrutura de headings' : 'Headings structure'
-  ];
-  
   return (
-    <FeatureCard
-      title={language === 'pt' ? 'Análise SEO Completa' : 'Complete SEO Analysis'}
-      description={language === 'pt'
-        ? 'Avalie a otimização técnica, velocidade, estrutura e metadata do seu site para maximizar a visibilidade nos motores de busca.'
-        : 'Evaluate technical optimization, speed, structure and metadata of your site to maximize visibility in search engines.'
-      }
-      icon={<BarChart3 className="h-7 w-7 text-blue-600" />}
-      items={items}
-      linkText={language === 'pt' ? 'Saiba mais' : 'Learn more'}
-      linkUrl={getLocalizedPath('/como-funciona', '/how-it-works')}
-      linkColor="blue"
-      gradientFrom="blue"
-      gradientTo="indigo"
-    />
+    <div className="p-6 rounded-xl border border-gray-100 hover:border-violet-100 transition-all duration-300 hover:shadow-md bg-white">
+      <div className="flex flex-col h-full">
+        <div className="mb-6 bg-blue-50 w-16 h-16 rounded-full flex items-center justify-center">
+          <BarChart className="h-8 w-8 text-blue-600" />
+        </div>
+        
+        <h3 className="text-xl font-bold mb-3">
+          {language === 'pt' ? 'Análise SEO Completa' : 'Complete SEO Analysis'}
+        </h3>
+        
+        <p className="text-gray-600 mb-6 flex-grow">
+          {language === 'pt'
+            ? 'Avaliação técnica completa do seu site com métricas de Core Web Vitals, estrutura e velocidade.'
+            : 'Complete technical evaluation of your site with Core Web Vitals metrics, structure and speed.'}
+        </p>
+        
+        <Button variant="outline" className="w-full mt-auto">
+          {language === 'pt' ? 'Ver exemplo' : 'See example'}
+        </Button>
+      </div>
+    </div>
   );
 };
 
