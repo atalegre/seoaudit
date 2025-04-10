@@ -1,118 +1,77 @@
-import { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
+
+import { useEffect } from 'react';
+import { useUrlState } from './dashboard/useUrlState';
+import { useScoreData } from './dashboard/useScoreData';
+import { useRecommendations } from './dashboard/useRecommendations';
+import { useLogoFetcher } from './dashboard/useLogoFetcher';
+import { useAnalysisState } from './dashboard/useAnalysisState';
 import { toast } from 'sonner';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { fetchSiteLogo } from '@/utils/api/logoService';
-import { formatDomainFromUrl } from '@/utils/domainUtils';
 
-// Export the interface for use in other components
-export interface SampleRecommendation {
-  id: number | string;
-  title: string;
-  description: string;
-  impact: 'high' | 'medium' | 'low';
-  type: 'technical' | 'content' | 'structure' | 'ai' | 'seo' | 'aio';
-}
+export type { SampleRecommendation } from './dashboard/useRecommendations';
 
+/**
+ * Main hook that combines all dashboard functionality
+ */
 export const useDashboardState = () => {
-  const [searchParams] = useSearchParams();
-  const url = searchParams.get('url') || localStorage.getItem('lastAnalyzedUrl') || '';
-  const navigate = useNavigate();
-  
-  const [isLoading, setIsLoading] = useState(false);
-  const [logoUrl, setLogoUrl] = useState('');
-  const [analyzeDomain, setAnalyzeDomain] = useState('');
-  
-  // Sample data for the dashboard
-  const seoScore = 72;
-  const aioScore = 65;
-  const llmScore = 45;
-  const performanceScore = 80;
-  const directoryScore = 30;
-  const keywordScore = 58;
-  const totalScore = Math.round((seoScore + aioScore + llmScore + performanceScore + directoryScore) / 5);
-  
-  // Sample recommendations com tipos adequados
-  const recommendations: SampleRecommendation[] = [
-    {
-      id: 1,
-      title: 'Meta descrição muito curta',
-      description: 'A meta descrição da sua página inicial tem apenas 45 caracteres. Recomendamos expandir para 120-155 caracteres.',
-      impact: 'medium',
-      type: 'seo'
-    },
-    {
-      id: 2,
-      title: 'Conteúdo pouco otimizado para IA',
-      description: 'O conteúdo da página não utiliza linguagem natural suficiente para ser bem interpretado por sistemas de IA.',
-      impact: 'high',
-      type: 'aio'
-    },
-    {
-      id: 3,
-      title: 'Imagens sem texto alternativo',
-      description: 'Foram encontradas 12 imagens sem atributo alt definido, o que prejudica a acessibilidade e SEO.',
-      impact: 'medium',
-      type: 'technical'
-    },
-    {
-      id: 4,
-      title: 'Falta estrutura de cabeçalhos',
-      description: 'Seu site não usa uma hierarquia clara de H1-H6, o que dificulta o entendimento por sistemas de IA.',
-      impact: 'high',
-      type: 'aio'
-    },
-    {
-      id: 5,
-      title: 'Velocidade mobile insatisfatória',
-      description: 'O tempo de carregamento em dispositivos móveis está acima do recomendado, prejudicando o ranqueamento.',
-      impact: 'high',
-      type: 'seo'
-    }
-  ];
-  
-  // Fetch logo when URL changes
+  // Get URL and domain state
+  const {
+    url,
+    domain,
+    lastAnalysisDate,
+    analyzeDomain,
+    setAnalyzeDomain
+  } = useUrlState();
+
+  // Get score-related functionality
+  const {
+    totalScore,
+    seoScore,
+    aioScore,
+    llmScore,
+    performanceScore,
+    directoryScore,
+    keywordScore,
+    calculateScores
+  } = useScoreData(domain);
+
+  // Get recommendations functionality
+  const { recommendations, generateRecommendations } = useRecommendations();
+
+  // Get logo fetching functionality
+  const { logoUrl, fetchLogo } = useLogoFetcher();
+
+  // Get analysis state management
+  const { isLoading, runAnalysis } = useAnalysisState();
+
+  // Initialize data when URL changes
   useEffect(() => {
     if (url) {
-      localStorage.setItem('lastAnalyzedUrl', url);
-      toast.success(`Site analisado: ${url}`, {
-        description: "Os resultados estão disponíveis no dashboard."
-      });
+      // Fetch logo for the website
+      fetchLogo(url);
       
-      // Fetch logo for the domain
-      const fetchLogo = async () => {
-        try {
-          const logo = await fetchSiteLogo(url);
-          if (logo) {
-            setLogoUrl(logo);
-          }
-        } catch (error) {
-          console.error('Erro ao buscar logo:', error);
-        }
-      };
+      // Calculate scores based on domain
+      calculateScores(domain);
       
-      fetchLogo();
+      // Generate recommendations based on scores
+      setTimeout(() => {
+        generateRecommendations(seoScore, aioScore, performanceScore);
+      }, 100);
     }
-  }, [url]);
-  
+  }, [url, domain]);
+
+  /**
+   * Handler to re-run analysis
+   */
   const handleRerunAnalysis = () => {
-    setIsLoading(true);
-    toast.info("Iniciando nova análise...", {
-      description: "Este processo pode demorar alguns segundos."
+    runAnalysis(url, () => {
+      // Recalculate scores
+      calculateScores(domain);
+      
+      // Regenerate recommendations
+      generateRecommendations(seoScore, aioScore, performanceScore);
     });
-    
-    // Simulate analysis
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success("Análise concluída com sucesso!", {
-        description: "Os resultados foram atualizados."
-      });
-    }, 3000);
   };
-  
-  const domain = formatDomainFromUrl(url);
-  const lastAnalysisDate = new Date().toLocaleDateString('pt-PT');
-  
+
   return {
     url,
     domain,

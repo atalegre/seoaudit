@@ -2,7 +2,7 @@
 import { useState } from 'react';
 
 export interface SampleRecommendation {
-  id: number | string;
+  id: string; // Changed from number | string to just string
   title: string;
   description: string;
   impact: 'high' | 'medium' | 'low';
@@ -110,3 +110,4 @@ export function useRecommendations() {
     generateRecommendations
   };
 }
+

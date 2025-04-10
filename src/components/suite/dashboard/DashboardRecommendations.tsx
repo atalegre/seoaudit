@@ -8,10 +8,10 @@ import { BlurredSection } from './BlurredSection';
 import { motion } from 'framer-motion';
 
 interface RecommendationType {
-  id: string;
+  id: string; // Changed to match the SampleRecommendation type
   title: string;
   description: string;
-  type: 'seo' | 'aio';
+  type: 'seo' | 'aio' | 'technical' | 'content' | 'structure' | 'ai';
   impact: 'high' | 'medium' | 'low';
 }
 
