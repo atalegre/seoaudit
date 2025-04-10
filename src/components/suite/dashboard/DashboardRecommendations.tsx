@@ -8,7 +8,7 @@ import { BlurredSection } from './BlurredSection';
 import { motion } from 'framer-motion';
 
 interface RecommendationType {
-  id: string; // Changed to match the SampleRecommendation type
+  id: string;
   title: string;
   description: string;
   type: 'seo' | 'aio' | 'technical' | 'content' | 'structure' | 'ai';
@@ -151,7 +151,11 @@ const RecommendationCard = ({
         <p className="text-sm text-muted-foreground mb-3">{recommendation.description}</p>
         <div className="flex justify-between items-center">
           <span className="text-xs uppercase font-medium text-muted-foreground">
-            {recommendation.type === 'seo' ? 'Otimização SEO' : 'Otimização AIO'}
+            {recommendation.type === 'seo' ? 'Otimização SEO' : 
+             recommendation.type === 'aio' ? 'Otimização AIO' : 
+             recommendation.type === 'technical' ? 'Técnico' :
+             recommendation.type === 'content' ? 'Conteúdo' :
+             recommendation.type === 'structure' ? 'Estrutura' : 'IA'}
           </span>
           <Button variant="ghost" size="sm" className="text-xs">
             Ver detalhes <ArrowRight className="ml-1 h-3 w-3" />
