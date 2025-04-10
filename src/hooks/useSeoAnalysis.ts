@@ -63,56 +63,79 @@ export function useSeoAnalysis() {
         description: "Obtendo dados reais de SEO, isso pode levar alguns segundos."
       });
       
+      // Variáveis para rastrear resultados de cada análise
+      let desktopError: Error | null = null;
+      let mobileError: Error | null = null;
+      let desktopResult: PageInsightsData | null = null;
+      let mobileResult: PageInsightsData | null = null;
+      
+      // Analisar desktop
       try {
-        // Analisar desktop primeiro
-        try {
-          console.log('🖥️ Iniciando análise desktop...');
-          const desktopResult = await getPageInsightsData(normalizedUrl, 'desktop');
-          setDesktopData(desktopResult);
-          console.log("✅ Análise desktop concluída com sucesso");
-        } catch (desktopError: any) {
-          console.error("❌ Erro ao analisar desktop:", desktopError);
-          // Não definir erro global ainda, tentar mobile
-        }
+        console.log('🖥️ Iniciando análise desktop...');
+        desktopResult = await getPageInsightsData(normalizedUrl, 'desktop');
+        setDesktopData(desktopResult);
+        console.log("✅ Análise desktop concluída com sucesso");
+      } catch (error: any) {
+        console.error("❌ Erro ao analisar desktop:", error);
+        desktopError = error;
+      }
+      
+      // Analisar mobile
+      try {
+        console.log('📱 Iniciando análise mobile...');
+        mobileResult = await getPageInsightsData(normalizedUrl, 'mobile');
+        setMobileData(mobileResult);
+        console.log("✅ Análise mobile concluída com sucesso");
+      } catch (error: any) {
+        console.error("❌ Erro ao analisar mobile:", error);
+        mobileError = error;
+      }
+      
+      // Verificar resultados e mostrar mensagens apropriadas
+      if (desktopResult || mobileResult) {
+        // Pelo menos um dispositivo foi analisado com sucesso
+        console.log("✅ Análise concluída com pelo menos um dispositivo");
         
-        // Agora analisar mobile
-        try {
-          console.log('📱 Iniciando análise mobile...');
-          const mobileResult = await getPageInsightsData(normalizedUrl, 'mobile');
-          setMobileData(mobileResult);
-          console.log("✅ Análise mobile concluída com sucesso");
-        } catch (mobileError: any) {
-          console.error("❌ Erro ao analisar mobile:", mobileError);
-          // Não definir erro global ainda, verificar se temos dados de desktop
-        }
+        // Mostrar toast de sucesso mesmo com dados parciais
+        toast.success("Análise concluída", {
+          description: "Os resultados da análise SEO estão prontos."
+        });
         
-        // Verificar se temos algum dado
-        if (desktopData || mobileData) {
-          // Pelo menos um foi bem-sucedido
-          toast.success("Análise concluída", {
-            description: "Os resultados da análise SEO estão prontos."
+        // Definir mensagens de erro específicas para análises parciais
+        if (!desktopResult && mobileResult) {
+          console.log("⚠️ Apenas dados mobile disponíveis");
+          setError("A análise desktop falhou, mas os dados mobile estão disponíveis.");
+          toast.warning("Dados parciais", {
+            description: "A análise desktop falhou. Mostrando apenas dados mobile."
           });
-          
-          // Se um falhou mas temos o outro, definir um erro específico
-          if (!desktopData && mobileData) {
-            setError("A análise desktop falhou, mas os dados mobile estão disponíveis.");
-          } else if (desktopData && !mobileData) {
-            setError("A análise mobile falhou, mas os dados desktop estão disponíveis.");
-          }
-        } else {
-          // Ambos falharam
-          throw new Error("Não foi possível obter dados para desktop ou mobile. Verifique as configurações de API.");
+        } else if (desktopResult && !mobileResult) {
+          console.log("⚠️ Apenas dados desktop disponíveis");
+          setError("A análise mobile falhou, mas os dados desktop estão disponíveis.");
+          toast.warning("Dados parciais", {
+            description: "A análise mobile falhou. Mostrando apenas dados desktop."
+          });
         }
-      } catch (apiError: any) {
-        console.error("❌ Erro ao analisar URL:", apiError);
-        setError(apiError.message || 'Ocorreu um erro desconhecido');
+      } else {
+        // Ambas as análises falharam
+        console.error("❌ Ambas as análises (desktop e mobile) falharam");
+        let errorMessage = "Não foi possível obter dados reais para desktop ou mobile. ";
         
+        // Combinar mensagens de erro para fornecer detalhes mais úteis
+        if (desktopError && mobileError) {
+          errorMessage += `Erro desktop: ${desktopError.message}. Erro mobile: ${mobileError.message}`;
+        } else if (desktopError) {
+          errorMessage += `Erro: ${desktopError.message}`;
+        } else if (mobileError) {
+          errorMessage += `Erro: ${mobileError.message}`;
+        }
+        
+        setError(errorMessage);
         toast.error("Erro na análise", {
-          description: "Falha ao conectar com a API. Verifique a configuração e tente novamente."
+          description: "Falha ao obter dados reais. Verifique a configuração de API."
         });
       }
     } catch (error: any) {
-      console.error("❌ Erro ao analisar URL:", error);
+      console.error("❌ Erro geral ao analisar URL:", error);
       setError(error.message || 'Ocorreu um erro desconhecido');
       
       toast.error("Erro na análise", {
