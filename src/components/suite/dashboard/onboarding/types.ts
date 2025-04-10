@@ -22,4 +22,6 @@ export interface OnboardingStep {
   description: string;
   completed: boolean;
   route: string;
+  icon?: React.ElementType;
+  action?: () => void;
 }
