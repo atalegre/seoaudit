@@ -1,3 +1,4 @@
+
 import { LLMReport, ModelPresence, LLMMention } from './types';
 
 // Generate mock data for demo purposes
@@ -6,7 +7,7 @@ export const generateMockReport = (domain: string): LLMReport => {
   const score = Math.floor(Math.random() * 80) + 10;
   
   // Basic presence models
-  const models = [
+  const models: ModelPresence[] = [
     { 
       name: 'ChatGPT', 
       score: Math.floor(Math.random() * 100), 
