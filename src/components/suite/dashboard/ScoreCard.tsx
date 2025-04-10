@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { useBreakpoint } from '@/hooks/use-mobile';
 
 interface ScoreCardProps {
   title: string;
@@ -19,6 +20,9 @@ const ScoreCard = ({
   bgColor = "bg-indigo-50",
   description
 }: ScoreCardProps) => {
+  const { breakpoint } = useBreakpoint();
+  const isMobile = breakpoint === 'xs' || breakpoint === 'sm';
+  
   const getBackgroundColorFromText = (textColor: string): string => {
     // Extract color name and shade from text color
     const match = textColor.match(/text-([a-z]+)-(\d+)/);
@@ -51,12 +55,12 @@ const ScoreCard = ({
   };
 
   return (
-    <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-100 p-4 hover:shadow-md transition-shadow">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-medium">{title}</h3>
-        <div className={cn("p-2 rounded-lg", bgColor)}>
+    <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-100 p-3 hover:shadow-md transition-shadow">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className={cn("font-medium", isMobile ? "text-xs" : "text-sm")}>{title}</h3>
+        <div className={cn("p-1.5 rounded-lg", bgColor, isMobile ? "p-1" : "p-2")}>
           {React.cloneElement(icon as React.ReactElement, { 
-            className: cn("h-4 w-4", color) 
+            className: cn("h-4 w-4", color, isMobile && "h-3 w-3") 
           })}
         </div>
       </div>
@@ -64,7 +68,7 @@ const ScoreCard = ({
       {description && <p className="text-xs text-muted-foreground mb-2">{description}</p>}
       
       <div className="flex flex-col">
-        <span className={cn("text-2xl font-bold", getTextColor())}>{score}</span>
+        <span className={cn("font-bold", getTextColor(), isMobile ? "text-xl" : "text-2xl")}>{score}</span>
         <div className="mt-2 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
           <div 
             className={cn("h-full rounded-full transition-all duration-500", getScoreGradient())} 

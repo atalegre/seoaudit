@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { useBreakpoint } from '@/hooks/use-mobile';
 
 interface CircularProgressProps {
   value: number;
@@ -19,11 +20,26 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
   thickness = 8,
   children
 }) => {
+  const { breakpoint } = useBreakpoint();
+  
+  // Adjust size for mobile
+  const responsiveSize = (() => {
+    switch (breakpoint) {
+      case 'xs': return size * 0.7;
+      case 'sm': return size * 0.8;
+      case 'md': return size * 0.9;
+      default: return size;
+    }
+  })();
+  
+  // Adjust thickness for smaller sizes
+  const responsiveThickness = responsiveSize < 100 ? Math.max(5, thickness * 0.75) : thickness;
+  
   // Ensure value is between 0 and 100
   const safeValue = Math.min(100, Math.max(0, value));
   
   // Calculate SVG parameters
-  const radius = (size - thickness) / 2;
+  const radius = (responsiveSize - responsiveThickness) / 2;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (safeValue / 100) * circumference;
   
@@ -39,10 +55,10 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
   const circleColor = color === 'stroke-indigo-500' ? getColorClass(safeValue) : color;
   
   return (
-    <div className="relative" style={{ width: size, height: size }}>
+    <div className="relative" style={{ width: responsiveSize, height: responsiveSize }}>
       <svg 
         className="w-full h-full transform -rotate-90 drop-shadow-sm"
-        viewBox={`0 0 ${size} ${size}`}
+        viewBox={`0 0 ${responsiveSize} ${responsiveSize}`}
       >
         {/* Background gradient */}
         <defs>
@@ -54,21 +70,21 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
         
         {/* Background circle */}
         <circle
-          cx={size / 2}
-          cy={size / 2}
+          cx={responsiveSize / 2}
+          cy={responsiveSize / 2}
           r={radius}
           fill="none"
-          strokeWidth={thickness}
+          strokeWidth={responsiveThickness}
           className={cn(bgColor)}
         />
         
         {/* Progress circle */}
         <circle
-          cx={size / 2}
-          cy={size / 2}
+          cx={responsiveSize / 2}
+          cy={responsiveSize / 2}
           r={radius}
           fill="none"
-          strokeWidth={thickness}
+          strokeWidth={responsiveThickness}
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
           strokeLinecap="round"
