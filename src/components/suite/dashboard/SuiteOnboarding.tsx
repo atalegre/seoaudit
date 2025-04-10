@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import OnboardingTour from './OnboardingTour';
+import OnboardingTour from './onboarding/OnboardingTour';
 import { BarChart2, Brain, Lightbulb } from 'lucide-react';
 import { toast } from 'sonner';
 
