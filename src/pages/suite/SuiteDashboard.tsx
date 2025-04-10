@@ -127,6 +127,7 @@ const SuiteDashboard = () => {
         recommendations={recommendations}
         isUserLoggedIn={!!user}
         onViewMoreRecommendations={handleViewMoreRecommendations}
+        lastAnalysisDate={lastAnalysisDate}
       />
     </SuiteLayout>
   );

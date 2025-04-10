@@ -9,6 +9,7 @@ import ScoreCards from './ScoreCards';
 import DashboardMetrics from './DashboardMetrics';
 import DashboardRecommendations from './DashboardRecommendations';
 import AvailableTools from './AvailableTools';
+import FirstTimeExperience from './FirstTimeExperience';
 
 interface RecommendationType {
   id: string;
@@ -31,6 +32,7 @@ interface DashboardContentProps {
   recommendations: RecommendationType[];
   isUserLoggedIn: boolean;
   onViewMoreRecommendations: () => void;
+  lastAnalysisDate?: string;
 }
 
 const DashboardContent: React.FC<DashboardContentProps> = ({
@@ -45,13 +47,20 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   keywordScore,
   recommendations,
   isUserLoggedIn,
-  onViewMoreRecommendations
+  onViewMoreRecommendations,
+  lastAnalysisDate = new Date().toLocaleDateString()
 }) => {
   const navigate = useNavigate();
   
   const [showOnboardingCompleted, setShowOnboardingCompleted] = useState(false);
   const [isFirstVisit, setIsFirstVisit] = useState(() => {
     return !localStorage.getItem('suiteOnboardingCompleted');
+  });
+  
+  // Determine if this is the user's first time viewing results
+  const [isFirstTimeResults, setIsFirstTimeResults] = useState(() => {
+    const key = `dashboard_results_viewed_${domain}`;
+    return !localStorage.getItem(key);
   });
 
   const handleOnboardingComplete = () => {
@@ -74,6 +83,15 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
     
     navigate(path);
   };
+  
+  // Mark as viewed when user interacts with dashboard
+  const handleFirstTimeInteraction = () => {
+    if (isFirstTimeResults) {
+      const key = `dashboard_results_viewed_${domain}`;
+      localStorage.setItem(key, 'true');
+      setIsFirstTimeResults(false);
+    }
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -91,6 +109,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
       variants={containerVariants}
       initial="hidden"
       animate="show"
+      onClick={handleFirstTimeInteraction}
     >
       <SuiteOnboarding 
         isFirstVisit={isFirstVisit} 
@@ -99,36 +118,49 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
 
       <DomainHeader domain={domain} logoUrl={logoUrl} />
 
-      <div id="dashboard-scores">
-        <ScoreCards 
-          seoScore={seoScore} 
-          aioScore={aioScore} 
-          navigateTo={navigateTo}
-        />
-      </div>
-
-      <div id="dashboard-metrics" className="mt-8">
-        <DashboardMetrics 
-          performanceScore={performanceScore}
-          llmScore={llmScore}
-          directoryScore={directoryScore}
-          keywordScore={keywordScore}
+      {isFirstTimeResults ? (
+        <FirstTimeExperience 
+          seoScore={seoScore}
+          aioScore={aioScore}
+          totalScore={totalScore}
+          lastAnalysisDate={lastAnalysisDate}
           isUserLoggedIn={isUserLoggedIn}
           navigateTo={navigateTo}
         />
-      </div>
+      ) : (
+        <>
+          <div id="dashboard-scores">
+            <ScoreCards 
+              seoScore={seoScore} 
+              aioScore={aioScore} 
+              navigateTo={navigateTo}
+            />
+          </div>
 
-      <DashboardRecommendations 
-        recommendations={recommendations}
-        isUserLoggedIn={isUserLoggedIn}
-        navigateTo={navigateTo}
-        onViewMoreRecommendations={onViewMoreRecommendations}
-      />
+          <div id="dashboard-metrics" className="mt-8">
+            <DashboardMetrics 
+              performanceScore={performanceScore}
+              llmScore={llmScore}
+              directoryScore={directoryScore}
+              keywordScore={keywordScore}
+              isUserLoggedIn={isUserLoggedIn}
+              navigateTo={navigateTo}
+            />
+          </div>
 
-      <AvailableTools 
-        isUserLoggedIn={isUserLoggedIn}
-        navigateTo={navigateTo}
-      />
+          <DashboardRecommendations 
+            recommendations={recommendations}
+            isUserLoggedIn={isUserLoggedIn}
+            navigateTo={navigateTo}
+            onViewMoreRecommendations={onViewMoreRecommendations}
+          />
+
+          <AvailableTools 
+            isUserLoggedIn={isUserLoggedIn}
+            navigateTo={navigateTo}
+          />
+        </>
+      )}
     </motion.div>
   );
 };
