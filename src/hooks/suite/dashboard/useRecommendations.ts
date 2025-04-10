@@ -90,7 +90,7 @@ export function useRecommendations() {
       id: 'general1',
       title: 'Criar página "Sobre"',
       description: 'Adicione uma página detalhada sobre sua empresa e missão para melhorar a presença em modelos de IA.',
-      type: 'aio',
+      type: 'content',
       impact: 'low'
     });
     
