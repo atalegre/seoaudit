@@ -5,14 +5,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form } from '@/components/ui/form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Eye, Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-// Import our new component fields
+// Import our form field components
 import KeywordField from './form-fields/KeywordField';
 import LanguageField from './form-fields/LanguageField';
 import ToneField from './form-fields/ToneField';
 import ContentTypeField from './form-fields/ContentTypeField';
 import SizeField from './form-fields/SizeField';
-import FormSubmitButton from './form-fields/FormSubmitButton';
 
 // Export the schema so it can be imported in child components
 export const formSchema = z.object({
@@ -27,9 +28,10 @@ export type FormValues = z.infer<typeof formSchema>;
 
 interface ContentWriterFormProps {
   onSubmit: (data: FormValues) => void;
+  onShowExample?: () => void;
 }
 
-const ContentWriterForm: React.FC<ContentWriterFormProps> = ({ onSubmit }) => {
+const ContentWriterForm: React.FC<ContentWriterFormProps> = ({ onSubmit, onShowExample }) => {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -55,27 +57,57 @@ const ContentWriterForm: React.FC<ContentWriterFormProps> = ({ onSubmit }) => {
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-            {/* Palavra-chave principal */}
-            <KeywordField form={form} />
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+            {/* Bloco 1: Sobre o seu conteúdo */}
+            <div className="space-y-6">
+              <h3 className="text-lg font-medium">📌 Sobre o seu conteúdo</h3>
+              <div className="space-y-5 pl-1">
+                {/* Palavra-chave principal */}
+                <KeywordField form={form} />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Idioma */}
-              <LanguageField form={form} />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {/* Tipo de conteúdo */}
+                  <ContentTypeField form={form} />
 
-              {/* Tom de voz */}
-              <ToneField form={form} />
+                  {/* Tamanho aproximado */}
+                  <SizeField form={form} />
+                </div>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Tipo de conteúdo */}
-              <ContentTypeField form={form} />
+            {/* Bloco 2: Como deseja que soe? */}
+            <div className="space-y-6">
+              <h3 className="text-lg font-medium">🎙️ Como deseja que soe?</h3>
+              <div className="space-y-5 pl-1">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {/* Idioma */}
+                  <LanguageField form={form} />
 
-              {/* Tamanho aproximado */}
-              <SizeField form={form} />
+                  {/* Tom de voz */}
+                  <ToneField form={form} />
+                </div>
+              </div>
             </div>
 
-            <FormSubmitButton label="Gerar conteúdo com IA" />
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <Button type="submit" className="w-full sm:flex-1" size="lg">
+                <Sparkles className="h-4 w-4 mr-2" />
+                🚀 Gerar conteúdo otimizado
+              </Button>
+              
+              {onShowExample && (
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="w-full sm:w-auto"
+                  onClick={onShowExample}
+                  size="lg"
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  👀 Ver exemplo
+                </Button>
+              )}
+            </div>
           </form>
         </Form>
       </CardContent>

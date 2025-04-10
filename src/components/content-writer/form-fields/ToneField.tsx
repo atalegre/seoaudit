@@ -29,11 +29,11 @@ const ToneField: React.FC<ToneFieldProps> = ({ form }) => {
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              <SelectItem value="Profissional">Profissional</SelectItem>
-              <SelectItem value="Casual">Casual</SelectItem>
-              <SelectItem value="Técnico">Técnico</SelectItem>
-              <SelectItem value="Criativo">Criativo</SelectItem>
-              <SelectItem value="Educativo">Educativo</SelectItem>
+              <SelectItem value="Profissional">👨‍💼 Profissional</SelectItem>
+              <SelectItem value="Casual">😄 Casual</SelectItem>
+              <SelectItem value="Técnico">🤓 Técnico</SelectItem>
+              <SelectItem value="Convincente">🎯 Convincente</SelectItem>
+              <SelectItem value="Educativo">📚 Educativo</SelectItem>
             </SelectContent>
           </Select>
           <FormMessage />

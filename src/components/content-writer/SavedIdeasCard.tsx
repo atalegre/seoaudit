@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Sparkles, X } from 'lucide-react';
+import { Edit, Sparkles, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface SavedIdeasCardProps {
@@ -22,43 +22,55 @@ const SavedIdeasCard: React.FC<SavedIdeasCardProps> = ({
   const navigate = useNavigate();
 
   return (
-    <Card>
+    <Card className="h-full">
       <CardHeader>
-        <CardTitle className="text-lg">Ideias Guardadas</CardTitle>
+        <CardTitle className="text-lg">Ideias guardadas para usar</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {savedIdeas.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            Guarde ideias a partir da página de Sugestões para aceder aqui.
-          </p>
+          <div className="text-sm text-muted-foreground p-4 border border-dashed rounded-md text-center">
+            <p className="mb-3">
+              Ainda não guardaste nenhuma ideia. Usa o gerador de sugestões para começar.
+            </p>
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="w-full"
+              onClick={() => navigate('/suite/recommender')}
+            >
+              Ver sugestões de conteúdo
+            </Button>
+          </div>
         ) : (
           <div className="space-y-4">
             {savedIdeas.map((idea, index) => (
-              <div key={index} className="relative p-3 border rounded-md">
+              <div key={index} className="relative p-4 border border-border hover:border-primary/20 rounded-md transition-all">
                 <button 
                   onClick={() => onRemoveIdea(idea)}
                   className="absolute top-2 right-2 p-1 text-muted-foreground hover:text-foreground"
+                  aria-label="Remover ideia"
                 >
                   <X className="h-4 w-4" />
                 </button>
-                <p className="text-sm font-medium pr-6 mb-2">{idea}</p>
-                <div className="flex gap-2 mt-2">
+                <p className="text-sm font-medium pr-6 mb-3">{idea}</p>
+                <div className="flex gap-2 mt-3">
                   <Button 
                     size="sm" 
                     variant="outline" 
-                    className="text-xs"
+                    className="flex-1 text-xs"
                     onClick={() => onEditIdea(idea)}
                   >
+                    <Edit className="h-3 w-3 mr-1" />
                     Editar inputs
                   </Button>
                   <Button 
                     size="sm" 
                     variant="secondary" 
-                    className="text-xs"
+                    className="flex-1 text-xs"
                     onClick={() => onGenerateFromIdea(idea)}
                   >
                     <Sparkles className="h-3 w-3 mr-1" />
-                    Gerar com IA
+                    Usar agora com IA
                   </Button>
                 </div>
               </div>
@@ -66,16 +78,18 @@ const SavedIdeasCard: React.FC<SavedIdeasCardProps> = ({
           </div>
         )}
         
-        <div className="pt-2">
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="w-full"
-            onClick={() => navigate('/suite/recommender')}
-          >
-            Ver mais sugestões de conteúdo
-          </Button>
-        </div>
+        {savedIdeas.length > 0 && (
+          <div className="pt-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="w-full"
+              onClick={() => navigate('/suite/recommender')}
+            >
+              Ver mais sugestões de conteúdo
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

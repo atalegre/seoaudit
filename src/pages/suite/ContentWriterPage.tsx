@@ -74,6 +74,31 @@ O formato de ${formData.contentType.toLowerCase()} determina a estrutura e o com
     }, 2000);
   };
   
+  const handleShowExample = () => {
+    // Mostrar exemplo de conteúdo gerado
+    toast.info("Mostrando um exemplo de conteúdo gerado", {
+      description: "Os exemplos ajudam a entender o que esperar do gerador de conteúdo."
+    });
+    
+    const exampleContent = {
+      title: "Exemplo de Conteúdo Otimizado",
+      content: `# Marketing Digital para Pequenas Empresas
+
+O **marketing digital** tornou-se essencial para pequenas empresas que desejam expandir sua presença online e alcançar novos clientes. Com estratégias adequadas, é possível obter resultados significativos sem grandes investimentos.
+
+## Por que investir em marketing digital?
+
+* **Alcance direcionado**: Encontre exatamente seu público-alvo
+* **Custo-benefício**: Invista apenas no que funciona para seu negócio
+* **Mensurável**: Acompanhe resultados em tempo real
+* **Flexibilidade**: Ajuste estratégias rapidamente
+
+As pequenas empresas que implementam estratégias de marketing digital bem planejadas conseguem competir com empresas maiores, nivelando o campo de atuação no mercado.`
+    };
+    
+    setGeneratedContent(exampleContent);
+  };
+  
   const handleCreateNewVersion = () => {
     // Reset the generated content without clearing the form
     setGeneratedContent(null);
@@ -108,21 +133,24 @@ O formato de ${formData.contentType.toLowerCase()} determina a estrutura e o com
         <title>Gerar Conteúdo com IA | SEOAudit</title>
         <meta 
           name="description" 
-          content="Cria textos otimizados para motores de busca e modelos de IA." 
+          content="Crie conteúdos que aparecem no Google e encantam modelos de IA." 
         />
       </Helmet>
       
       <div className="max-w-5xl mx-auto">
         <ContentPageHeader 
-          title="Gerar Conteúdo com IA"
-          subtitle="Cria textos otimizados para motores de busca e modelos de IA."
+          title="Crie Conteúdos que Aparecem no Google e Encantam Modelos de IA"
+          subtitle="Use inteligência artificial para gerar conteúdos otimizados para SEO e AIO com apenas alguns cliques."
         />
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2">
+          <div className="md:col-span-2 order-2 md:order-1">
             {/* Form or Result */}
             {!isGenerating && !generatedContent && (
-              <ContentWriterForm onSubmit={handleGenerateContent} />
+              <ContentWriterForm 
+                onSubmit={handleGenerateContent} 
+                onShowExample={handleShowExample}
+              />
             )}
             
             {/* Loading state */}
@@ -141,7 +169,7 @@ O formato de ${formData.contentType.toLowerCase()} determina a estrutura e o com
           </div>
           
           {/* Saved ideas section */}
-          <div className="md:col-span-1">
+          <div className="md:col-span-1 order-1 md:order-2">
             <SavedIdeasCard 
               savedIdeas={savedIdeas}
               onRemoveIdea={removeFromSavedIdeas}
