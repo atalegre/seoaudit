@@ -18,26 +18,28 @@ const QueriesChart: React.FC<QueriesChartProps> = ({ queries }) => {
 
   return (
     <>
-      <h3 className="text-sm font-medium text-gray-500 mb-3">Principais consultas</h3>
-      <div className="h-64">
+      <h3 className="text-sm font-medium text-gray-500 mb-2">Principais consultas</h3>
+      <div className="h-56">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={queries}
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
           >
-            <CartesianGrid strokeDasharray="3 3" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis 
               dataKey="query" 
-              tick={{ fontSize: 12 }}
-              tickFormatter={(value) => value.length > 15 ? `${value.substring(0, 15)}...` : value}
+              tick={{ fontSize: 10 }}
+              tickFormatter={(value) => value.length > 12 ? `${value.substring(0, 12)}...` : value}
+              stroke="#9ca3af"
             />
-            <YAxis />
+            <YAxis stroke="#9ca3af" fontSize={10} />
             <Tooltip 
               formatter={(value, name) => [value, name === 'impressions' ? 'Impressões' : 'Cliques']}
               labelFormatter={(label) => `Consulta: ${label}`}
+              contentStyle={{ fontSize: '12px', borderRadius: '6px' }}
             />
-            <Bar dataKey="impressions" name="Impressões" fill="#94a3b8" />
-            <Bar dataKey="clicks" name="Cliques" fill="#3b82f6" />
+            <Bar dataKey="impressions" name="Impressões" fill="#9b87f5" />
+            <Bar dataKey="clicks" name="Cliques" fill="#0EA5E9" />
           </BarChart>
         </ResponsiveContainer>
       </div>

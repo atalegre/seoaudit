@@ -24,7 +24,7 @@ const ScoreCard = ({
     const match = textColor.match(/text-([a-z]+)-(\d+)/);
     if (match) {
       const [_, colorName, shade] = match;
-      return `bg-${colorName}-${parseInt(shade) < 500 ? shade : '500'}`;
+      return `bg-${colorName}-${parseInt(shade) < 500 ? '500' : '600'}`;
     }
     
     // Default fallback
@@ -33,6 +33,14 @@ const ScoreCard = ({
 
   // Ensure we have a valid percentage value for the progress bar width
   const progressWidth = Math.max(Math.min(score, 100), 1);
+
+  // Determine text color based on score
+  const getTextColor = () => {
+    if (score >= 80) return 'text-green-600';
+    if (score >= 60) return 'text-amber-600';
+    if (score >= 40) return 'text-orange-600';
+    return 'text-red-600';
+  };
 
   return (
     <div className="bg-white rounded-lg border border-gray-100 p-4 hover:shadow-sm transition-shadow">
@@ -48,7 +56,7 @@ const ScoreCard = ({
       {description && <p className="text-xs text-muted-foreground mb-2">{description}</p>}
       
       <div className="flex flex-col">
-        <span className="text-2xl font-bold">{score}</span>
+        <span className={cn("text-2xl font-bold", getTextColor())}>{score}</span>
         <div className="mt-2 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
           <div 
             className={cn("h-full rounded-full transition-all duration-500", getBackgroundColorFromText(color))} 

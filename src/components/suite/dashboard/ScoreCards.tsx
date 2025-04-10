@@ -17,9 +17,24 @@ const ScoreCards: React.FC<ScoreCardsProps> = ({
   aioScore,
   navigateTo
 }) => {
+  const getSEOGradient = (score: number) => {
+    if (score >= 80) return "from-green-400 to-green-600";
+    if (score >= 60) return "from-amber-400 to-amber-600";
+    if (score >= 40) return "from-orange-400 to-orange-600";
+    return "from-red-400 to-red-600";
+  };
+
+  const getAIOGradient = (score: number) => {
+    if (score >= 80) return "from-violet-400 to-violet-600";
+    if (score >= 60) return "from-purple-400 to-purple-600";
+    if (score >= 40) return "from-fuchsia-400 to-fuchsia-600";
+    return "from-pink-400 to-pink-600";
+  };
+
   return (
-    <motion.div variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }} className="grid md:grid-cols-2 gap-6">
-      <Card className="border border-blue-100 shadow-sm">
+    <motion.div variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }} className="grid md:grid-cols-2 gap-4">
+      <Card className="border border-blue-100 shadow-sm overflow-hidden">
+        <div className="absolute w-full h-1 bg-gradient-to-r from-blue-400 to-blue-600"></div>
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
             <BarChart2 className="h-5 w-5 text-blue-500" />
@@ -29,14 +44,14 @@ const ScoreCards: React.FC<ScoreCardsProps> = ({
         </CardHeader>
         <CardContent>
           <div className="flex justify-between items-center mb-2">
-            <span className="text-4xl font-bold">{seoScore}</span>
+            <span className="text-3xl font-bold text-blue-600">{seoScore}</span>
             <div className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700">
               {seoScore >= 80 ? 'Excelente' : seoScore >= 60 ? 'Bom' : seoScore >= 40 ? 'Razoável' : 'Fraco'}
             </div>
           </div>
-          <Progress value={seoScore} className="h-2 mb-2" indicatorClassName="bg-blue-500" />
+          <Progress value={seoScore} className="h-2 mb-2" indicatorClassName={`bg-gradient-to-r ${getSEOGradient(seoScore)}`} />
         </CardContent>
-        <CardFooter className="border-t pt-4 pb-3">
+        <CardFooter className="border-t pt-3 pb-3">
           <Button 
             variant="outline" 
             size="sm" 
@@ -48,7 +63,8 @@ const ScoreCards: React.FC<ScoreCardsProps> = ({
         </CardFooter>
       </Card>
       
-      <Card className="border border-violet-100 shadow-sm">
+      <Card className="border border-violet-100 shadow-sm overflow-hidden">
+        <div className="absolute w-full h-1 bg-gradient-to-r from-violet-400 to-purple-600"></div>
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
             <Brain className="h-5 w-5 text-violet-500" />
@@ -58,14 +74,14 @@ const ScoreCards: React.FC<ScoreCardsProps> = ({
         </CardHeader>
         <CardContent>
           <div className="flex justify-between items-center mb-2">
-            <span className="text-4xl font-bold">{aioScore}</span>
+            <span className="text-3xl font-bold text-violet-600">{aioScore}</span>
             <div className="px-2 py-1 text-xs rounded-full bg-violet-100 text-violet-700">
               {aioScore >= 80 ? 'Excelente' : aioScore >= 60 ? 'Bom' : aioScore >= 40 ? 'Razoável' : 'Fraco'}
             </div>
           </div>
-          <Progress value={aioScore} className="h-2 mb-2" indicatorClassName="bg-violet-500" />
+          <Progress value={aioScore} className="h-2 mb-2" indicatorClassName={`bg-gradient-to-r ${getAIOGradient(aioScore)}`} />
         </CardContent>
-        <CardFooter className="border-t pt-4 pb-3">
+        <CardFooter className="border-t pt-3 pb-3">
           <Button 
             variant="outline" 
             size="sm" 

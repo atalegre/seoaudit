@@ -24,7 +24,7 @@ const MetricBar: React.FC<MetricBarProps> = ({ title, score, description }) => {
   };
   
   return (
-    <div className="mb-4">
+    <div className="mb-3">
       <div className="flex justify-between items-center mb-1">
         <div className="flex items-center gap-1.5">
           {getIcon(score)}

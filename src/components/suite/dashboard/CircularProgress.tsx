@@ -14,8 +14,8 @@ interface CircularProgressProps {
 const CircularProgress: React.FC<CircularProgressProps> = ({
   value,
   size = 120,
-  color = 'stroke-primary',
-  bgColor = 'stroke-gray-200',
+  color = 'stroke-indigo-500',
+  bgColor = 'stroke-indigo-100',
   thickness = 8,
   children
 }) => {

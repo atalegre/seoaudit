@@ -17,6 +17,14 @@ const OverallScore = ({ totalScore, logoUrl, domain }: OverallScoreProps) => {
     return 'text-red-500';
   };
   
+  // Generate stroke color for progress circle
+  const getCircleColor = () => {
+    if (totalScore >= 80) return 'stroke-green-500';
+    if (totalScore >= 60) return 'stroke-amber-500';
+    if (totalScore >= 40) return 'stroke-orange-500';
+    return 'stroke-red-500';
+  };
+  
   // Generate score description
   const getScoreDescription = () => {
     if (totalScore >= 80) return 'Excelente';
@@ -28,11 +36,11 @@ const OverallScore = ({ totalScore, logoUrl, domain }: OverallScoreProps) => {
   return (
     <div className="flex flex-col items-center">
       {logoUrl && (
-        <div className="mb-4">
+        <div className="mb-3">
           <img 
             src={logoUrl} 
             alt={`Logo de ${domain}`} 
-            className="w-16 h-16 object-contain rounded-lg border border-gray-200 p-1" 
+            className="w-14 h-14 object-contain rounded-lg border border-gray-200 p-1 shadow-sm" 
           />
         </div>
       )}
@@ -40,21 +48,21 @@ const OverallScore = ({ totalScore, logoUrl, domain }: OverallScoreProps) => {
       <div className="relative flex items-center justify-center">
         <CircularProgress 
           value={totalScore} 
-          size={180} 
-          color="stroke-indigo-600"
-          bgColor="stroke-indigo-100"
-          thickness={10}
+          size={150} 
+          color={getCircleColor()}
+          bgColor="stroke-gray-100"
+          thickness={8}
         >
           <div className="flex flex-col items-center">
-            <span className={`text-4xl font-bold ${getScoreColor()}`}>{totalScore}</span>
-            <span className="text-sm text-muted-foreground">de 100</span>
+            <span className={`text-3xl font-bold ${getScoreColor()}`}>{totalScore}</span>
+            <span className="text-xs text-muted-foreground">de 100</span>
           </div>
         </CircularProgress>
       </div>
       
-      <div className="mt-4 text-center">
+      <div className="mt-3 text-center">
         <p className={`font-medium ${getScoreColor()}`}>{getScoreDescription()}</p>
-        <p className="text-sm text-muted-foreground mt-1">Pontuação combinada</p>
+        <p className="text-xs text-muted-foreground mt-1">Pontuação combinada</p>
       </div>
     </div>
   );
