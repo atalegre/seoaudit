@@ -18,7 +18,7 @@ const Hero = () => {
   };
 
   return (
-    <section className="w-full bg-white py-20 flex items-center min-h-[80vh]">
+    <section className="w-full bg-white py-8 md:py-12 lg:py-16 flex items-center min-h-[70vh]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center">
         <div className="max-w-2xl">
           <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl">
@@ -58,7 +58,7 @@ const Hero = () => {
             Sem necessidade de registo. Resultados instantâneos.
           </p>
           
-          <div className="mt-8">
+          <div className="mt-6">
             <Button variant="outline" asChild className="flex items-center gap-2">
               <Link to="/how-it-works">
                 <Info className="h-4 w-4" />
