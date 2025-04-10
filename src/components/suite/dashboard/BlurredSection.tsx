@@ -7,7 +7,7 @@ interface BlurredSectionProps {
   noBackdrop?: boolean;
 }
 
-const BlurredSection: React.FC<BlurredSectionProps> = ({ 
+export const BlurredSection: React.FC<BlurredSectionProps> = ({ 
   children, 
   onClick,
   noBackdrop = false
