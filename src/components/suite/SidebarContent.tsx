@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import {
   BarChart3,
   Sparkles,
@@ -16,6 +16,8 @@ import {
 import { cn } from '@/lib/utils';
 
 const SidebarContentItems = () => {
+  const navigate = useNavigate();
+  
   // Array of links for the sidebar
   const links = [
     {
@@ -83,7 +85,7 @@ const SidebarContentItems = () => {
           className={({ isActive }) =>
             cn(
               "flex flex-col items-center justify-center w-10 h-10 mx-auto rounded-lg",
-              "transition-colors duration-200 relative group",
+              "transition-colors duration-200 relative group cursor-pointer",
               isActive 
                 ? "bg-indigo-100 text-indigo-700" 
                 : "text-gray-500 hover:bg-indigo-50"
@@ -99,7 +101,7 @@ const SidebarContentItems = () => {
               )}>
                 {link.icon}
               </div>
-              <div className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity whitespace-nowrap">
+              <div className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity whitespace-nowrap z-50">
                 {link.label}
               </div>
             </>

@@ -1,6 +1,6 @@
 
 import React, { ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
 import { toast } from 'sonner';
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -46,14 +46,14 @@ const SuiteLayout = ({
         {/* Sidebar - Fixed narrow sidebar */}
         <div className="fixed inset-y-0 left-0 z-50 w-16 bg-white border-r border-gray-200 flex flex-col items-center py-4">
           <div className="flex-1 flex flex-col items-center space-y-4">
-            {/* Logo at top */}
-            <div className="p-2">
+            {/* Logo at top - Make it clickable to go to home */}
+            <Link to="/" className="p-2 cursor-pointer">
               <img 
                 src="/lovable-uploads/d5a32965-2a6a-49a6-8474-6efb96afd0f7.png" 
                 alt="SEOAudit Logo" 
                 className="h-8 w-auto" 
               />
-            </div>
+            </Link>
             
             {/* Icon navigation */}
             <nav className="flex-1 w-full px-2 mt-6">
