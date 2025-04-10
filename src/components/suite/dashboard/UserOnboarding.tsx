@@ -5,6 +5,7 @@ import UserOnboardingCard from './onboarding/UserOnboardingCard';
 import OnboardingProgress from './onboarding/OnboardingProgress';
 import OnboardingStepsList from './onboarding/OnboardingStepsList';
 import { useOnboardingSteps } from './onboarding/useOnboardingSteps';
+import { toast } from 'sonner';
 
 interface UserOnboardingProps {
   userName?: string;
@@ -16,7 +17,20 @@ const UserOnboarding: React.FC<UserOnboardingProps> = ({ userName, onClose }) =>
   const { steps, completedSteps, totalSteps, markStepAsComplete } = useOnboardingSteps();
 
   const handleStepClick = (step: any) => {
-    navigate(step.route);
+    // If it's profile step, navigate to the profile page
+    if (step.id === 'profile') {
+      navigate('/suite/profile');
+    } 
+    // If it's content step, navigate to the writer
+    else if (step.id === 'content') {
+      navigate('/suite/writer');
+    }
+    // For any other step, just mark it as completed
+    else {
+      toast.info(`Etapa "${step.title}" em progresso`, {
+        description: "Continue a explorar a plataforma."
+      });
+    }
     
     // Mark the step as complete
     markStepAsComplete(step.id);

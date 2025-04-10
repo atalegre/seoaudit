@@ -16,7 +16,7 @@ const UserOnboardingCard: React.FC<UserOnboardingCardProps> = ({
   children
 }) => {
   return (
-    <Card className="border-blue-100 bg-blue-50/50 mb-6">
+    <Card className="border-blue-100 bg-blue-50/50 mb-4 max-w-2xl mx-auto">
       <CardHeader className="pb-2 flex flex-row items-center justify-between">
         <CardTitle className="text-base">
           👋 Olá, {userName}! Vamos configurar sua conta
@@ -25,7 +25,7 @@ const UserOnboardingCard: React.FC<UserOnboardingCardProps> = ({
           <X className="h-4 w-4" />
         </Button>
       </CardHeader>
-      <CardContent>
+      <CardContent className="py-3">
         {children}
       </CardContent>
     </Card>
