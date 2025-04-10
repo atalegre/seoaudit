@@ -3,6 +3,7 @@ import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { BarChart } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const SeoAnalysisCard = () => {
   const { language } = useLanguage();
@@ -24,8 +25,10 @@ const SeoAnalysisCard = () => {
             : 'Complete technical evaluation of your site with Core Web Vitals metrics, structure and speed.'}
         </p>
         
-        <Button variant="outline" className="w-full mt-auto">
-          {language === 'pt' ? 'Ver exemplo' : 'See example'}
+        <Button variant="outline" className="w-full mt-auto" asChild>
+          <Link to="/suite/seo">
+            {language === 'pt' ? 'Ver exemplo' : 'See example'}
+          </Link>
         </Button>
       </div>
     </div>

@@ -3,6 +3,7 @@ import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { LayoutDashboard } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const DashboardCard = () => {
   const { language } = useLanguage();
@@ -24,8 +25,10 @@ const DashboardCard = () => {
             : 'Access to a complete dashboard with detailed analysis, recommendations and advanced tools.'}
         </p>
         
-        <Button variant="outline" className="w-full mt-auto">
-          {language === 'pt' ? 'Explorar' : 'Explore'}
+        <Button variant="outline" className="w-full mt-auto" asChild>
+          <Link to="/suite">
+            {language === 'pt' ? 'Explorar' : 'Explore'}
+          </Link>
         </Button>
       </div>
     </div>

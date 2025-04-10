@@ -1,7 +1,9 @@
 
 import React, { useState } from 'react';
 import { useAnalyzerRedirect } from '@/hooks/useAnalyzerRedirect';
-import { Search } from 'lucide-react';
+import { Search, Info } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 const Hero = () => {
   const [url, setUrl] = useState('');
@@ -55,6 +57,15 @@ const Hero = () => {
           <p className="mt-3 text-sm text-gray-500">
             Sem necessidade de registo. Resultados instantâneos.
           </p>
+          
+          <div className="mt-8">
+            <Button variant="outline" asChild className="flex items-center gap-2">
+              <Link to="/how-it-works">
+                <Info className="h-4 w-4" />
+                Ver mais detalhes
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
     </section>

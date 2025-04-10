@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -44,6 +43,7 @@ import LLMPresencePage from "./pages/suite/LLMPresencePage";
 import KeywordsPage from "./pages/suite/KeywordsPage";
 import DirectoriesPage from "./pages/suite/DirectoriesPage";
 import ChangePasswordPage from "./pages/dashboard/ChangePasswordPage";
+import DetailsPage from "./pages/DetailsPage";
 
 const queryClient = new QueryClient();
 
@@ -75,6 +75,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/results" element={<ResultsPage />} />
+                <Route path="/details" element={<DetailsPage />} />
                 
                 {/* Rotas em português e inglês para compatibilidade com os dois idiomas */}
                 <Route path="/como-funciona" element={<HowItWorksPage />} />

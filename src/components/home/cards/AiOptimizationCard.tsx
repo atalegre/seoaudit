@@ -3,6 +3,7 @@ import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Sparkles } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const AiOptimizationCard = () => {
   const { language } = useLanguage();
@@ -24,8 +25,10 @@ const AiOptimizationCard = () => {
             : 'Find out how ChatGPT and other LLMs interpret your content and how to improve your visibility.'}
         </p>
         
-        <Button variant="outline" className="w-full mt-auto">
-          {language === 'pt' ? 'Ver exemplo' : 'See example'}
+        <Button variant="outline" className="w-full mt-auto" asChild>
+          <Link to="/suite/llm">
+            {language === 'pt' ? 'Ver exemplo' : 'See example'}
+          </Link>
         </Button>
       </div>
     </div>
