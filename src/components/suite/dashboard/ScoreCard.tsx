@@ -2,6 +2,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { useBreakpoint } from '@/hooks/use-mobile';
+import { motion } from 'framer-motion';
 
 interface ScoreCardProps {
   title: string;
@@ -23,18 +24,6 @@ const ScoreCard = ({
   const { breakpoint } = useBreakpoint();
   const isMobile = breakpoint === 'xs' || breakpoint === 'sm';
   
-  const getBackgroundColorFromText = (textColor: string): string => {
-    // Extract color name and shade from text color
-    const match = textColor.match(/text-([a-z]+)-(\d+)/);
-    if (match) {
-      const [_, colorName, shade] = match;
-      return `bg-${colorName}-${parseInt(shade) < 500 ? '500' : '600'}`;
-    }
-    
-    // Default fallback
-    return "bg-indigo-500";
-  };
-
   // Get gradient and text color based on score
   const getScoreGradient = () => {
     if (score >= 80) return "bg-gradient-to-r from-green-400 to-green-600";
@@ -55,28 +44,35 @@ const ScoreCard = ({
   };
 
   return (
-    <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-100 p-3 hover:shadow-md transition-shadow">
+    <motion.div 
+      className="bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-100 p-3 hover:shadow-md transition-shadow"
+      whileHover={{ scale: 1.02 }}
+      transition={{ duration: 0.2 }}
+    >
       <div className="flex items-center justify-between mb-2">
         <h3 className={cn("font-medium", isMobile ? "text-xs" : "text-sm")}>{title}</h3>
-        <div className={cn("p-1.5 rounded-lg", bgColor, isMobile ? "p-1" : "p-2")}>
+        <div className={cn("p-1.5 rounded-lg", bgColor, isMobile ? "p-1" : "p-1.5")}>
           {React.cloneElement(icon as React.ReactElement, { 
             className: cn("h-4 w-4", color, isMobile && "h-3 w-3") 
           })}
         </div>
       </div>
       
-      {description && <p className="text-xs text-muted-foreground mb-2">{description}</p>}
+      {description && <p className={cn("text-gray-500 mb-2", isMobile ? "text-[10px]" : "text-xs")}>{description}</p>}
       
       <div className="flex flex-col">
         <span className={cn("font-bold", getTextColor(), isMobile ? "text-xl" : "text-2xl")}>{score}</span>
         <div className="mt-2 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-          <div 
-            className={cn("h-full rounded-full transition-all duration-500", getScoreGradient())} 
+          <motion.div 
+            className={cn("h-full rounded-full", getScoreGradient())} 
             style={{ width: `${progressWidth}%` }}
+            initial={{ width: 0 }}
+            animate={{ width: `${progressWidth}%` }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
           />
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

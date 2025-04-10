@@ -1,7 +1,8 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useBreakpoint } from '@/hooks/use-mobile';
+import { motion } from 'framer-motion';
 
 interface CircularProgressProps {
   value: number;
@@ -21,6 +22,7 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
   children
 }) => {
   const { breakpoint } = useBreakpoint();
+  const [isVisible, setIsVisible] = useState(false);
   
   // Adjust size for mobile
   const responsiveSize = (() => {
@@ -53,6 +55,11 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
 
   // Use dynamic color if not specified
   const circleColor = color === 'stroke-indigo-500' ? getColorClass(safeValue) : color;
+
+  // Set visible when component mounts
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
   
   return (
     <div className="relative" style={{ width: responsiveSize, height: responsiveSize }}>
@@ -60,14 +67,6 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
         className="w-full h-full transform -rotate-90 drop-shadow-sm"
         viewBox={`0 0 ${responsiveSize} ${responsiveSize}`}
       >
-        {/* Background gradient */}
-        <defs>
-          <linearGradient id="circleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" className="stop-color-start" />
-            <stop offset="100%" className="stop-color-end" />
-          </linearGradient>
-        </defs>
-        
         {/* Background circle */}
         <circle
           cx={responsiveSize / 2}
@@ -79,24 +78,31 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
         />
         
         {/* Progress circle */}
-        <circle
+        <motion.circle
           cx={responsiveSize / 2}
           cy={responsiveSize / 2}
           r={radius}
           fill="none"
           strokeWidth={responsiveThickness}
           strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
+          initial={{ strokeDashoffset: circumference }}
+          animate={{ strokeDashoffset: isVisible ? strokeDashoffset : circumference }}
+          transition={{ duration: 1.2, ease: "easeOut" }}
           strokeLinecap="round"
-          className={cn('transition-all ease-in-out duration-1000', circleColor)}
+          className={cn(circleColor)}
         />
       </svg>
       
       {/* Center content */}
       {children && (
-        <div className="absolute inset-0 flex items-center justify-center">
+        <motion.div 
+          className="absolute inset-0 flex items-center justify-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+        >
           {children}
-        </div>
+        </motion.div>
       )}
     </div>
   );

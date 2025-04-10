@@ -4,6 +4,7 @@ import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { AlertCircle, CheckCircle } from 'lucide-react';
 import { useBreakpoint } from '@/hooks/use-mobile';
+import { motion } from 'framer-motion';
 
 interface MetricBarProps {
   title: string;
@@ -35,7 +36,13 @@ const MetricBar: React.FC<MetricBarProps> = ({ title, score, description }) => {
   };
   
   return (
-    <div className="mb-3 bg-gradient-to-br from-white to-gray-50 p-2.5 md:p-3 rounded-xl border border-gray-100 shadow-sm">
+    <motion.div 
+      className="mb-3 bg-gradient-to-br from-white to-gray-50 p-2.5 md:p-3 rounded-xl border border-gray-100 shadow-sm"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      whileHover={{ scale: 1.01, transition: { duration: 0.2 } }}
+    >
       <div className="flex justify-between items-center mb-1">
         <div className="flex items-center gap-1 md:gap-1.5">
           {getIcon(score)}
@@ -49,7 +56,7 @@ const MetricBar: React.FC<MetricBarProps> = ({ title, score, description }) => {
         indicatorClassName={getProgressGradient(score)} 
       />
       <p className={cn("text-gray-500 mt-1", isMobile ? "text-[10px]" : "text-xs")}>{description}</p>
-    </div>
+    </motion.div>
   );
 };
 
