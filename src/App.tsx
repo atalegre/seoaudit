@@ -47,6 +47,11 @@ import ChangePasswordPage from "./pages/dashboard/ChangePasswordPage";
 import DetailsPage from "./pages/DetailsPage";
 import ProfilePage from "./pages/dashboard/ProfilePage";
 
+// Adicione os imports para os novos componentes de perfil e configurações do usuário comum
+import UserProfilePage from "./pages/suite/UserProfilePage";
+import UserSettingsPage from "./pages/suite/UserSettingsPage";
+import UserChangePasswordPage from "./pages/suite/UserChangePasswordPage";
+
 const queryClient = new QueryClient();
 
 function App() {
@@ -98,7 +103,7 @@ function App() {
                 <Route path="/verification" element={<VerificationPage />} />
                 <Route path="/auth/callback" element={<Navigate to="/dashboard" />} />
                 
-                {/* Admin Dashboard Routes */}
+                {/* Admin Dashboard Routes - apenas para administradores */}
                 <Route path="/dashboard" element={<DashboardLayout><Outlet /></DashboardLayout>}>
                   <Route index element={<DashboardPage />} />
                   <Route path="clients" element={<ClientsPage />} />
@@ -106,12 +111,10 @@ function App() {
                   <Route path="settings" element={<SettingsPage />} />
                   <Route path="blog-posts" element={<BlogPostsPage />} />
                   <Route path="change-password" element={<ChangePasswordPage />} />
-                  <Route path="client/change-password" element={<ChangePasswordPage />} />
                   <Route path="profile" element={<ProfilePage />} />
-                  <Route path="client/profile" element={<ProfilePage />} />
                 </Route>
                 
-                {/* Suite Routes */}
+                {/* Suite Routes - para usuários comuns */}
                 <Route path="/suite" element={<SuiteDashboard />} />
                 <Route path="/suite/seo" element={<SeoAnalysisPage />} />
                 <Route path="/suite/aio" element={<AioOptimizationPage />} />
@@ -121,6 +124,11 @@ function App() {
                 <Route path="/suite/directories" element={<DirectoriesPage />} />
                 <Route path="/suite/keywords" element={<KeywordsPage />} />
                 <Route path="/suite/reports" element={<SuiteDashboard />} />
+                
+                {/* Novas rotas para perfil e configurações de usuário comum */}
+                <Route path="/suite/profile" element={<UserProfilePage />} />
+                <Route path="/suite/settings" element={<UserSettingsPage />} />
+                <Route path="/suite/change-password" element={<UserChangePasswordPage />} />
                 
                 {/* Content Routes - Dual language */}
                 <Route path="/blog" element={<BlogPage />} />

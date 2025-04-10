@@ -48,8 +48,18 @@ const UserDropdownMenu: React.FC<UserDropdownMenuProps> = ({
   };
 
   const handleChangePassword = () => {
-    // Navigate to the correct change password page based on role
-    navigate(userRole === 'admin' ? '/dashboard/change-password' : '/dashboard/client/change-password');
+    // Redireciona para a página de alteração de senha baseada no papel do usuário
+    navigate(userRole === 'admin' ? '/dashboard/change-password' : '/suite/change-password');
+  };
+
+  const handleProfileClick = () => {
+    // Redireciona para a página de perfil baseada no papel do usuário
+    navigate(userRole === 'admin' ? '/dashboard/profile' : '/suite/profile');
+  };
+
+  const handleSettingsClick = () => {
+    // Redireciona para a página de configurações baseada no papel do usuário
+    navigate(userRole === 'admin' ? '/dashboard/settings' : '/suite/settings');
   };
 
   return (
@@ -68,11 +78,11 @@ const UserDropdownMenu: React.FC<UserDropdownMenuProps> = ({
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>Minha conta ({userRole})</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer" onClick={() => navigate(userRole === 'admin' ? '/dashboard/profile' : '/dashboard/client/profile')}>
+        <DropdownMenuItem className="cursor-pointer" onClick={handleProfileClick}>
           <User className="mr-2 h-4 w-4" />
           <span>Perfil</span>
         </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer" onClick={() => navigate(userRole === 'admin' ? '/dashboard/settings' : '/dashboard/client/settings')}>
+        <DropdownMenuItem className="cursor-pointer" onClick={handleSettingsClick}>
           <Settings className="mr-2 h-4 w-4" />
           <span>Configurações</span>
         </DropdownMenuItem>

@@ -41,33 +41,28 @@ export function useSignIn(setAuthError: (error: string | null) => void) {
           description: "Bem-vindo de volta!",
         });
         
-        // Check if there's a returnTo path in the location state
+        // Verificamos o papel do usuário
+        const userRole = data.user.user_metadata?.role || 'user';
+        console.log("User role:", userRole);
+        
+        // Verifica se há um caminho de retorno (returnTo) no estado de localização
         const state = location.state as { returnTo?: string } | null;
         const returnPath = state?.returnTo;
         
-        // Check if we're in development or production
-        const isDevelopment = window.location.hostname === 'localhost' ||
-                           window.location.hostname.includes('lovable');
-        
-        if (isDevelopment) {
-          // For development environment
+        // Determina o redirecionamento com base no papel do usuário
+        if (userRole === 'admin') {
+          console.log("Admin user - redirecting to dashboard");
+          navigate('/dashboard');
+        } else {
           if (returnPath) {
-            // Navigate to the original path the user was trying to access
+            // Se houver um caminho de retorno específico, use-o
             console.log("Navigating to return path:", returnPath);
             navigate(returnPath);
           } else {
-            // Navigate to the suite dashboard
-            console.log("Navigating to suite dashboard");
+            // Caso contrário, redirecione para o suite para usuários comuns
+            console.log("Regular user - redirecting to suite");
             navigate('/suite');
           }
-        } else {
-          // For production - redirect to the subdomain in a new tab
-          const lastAnalyzedUrl = localStorage.getItem('lastAnalyzedUrl');
-          const queryParam = lastAnalyzedUrl ? `?url=${encodeURIComponent(lastAnalyzedUrl)}` : '';
-          window.open(`https://suite.seoaudit.pt${queryParam}`, '_blank');
-          
-          // Navigate to the homepage in the current tab
-          navigate('/');
         }
       } else {
         setAuthError("Unknown error during authentication");
