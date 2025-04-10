@@ -15,3 +15,11 @@ export interface OnboardingTourProps {
   onComplete: () => void;
   isOpen: boolean;
 }
+
+export interface OnboardingStep {
+  id: string;
+  title: string;
+  description: string;
+  completed: boolean;
+  route: string;
+}
