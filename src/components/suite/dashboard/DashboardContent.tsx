@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowRight, BarChart2, Brain, ChevronRight, Lock, User, Zap } from 'lucide-react';
+import { ArrowRight, BarChart2, Brain, ChevronRight, Lock, User, Zap, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -50,7 +49,6 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
 }) => {
   const navigate = useNavigate();
   const [showOnboarding, setShowOnboarding] = useState(() => {
-    // Verifica se é a primeira visita do usuário
     const isFirstVisit = !localStorage.getItem('onboardingCompleted');
     return isFirstVisit && !isUserLoggedIn;
   });
@@ -88,9 +86,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
     toast.success("Bem-vindo à SEOaudit! Explore todas as ferramentas disponíveis.");
   };
 
-  // Função para navegar para as ferramentas
   const navigateTo = (path: string) => {
-    // Se não estiver logado, mostra um alerta em certas ferramentas
     if (!isUserLoggedIn && (path === '/suite/writer' || path === '/suite/keywords' || path === '/suite/llm')) {
       toast.info("Esta funcionalidade completa requer conta", {
         description: "Registe-se para aceder a todas as ferramentas avançadas.",
@@ -103,8 +99,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
     
     navigate(path);
   };
-  
-  // Animação para elementos da página
+
   const containerVariants = {
     hidden: { opacity: 0 },
     show: {
@@ -114,7 +109,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
       }
     }
   };
-  
+
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0 }
@@ -127,14 +122,12 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
       initial="hidden"
       animate="show"
     >
-      {/* Onboarding Tour */}
       <OnboardingTour 
         steps={onboardingSteps} 
         onComplete={handleCompleteOnboarding} 
         isOpen={showOnboarding}
       />
 
-      {/* Cabeçalho com domínio e logo */}
       <motion.div variants={itemVariants} className="flex items-center gap-4 mb-4">
         {logoUrl && (
           <img 
@@ -149,7 +142,6 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         </div>
       </motion.div>
 
-      {/* Cartões de pontuação */}
       <motion.div variants={itemVariants} id="dashboard-scores" className="grid md:grid-cols-2 gap-6">
         <Card className="border border-blue-100 shadow-sm">
           <CardHeader className="pb-2">
@@ -210,7 +202,6 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         </Card>
       </motion.div>
 
-      {/* Métricas detalhadas */}
       <motion.div variants={itemVariants} id="dashboard-metrics" className="mt-8">
         <h3 className="text-lg font-semibold mb-4">Métricas detalhadas</h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
@@ -234,7 +225,6 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
             </Card>
           ))}
           
-          {/* Métricas bloqueadas para usuários não logados */}
           {!isUserLoggedIn && (
             <>
               <BlurredSection onClick={() => navigate('/signin')}>
@@ -259,7 +249,6 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         </div>
       </motion.div>
 
-      {/* Recomendações */}
       <motion.div variants={itemVariants} id="dashboard-recommendations" className="mt-8">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold">Recomendações Personalizadas</h3>
@@ -349,7 +338,6 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         </Tabs>
       </motion.div>
 
-      {/* Acesso rápido às ferramentas */}
       <motion.div variants={itemVariants} id="quick-actions" className="mt-10">
         <h3 className="text-lg font-semibold mb-4">Ferramentas Disponíveis</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -426,7 +414,6 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   );
 };
 
-// Componente para cartão de recomendação
 const RecommendationCard = ({ 
   recommendation, 
   isLoggedIn,

@@ -2,11 +2,16 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import RecommendationCard from './RecommendationCard';
-import { SampleRecommendation } from '@/hooks/suite/useDashboardState';
 import { AlertTriangle, AlertCircle, Info } from 'lucide-react';
 
 interface RecommendationsSectionProps {
-  recommendations: SampleRecommendation[];
+  recommendations: {
+    id: string | number;
+    title: string;
+    description: string;
+    impact: string;
+    type: string;
+  }[];
   onViewMore: () => void;
 }
 

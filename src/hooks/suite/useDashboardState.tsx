@@ -6,6 +6,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { fetchSiteLogo } from '@/utils/api/logoService';
 import { formatDomainFromUrl } from '@/utils/domainUtils';
 
+// Export the interface for use in other components
 export interface SampleRecommendation {
   id: number;
   title: string;
