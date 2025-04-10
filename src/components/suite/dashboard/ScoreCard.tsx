@@ -31,22 +31,30 @@ const ScoreCard = ({
     return "bg-indigo-500";
   };
 
+  // Get gradient and text color based on score
+  const getScoreGradient = () => {
+    if (score >= 80) return "bg-gradient-to-r from-green-400 to-green-600";
+    if (score >= 60) return "bg-gradient-to-r from-blue-400 to-blue-600";
+    if (score >= 40) return "bg-gradient-to-r from-amber-400 to-amber-600";
+    return "bg-gradient-to-r from-red-400 to-red-600";
+  };
+
   // Ensure we have a valid percentage value for the progress bar width
   const progressWidth = Math.max(Math.min(score, 100), 1);
 
   // Determine text color based on score
   const getTextColor = () => {
     if (score >= 80) return 'text-green-600';
-    if (score >= 60) return 'text-amber-600';
-    if (score >= 40) return 'text-orange-600';
+    if (score >= 60) return 'text-blue-600';
+    if (score >= 40) return 'text-amber-600';
     return 'text-red-600';
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-100 p-4 hover:shadow-sm transition-shadow">
-      <div className="flex items-center justify-between mb-2">
+    <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-100 p-4 hover:shadow-md transition-shadow">
+      <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-medium">{title}</h3>
-        <div className={cn("p-2 rounded-md", bgColor)}>
+        <div className={cn("p-2 rounded-lg", bgColor)}>
           {React.cloneElement(icon as React.ReactElement, { 
             className: cn("h-4 w-4", color) 
           })}
@@ -59,7 +67,7 @@ const ScoreCard = ({
         <span className={cn("text-2xl font-bold", getTextColor())}>{score}</span>
         <div className="mt-2 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
           <div 
-            className={cn("h-full rounded-full transition-all duration-500", getBackgroundColorFromText(color))} 
+            className={cn("h-full rounded-full transition-all duration-500", getScoreGradient())} 
             style={{ width: `${progressWidth}%` }}
           />
         </div>

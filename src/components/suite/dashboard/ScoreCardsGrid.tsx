@@ -21,7 +21,7 @@ const ScoreCardsGrid = ({
   keywordScore
 }: ScoreCardsGridProps) => {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
       <ScoreCard 
         title="SEO" 
         score={seoScore} 
