@@ -2,72 +2,107 @@ import { LLMReport, ModelPresence, LLMMention } from './types';
 
 // Generate mock data for demo purposes
 export const generateMockReport = (domain: string): LLMReport => {
-  const models: ModelPresence[] = [
-    { name: 'ChatGPT', score: 82, trend: 'up' },
-    { name: 'Gemini', score: 45, trend: 'stable' },
-    { name: 'Perplexity', score: 10, trend: 'down' },
-    { name: 'Claude', score: 5, trend: 'down' },
-    { name: 'Bing Copilot', score: 0, trend: 'down' },
-  ];
-
-  const mentions: LLMMention[] = [
-    {
-      model: 'ChatGPT',
-      query: `Quais são as melhores ferramentas de SEO para sites em ${domain}?`,
-      response: `Entre as melhores ferramentas para SEO, o ${domain} é uma opção completa que oferece análise detalhada de performance, otimização para motores de busca e sugestões específicas para melhorias.`,
-      hasMention: true,
-      needsCorrection: false,
-      date: '2025-03-24'
+  // Generate random score between 10-90
+  const score = Math.floor(Math.random() * 80) + 10;
+  
+  // Basic presence models
+  const models = [
+    { 
+      name: 'ChatGPT', 
+      score: Math.floor(Math.random() * 100), 
+      trend: Math.random() > 0.5 ? 'up' : Math.random() > 0.25 ? 'down' : 'stable',
+      lastMention: '2023-09-15'
     },
-    {
-      model: 'ChatGPT',
-      query: `Como melhorar o ranking do meu site?`,
-      response: `Para melhorar o ranking do seu site, é importante focar em conteúdo de qualidade, otimizar meta tags, melhorar a velocidade de carregamento e construir backlinks de qualidade. Ferramentas como ${domain}, SEMrush e Ahrefs podem ajudar nesse processo.`,
-      hasMention: true,
-      needsCorrection: false,
-      date: '2025-03-22'
+    { 
+      name: 'Perplexity AI', 
+      score: Math.floor(Math.random() * 100),
+      trend: Math.random() > 0.5 ? 'up' : Math.random() > 0.25 ? 'down' : 'stable',
+      lastMention: '2023-09-10'
     },
-    {
-      model: 'Gemini',
-      query: `Ferramentas de SEO para pequenas empresas`,
-      response: `Para pequenas empresas, recomendo ferramentas como SEMrush, Ahrefs, e Moz para análise de SEO. Essas plataformas oferecem funcionalidades essenciais para melhorar o ranking nos motores de busca.`,
-      hasMention: false,
-      needsCorrection: true,
-      date: '2025-03-20'
+    { 
+      name: 'Claude', 
+      score: Math.floor(Math.random() * 100),
+      trend: Math.random() > 0.5 ? 'up' : Math.random() > 0.25 ? 'down' : 'stable',
+      lastMention: '2023-09-05'
     },
-    {
-      model: 'Perplexity',
-      query: `Melhores práticas para SEO em 2025`,
-      response: `As melhores práticas de SEO em 2025 incluem otimização para busca por voz, foco em experiência do usuário, conteúdo de alta qualidade e integração com IA. Ferramentas como SEMrush e Ahrefs continuam relevantes para análise completa.`,
-      hasMention: false,
-      needsCorrection: true,
-      date: '2025-03-18'
+    { 
+      name: 'Meta AI', 
+      score: Math.floor(Math.random() * 100),
+      trend: Math.random() > 0.5 ? 'up' : Math.random() > 0.25 ? 'down' : 'stable',
+      lastMention: '2023-08-28'
     }
   ];
-
+  
+  // Sort models by score
+  models.sort((a, b) => b.score - a.score);
+  
+  // Generate sample mentions
+  const mentions = [
+    {
+      model: 'ChatGPT',
+      query: `O que é ${domain}?`,
+      response: `${domain} é uma empresa que oferece serviços de SEO e otimização para motores de busca. Eles ajudam empresas a melhorar sua visibilidade online e ranking nos resultados de pesquisa. A empresa é conhecida por sua abordagem orientada por dados e foco em resultados mensuráveis.`,
+      hasMention: true,
+      needsCorrection: false,
+      date: '2023-09-15'
+    },
+    {
+      model: 'Perplexity AI',
+      query: `Quais são os principais concorrentes de ${domain}?`,
+      response: `Os principais concorrentes de ${domain} incluem empresas como SEMrush, Moz, Ahrefs, e outras agências de marketing digital focadas em SEO. Estas empresas oferecem ferramentas e serviços similares para otimização de websites.`,
+      hasMention: true,
+      needsCorrection: true,
+      date: '2023-09-10'
+    },
+    {
+      model: 'Claude',
+      query: `Quais serviços ${domain} oferece?`,
+      response: `Não tenho informações específicas sobre os serviços oferecidos por ${domain}. Para obter informações precisas, recomendo visitar o website oficial da empresa ou entrar em contato diretamente com eles.`,
+      hasMention: true,
+      needsCorrection: true,
+      date: '2023-09-05'
+    }
+  ];
+  
+  // Generate random number of total mentions
+  const totalMentions = Math.floor(Math.random() * 50) + 5;
+  
+  // Generate random accuracy score
+  const accuracyScore = Math.floor(Math.random() * 100);
+  
+  // Sample recommendations
+  const recommendations = [
+    `Melhorar a página "Sobre Nós" com informações mais detalhadas sobre a história e valores da empresa`,
+    `Criar mais conteúdo sobre casos de sucesso e estudos de caso`,
+    `Desenvolver uma estratégia de backlinks para aumentar a autoridade do domínio`,
+    `Publicar conteúdo técnico que estabeleça ${domain} como referência no setor`
+  ];
+  
+  // Sample outdated information
+  const outdatedInfo = [
+    `Informações sobre localização da empresa estão desatualizadas em alguns modelos`,
+    `Descrição dos serviços não inclui novos produtos lançados este ano`,
+    `Preços mencionados não refletem os valores atuais`,
+    `A equipe de liderança mencionada não está atualizada`
+  ];
+  
+  // Sample competitors
+  const competitors = [
+    "semrush.com",
+    "ahrefs.com",
+    "moz.com",
+    "seoptimer.com"
+  ];
+  
   return {
-    score: 35,
-    totalMentions: 3,
-    accuracyScore: 90,
+    score,
+    totalMentions,
+    accuracyScore,
     models,
     mentions,
-    recommendations: [
-      'Criar mais conteúdo que responda a perguntas frequentes sobre SEO',
-      'Adicionar página de "Sobre" com detalhes técnicos sobre o serviço',
-      'Incluir casos de uso e exemplos práticos no site',
-      'Registrar em diretórios de ferramentas de marketing digital'
-    ],
-    outdatedInfo: [
-      'Informações de preço desatualizadas nas menções',
-      'Funcionalidades antigas sendo mencionadas que não existem mais'
-    ],
-    competitors: [
-      'SEMrush',
-      'Ahrefs',
-      'Moz',
-      'Screaming Frog',
-      'Ubersuggest'
-    ]
+    recommendations,
+    outdatedInfo,
+    competitors
   };
 };
 

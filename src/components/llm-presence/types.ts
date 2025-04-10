@@ -1,4 +1,3 @@
-
 export interface LLMPresenceAuditProps {
   url: string;
   autoStart?: boolean;

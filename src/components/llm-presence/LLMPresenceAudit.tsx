@@ -13,6 +13,7 @@ import RecommendationCard from "./RecommendationCard";
 import ReportSheet from "./ReportSheet";
 import LoadingState from "./LoadingState";
 import ErrorState from "./ErrorState";
+import BrandPresenceMonitor from "./BrandPresenceMonitor";
 import { LLMPresenceAuditProps } from "./types";
 
 const LLMPresenceAudit: React.FC<LLMPresenceAuditProps> = ({ url = "", autoStart = false }) => {
