@@ -1,20 +1,13 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import AuthButtons from './header/AuthButtons';
 import HeaderNavigation from './header/HeaderNavigation';
 import LanguageSwitcher from './LanguageSwitcher';
-import DashboardButton from './header/buttons/DashboardButton';
 import { useUser } from '@/contexts/UserContext';
+import { DashboardButton } from './header/buttons';
+import AuthButtons from './header/AuthButtons';
 
 const Header = () => {
-  const { user, role } = useUser();
-  
-  // Determine dashboard path based on user role
-  const getDashboardPath = () => {
-    return role === 'admin' ? '/dashboard' : '/dashboard/client';
-  };
-
   return (
     <header className="sticky top-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-40">
       <div className="container flex h-14 items-center">
@@ -30,7 +23,7 @@ const Header = () => {
         
         <div className="ml-auto flex items-center gap-2">
           <LanguageSwitcher />
-          {user && <DashboardButton />}
+          <DashboardButton />
           <AuthButtons />
         </div>
       </div>
