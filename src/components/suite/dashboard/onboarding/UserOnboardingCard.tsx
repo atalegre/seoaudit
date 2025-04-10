@@ -16,16 +16,16 @@ const UserOnboardingCard: React.FC<UserOnboardingCardProps> = ({
   children
 }) => {
   return (
-    <Card className="border-blue-100 bg-blue-50/50 mb-4 max-w-2xl mx-auto">
+    <Card className="border-blue-100 bg-blue-50/50 max-w-xs fixed bottom-4 right-4 z-40 shadow-lg">
       <CardHeader className="pb-2 flex flex-row items-center justify-between">
-        <CardTitle className="text-base">
-          👋 Olá, {userName}! Vamos configurar sua conta
+        <CardTitle className="text-sm">
+          👋 Olá, {userName}!
         </CardTitle>
-        <Button variant="ghost" size="icon" onClick={onClose}>
-          <X className="h-4 w-4" />
+        <Button variant="ghost" size="icon" onClick={onClose} className="h-6 w-6">
+          <X className="h-3 w-3" />
         </Button>
       </CardHeader>
-      <CardContent className="py-3">
+      <CardContent className="py-2 px-3">
         {children}
       </CardContent>
     </Card>
