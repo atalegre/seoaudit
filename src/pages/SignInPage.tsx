@@ -19,6 +19,7 @@ const SignInPage = () => {
   const [searchParams] = useSearchParams();
   
   const redirect = searchParams.get('redirect');
+  const urlParam = searchParams.get('url');
   
   const locationState = location.state as { 
     email?: string; 
@@ -27,9 +28,16 @@ const SignInPage = () => {
     defaultTab?: 'signin' | 'signup';
   } | null;
 
+  // Store URL in sessionStorage if coming from analysis
+  useEffect(() => {
+    if (urlParam && redirect === 'suite') {
+      sessionStorage.setItem('pendingAnalysisUrl', urlParam);
+    }
+  }, [urlParam, redirect]);
+
   // Determine the return path based on redirect parameter or location state
-  const returnPath = redirect === 'results' ? 
-    '/results' : 
+  const returnPath = redirect === 'suite' ? 
+    '/suite' : 
     (locationState?.returnTo || '/suite');
 
   return (
@@ -42,10 +50,10 @@ const SignInPage = () => {
           </Alert>
         )}
         
-        {redirect === 'results' && (
+        {redirect === 'suite' && urlParam && (
           <Alert variant="default" className="bg-blue-50 border-blue-200">
             <Info className="h-4 w-4 text-blue-600" />
-            <AlertDescription>Faça login ou registe-se para ver os resultados da análise.</AlertDescription>
+            <AlertDescription>Faça login ou registe-se para prosseguir com a análise do site.</AlertDescription>
           </Alert>
         )}
         

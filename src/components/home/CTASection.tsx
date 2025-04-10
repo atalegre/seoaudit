@@ -7,10 +7,11 @@ import { toast } from 'sonner';
 import { extractDomainFromUrl } from '@/utils/domainUtils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Link } from 'react-router-dom';
+import { useAnalyzerRedirect } from '@/hooks/useAnalyzerRedirect';
 
 const CTASection = () => {
   const [url, setUrl] = useState('');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const { isAnalyzing, handleAnalyzeAndRedirect } = useAnalyzerRedirect();
   const { language } = useLanguage();
   
   const getLocalizedPath = (ptPath: string, enPath: string) => {
@@ -25,36 +26,7 @@ const CTASection = () => {
       return;
     }
     
-    setIsAnalyzing(true);
-    
-    // Format URL if needed
-    let formattedUrl = url.trim();
-    if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
-      formattedUrl = 'https://' + formattedUrl;
-    }
-    
-    // Save URL to localStorage
-    localStorage.setItem('lastAnalyzedUrl', formattedUrl);
-    
-    // Extract domain and create project ID
-    const domain = extractDomainFromUrl(formattedUrl);
-    const projectId = `${domain}-${Date.now()}`.replace(/[^a-zA-Z0-9]/g, '-');
-    
-    // Simulação de análise rápida
-    setTimeout(() => {
-      // Verificar se estamos em desenvolvimento ou produção
-      const isDevelopment = window.location.hostname === 'localhost' || 
-                          window.location.hostname.includes('lovable');
-      
-      if (isDevelopment) {
-        // Para ambiente de desenvolvimento
-        window.location.href = `/suite?url=${encodeURIComponent(formattedUrl)}&projectId=${projectId}`;
-      } else {
-        // Para produção - redireciona para o subdomínio suite em uma nova aba
-        const suiteUrl = `https://suite.seoaudit.pt/projeto/${projectId}?url=${encodeURIComponent(formattedUrl)}`;
-        window.open(suiteUrl, '_blank');
-      }
-    }, 1500);
+    handleAnalyzeAndRedirect(url.trim());
   };
   
   return (

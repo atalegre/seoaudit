@@ -1,10 +1,10 @@
 
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Loader2, LogIn } from 'lucide-react';
 
 type SignInFormProps = {
@@ -16,9 +16,15 @@ type SignInFormProps = {
 
 const SignInForm = ({ email, returnTo, setAuthError, onSuccess }: SignInFormProps) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [searchParams] = useSearchParams();
   const [emailValue, setEmailValue] = useState(email || '');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Get URL parameters
+  const redirectPath = searchParams.get('redirect') || returnTo;
+  const urlParam = searchParams.get('url');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,17 +57,21 @@ const SignInForm = ({ email, returnTo, setAuthError, onSuccess }: SignInFormProp
           // Determine redirect path based on user role
           const userRole = data.user?.user_metadata?.role || 'user';
           
-          // Check if we have a pending analysis URL and need to redirect to results
-          const pendingUrl = localStorage.getItem('pendingAnalysisUrl');
-          if (pendingUrl && returnTo === '/results') {
-            localStorage.removeItem('pendingAnalysisUrl');
-            navigate('/results?url=' + encodeURIComponent(pendingUrl));
+          // If we have a URL parameter, use it for analysis after login
+          if (urlParam && redirectPath === 'suite') {
+            // If redirect is to suite with URL, navigate there with the URL as parameter
+            navigate(`/suite?url=${encodeURIComponent(urlParam)}`);
+          } else if (sessionStorage.getItem('pendingAnalysisUrl') && redirectPath === 'suite') {
+            // Use stored URL from session storage if available
+            const pendingUrl = sessionStorage.getItem('pendingAnalysisUrl');
+            sessionStorage.removeItem('pendingAnalysisUrl');
+            navigate(`/suite?url=${encodeURIComponent(pendingUrl || '')}`);
           } else {
             // Redirect based on user role
             if (userRole === 'admin') {
               navigate('/dashboard');
             } else {
-              navigate(returnTo || '/suite');
+              navigate(redirectPath || '/suite');
             }
           }
         }

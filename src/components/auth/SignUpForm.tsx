@@ -1,10 +1,10 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { sendVerificationEmail } from '@/utils/auth/emailVerificationService';
 
@@ -16,9 +16,15 @@ interface SignUpFormProps {
 
 const SignUpForm = ({ setAuthError, onSuccess, returnTo }: SignUpFormProps) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Get URL parameters
+  const redirectPath = searchParams.get('redirect') || returnTo;
+  const urlParam = searchParams.get('url');
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,14 +65,20 @@ const SignUpForm = ({ setAuthError, onSuccess, returnTo }: SignUpFormProps) => {
         if (onSuccess) {
           onSuccess();
         } else if (data.session) {
-          // User was auto-signed in, check for pendingAnalysisUrl
-          const pendingUrl = localStorage.getItem('pendingAnalysisUrl');
-          if (pendingUrl && returnTo === '/results') {
-            localStorage.removeItem('pendingAnalysisUrl');
-            navigate('/results?url=' + encodeURIComponent(pendingUrl));
+          // User was auto-signed in
+          
+          // If we have a URL parameter, use it for analysis after login
+          if (urlParam && redirectPath === 'suite') {
+            // If redirect is to suite with URL, navigate there with the URL as parameter
+            navigate(`/suite?url=${encodeURIComponent(urlParam)}`);
+          } else if (sessionStorage.getItem('pendingAnalysisUrl') && redirectPath === 'suite') {
+            // Use stored URL from session storage if available
+            const pendingUrl = sessionStorage.getItem('pendingAnalysisUrl');
+            sessionStorage.removeItem('pendingAnalysisUrl');
+            navigate(`/suite?url=${encodeURIComponent(pendingUrl || '')}`);
           } else {
             // Navigate to the specified return path or default
-            navigate(returnTo || '/suite');
+            navigate(redirectPath || '/suite');
           }
         } else {
           // Email verification required
@@ -74,7 +86,8 @@ const SignUpForm = ({ setAuthError, onSuccess, returnTo }: SignUpFormProps) => {
             state: { 
               email: email, 
               emailSent: emailSent,
-              returnTo: returnTo
+              returnTo: redirectPath,
+              url: urlParam
             } 
           });
         }

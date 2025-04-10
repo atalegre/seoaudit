@@ -9,16 +9,17 @@ import UserOnboarding from '@/components/suite/dashboard/UserOnboarding';
 import SuiteOnboarding from '@/components/suite/dashboard/SuiteOnboarding';
 import { useDashboardState } from '@/hooks/suite/useDashboardState';
 import { toast } from 'sonner';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useLocation } from 'react-router-dom';
 
 const SuiteDashboard = () => {
   const { user } = useUser();
   const { toast: hookToast } = useToast();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showTour, setShowTour] = useState(false);
   
-  // Extrair URL e projectId da query string
+  // Extract URL and projectId from query string
   const urlParam = searchParams.get('url');
   const projectId = searchParams.get('projectId');
   
@@ -41,32 +42,57 @@ const SuiteDashboard = () => {
     handleRerunAnalysis
   } = useDashboardState();
   
-  // Verificar parâmetros na URL ao carregar a página
+  // Check parameters and initiate analysis when loading the page
   useEffect(() => {
-    if (urlParam && urlParam !== url) {
-      // Se houver uma URL na query string, guarda no localStorage
+    if (urlParam && (!url || urlParam !== url)) {
+      // Save to localStorage
       localStorage.setItem('lastAnalyzedUrl', urlParam);
       
-      // Executa análise para a URL da query string
-      console.log('URL detectada nos parâmetros, iniciando análise:', urlParam);
-      
-      // Mostra toast para o usuário
+      // Show toast notification
       toast.info("Analisando website", {
         description: `Obtendo dados para ${urlParam}`,
         duration: 3000
       });
+      
+      // Set domain for analysis and trigger automatic analysis
+      setAnalyzeDomain(urlParam);
+      setTimeout(() => {
+        handleRerunAnalysis();
+      }, 500);
     }
     
-    // Verificar se o usuário está logado e é a primeira vez que acessa (para onboarding)
+    // Check for pending URL in sessionStorage (from login flow)
+    const pendingUrl = sessionStorage.getItem('pendingAnalysisUrl');
+    if (pendingUrl && (!url || pendingUrl !== url)) {
+      // Save to localStorage
+      localStorage.setItem('lastAnalyzedUrl', pendingUrl);
+      
+      // Remove from sessionStorage to prevent repeated analysis
+      sessionStorage.removeItem('pendingAnalysisUrl');
+      
+      // Show toast notification
+      toast.info("Analisando website", {
+        description: `Obtendo dados para ${pendingUrl}`,
+        duration: 3000
+      });
+      
+      // Set domain for analysis and trigger automatic analysis
+      setAnalyzeDomain(pendingUrl);
+      setTimeout(() => {
+        handleRerunAnalysis();
+      }, 500);
+    }
+    
+    // Check if user is logged in and it's their first visit (for onboarding)
     if (user && !localStorage.getItem('userOnboardingDismissed')) {
       setShowOnboarding(true);
     }
 
-    // Verificar se deve mostrar o tour interativo
+    // Check if the tour should be shown
     if (!localStorage.getItem('suiteOnboardingCompleted') && url) {
       setShowTour(true);
     }
-  }, [urlParam, user, url]);
+  }, [urlParam, user, url, setAnalyzeDomain, handleRerunAnalysis]);
   
   const handleViewMoreRecommendations = () => {
     if (!user) {
@@ -117,7 +143,7 @@ const SuiteDashboard = () => {
       onRerunAnalysis={handleRerunAnalysis}
       isAnalyzing={isLoading}
     >
-      {/* Tour interativo para novos utilizadores */}
+      {/* Tour for new users */}
       {showTour && (
         <SuiteOnboarding 
           isFirstVisit={true} 
@@ -125,7 +151,7 @@ const SuiteDashboard = () => {
         />
       )}
 
-      {/* Onboarding para usuários logados */}
+      {/* Onboarding for logged in users */}
       {showOnboarding && user && (
         <UserOnboarding 
           userName={user.name || user.email?.split('@')[0]} 

@@ -15,28 +15,28 @@ const EmptyDashboardState: React.FC<EmptyDashboardStateProps> = ({
   analyzeDomain,
   setAnalyzeDomain,
 }) => {
-  // Handler para submeter o formulário de análise
+  // Handler for analysis form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!analyzeDomain.trim()) return;
     
-    // Normalizar o domínio se necessário
+    // Normalize domain if needed
     let domain = analyzeDomain.trim();
     if (!domain.startsWith('http://') && !domain.startsWith('https://')) {
       domain = 'https://' + domain;
     }
     
-    // Salvar no localStorage
+    // Save to localStorage
     localStorage.setItem('lastAnalyzedUrl', domain);
     
-    // Criar um projectId (numa implementação real, isto seria feito no servidor)
+    // Create a projectId (in a real implementation, this would be done on the server)
     const projectId = `${domain.replace(/[^a-zA-Z0-9]/g, '-')}-${Date.now()}`;
     
-    // Recarregar a página com o parâmetro de URL
+    // Reload the page with URL parameter
     window.location.href = `/suite?url=${encodeURIComponent(domain)}&projectId=${projectId}`;
   };
 
-  // Array de features para mostrar ao utilizador
+  // Array of features to show to the user
   const features = [
     {
       icon: <BarChart2 className="h-5 w-5 text-blue-500" />,
@@ -73,7 +73,7 @@ const EmptyDashboardState: React.FC<EmptyDashboardStateProps> = ({
           Descubra como o seu website se comporta nos motores de busca e nos novos modelos de inteligência artificial com uma análise completa e gratuita.
         </p>
         
-        {/* Formulário de análise */}
+        {/* Analysis form */}
         <Card className="max-w-xl mx-auto mb-8 shadow-md border-violet-100">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">Analisar website</CardTitle>
@@ -101,7 +101,7 @@ const EmptyDashboardState: React.FC<EmptyDashboardStateProps> = ({
         </Card>
       </div>
       
-      {/* Features destacadas */}
+      {/* Feature highlights */}
       <div className="grid md:grid-cols-3 gap-6 mb-8">
         <TooltipProvider>
           {features.map((feature, index) => (
@@ -134,7 +134,7 @@ const EmptyDashboardState: React.FC<EmptyDashboardStateProps> = ({
         </TooltipProvider>
       </div>
       
-      {/* Informação adicional */}
+      {/* Additional information */}
       <div className="bg-blue-50 text-blue-800 p-4 rounded-lg flex items-start gap-3 max-w-2xl mx-auto">
         <Info className="h-5 w-5 flex-shrink-0 mt-1" />
         <div>

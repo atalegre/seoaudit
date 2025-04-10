@@ -1,14 +1,12 @@
-
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, ArrowRight, BarChart3, Sparkles, Zap, CheckCircle, Shield, Cpu } from 'lucide-react';
-import { toast } from 'sonner';
-import { extractDomainFromUrl } from '@/utils/domainUtils';
+import { useAnalyzerRedirect } from '@/hooks/useAnalyzerRedirect';
 
 const MainAnalyzer = () => {
   const [url, setUrl] = useState('');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const { isAnalyzing, handleAnalyzeAndRedirect } = useAnalyzerRedirect();
   
   const validateUrl = (inputUrl: string) => {
     const pattern = /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/;
@@ -25,44 +23,10 @@ const MainAnalyzer = () => {
     }
     
     if (!validateUrl(formattedUrl)) {
-      toast.error("Por favor, insira um URL válido");
       return;
     }
     
-    setIsAnalyzing(true);
-    
-    try {
-      // Save URL to localStorage for easy access in dashboard
-      localStorage.setItem('lastAnalyzedUrl', formattedUrl);
-      
-      // Extract domain for display purposes
-      const domain = extractDomainFromUrl(formattedUrl);
-      console.log(`Iniciando análise para: ${domain}`);
-      
-      // Simulação de um breve processamento antes do redirecionamento
-      setTimeout(() => {
-        // Gerar um ID de projeto baseado no domínio e timestamp
-        const projectId = `${domain}-${Date.now()}`.replace(/[^a-zA-Z0-9]/g, '-');
-        
-        // Check if we're in production or development environment
-        const isDevelopment = window.location.hostname === 'localhost' || 
-                            window.location.hostname.includes('lovable');
-        
-        if (isDevelopment) {
-          // For development - redirect to the local suite
-          window.location.href = `/suite?url=${encodeURIComponent(formattedUrl)}&projectId=${projectId}`;
-        } else {
-          // For production - redirect to the suite subdomain in a new tab
-          const suiteUrl = `https://suite.seoaudit.pt/projeto/${projectId}?url=${encodeURIComponent(formattedUrl)}`;
-          window.open(suiteUrl, '_blank');
-        }
-      }, 1500); // Aguarda 1.5 segundos para simular análise inicial
-      
-    } catch (error) {
-      console.error('Erro na análise:', error);
-      toast.error("Ocorreu um erro ao iniciar a análise");
-      setIsAnalyzing(false);
-    }
+    handleAnalyzeAndRedirect(formattedUrl);
   };
   
   return (

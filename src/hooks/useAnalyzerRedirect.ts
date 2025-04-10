@@ -15,11 +15,20 @@ export const useAnalyzerRedirect = () => {
       return;
     }
 
+    // Normalize URL if needed
+    let formattedUrl = url;
+    if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+      formattedUrl = 'https://' + formattedUrl;
+    }
+
+    // Store URL for later use
+    localStorage.setItem('lastAnalyzedUrl', formattedUrl);
+    
     // Check if user is authenticated
     if (!user) {
-      // Store URL and redirect to login
-      localStorage.setItem('pendingAnalysisUrl', url);
-      navigate('/signin?redirect=results');
+      // Store URL and redirect to login with query params
+      sessionStorage.setItem('pendingAnalysisUrl', formattedUrl);
+      navigate(`/signin?redirect=suite&url=${encodeURIComponent(formattedUrl)}`);
       return;
     }
 
@@ -27,9 +36,6 @@ export const useAnalyzerRedirect = () => {
     toast.info("Analisando site...", {
       description: "Este processo pode demorar alguns segundos."
     });
-
-    // Store the URL for later use
-    localStorage.setItem('lastAnalyzedUrl', url);
     
     // Set flag for first time visit to dashboard
     const hasVisitedDashboard = localStorage.getItem('hasVisitedDashboard');
@@ -37,29 +43,27 @@ export const useAnalyzerRedirect = () => {
       localStorage.setItem('showOnboardingTour', 'true');
     }
 
-    // Simulate analysis (would connect to your API in production)
+    // Extract domain for project ID creation
+    const domain = formattedUrl.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+    const projectId = `${domain}-${Date.now()}`.replace(/[^a-zA-Z0-9]/g, '-');
+    
+    // Check if we're in development or production environment
+    const isDevelopment = window.location.hostname === 'localhost' || 
+                      window.location.hostname.includes('lovable');
+    
+    if (isDevelopment) {
+      // For development environment - redirect to local route
+      navigate(`/suite?url=${encodeURIComponent(formattedUrl)}&projectId=${projectId}`);
+    } else {
+      // For production - direct to the suite subdomain
+      window.location.href = `https://suite.seoaudit.pt/projeto/${projectId}?url=${encodeURIComponent(formattedUrl)}`;
+    }
+    
+    // Mark that user has visited dashboard
+    localStorage.setItem('hasVisitedDashboard', 'true');
+    
     setTimeout(() => {
       setIsAnalyzing(false);
-      
-      // Extract domain for project ID creation
-      const domain = url.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
-      const projectId = `${domain}-${Date.now()}`.replace(/[^a-zA-Z0-9]/g, '-');
-      
-      // Check if we're in development or production environment
-      const isDevelopment = window.location.hostname === 'localhost' || 
-                         window.location.hostname.includes('lovable');
-      
-      if (isDevelopment) {
-        // For development environment - redirect to local route
-        navigate(`/suite?url=${encodeURIComponent(url)}`);
-      } else {
-        // For production - redirect to the subdomain in a new tab
-        const suiteUrl = `https://suite.seoaudit.pt/projeto/${projectId}?url=${encodeURIComponent(url)}`;
-        window.open(suiteUrl, '_blank');
-      }
-      
-      // Mark that user has visited dashboard
-      localStorage.setItem('hasVisitedDashboard', 'true');
     }, 2000);
   };
 
