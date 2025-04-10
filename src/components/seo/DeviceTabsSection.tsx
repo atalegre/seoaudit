@@ -9,6 +9,7 @@ import TechnicalAuditsPanel from './TechnicalAuditsPanel';
 import CoreWebVitalsPanel from './CoreWebVitalsPanel';
 import AnalysisErrorView from '@/components/results/AnalysisErrorView';
 import { toast } from 'sonner';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface DeviceTabsSectionProps {
   activeTab: string;
@@ -27,6 +28,8 @@ const DeviceTabsSection: React.FC<DeviceTabsSectionProps> = ({
   isAnalyzing,
   error
 }) => {
+  const isMobile = useIsMobile();
+  
   // Automatically switch to mobile tab if desktop isn't available
   useEffect(() => {
     if (!desktopData && mobileData && activeTab === 'desktop') {
@@ -77,14 +80,14 @@ const DeviceTabsSection: React.FC<DeviceTabsSectionProps> = ({
           onValueChange={setActiveTab}
           className="w-full"
         >
-          <div className="border-b px-4">
-            <TabsList className="bg-transparent h-14">
+          <div className="border-b px-2 md:px-4">
+            <TabsList className="bg-transparent h-12 md:h-14 w-full">
               <TabsTrigger 
                 value="desktop" 
-                className="data-[state=active]:bg-muted flex items-center gap-2 px-4"
+                className="data-[state=active]:bg-muted flex items-center gap-1 md:gap-2 px-2 md:px-4 text-xs md:text-sm"
                 disabled={isAnalyzing || !hasDesktopData}
               >
-                <Monitor className="h-4 w-4" />
+                <Monitor className="h-3 w-3 md:h-4 md:w-4" />
                 <span>Desktop</span>
                 {!hasDesktopData && hasMobileData && (
                   <span className="ml-1 text-xs text-red-500">(Falha)</span>
@@ -92,10 +95,10 @@ const DeviceTabsSection: React.FC<DeviceTabsSectionProps> = ({
               </TabsTrigger>
               <TabsTrigger 
                 value="mobile" 
-                className="data-[state=active]:bg-muted flex items-center gap-2 px-4"
+                className="data-[state=active]:bg-muted flex items-center gap-1 md:gap-2 px-2 md:px-4 text-xs md:text-sm"
                 disabled={isAnalyzing || !hasMobileData}
               >
-                <Smartphone className="h-4 w-4" />
+                <Smartphone className="h-3 w-3 md:h-4 md:w-4" />
                 <span>Mobile</span>
                 {!hasMobileData && hasDesktopData && (
                   <span className="ml-1 text-xs text-red-500">(Falha)</span>
@@ -105,9 +108,9 @@ const DeviceTabsSection: React.FC<DeviceTabsSectionProps> = ({
           </div>
           
           {error && hasAnyData && (
-            <div className="p-4 bg-amber-50 text-amber-800 border-b border-amber-200 flex items-start gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
-              <div className="text-sm">
+            <div className="p-3 md:p-4 bg-amber-50 text-amber-800 border-b border-amber-200 flex items-start gap-2">
+              <AlertTriangle className="h-4 w-4 md:h-5 md:w-5 text-amber-500 mt-0.5 flex-shrink-0" />
+              <div className="text-xs md:text-sm">
                 <p className="font-medium">Aviso: Dados parciais disponíveis</p>
                 <p className="text-xs">{error}</p>
                 <button 
@@ -122,10 +125,10 @@ const DeviceTabsSection: React.FC<DeviceTabsSectionProps> = ({
           
           <TabsContent value="desktop" className="m-0">
             {hasDesktopData && (
-              <div className="p-4 space-y-6">
+              <div className="p-3 md:p-4 space-y-4 md:space-y-6">
                 <DevicePerformancePanel data={desktopData} deviceType="desktop" />
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-4 md:gap-6">
                   <CoreWebVitalsPanel 
                     lcp={desktopData.lcp} 
                     cls={desktopData.cls} 
@@ -146,10 +149,10 @@ const DeviceTabsSection: React.FC<DeviceTabsSectionProps> = ({
           
           <TabsContent value="mobile" className="m-0">
             {hasMobileData && (
-              <div className="p-4 space-y-6">
+              <div className="p-3 md:p-4 space-y-4 md:space-y-6">
                 <DevicePerformancePanel data={mobileData} deviceType="mobile" />
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-4 md:gap-6">
                   <CoreWebVitalsPanel 
                     lcp={mobileData.lcp} 
                     cls={mobileData.cls} 
