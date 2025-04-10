@@ -1,4 +1,3 @@
-
 import type { PageInsightsData } from './types';
 import { processPageInsightsData } from './apiProcessor';
 import { handleCorsRequest } from './corsHandlers';
@@ -35,15 +34,19 @@ export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mo
     
     // Get the PageSpeed API key
     const apiKey = getApiKey();
-    if (!apiKey) {
+    
+    // Log a chave API para depuração (apenas os primeiros e últimos 4 caracteres por segurança)
+    if (apiKey) {
+      const maskedKey = `${apiKey.substring(0, 4)}...${apiKey.substring(apiKey.length - 4)}`;
+      console.log(`🔑 Usando chave API PageSpeed: ${maskedKey}`);
+    } else {
       console.error('❌ API Key não configurada. Defina a variável de ambiente VITE_PAGESPEED_API_KEY com sua chave da Google API.');
       throw new Error('❌ API Key não configurada. Defina a variável de ambiente VITE_PAGESPEED_API_KEY com sua chave da Google API.');
     }
     
-    console.log(`🔑 Usando chave API PageSpeed: ${apiKey.substring(0, 4)}...`);
-    
     // Build API URL
     const apiUrl = createApiUrl(url, apiKey, strategy);
+    console.log(`🔗 URL da API construída (sem a chave): ${apiUrl.replace(apiKey, 'CHAVE-OCULTA')}`);
     
     // Set timeout to 18 seconds to avoid browser timeout
     const timeoutMs = 18000;
@@ -66,13 +69,16 @@ export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mo
       ]) as Response;
       
       if (!response.ok) {
+        // Log completo da resposta para depuração
+        console.error(`❌ Erro na API PageSpeed (${strategy}):`, response.status, response.statusText);
+        
         // Extract error details from response
         const errorMessage = await extractHttpErrorDetails(response);
-        
-        console.error(`❌ Erro na API PageSpeed (${strategy}): ${errorMessage}`);
+        console.error(`❌ Detalhes do erro: ${errorMessage}`);
         
         // Check for specific API not enabled errors
         if (isApiNotEnabledError(errorMessage)) {
+          console.error(`❌ A API PageSpeed Insights não está ativada!`);
           throw new Error(`❌ A API PageSpeed Insights não está ativada. Acesse o console do Google Cloud e ative-a para o projeto associado à sua chave API. Erro original: ${errorMessage}`);
         }
         
@@ -132,20 +138,6 @@ export async function getPageInsightsData(url: string, strategy: 'desktop' | 'mo
       if (isApiNotEnabledError(apiError.message)) {
         // API not enabled error
         throw apiError;
-      }
-      
-      // Try via alternative CORS proxy
-      try {
-        console.log(`🔄 Tentando via proxy CORS alternativo para ${strategy}`);
-        const corsData = await handleCorsRequest(url, strategy);
-        if (corsData) {
-          console.log(`✅ Dados obtidos via proxy CORS para ${strategy}`);
-          const processedData = processPageInsightsData(corsData, url);
-          storeInMemoryCache(cacheKey, processedData);
-          return processedData;
-        }
-      } catch (corsError: any) {
-        console.warn(`❌ Falha no proxy CORS para ${strategy}:`, corsError.message);
       }
       
       // Create detailed error message

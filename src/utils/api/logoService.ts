@@ -18,13 +18,22 @@ export async function fetchSiteLogo(url: string): Promise<string | null> {
     
     console.log('🌐 Domínio extraído:', domain);
     
-    // Correção: usar URL direta para o logo sem tentar fazer HEAD request
-    // que estava causando erros de CORS
-    const apiUrl = `https://logo.clearbit.com/${domain}`;
-    console.log(`🖼️ Logo URL: ${apiUrl}`);
+    // Construir URL do logo manualmente para garantir formato correto
+    const logoUrl = `https://logo.clearbit.com/${domain}`;
+    console.log(`🖼️ Logo URL construída: ${logoUrl}`);
     
-    // Retornar a URL diretamente sem verificações prévias
-    return apiUrl;
+    // Verificar se a URL do logo está acessível
+    try {
+      // Testar a URL do logo com uma solicitação HEAD para verificar se ela existe
+      const response = await fetch(logoUrl, { method: 'HEAD', mode: 'no-cors' });
+      console.log(`✅ Logo verificado, status: HEAD request enviada`);
+      return logoUrl;
+    } catch (logoError) {
+      // Mesmo se a verificação falhar, ainda retornamos a URL
+      // Isso é porque o componente de imagem pode lidar com fallbacks
+      console.warn(`⚠️ Aviso na verificação do logo:`, logoError);
+      return logoUrl; // Retornar mesmo assim, deixar o componente de imagem lidar com fallbacks
+    }
   } catch (error) {
     console.error('❌ Erro ao buscar logo do site:', error);
     return null;

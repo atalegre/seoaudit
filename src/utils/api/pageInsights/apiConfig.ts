@@ -29,6 +29,7 @@ export function getApiKey(): string {
   // Usar a chave pública se não houver chave personalizada
   console.log(`🔑 Usando chave API pública padrão (primeiros 4 caracteres): ${PUBLIC_API_KEY.substring(0, 4)}...`);
   console.log('ℹ️ Nota: A API PageSpeed Insights é aberta e esta chave pública pode ser usada sem restrições.');
+  console.log('⚠️ IMPORTANTE: Mesmo usando a chave pública, você precisa ativar a API PageSpeed Insights no console do Google Cloud!');
   
   return PUBLIC_API_KEY;
 }
@@ -52,7 +53,16 @@ export function createApiUrl(url: string, apiKey: string, strategy: 'desktop' | 
  * @returns Normalized URL
  */
 export function normalizeUrl(url: string): string {
-  return url.toLowerCase().trim();
+  // Garantir que a URL tenha https:// no início
+  let normalizedUrl = url.toLowerCase().trim();
+  if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
+    normalizedUrl = 'https://' + normalizedUrl;
+  }
+  
+  // Remover barras finais para consistência
+  normalizedUrl = normalizedUrl.replace(/\/+$/, '');
+  
+  return normalizedUrl;
 }
 
 /**
