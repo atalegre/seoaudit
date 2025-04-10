@@ -11,9 +11,10 @@ import { sendVerificationEmail } from '@/utils/auth/emailVerificationService';
 interface SignUpFormProps {
   setAuthError: (error: string | null) => void;
   onSuccess?: () => void;
+  returnTo?: string;
 }
 
-const SignUpForm = ({ setAuthError, onSuccess }: SignUpFormProps) => {
+const SignUpForm = ({ setAuthError, onSuccess, returnTo }: SignUpFormProps) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -58,12 +59,23 @@ const SignUpForm = ({ setAuthError, onSuccess }: SignUpFormProps) => {
         if (onSuccess) {
           onSuccess();
         } else if (data.session) {
-          // User was auto-signed in
-          navigate('/suite');
+          // User was auto-signed in, check for pendingAnalysisUrl
+          const pendingUrl = localStorage.getItem('pendingAnalysisUrl');
+          if (pendingUrl && returnTo === '/results') {
+            localStorage.removeItem('pendingAnalysisUrl');
+            navigate('/results?url=' + encodeURIComponent(pendingUrl));
+          } else {
+            // Navigate to the specified return path or default
+            navigate(returnTo || '/suite');
+          }
         } else {
           // Email verification required
           navigate('/verification', { 
-            state: { email: email, emailSent: emailSent } 
+            state: { 
+              email: email, 
+              emailSent: emailSent,
+              returnTo: returnTo
+            } 
           });
         }
       }

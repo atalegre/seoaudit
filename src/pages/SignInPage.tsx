@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import AuthLayout from '@/components/auth/AuthLayout';
 import AuthCard from '@/components/auth/AuthCard';
 import AuthError from '@/components/auth/AuthError';
@@ -16,12 +16,21 @@ const SignInPage = () => {
   const { t } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  
+  const redirect = searchParams.get('redirect');
+  
   const locationState = location.state as { 
     email?: string; 
     returnTo?: string;
     message?: string;
     defaultTab?: 'signin' | 'signup';
   } | null;
+
+  // Determine the return path based on redirect parameter or location state
+  const returnPath = redirect === 'results' ? 
+    '/results' : 
+    (locationState?.returnTo || '/suite');
 
   return (
     <AuthLayout>
@@ -30,6 +39,13 @@ const SignInPage = () => {
           <Alert variant="default" className="bg-blue-50 border-blue-200">
             <Info className="h-4 w-4 text-blue-600" />
             <AlertDescription>{locationState.message}</AlertDescription>
+          </Alert>
+        )}
+        
+        {redirect === 'results' && (
+          <Alert variant="default" className="bg-blue-50 border-blue-200">
+            <Info className="h-4 w-4 text-blue-600" />
+            <AlertDescription>Faça login ou registe-se para ver os resultados da análise.</AlertDescription>
           </Alert>
         )}
         
@@ -51,7 +67,7 @@ const SignInPage = () => {
               
               <SignInForm 
                 email={locationState?.email} 
-                returnTo={locationState?.returnTo}
+                returnTo={returnPath}
                 setAuthError={setAuthError}
               />
             </TabsContent>
@@ -61,7 +77,7 @@ const SignInPage = () => {
               
               <AuthError error={authError} />
               
-              <SignUpForm setAuthError={setAuthError} />
+              <SignUpForm setAuthError={setAuthError} returnTo={returnPath} />
             </TabsContent>
           </Tabs>
         </AuthCard>

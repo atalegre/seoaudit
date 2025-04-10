@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -44,6 +45,7 @@ import KeywordsPage from "./pages/suite/KeywordsPage";
 import DirectoriesPage from "./pages/suite/DirectoriesPage";
 import ChangePasswordPage from "./pages/dashboard/ChangePasswordPage";
 import DetailsPage from "./pages/DetailsPage";
+import ProfilePage from "./pages/dashboard/ProfilePage";
 
 const queryClient = new QueryClient();
 
@@ -103,8 +105,10 @@ function App() {
                   <Route path="bulk-import" element={<BulkImportPage />} />
                   <Route path="settings" element={<SettingsPage />} />
                   <Route path="blog-posts" element={<BlogPostsPage />} />
-                  <Route path="/dashboard/change-password" element={<ChangePasswordPage />} />
-                  <Route path="/dashboard/client/change-password" element={<ChangePasswordPage />} />
+                  <Route path="change-password" element={<ChangePasswordPage />} />
+                  <Route path="client/change-password" element={<ChangePasswordPage />} />
+                  <Route path="profile" element={<ProfilePage />} />
+                  <Route path="client/profile" element={<ProfilePage />} />
                 </Route>
                 
                 {/* Suite Routes */}

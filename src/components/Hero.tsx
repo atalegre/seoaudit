@@ -1,18 +1,26 @@
-
 import React, { useState } from 'react';
 import { useAnalyzerRedirect } from '@/hooks/useAnalyzerRedirect';
 import { Search, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { useUser } from '@/contexts/UserContext';
 
 const Hero = () => {
   const [url, setUrl] = useState('');
   const { isAnalyzing, handleAnalyzeAndRedirect } = useAnalyzerRedirect();
+  const { user } = useUser();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     
     if (url) {
+      localStorage.setItem('pendingAnalysisUrl', url);
+      
+      if (!user) {
+        window.location.href = '/signin?redirect=results';
+        return;
+      }
+      
       handleAnalyzeAndRedirect(url);
     }
   };

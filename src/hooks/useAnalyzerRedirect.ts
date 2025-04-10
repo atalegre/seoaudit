@@ -2,14 +2,24 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useUser } from '@/contexts/UserContext';
 
 export const useAnalyzerRedirect = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const navigate = useNavigate();
+  const { user } = useUser();
 
   const handleAnalyzeAndRedirect = (url: string) => {
     if (!url) {
       toast.error("Por favor, insira um URL válido");
+      return;
+    }
+
+    // Check if user is authenticated
+    if (!user) {
+      // Store URL and redirect to login
+      localStorage.setItem('pendingAnalysisUrl', url);
+      navigate('/signin?redirect=results');
       return;
     }
 
