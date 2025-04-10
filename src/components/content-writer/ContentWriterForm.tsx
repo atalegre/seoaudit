@@ -29,17 +29,22 @@ export type FormValues = z.infer<typeof formSchema>;
 interface ContentWriterFormProps {
   onSubmit: (data: FormValues) => void;
   onShowExample?: () => void;
+  initialData?: Partial<FormValues>;
 }
 
-const ContentWriterForm: React.FC<ContentWriterFormProps> = ({ onSubmit, onShowExample }) => {
+const ContentWriterForm: React.FC<ContentWriterFormProps> = ({ 
+  onSubmit, 
+  onShowExample,
+  initialData
+}) => {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      keyword: '',
-      language: 'PT',
-      tone: 'Profissional',
-      contentType: 'Post de blog',
-      size: 'Médio',
+      keyword: initialData?.keyword || '',
+      language: initialData?.language || 'PT',
+      tone: initialData?.tone || 'Profissional',
+      contentType: initialData?.contentType || 'Post de blog',
+      size: initialData?.size || 'Médio',
     },
   });
 

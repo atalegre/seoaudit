@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import SuiteLayout from '@/components/suite/SuiteLayout';
@@ -23,6 +23,17 @@ const ContentRecommenderPage = () => {
   const [language, setLanguage] = useState('pt');
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [savedIdeas, setSavedIdeas] = useState<string[]>([]);
+
+  // Carregar ideias guardadas quando o componente é montado
+  useEffect(() => {
+    const loadSavedIdeas = () => {
+      const ideas = JSON.parse(localStorage.getItem('savedContentIdeas') || '[]');
+      setSavedIdeas(ideas);
+    };
+    
+    loadSavedIdeas();
+  }, []);
 
   const handleSubmit = () => {
     if (!url) return toast.error('Por favor insere um URL.');
@@ -81,18 +92,36 @@ const ContentRecommenderPage = () => {
   };
 
   const saveToIdeasList = (topic: string) => {
-    // Simular salvar em localStorage ou state global
-    const savedIdeas = JSON.parse(localStorage.getItem('savedContentIdeas') || '[]');
+    // Verificar se a ideia já está guardada
     if (!savedIdeas.includes(topic)) {
-      savedIdeas.push(topic);
-      localStorage.setItem('savedContentIdeas', JSON.stringify(savedIdeas));
-      toast.success('Ideia guardada na sua lista!');
+      const updatedIdeas = [...savedIdeas, topic];
+      localStorage.setItem('savedContentIdeas', JSON.stringify(updatedIdeas));
+      setSavedIdeas(updatedIdeas);
+      toast.success('Ideia guardada na sua lista!', {
+        description: 'Acesse-a no Gerador de Conteúdo',
+        action: {
+          label: 'Ir para Writer',
+          onClick: () => navigate('/suite/writer')
+        }
+      });
     } else {
       toast.info('Esta ideia já está guardada na sua lista.');
     }
   };
 
   const sendToWriter = (topic: string) => {
+    // Garantir que a ideia seja guardada antes de redirecionar
+    if (!savedIdeas.includes(topic)) {
+      const updatedIdeas = [...savedIdeas, topic];
+      localStorage.setItem('savedContentIdeas', JSON.stringify(updatedIdeas));
+    }
+    
+    // Mostrar um toast informativo e redirecionar
+    toast.success('Redirecionando para o Writer...', {
+      description: 'O tópico foi salvo na sua lista de ideias'
+    });
+    
+    // Redirecionar para o Writer com o tópico como parâmetro
     navigate(`/suite/writer?title=${encodeURIComponent(topic)}`);
   };
 
@@ -103,12 +132,26 @@ const ContentRecommenderPage = () => {
       return;
     }
 
-    // Guardar na lista para acesso posterior
-    const savedIdeas = JSON.parse(localStorage.getItem('savedContentIdeas') || '[]');
-    const newIdeas = selectedTopics.filter(topic => !savedIdeas.includes(topic));
-    localStorage.setItem('savedContentIdeas', JSON.stringify([...savedIdeas, ...newIdeas]));
+    // Guardar todas as ideias selecionadas
+    const updatedIdeas = [...savedIdeas];
+    let newIdeasCount = 0;
     
-    // Redirecionar para o primeiro selecionado
+    selectedTopics.forEach(topic => {
+      if (!updatedIdeas.includes(topic)) {
+        updatedIdeas.push(topic);
+        newIdeasCount++;
+      }
+    });
+    
+    localStorage.setItem('savedContentIdeas', JSON.stringify(updatedIdeas));
+    setSavedIdeas(updatedIdeas);
+    
+    // Informar o usuário
+    if (newIdeasCount > 0) {
+      toast.success(`${newIdeasCount} ${newIdeasCount === 1 ? 'nova ideia guardada' : 'novas ideias guardadas'}!`);
+    }
+    
+    // Redirecionar para o primeiro tópico selecionado
     sendToWriter(selectedTopics[0]);
   };
 

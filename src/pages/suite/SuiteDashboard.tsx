@@ -6,6 +6,7 @@ import SuiteLayout from '@/components/suite/SuiteLayout';
 import EmptyDashboardState from '@/components/suite/dashboard/EmptyDashboardState';
 import DashboardContent from '@/components/suite/dashboard/DashboardContent';
 import UserOnboarding from '@/components/suite/dashboard/UserOnboarding';
+import SuiteOnboarding from '@/components/suite/dashboard/SuiteOnboarding';
 import { useDashboardState } from '@/hooks/suite/useDashboardState';
 import { toast } from 'sonner';
 import { useSearchParams } from 'react-router-dom';
@@ -15,6 +16,7 @@ const SuiteDashboard = () => {
   const { toast: hookToast } = useToast();
   const [searchParams] = useSearchParams();
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showTour, setShowTour] = useState(false);
   
   // Extrair URL e projectId da query string
   const urlParam = searchParams.get('url');
@@ -59,7 +61,12 @@ const SuiteDashboard = () => {
     if (user && !localStorage.getItem('userOnboardingDismissed')) {
       setShowOnboarding(true);
     }
-  }, [urlParam, user]);
+
+    // Verificar se deve mostrar o tour interativo
+    if (!localStorage.getItem('suiteOnboardingCompleted') && url) {
+      setShowTour(true);
+    }
+  }, [urlParam, user, url]);
   
   const handleViewMoreRecommendations = () => {
     if (!user) {
@@ -71,7 +78,6 @@ const SuiteDashboard = () => {
     }
     
     // Navigate to recommendations page
-    // Note: Esta funcionalidade seria implementada em uma fase futura
     toast.info("Funcionalidade em desenvolvimento", {
       description: "A página de recomendações detalhadas estará disponível em breve."
     });
@@ -80,6 +86,11 @@ const SuiteDashboard = () => {
   const handleDismissOnboarding = () => {
     setShowOnboarding(false);
     localStorage.setItem('userOnboardingDismissed', 'true');
+  };
+
+  const handleCompleteTour = () => {
+    setShowTour(false);
+    localStorage.setItem('suiteOnboardingCompleted', 'true');
   };
   
   // Render empty state if no URL for analysis
@@ -106,6 +117,14 @@ const SuiteDashboard = () => {
       onRerunAnalysis={handleRerunAnalysis}
       isAnalyzing={isLoading}
     >
+      {/* Tour interativo para novos utilizadores */}
+      {showTour && (
+        <SuiteOnboarding 
+          isFirstVisit={true} 
+          onComplete={handleCompleteTour} 
+        />
+      )}
+
       {/* Onboarding para usuários logados */}
       {showOnboarding && user && (
         <UserOnboarding 

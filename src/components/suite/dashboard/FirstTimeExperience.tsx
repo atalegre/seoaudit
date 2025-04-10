@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Lightbulb, TrendingUp, FileText, ArrowRight } from 'lucide-react';
+import { Lightbulb, TrendingUp, FileText, ArrowRight, Search, Sparkles, Rocket } from 'lucide-react';
 
 interface FirstTimeExperienceProps {
   seoScore: number;
@@ -44,21 +44,27 @@ const FirstTimeExperience: React.FC<FirstTimeExperienceProps> = ({
       title: 'Otimizar meta descrições',
       description: 'Suas meta descrições podem ser melhoradas para aumentar CTR.',
       impact: 'medium',
-      icon: <TrendingUp className="h-5 w-5 text-blue-500" />
+      icon: <TrendingUp className="h-5 w-5 text-blue-500" />,
+      cta: "Ver recomendações",
+      path: '/suite/seo'
     },
     {
       id: 2,
       title: 'Estruturar conteúdo para IA',
       description: 'Adicione marcações semânticas para melhorar a compreensão por IA.',
       impact: 'high',
-      icon: <Lightbulb className="h-5 w-5 text-violet-500" />
+      icon: <Lightbulb className="h-5 w-5 text-violet-500" />,
+      cta: "Explorar otimização para IA",
+      path: '/suite/aio'
     },
     {
       id: 3,
       title: 'Criar FAQ estruturado',
       description: 'Implemente uma seção de perguntas frequentes com schema markup.',
       impact: 'medium',
-      icon: <FileText className="h-5 w-5 text-green-500" />
+      icon: <FileText className="h-5 w-5 text-green-500" />,
+      cta: "Gerar FAQ com IA",
+      path: '/suite/writer'
     }
   ];
 
@@ -69,7 +75,7 @@ const FirstTimeExperience: React.FC<FirstTimeExperienceProps> = ({
       initial="hidden"
       animate="show"
     >
-      {/* Progress Section */}
+      {/* Welcome Message */}
       <motion.div variants={itemVariants} className="bg-gradient-to-r from-blue-50 to-violet-50 p-6 rounded-lg border border-blue-100">
         <h2 className="text-xl font-semibold mb-4">Bem-vindo ao SEOaudit!</h2>
         <p className="text-muted-foreground mb-6">
@@ -100,6 +106,34 @@ const FirstTimeExperience: React.FC<FirstTimeExperienceProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Principais próximos passos */}
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-3">
+          <Button 
+            onClick={() => navigateTo('/suite')} 
+            variant="outline"
+            className="bg-white/80 border-blue-200 hover:bg-blue-50 gap-2"
+          >
+            <Search className="h-4 w-4" />
+            Analisar outro site
+          </Button>
+          <Button 
+            onClick={() => navigateTo('/suite/recommender')} 
+            variant="outline"
+            className="bg-white/80 border-violet-200 hover:bg-violet-50 gap-2"
+          >
+            <Lightbulb className="h-4 w-4" />
+            Explorar ideias de conteúdo
+          </Button>
+          <Button 
+            onClick={() => navigateTo('/suite/writer')} 
+            variant="outline"
+            className="bg-white/80 border-green-200 hover:bg-green-50 gap-2"
+          >
+            <Sparkles className="h-4 w-4" />
+            Gerar artigo com IA
+          </Button>
+        </div>
       </motion.div>
 
       {/* Recommended Actions */}
@@ -110,23 +144,25 @@ const FirstTimeExperience: React.FC<FirstTimeExperienceProps> = ({
             variant="ghost" 
             size="sm" 
             onClick={() => navigateTo('/suite/seo')}
+            className="gap-1"
           >
             Ver todas
+            <ArrowRight className="h-3 w-3" />
           </Button>
         </div>
         
         <div className="grid gap-4">
           {recommendations.map((rec) => (
-            <Card key={rec.id} className="border shadow-sm hover:shadow-md transition-all cursor-pointer" onClick={() => navigateTo('/suite/seo')}>
+            <Card key={rec.id} className="border shadow-sm hover:shadow-md transition-all">
               <CardContent className="p-4">
                 <div className="flex gap-3">
                   <div className="mt-1 shrink-0">
                     {rec.icon}
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <h4 className="font-medium mb-1">{rec.title}</h4>
                     <p className="text-sm text-muted-foreground">{rec.description}</p>
-                    <div className="mt-2 flex items-center">
+                    <div className="mt-2 flex items-center justify-between">
                       <span className={`text-xs px-2 py-0.5 rounded-full ${
                         rec.impact === 'high' ? 'bg-red-100 text-red-700' : 
                         rec.impact === 'medium' ? 'bg-amber-100 text-amber-700' : 
@@ -136,6 +172,15 @@ const FirstTimeExperience: React.FC<FirstTimeExperienceProps> = ({
                         rec.impact === 'medium' ? 'Médio impacto' : 
                         'Baixo impacto'}
                       </span>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="text-xs gap-1"
+                        onClick={() => navigateTo(rec.path)}
+                      >
+                        {rec.cta}
+                        <ArrowRight className="h-3 w-3" />
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -169,10 +214,10 @@ const FirstTimeExperience: React.FC<FirstTimeExperienceProps> = ({
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="text-violet-600 hover:text-violet-700"
-                    onClick={() => navigateTo('/suite/writer')}
+                    className="text-violet-600 hover:text-violet-700 gap-1"
+                    onClick={() => navigateTo('/suite/recommender')}
                   >
-                    Gerar ideias
+                    Ver sugestões
                     <ArrowRight className="ml-1 h-3 w-3" />
                   </Button>
                 </div>
@@ -187,7 +232,7 @@ const FirstTimeExperience: React.FC<FirstTimeExperienceProps> = ({
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="text-blue-600 hover:text-blue-700"
+                    className="text-blue-600 hover:text-blue-700 gap-1"
                     onClick={() => navigateTo('/suite/seo')}
                   >
                     Implementar
@@ -200,9 +245,10 @@ const FirstTimeExperience: React.FC<FirstTimeExperienceProps> = ({
           <CardFooter className="border-t pt-4 pb-3">
             <Button 
               onClick={() => navigateTo('/suite/writer')} 
-              className="w-full bg-gradient-to-r from-blue-500 to-violet-500 hover:from-blue-600 hover:to-violet-600"
+              className="w-full gap-2 bg-gradient-to-r from-blue-500 to-violet-500 hover:from-blue-600 hover:to-violet-600"
             >
-              Gerar Conteúdo Otimizado
+              <Rocket className="h-4 w-4" />
+              Gerar Conteúdo Otimizado Agora
             </Button>
           </CardFooter>
         </Card>

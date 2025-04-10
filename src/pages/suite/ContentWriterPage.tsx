@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import SuiteLayout from '@/components/suite/SuiteLayout';
 import ContentWriterForm from '@/components/content-writer/ContentWriterForm';
 import LoadingContent from '@/components/content-writer/LoadingContent';
@@ -18,9 +18,17 @@ interface GeneratedContent {
 
 const ContentWriterPage: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState<GeneratedContent | null>(null);
   const [savedIdeas, setSavedIdeas] = useState<string[]>([]);
+  const [formData, setFormData] = useState({
+    keyword: '',
+    language: 'PT',
+    tone: 'Profissional',
+    contentType: 'Post de blog',
+    size: 'Médio',
+  });
   
   // Load saved ideas from localStorage and check for URL params
   useEffect(() => {
@@ -35,21 +43,31 @@ const ContentWriterPage: React.FC = () => {
     
     loadSavedIdeas();
     
-    // If there's a title in the URL, use it to generate content
+    // If there's a title in the URL, use it to pre-populate form
     if (titleParam) {
-      handleGenerateContent({ 
-        keyword: titleParam, 
-        language: 'pt', 
-        tone: 'Profissional', 
-        contentType: 'Artigo de blog', 
-        size: 'Médio' 
+      setFormData(prev => ({
+        ...prev,
+        keyword: titleParam
+      }));
+      
+      // Opcional: Gerar conteúdo automaticamente se um título for passado via parâmetro
+      // handleGenerateContent({ ...formData, keyword: titleParam });
+      
+      // Limpar a URL para evitar regeneração ao recarregar
+      navigate('/suite/writer', { replace: true });
+      
+      toast.info('Tópico carregado!', { 
+        description: 'Ajuste os parâmetros e clique em "Gerar conteúdo" quando estiver pronto.'
       });
     }
-  }, [location.search]);
+  }, [location.search, navigate]);
   
   const handleGenerateContent = async (formData: any) => {
     setIsGenerating(true);
     setGeneratedContent(null);
+    
+    // Guardar os dados do formulário para reutilização
+    setFormData(formData);
     
     // Simulate API call with setTimeout
     setTimeout(() => {
@@ -112,19 +130,25 @@ As pequenas empresas que implementam estratégias de marketing digital bem plane
   };
   
   const editIdeaBeforeGenerate = (idea: string) => {
-    // Reset current content and pre-fill the form with the idea
+    // Preencher o formulário com a ideia selecionada
+    setFormData(prev => ({
+      ...prev,
+      keyword: idea
+    }));
+    
+    // Reset current content
     setGeneratedContent(null);
     toast.success("Ideia carregada no formulário");
   };
   
   const generateFromIdea = (idea: string) => {
-    handleGenerateContent({ 
-      keyword: idea, 
-      language: 'pt', 
-      tone: 'Profissional', 
-      contentType: 'Artigo de blog', 
-      size: 'Médio' 
-    });
+    // Usar os valores atuais do formulário mas substituir a palavra-chave pela ideia
+    const dataToUse = {
+      ...formData,
+      keyword: idea
+    };
+    
+    handleGenerateContent(dataToUse);
   };
   
   return (
@@ -150,6 +174,7 @@ As pequenas empresas que implementam estratégias de marketing digital bem plane
               <ContentWriterForm 
                 onSubmit={handleGenerateContent} 
                 onShowExample={handleShowExample}
+                initialData={formData}
               />
             )}
             

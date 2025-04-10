@@ -3,7 +3,8 @@ import React from 'react';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Copy, Sparkles } from 'lucide-react';
+import { Copy, Sparkles, Bookmark, ArrowRight } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Suggestion {
   topic: string;
@@ -30,7 +31,7 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
   onSendToWriter
 }) => {
   return (
-    <Card className="border border-border">
+    <Card className="border border-border hover:border-primary/20 transition-all">
       <CardHeader className="flex flex-row items-start gap-4 py-4">
         <Checkbox 
           id={`suggestion-${index}`}
@@ -53,15 +54,16 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
             <span key={i} className="bg-muted px-2 py-1 rounded">{keyword}</span>
           ))}
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => onCopyToClipboard(suggestion.topic)}>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={() => onCopyToClipboard(suggestion.topic)}>
             <Copy className="h-4 w-4 mr-2" />
             Copiar
           </Button>
-          <Button variant="outline" onClick={() => onSaveToIdeasList(suggestion.topic)}>
+          <Button variant="outline" size="sm" onClick={() => onSaveToIdeasList(suggestion.topic)}>
+            <Bookmark className="h-4 w-4 mr-2" />
             Guardar na Lista
           </Button>
-          <Button variant="secondary" onClick={() => onSendToWriter(suggestion.topic)}>
+          <Button variant="secondary" size="sm" onClick={() => onSendToWriter(suggestion.topic)}>
             <Sparkles className="h-4 w-4 mr-2" />
             Enviar para o Writer
           </Button>
