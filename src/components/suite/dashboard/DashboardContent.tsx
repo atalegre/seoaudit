@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -52,10 +52,17 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
 }) => {
   const navigate = useNavigate();
   
-  const [showOnboardingCompleted, setShowOnboardingCompleted] = useState(false);
+  // Check if this is the first visit to the dashboard
   const [isFirstVisit, setIsFirstVisit] = useState(() => {
     return !localStorage.getItem('suiteOnboardingCompleted');
   });
+  
+  // Check if onboarding tour should be shown
+  const [showOnboardingTour, setShowOnboardingTour] = useState(() => {
+    return localStorage.getItem('showOnboardingTour') === 'true' || isFirstVisit;
+  });
+  
+  const [showOnboardingCompleted, setShowOnboardingCompleted] = useState(false);
   
   // Determine if this is the user's first time viewing results
   const [isFirstTimeResults, setIsFirstTimeResults] = useState(() => {
@@ -65,6 +72,9 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
 
   const handleOnboardingComplete = () => {
     setShowOnboardingCompleted(true);
+    setShowOnboardingTour(false);
+    localStorage.removeItem('showOnboardingTour');
+    
     toast.success("Bem-vindo à SEOaudit!", {
       description: "Explore todas as ferramentas disponíveis para melhorar seu site."
     });
@@ -112,7 +122,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
       onClick={handleFirstTimeInteraction}
     >
       <SuiteOnboarding 
-        isFirstVisit={isFirstVisit} 
+        isFirstVisit={showOnboardingTour} 
         onComplete={handleOnboardingComplete} 
       />
 
@@ -148,17 +158,21 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
             />
           </div>
 
-          <DashboardRecommendations 
-            recommendations={recommendations}
-            isUserLoggedIn={isUserLoggedIn}
-            navigateTo={navigateTo}
-            onViewMoreRecommendations={onViewMoreRecommendations}
-          />
+          <div id="dashboard-recommendations">
+            <DashboardRecommendations 
+              recommendations={recommendations}
+              isUserLoggedIn={isUserLoggedIn}
+              navigateTo={navigateTo}
+              onViewMoreRecommendations={onViewMoreRecommendations}
+            />
+          </div>
 
-          <AvailableTools 
-            isUserLoggedIn={isUserLoggedIn}
-            navigateTo={navigateTo}
-          />
+          <div id="dashboard-tools">
+            <AvailableTools 
+              isUserLoggedIn={isUserLoggedIn}
+              navigateTo={navigateTo}
+            />
+          </div>
         </>
       )}
     </motion.div>

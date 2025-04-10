@@ -44,7 +44,7 @@ const SuiteLayout = ({
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-gray-50">
         {/* Sidebar - Fixed narrow sidebar */}
-        <div className="fixed inset-y-0 left-0 z-50 w-16 bg-white border-r border-gray-200 flex flex-col items-center py-4">
+        <div id="sidebar-navigation" className="fixed inset-y-0 left-0 z-50 w-16 bg-white border-r border-gray-200 flex flex-col items-center py-4">
           <div className="flex-1 flex flex-col items-center space-y-4">
             {/* Logo at top - Make it clickable to go to home */}
             <Link to="/" className="p-2 cursor-pointer">

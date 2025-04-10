@@ -30,6 +30,12 @@ export const useAnalyzerRedirect = () => {
 
     // Store the URL for later use
     localStorage.setItem('lastAnalyzedUrl', url);
+    
+    // Set flag for first time visit to dashboard
+    const hasVisitedDashboard = localStorage.getItem('hasVisitedDashboard');
+    if (!hasVisitedDashboard) {
+      localStorage.setItem('showOnboardingTour', 'true');
+    }
 
     // Simulate analysis (would connect to your API in production)
     setTimeout(() => {
@@ -51,6 +57,9 @@ export const useAnalyzerRedirect = () => {
         const suiteUrl = `https://suite.seoaudit.pt/projeto/${projectId}?url=${encodeURIComponent(url)}`;
         window.open(suiteUrl, '_blank');
       }
+      
+      // Mark that user has visited dashboard
+      localStorage.setItem('hasVisitedDashboard', 'true');
     }, 2000);
   };
 

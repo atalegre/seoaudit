@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAnalyzerRedirect } from '@/hooks/useAnalyzerRedirect';
 import { Search, Info } from 'lucide-react';
@@ -14,13 +15,6 @@ const Hero = () => {
     e.preventDefault();
     
     if (url) {
-      localStorage.setItem('pendingAnalysisUrl', url);
-      
-      if (!user) {
-        window.location.href = '/signin?redirect=results';
-        return;
-      }
-      
       handleAnalyzeAndRedirect(url);
     }
   };

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import OnboardingTour from './onboarding/OnboardingTour';
-import { BarChart2, Brain, Lightbulb } from 'lucide-react';
+import { BarChart2, Brain, Lightbulb, Search, FileText, Tool, Menu } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface SuiteOnboardingProps {
@@ -14,14 +14,37 @@ const SuiteOnboarding: React.FC<SuiteOnboardingProps> = ({
   isFirstVisit, 
   onComplete 
 }) => {
-  const [showOnboarding, setShowOnboarding] = useState(isFirstVisit);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if onboarding should be shown (first visit or explicitly set)
+    const shouldShowOnboarding = isFirstVisit || localStorage.getItem('showOnboardingTour') === 'true';
+    
+    if (shouldShowOnboarding) {
+      // Add a small delay to let the UI render first
+      const timer = setTimeout(() => {
+        setShowOnboarding(true);
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isFirstVisit]);
 
   // Define os passos do tour
   const onboardingSteps = [
     {
-      title: 'Pontuação SEO e IA do seu site',
-      description: 'Aqui pode ver como o seu website está a performar, tanto em SEO como em otimização para Inteligência Artificial.',
+      title: 'Bem-vindo à SEOaudit!',
+      description: 'Vamos dar uma visita guiada pela plataforma para que possa tirar o máximo proveito das ferramentas disponíveis.',
+      targetId: 'dashboard-scores',
+      position: 'bottom' as const,
+      cta: {
+        text: 'Começar o tour',
+      }
+    },
+    {
+      title: 'Pontuação do seu site',
+      description: 'Aqui pode ver a análise completa do seu website, incluindo pontuações de SEO e otimização para Inteligência Artificial.',
       targetId: 'dashboard-scores',
       position: 'bottom' as const,
       cta: {
@@ -38,14 +61,32 @@ const SuiteOnboarding: React.FC<SuiteOnboardingProps> = ({
       }
     },
     {
-      title: 'Explore as recomendações de conteúdo',
+      title: 'Explore as recomendações',
       description: 'Com base na análise do seu site, criamos sugestões personalizadas para melhorar o seu conteúdo e visibilidade.',
       targetId: 'dashboard-recommendations',
       position: 'top' as const,
       cta: {
+        text: 'Próximo',
+      }
+    },
+    {
+      title: 'Ferramentas disponíveis',
+      description: 'Explore todas as ferramentas disponíveis para otimizar seu site, incluindo gerador de conteúdo com IA e análise de palavras-chave.',
+      targetId: 'dashboard-tools',
+      position: 'top' as const,
+      cta: {
+        text: 'Próximo',
+      }
+    },
+    {
+      title: 'Menu de navegação',
+      description: 'Utilize o menu lateral para navegar entre as diferentes ferramentas da plataforma.',
+      targetId: 'sidebar-navigation',
+      position: 'right' as const,
+      cta: {
         text: 'Começar a explorar',
         action: () => {
-          // Simular navegação para recomendações mais detalhadas
+          // Fechar o tour e mostrar mensagem de boas-vindas
           toast.success('Bem-vindo à SEOaudit!', {
             description: 'Explore todas as ferramentas disponíveis para melhorar seu site.'
           });
@@ -58,43 +99,9 @@ const SuiteOnboarding: React.FC<SuiteOnboardingProps> = ({
     setShowOnboarding(false);
     // Salvar no localStorage para não mostrar novamente
     localStorage.setItem('suiteOnboardingCompleted', 'true');
+    localStorage.removeItem('showOnboardingTour');
     onComplete();
   };
-
-  // Adicionar CSS para o efeito de destaque
-  useEffect(() => {
-    if (showOnboarding) {
-      // Adiciona CSS para o efeito de destaque pulsante
-      const style = document.createElement('style');
-      style.innerHTML = `
-        .onboarding-target {
-          position: relative;
-          z-index: 60;
-          box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.4);
-          border-radius: 8px;
-        }
-        .pulse-highlight {
-          animation: pulse-border 2s infinite;
-        }
-        @keyframes pulse-border {
-          0% {
-            box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7);
-          }
-          70% {
-            box-shadow: 0 0 0 6px rgba(99, 102, 241, 0);
-          }
-          100% {
-            box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
-          }
-        }
-      `;
-      document.head.appendChild(style);
-      
-      return () => {
-        document.head.removeChild(style);
-      };
-    }
-  }, [showOnboarding]);
 
   return (
     <OnboardingTour 
