@@ -9,14 +9,14 @@ interface RecommendationsSectionProps {
     id: string | number;
     title: string;
     description: string;
-    impact: string;
+    impact: 'high' | 'medium' | 'low'; // Restrict to only these valid values
     type: string;
   }[];
   onViewMore: () => void;
 }
 
 const RecommendationsSection = ({ recommendations, onViewMore }: RecommendationsSectionProps) => {
-  const getImpactIcon = (impact: string) => {
+  const getImpactIcon = (impact: 'high' | 'medium' | 'low') => {
     switch (impact) {
       case 'high':
         return <AlertTriangle className="h-5 w-5 text-red-500" />;
@@ -59,9 +59,9 @@ const RecommendationsSection = ({ recommendations, onViewMore }: Recommendations
               key={recommendation.id}
               title={recommendation.title}
               description={recommendation.description}
-              impact={recommendation.impact}
+              impact={recommendation.impact as 'high' | 'medium' | 'low'} // Ensure the correct type
               type={getTypeLabel(recommendation.type)}
-              icon={getImpactIcon(recommendation.impact)}
+              icon={getImpactIcon(recommendation.impact as 'high' | 'medium' | 'low')} // Ensure the correct type
             />
           ))}
         </div>
