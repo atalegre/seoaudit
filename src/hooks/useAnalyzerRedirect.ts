@@ -24,14 +24,6 @@ export const useAnalyzerRedirect = () => {
     // Store URL for later use
     localStorage.setItem('lastAnalyzedUrl', formattedUrl);
     
-    // Check if user is authenticated
-    if (!user) {
-      // Store URL and redirect to login with query params
-      sessionStorage.setItem('pendingAnalysisUrl', formattedUrl);
-      navigate(`/signin?redirect=suite&url=${encodeURIComponent(formattedUrl)}`);
-      return;
-    }
-
     setIsAnalyzing(true);
     toast.info("Analisando site...", {
       description: "Este processo pode demorar alguns segundos."
