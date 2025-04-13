@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { UseFormReturn } from 'react-hook-form';
 import { BlogFormValues } from './types';
-import { Image, Upload, RefreshCw, Sparkles } from 'lucide-react';
+import { Image as ImageIcon, Upload, RefreshCw, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 
@@ -72,7 +72,7 @@ const BlogFormImageUpload: React.FC<BlogFormImageUploadProps> = ({
       ? 'Gerando imagem temática...' 
       : 'Generating thematic image...');
     
-    // Create a temporary image to check if it loads properly
+    // Correctly create and use Image object
     const tempImg = new Image();
     tempImg.onload = () => {
       setImagePreview(thematicImage);
@@ -90,7 +90,8 @@ const BlogFormImageUpload: React.FC<BlogFormImageUploadProps> = ({
         ? 'Imagem alternativa gerada!' 
         : 'Alternative image generated!');
     };
-    tempImg.src = thematicImage;
+    tempImg.src = thematicImage; // This is crucial to trigger loading
+    
   };
   
   return (
