@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -5,9 +6,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ArrowRight, Lock, User } from 'lucide-react';
 import { BlurredSection } from './BlurredSection';
 import { motion } from 'framer-motion';
-import { SampleRecommendation } from '@/hooks/suite/useDashboardState';
+import { SampleRecommendation } from '@/hooks/suite/dashboard/useRecommendations';
 
-interface RecommendationType extends SampleRecommendation {}
+// Usar SampleRecommendation como base para nosso tipo
+type RecommendationType = SampleRecommendation;
 
 interface DashboardRecommendationsProps {
   recommendations: RecommendationType[];
