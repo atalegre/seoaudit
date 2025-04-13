@@ -1,7 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import ContentLayout from '@/components/content/ContentLayout';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -9,7 +7,6 @@ import { Search, Loader2 } from 'lucide-react';
 import { categories } from '@/data/blog-data';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import BlogSidebar from '@/components/content/BlogSidebar';
 import { cn } from '@/lib/utils';
 import { BlogPost } from '@/types/blog';
 import { getBlogPosts } from '@/utils/supabaseBlogClient';
@@ -80,10 +77,7 @@ const BlogPage = () => {
   };
 
   return (
-    <ContentLayout
-      sidebar={<BlogSidebar />}
-      className="bg-background"
-    >
+    <div className="container mx-auto px-4 py-8 bg-background">
       <div className="space-y-8">
         <div className="flex flex-col gap-4">
           <h1 className="text-4xl font-bold">Blog SEO+AI</h1>
@@ -177,8 +171,18 @@ const BlogPage = () => {
             )}
           </TabsContent>
         </Tabs>
+
+        <div className="mt-8 bg-primary text-primary-foreground p-6 rounded-lg">
+          <h3 className="text-lg font-semibold mb-2">Precisa de ajuda?</h3>
+          <p className="text-sm mb-4">Agende uma consulta gratuita com os nossos especialistas em SEO e AIO.</p>
+          <Button asChild variant="secondary" className="w-full">
+            <Link to="/contacto" className="flex items-center justify-center gap-2">
+              Fale Conosco <span className="ml-2">→</span>
+            </Link>
+          </Button>
+        </div>
       </div>
-    </ContentLayout>
+    </div>
   );
 };
 
