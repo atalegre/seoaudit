@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ContentLayout from '@/components/content/ContentLayout';
@@ -58,6 +59,8 @@ const BlogPage = () => {
       case 'Content Marketing': return 'bg-orange-500 text-white';
       case 'Social Media': return 'bg-blue-500 text-white';
       case 'Email Marketing': return 'bg-green-500 text-white';
+      case 'Marketing Digital': return 'bg-orange-500 text-white';
+      case 'E-commerce': return 'bg-blue-600 text-white';
       default: return 'bg-slate-500 text-white';
     }
   };
@@ -79,7 +82,7 @@ const BlogPage = () => {
   return (
     <ContentLayout
       sidebar={<BlogSidebar />}
-      className="bg-secondary/30"
+      className="bg-background"
     >
       <div className="space-y-8">
         <div className="flex flex-col gap-4">
@@ -94,14 +97,14 @@ const BlogPage = () => {
           <Input 
             type="search" 
             placeholder="Pesquisar artigos..." 
-            className="pl-10"
+            className="pl-10 bg-white/5 border-gray-200"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)} 
           />
         </div>
 
         <Tabs defaultValue="all" onValueChange={setActiveCategory}>
-          <TabsList className="w-full justify-start overflow-auto py-1 h-auto">
+          <TabsList className="w-full justify-start overflow-auto py-1 h-auto bg-background border-b border-border">
             <TabsTrigger value="all">Todos</TabsTrigger>
             {categories.map((category) => (
               <TabsTrigger key={category} value={category}>
@@ -136,7 +139,7 @@ const BlogPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredPosts.map((post) => (
                   <Link to={`/blog/${post.slug}`} key={post.slug} className="group">
-                    <Card className="h-full overflow-hidden transition-all hover:shadow-md">
+                    <Card className="h-full overflow-hidden transition-all hover:shadow-md border border-gray-200">
                       <div className="aspect-video overflow-hidden bg-muted">
                         <LazyOptimizedImage 
                           src={post.imageSrc || getDefaultImage()} 

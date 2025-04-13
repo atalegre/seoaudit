@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 
@@ -11,7 +11,7 @@ const BlogSidebar = () => {
   
   return (
     <div className="space-y-6">
-      <Card className="bg-primary text-primary-foreground">
+      <Card className="bg-primary text-primary-foreground shadow-md">
         <CardContent className="p-6">
           <h3 className="text-lg font-semibold mb-2">{language === 'pt' ? 'Precisa de ajuda?' : 'Need help?'}</h3>
           <p className="text-sm mb-4">{language === 'pt' ? 
