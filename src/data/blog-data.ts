@@ -1,5 +1,4 @@
-
-export const categories = ['SEO', 'AIO', 'IA', 'Técnico', 'Exemplos'];
+export const categories = ['SEO', 'AIO', 'IA', 'Técnico', 'Exemplos', 'Marketing Digital', 'E-commerce'];
 
 export const blogPosts = [
   {
@@ -307,72 +306,125 @@ export const blogPosts = [
     `
   },
   {
-    slug: 'tecnicas-avancadas-seo-2024',
-    title: 'Técnicas avançadas de SEO para 2024',
-    excerpt: 'Conheça as estratégias de SEO mais avançadas para manter seu site no topo dos resultados de busca em 2024.',
-    date: '2024-02-01',
-    category: 'SEO',
-    imageSrc: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426&auto=format&fit=crop&ixlib=rb-4.0.3',
-    popularity: 85,
-    tags: ['SEO', 'Técnico', '2024', 'Tendências'],
-    headings: [],
-    content: `
-      <h2>Introdução às tendências de SEO em 2024</h2>
-      <p>O SEO continua evoluindo em ritmo acelerado, e 2024 traz novos desafios e oportunidades...</p>
-    `,
-    keyLearning: `
-      <ul>
-        <li>O SEO técnico continua sendo a base para qualquer estratégia de otimização bem-sucedida.</li>
-        <li>Inteligência artificial está transformando a análise de SEO e a criação de conteúdo.</li>
-        <li>Experiência do usuário é agora um fator crucial para rankings nos motores de busca.</li>
-        <li>Conteúdo E-E-A-T (Experiência, Expertise, Autoridade e Confiabilidade) é essencial em 2024.</li>
-      </ul>
-    `
-  },
-  {
-    slug: 'seo-local-pequenas-empresas',
-    title: 'SEO Local: Guia completo para pequenas empresas',
-    excerpt: 'Aprenda como otimizar sua presença local e atrair mais clientes da sua região com estratégias de SEO local.',
-    date: '2023-10-20',
-    category: 'SEO',
-    imageSrc: 'https://images.unsplash.com/photo-1579373903781-fd5c0c30c4cd?q=80&w=2874&auto=format&fit=crop&ixlib=rb-4.0.3',
-    popularity: 82,
-    tags: ['SEO Local', 'Pequenas Empresas', 'Google Meu Negócio'],
-    headings: [],
-    content: `
-      <h2>Por que o SEO local é crucial para pequenas empresas</h2>
-      <p>Para negócios que atendem uma área geográfica específica, o SEO local pode ser mais importante que o SEO geral...</p>
-    `,
-    keyLearning: `
-      <ul>
-        <li>Configurar e otimizar seu perfil no Google Meu Negócio é essencial para SEO local.</li>
-        <li>Consistência em NAP (Nome, Endereço, Telefone) em toda a web é fundamental.</li>
-        <li>Avaliações locais positivas impactam diretamente nos rankings locais.</li>
-        <li>Conteúdo localizado aumenta a relevância para buscas regionais.</li>
-      </ul>
-    `
-  },
-  {
-    slug: 'ia-generativa-criacao-conteudo',
-    title: 'IA Generativa na criação de conteúdo: Prós e contras',
-    excerpt: 'Um olhar objetivo sobre como utilizar ferramentas de IA generativa para criar conteúdo sem prejudicar SEO e AIO.',
-    date: '2024-01-05',
+    slug: 'inteligencia-artificial-marketing-digital-2025',
+    title: 'O Futuro da Inteligência Artificial no Marketing Digital em 2025',
+    excerpt: 'Descubra como a IA vai revolucionar as estratégias de marketing digital nos próximos anos e como se preparar para essas mudanças.',
+    date: '2024-03-15',
     category: 'IA',
-    imageSrc: 'https://images.unsplash.com/photo-1644929610892-5b49323ccd49?q=80&w=3271&auto=format&fit=crop&ixlib=rb-4.0.3',
-    popularity: 90,
-    tags: ['IA Generativa', 'Criação de Conteúdo', 'ChatGPT'],
-    headings: [],
+    imageSrc: 'https://images.unsplash.com/photo-1677442136019-21780ecad495?q=80&w=2832&auto=format&fit=crop&ixlib=rb-4.0.3',
+    popularity: 88,
+    tags: ['IA', 'Marketing Digital', 'Tendências', 'Futuro'],
+    headings: [
+      { id: 'introducao', text: 'Introdução', level: 2 },
+      { id: 'tendencias-ia-2025', text: 'Tendências de IA para 2025', level: 2 },
+      { id: 'aplicacoes-praticas', text: 'Aplicações práticas no marketing', level: 2 },
+      { id: 'desafios-oportunidades', text: 'Desafios e oportunidades', level: 2 },
+      { id: 'conclusao', text: 'Conclusão', level: 2 },
+    ],
     content: `
-      <h2>O papel da IA na criação de conteúdo moderno</h2>
-      <p>Ferramentas de IA como ChatGPT, Claude e outros revolucionaram o processo de criação de conteúdo...</p>
+      <h2 id="introducao">Introdução</h2>
+      <p>A inteligência artificial está transformando rapidamente o cenário do marketing digital, e até 2025, essas mudanças serão ainda mais profundas...</p>
     `,
     keyLearning: `
       <ul>
-        <li>Use IA generativa como assistente, não como substituto para expertise humana.</li>
-        <li>Conteúdo totalmente gerado por IA pode ser detectado por algoritmos de busca.</li>
-        <li>A revisão e edição humana são essenciais para garantir qualidade e originalidade.</li>
-        <li>IA é excelente para ideias e estruturação, mas precisa de toque humano para autenticidade.</li>
+        <li>A IA preditiva será fundamental para personalização em escala até 2025.</li>
+        <li>Chatbots e assistentes virtuais serão indistinguíveis de atendentes humanos.</li>
+        <li>Análise de dados em tempo real permitirá ajustes instantâneos de campanhas.</li>
+        <li>Empresas sem estratégia de IA ficarão significativamente para trás da concorrência.</li>
       </ul>
     `
   },
+  {
+    slug: 'otimizacao-ecommerce-aio-seo',
+    title: 'Guia Completo: Otimização de E-commerce com AIO e SEO',
+    excerpt: 'Estratégias avançadas para aumentar a visibilidade do seu e-commerce tanto em buscadores tradicionais quanto em interfaces de IA.',
+    date: '2024-03-20',
+    category: 'E-commerce',
+    imageSrc: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?q=80&w=3270&auto=format&fit=crop&ixlib=rb-4.0.3',
+    popularity: 92,
+    tags: ['E-commerce', 'SEO', 'AIO', 'Vendas Online'],
+    headings: [
+      { id: 'introducao', text: 'Introdução', level: 2 },
+      { id: 'desafios-ecommerce', text: 'Desafios específicos de e-commerce', level: 2 },
+      { id: 'estrategias-seo', text: 'Estratégias de SEO para lojas virtuais', level: 2 },
+      { id: 'aio-ecommerce', text: 'AIO aplicado ao e-commerce', level: 2 },
+      { id: 'casos-sucesso', text: 'Casos de sucesso', level: 2 },
+      { id: 'conclusao', text: 'Conclusão', level: 2 },
+    ],
+    content: `
+      <h2 id="introducao">Introdução</h2>
+      <p>O e-commerce está em constante evolução e as estratégias de otimização precisam acompanhar esse ritmo para garantir visibilidade e conversões...</p>
+    `,
+    keyLearning: `
+      <ul>
+        <li>A estrutura do site e a arquitetura da informação são cruciais para e-commerce.</li>
+        <li>Metadados de produtos bem estruturados ajudam tanto no SEO quanto no AIO.</li>
+        <li>Reviews e UGC aumentam significativamente a visibilidade em interfaces de IA.</li>
+        <li>A velocidade da página é um fator crítico para rankings e taxas de conversão.</li>
+      </ul>
+    `
+  },
+  {
+    slug: 'estrategias-marketing-conteudo-2024',
+    title: 'Estratégias de Marketing de Conteúdo que Realmente Funcionam em 2024',
+    excerpt: 'Descubra as abordagens mais eficazes para criar conteúdo que engaja, converte e posiciona sua marca como autoridade no mercado atual.',
+    date: '2024-03-25',
+    category: 'Marketing Digital',
+    imageSrc: 'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?q=80&w=3174&auto=format&fit=crop&ixlib=rb-4.0.3',
+    popularity: 90,
+    tags: ['Marketing de Conteúdo', 'Engajamento', 'Conversão', 'Autoridade'],
+    headings: [
+      { id: 'introducao', text: 'Introdução', level: 2 },
+      { id: 'estado-atual', text: 'O estado atual do marketing de conteúdo', level: 2 },
+      { id: 'tipos-conteudo', text: 'Tipos de conteúdo com maior impacto', level: 2 },
+      { id: 'distribuicao', text: 'Estratégias de distribuição', level: 2 },
+      { id: 'medicao-resultados', text: 'Medição de resultados', level: 2 },
+      { id: 'casos-estudo', text: 'Casos de estudo', level: 2 },
+      { id: 'conclusao', text: 'Conclusão', level: 2 },
+    ],
+    content: `
+      <h2 id="introducao">Introdução</h2>
+      <p>O marketing de conteúdo continua sendo uma das estratégias mais eficazes para atrair e reter clientes, mas o que realmente funciona em 2024?</p>
+    `,
+    keyLearning: `
+      <ul>
+        <li>Conteúdo interativo gera 2x mais engajamento que conteúdo estático.</li>
+        <li>Estratégias multicanal aumentam significativamente o alcance e as conversões.</li>
+        <li>Conteúdo gerado por usuários (UGC) aumenta a confiança e autenticidade da marca.</li>
+        <li>Métricas de engajamento são tão importantes quanto métricas de conversão.</li>
+      </ul>
+    `
+  },
+  {
+    slug: 'seo-para-voice-search',
+    title: 'SEO para Pesquisa por Voz: O Guia Definitivo',
+    excerpt: 'Como otimizar seu site para assistentes virtuais como Alexa, Google Assistant e Siri, capturando o crescente tráfego de pesquisas por voz.',
+    date: '2024-04-01',
+    category: 'SEO',
+    imageSrc: 'https://images.unsplash.com/photo-1519558260268-cde7e03a0152?q=80&w=3270&auto=format&fit=crop&ixlib=rb-4.0.3',
+    popularity: 85,
+    tags: ['Voice Search', 'SEO', 'Assistentes Virtuais', 'Mobile'],
+    headings: [
+      { id: 'introducao', text: 'Introdução', level: 2 },
+      { id: 'comportamento', text: 'Comportamento de pesquisa por voz', level: 2 },
+      { id: 'palavras-chave', text: 'Estratégia de palavras-chave para voz', level: 2 },
+      { id: 'schema', text: 'Dados estruturados e schema', level: 2 },
+      { id: 'faq-optimization', text: 'Otimização de FAQs', level: 2 },
+      { id: 'mobile-speed', text: 'Velocidade mobile', level: 2 },
+      { id: 'local-seo', text: 'SEO local para voice search', level: 2 },
+      { id: 'conclusao', text: 'Conclusão', level: 2 },
+    ],
+    content: `
+      <h2 id="introducao">Introdução</h2>
+      <p>A pesquisa por voz está transformando a maneira como os usuários encontram informações online, com previsões indicando que mais de 50% das buscas serão feitas por voz nos próximos anos...</p>
+    `,
+    keyLearning: `
+      <ul>
+        <li>Pesquisas por voz são tipicamente mais longas e conversacionais que pesquisas digitadas.</li>
+        <li>Featured snippets são frequentemente a fonte das respostas dos assistentes de voz.</li>
+        <li>Otimização para perguntas específicas (quem, o que, quando, onde, por que, como) é essencial.</li>
+        <li>Velocidade de carregamento mobile e dados estruturados são fatores cruciais para ranking em voice search.</li>
+      </ul>
+    `
+  }
 ];

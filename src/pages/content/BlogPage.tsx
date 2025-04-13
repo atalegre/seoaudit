@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ContentLayout from '@/components/content/ContentLayout';
@@ -40,7 +39,6 @@ const BlogPage = () => {
     fetchPosts();
   }, []);
   
-  // Filtrar posts por categoria e pesquisa
   const filteredPosts = blogPosts.filter(post => {
     const matchesCategory = activeCategory === 'all' || post.category === activeCategory;
     const matchesSearch = post.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -64,7 +62,6 @@ const BlogPage = () => {
     }
   };
 
-  // Função para obter uma imagem de fallback quando a imagem principal falhar
   const getDefaultImage = () => {
     const defaultImages = [
       '/placeholder.svg',
@@ -75,7 +72,6 @@ const BlogPage = () => {
     return defaultImages[Math.floor(Math.random() * defaultImages.length)];
   };
 
-  // Função para lidar com erros de carregamento de imagens
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.src = getDefaultImage();
   };
