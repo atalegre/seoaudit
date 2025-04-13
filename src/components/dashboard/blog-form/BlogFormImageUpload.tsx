@@ -5,8 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { UseFormReturn } from 'react-hook-form';
 import { BlogFormValues } from './types';
-import { Image, Upload, RefreshCw } from 'lucide-react';
+import { Image, Upload, RefreshCw, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { toast } from 'sonner';
 
 interface BlogFormImageUploadProps {
   form: UseFormReturn<BlogFormValues>;
@@ -48,6 +49,48 @@ const BlogFormImageUpload: React.FC<BlogFormImageUploadProps> = ({
     
     setImagePreview(randomImage);
     form.setValue('imageSrc', randomImage);
+  };
+  
+  const handleGenerateThematicImage = () => {
+    // Generate image based on title and category
+    const title = form.getValues('title');
+    const category = form.getValues('category');
+    
+    if (!title) {
+      toast.error(language === 'pt' 
+        ? 'Adicione um título para gerar uma imagem temática' 
+        : 'Add a title to generate a thematic image');
+      return;
+    }
+    
+    const searchQuery = `${category || ''} ${title}`.trim();
+    const encodedQuery = encodeURIComponent(searchQuery);
+    const timestamp = new Date().getTime(); // Add timestamp to avoid caching
+    const thematicImage = `https://source.unsplash.com/featured/1200x800/?${encodedQuery}&t=${timestamp}`;
+    
+    toast.info(language === 'pt' 
+      ? 'Gerando imagem temática...' 
+      : 'Generating thematic image...');
+    
+    // Create a temporary image to check if it loads properly
+    const tempImg = new Image();
+    tempImg.onload = () => {
+      setImagePreview(thematicImage);
+      form.setValue('imageSrc', thematicImage);
+      toast.success(language === 'pt' 
+        ? 'Imagem temática gerada com sucesso!' 
+        : 'Thematic image generated successfully!');
+    };
+    tempImg.onerror = () => {
+      // Fallback to a different search term if the specific one fails
+      const fallbackImage = `https://source.unsplash.com/featured/1200x800/?${category || 'blog'}&t=${timestamp}`;
+      setImagePreview(fallbackImage);
+      form.setValue('imageSrc', fallbackImage);
+      toast.success(language === 'pt' 
+        ? 'Imagem alternativa gerada!' 
+        : 'Alternative image generated!');
+    };
+    tempImg.src = thematicImage;
   };
   
   return (
@@ -92,12 +135,13 @@ const BlogFormImageUpload: React.FC<BlogFormImageUploadProps> = ({
                 </div>
                 
                 {/* Button group */}
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Button 
                     type="button" 
                     variant="outline" 
                     onClick={handleBrowseClick}
                     className="flex-1"
+                    size="sm"
                   >
                     <Upload className="w-4 h-4 mr-2" />
                     {language === 'pt' ? 'Selecionar Imagem' : 'Select Image'}
@@ -108,8 +152,20 @@ const BlogFormImageUpload: React.FC<BlogFormImageUploadProps> = ({
                     variant="outline"
                     onClick={handleRandomImageClick}
                     title={language === 'pt' ? 'Obter imagem aleatória do Unsplash' : 'Get random image from Unsplash'}
+                    size="sm"
                   >
                     <RefreshCw className="w-4 h-4" />
+                  </Button>
+                  
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={handleGenerateThematicImage}
+                    className="flex-1"
+                    size="sm"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    {language === 'pt' ? 'Gerar Imagem Temática' : 'Generate Thematic Image'}
                   </Button>
                 </div>
               </div>

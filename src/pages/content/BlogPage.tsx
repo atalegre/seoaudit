@@ -13,6 +13,7 @@ import BlogSidebar from '@/components/content/BlogSidebar';
 import { cn } from '@/lib/utils';
 import { BlogPost } from '@/types/blog';
 import { getBlogPosts } from '@/utils/supabaseBlogClient';
+import LazyOptimizedImage from '@/components/results/LazyOptimizedImage';
 
 const BlogPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -53,8 +54,12 @@ const BlogPage = () => {
       case 'SEO': return 'bg-seo text-primary-foreground';
       case 'AIO': return 'bg-aio text-primary-foreground';
       case 'IA': return 'bg-indigo-500 text-white';
+      case 'AI': return 'bg-indigo-500 text-white';
       case 'Técnico': return 'bg-slate-700 text-white';
       case 'Exemplos': return 'bg-emerald-500 text-white';
+      case 'Content Marketing': return 'bg-orange-500 text-white';
+      case 'Social Media': return 'bg-blue-500 text-white';
+      case 'Email Marketing': return 'bg-green-500 text-white';
       default: return 'bg-slate-500 text-white';
     }
   };
@@ -137,7 +142,7 @@ const BlogPage = () => {
                   <Link to={`/blog/${post.slug}`} key={post.slug} className="group">
                     <Card className="h-full overflow-hidden transition-all hover:shadow-md">
                       <div className="aspect-video overflow-hidden bg-muted">
-                        <img 
+                        <LazyOptimizedImage 
                           src={post.imageSrc || getDefaultImage()} 
                           alt={post.title}
                           className="h-full w-full object-cover transition-transform group-hover:scale-105"

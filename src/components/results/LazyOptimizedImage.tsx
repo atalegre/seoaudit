@@ -13,6 +13,7 @@ interface LazyOptimizedImageProps {
   fetchPriority?: 'high' | 'low' | 'auto';
   sizes?: string;
   onLoad?: () => void;
+  onError?: (e: React.SyntheticEvent<HTMLImageElement, Event>) => void;
 }
 
 const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
@@ -26,13 +27,20 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
   fetchPriority = 'auto',
   sizes,
   onLoad,
+  onError,
 }) => {
   const isMobile = useIsMobile();
   const [isLoaded, setIsLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
   
   const handleImageLoad = () => {
     setIsLoaded(true);
     if (onLoad) onLoad();
+  };
+  
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    setHasError(true);
+    if (onError) onError(e);
   };
   
   // Determine default sizes if not provided
@@ -48,6 +56,7 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
           width={width}
           height={height}
           onLoad={handleImageLoad}
+          onError={handleImageError}
           fetchPriority="high"
           decoding="sync"
           sizes={defaultSizes}
@@ -67,6 +76,7 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
         height={height}
         loading="lazy"
         onLoad={handleImageLoad}
+        onError={handleImageError}
         fetchPriority={fetchPriority}
         decoding="async"
         sizes={defaultSizes}

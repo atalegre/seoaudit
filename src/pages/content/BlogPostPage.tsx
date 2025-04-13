@@ -11,6 +11,7 @@ import TableOfContents from '@/components/content/TableOfContents';
 import { cn } from '@/lib/utils';
 import { BlogPost } from '@/types/blog';
 import { getBlogPostBySlug } from '@/utils/supabaseBlogClient';
+import LazyOptimizedImage from '@/components/results/LazyOptimizedImage';
 
 const BlogPostPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -93,8 +94,12 @@ const BlogPostPage = () => {
       case 'SEO': return 'bg-seo text-primary-foreground';
       case 'AIO': return 'bg-aio text-primary-foreground';
       case 'IA': return 'bg-indigo-500 text-white';
+      case 'AI': return 'bg-indigo-500 text-white';
       case 'Técnico': return 'bg-slate-700 text-white';
       case 'Exemplos': return 'bg-emerald-500 text-white';
+      case 'Content Marketing': return 'bg-orange-500 text-white';
+      case 'Social Media': return 'bg-blue-500 text-white';
+      case 'Email Marketing': return 'bg-green-500 text-white';
       default: return 'bg-slate-500 text-white';
     }
   };
@@ -154,11 +159,12 @@ const BlogPostPage = () => {
 
           {post.imageSrc && (
             <div className="aspect-video overflow-hidden rounded-lg mb-8">
-              <img 
-                src={post.imageSrc || getDefaultImage()} 
+              <LazyOptimizedImage 
+                src={post.imageSrc}
                 alt={post.title}
-                className="h-full w-full object-cover"
+                className="h-full w-full"
                 onError={handleImageError}
+                priority={true}
               />
             </div>
           )}
