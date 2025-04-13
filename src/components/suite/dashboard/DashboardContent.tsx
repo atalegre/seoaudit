@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -10,14 +9,7 @@ import DashboardMetrics from './DashboardMetrics';
 import DashboardRecommendations from './DashboardRecommendations';
 import AvailableTools from './AvailableTools';
 import FirstTimeExperience from './FirstTimeExperience';
-
-interface RecommendationType {
-  id: string;
-  title: string;
-  description: string;
-  type: 'seo' | 'aio';
-  impact: 'high' | 'medium' | 'low';
-}
+import { SampleRecommendation } from '@/hooks/suite/dashboard/useRecommendations';
 
 interface DashboardContentProps {
   domain: string;
@@ -29,7 +21,7 @@ interface DashboardContentProps {
   performanceScore: number;
   directoryScore: number;
   keywordScore: number;
-  recommendations: RecommendationType[];
+  recommendations: SampleRecommendation[];
   isUserLoggedIn: boolean;
   onViewMoreRecommendations: () => void;
   lastAnalysisDate?: string;

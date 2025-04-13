@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { useUrlState } from './dashboard/useUrlState';
 import { useScoreData } from './dashboard/useScoreData';
-import { useRecommendations } from './dashboard/useRecommendations';
+import { useRecommendations, SampleRecommendation } from './dashboard/useRecommendations';
 import { useLogoFetcher } from './dashboard/useLogoFetcher';
 import { useAnalysisState } from './dashboard/useAnalysisState';
 import { toast } from 'sonner';

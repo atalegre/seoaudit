@@ -7,7 +7,7 @@ import EmptyDashboardState from '@/components/suite/dashboard/EmptyDashboardStat
 import DashboardContent from '@/components/suite/dashboard/DashboardContent';
 import UserOnboarding from '@/components/suite/dashboard/UserOnboarding';
 import SuiteOnboarding from '@/components/suite/dashboard/SuiteOnboarding';
-import { useDashboardState } from '@/hooks/suite/useDashboardState';
+import { useDashboardState, SampleRecommendation } from '@/hooks/suite/useDashboardState';
 import { toast } from 'sonner';
 import { useSearchParams, useLocation } from 'react-router-dom';
 
