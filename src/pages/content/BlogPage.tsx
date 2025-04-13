@@ -97,7 +97,7 @@ const BlogPage = () => {
           <Input 
             type="search" 
             placeholder="Pesquisar artigos..." 
-            className="pl-10 bg-white/5 border-gray-200"
+            className="pl-10 bg-background border-gray-200"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)} 
           />
