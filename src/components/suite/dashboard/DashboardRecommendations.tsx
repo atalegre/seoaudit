@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -6,14 +5,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ArrowRight, Lock, User } from 'lucide-react';
 import { BlurredSection } from './BlurredSection';
 import { motion } from 'framer-motion';
+import { SampleRecommendation } from '@/hooks/suite/useDashboardState';
 
-interface RecommendationType {
-  id: string;
-  title: string;
-  description: string;
-  type: 'seo' | 'aio' | 'technical' | 'content' | 'structure' | 'ai';
-  impact: 'high' | 'medium' | 'low';
-}
+interface RecommendationType extends SampleRecommendation {}
 
 interface DashboardRecommendationsProps {
   recommendations: RecommendationType[];
