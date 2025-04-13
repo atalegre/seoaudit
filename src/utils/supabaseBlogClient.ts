@@ -250,7 +250,7 @@ function generateExcerpt(title: string, category: string): string {
     ],
     'SEO': [
       'Stay ahead of the curve with the latest SEO techniques that will dominate search engine rankings.',
-      'Master the most effective SEO strategies to boost your website's visibility and organic traffic.',
+      'Master the most effective SEO strategies to boost your website\'s visibility and organic traffic.',
       'Discover proven SEO methods that will help your content rank higher in search results.'
     ],
     'Content Marketing': [
