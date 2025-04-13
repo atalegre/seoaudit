@@ -57,8 +57,8 @@ const ClientPageContent: React.FC<ClientPageContentProps> = ({
   }));
   
   return (
-    <div className="p-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
         <div>
           <h1 className="text-2xl font-bold">Dashboard de {client.name}</h1>
           <p className="text-muted-foreground">
@@ -74,7 +74,7 @@ const ClientPageContent: React.FC<ClientPageContentProps> = ({
       </div>
       
       {client.website && (
-        <Card className="mb-6">
+        <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg flex items-center gap-2">
               <Globe className="h-5 w-5 text-primary" />
@@ -110,7 +110,7 @@ const ClientPageContent: React.FC<ClientPageContentProps> = ({
         totalRecommendations={recommendations.length}
       />
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <ReportsSection reports={formattedReports} />
         <NotificationsSection 
           notifications={[

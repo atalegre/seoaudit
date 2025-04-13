@@ -33,7 +33,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Top navbar - Only render the main one */}
+      {/* Top navbar */}
       <TopNavbar 
         isMobile={isMobile}
         isMobileMenuOpen={isMobileMenuOpen}
