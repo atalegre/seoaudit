@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { UseFormReturn } from 'react-hook-form';
@@ -8,7 +8,6 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import ImagePreview from './image-upload/ImagePreview';
 import ImageUploadButtons from './image-upload/ImageUploadButtons';
 import UnsplashImagePicker from './image-upload/UnsplashImagePicker';
-import { useImageUpload } from './image-upload/useImageUpload';
 import { toast } from 'sonner';
 
 interface BlogFormImageUploadProps {
@@ -26,25 +25,70 @@ const BlogFormImageUpload: React.FC<BlogFormImageUploadProps> = ({
 }) => {
   const { language } = useLanguage();
   const [imageError, setImageError] = useState<string | null>(null);
+  const [isUnsplashOpen, setIsUnsplashOpen] = useState(false);
+  const [isImageLoading, setIsImageLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const { 
-    fileInputRef, 
-    handleFileChange, 
-    handleBrowseClick, 
-    handleRandomImageClick, 
-    handleGenerateThematicImage,
-    isImageLoading
-  } = useImageUpload({
-    form,
-    setImagePreview,
-    setImageFile
-  });
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    // Check file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size must be less than 5MB');
+      return;
+    }
+
+    // Create a preview URL
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const previewUrl = reader.result as string;
+      setImagePreview(previewUrl);
+      form.setValue('imageSrc', ''); // Clear the remote URL since we're using a file
+      setImageFile(file);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleBrowseClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleRandomImageClick = () => {
+    setIsImageLoading(true);
+    // Simulate loading a random placeholder image
+    setTimeout(() => {
+      const placeholders = [
+        'https://images.unsplash.com/photo-1518770660439-4636190af475',
+        'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b',
+        'https://images.unsplash.com/photo-1649972904349-6e44c42644a7',
+      ];
+      const randomImage = placeholders[Math.floor(Math.random() * placeholders.length)];
+      setImagePreview(randomImage);
+      form.setValue('imageSrc', randomImage);
+      setImageFile(null);
+      setIsImageLoading(false);
+    }, 500);
+  };
+
+  const handleGenerateThematicImage = () => {
+    // This would typically use AI to generate an image based on the blog title
+    // For now, we'll just open the Unsplash picker
+    setIsUnsplashOpen(true);
+  };
   
   const handleUnsplashImageSelect = (imageUrl: string) => {
     setImagePreview(imageUrl);
     form.setValue('imageSrc', imageUrl);
     setImageFile(null);
     setImageError(null); // Reset any previous errors
+    setIsUnsplashOpen(false);
     
     // Log the selection for debugging
     console.log('Selected Unsplash image:', imageUrl);
@@ -85,7 +129,7 @@ const BlogFormImageUpload: React.FC<BlogFormImageUploadProps> = ({
                 <ImagePreview 
                   imagePreview={imagePreview} 
                   isLoading={isImageLoading}
-                  onImageError={handleImageError}
+                  onImageError={() => handleImageError('Failed to load image')}
                 />
                 
                 {/* Button group */}
@@ -96,10 +140,12 @@ const BlogFormImageUpload: React.FC<BlogFormImageUploadProps> = ({
                   isLoading={isImageLoading}
                 />
                 
-                {/* Unsplash image picker component with blog content context */}
+                {/* Unsplash image picker dialog */}
                 <UnsplashImagePicker 
-                  form={form}
-                  onImageSelect={handleUnsplashImageSelect}
+                  isOpen={isUnsplashOpen}
+                  onClose={() => setIsUnsplashOpen(false)}
+                  onSelectImage={handleUnsplashImageSelect}
+                  blogTitle={form.getValues().title || { pt: '', en: '' }}
                 />
               </div>
             </FormControl>

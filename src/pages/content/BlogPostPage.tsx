@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { BlogPost } from '@/types/blog';
 import { getBlogPostBySlug } from '@/utils/supabaseBlogClient';
 import LazyOptimizedImage from '@/components/results/LazyOptimizedImage';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const BlogPostPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -19,6 +20,7 @@ const BlogPostPage = () => {
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { language } = useLanguage();
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -89,6 +91,15 @@ const BlogPostPage = () => {
     );
   }
 
+  // Get content based on current language
+  const title = language === 'en' ? post.title.en : post.title.pt;
+  const content = language === 'en' 
+    ? post.content?.en || post.content?.pt || ''
+    : post.content?.pt || post.content?.en || '';
+  const keyLearning = language === 'en'
+    ? post.keyLearning?.en || post.keyLearning?.pt || ''
+    : post.keyLearning?.pt || post.keyLearning?.en || '';
+
   const getCategoryColor = (category: string = '') => {
     switch (category) {
       case 'SEO': return 'bg-seo text-primary-foreground';
@@ -135,7 +146,7 @@ const BlogPostPage = () => {
             {post.category || 'Sem categoria'}
           </Badge>
 
-          <h1 className="text-4xl font-bold mb-4 not-prose">{post.title}</h1>
+          <h1 className="text-4xl font-bold mb-4 not-prose">{title}</h1>
 
           <div className="flex items-center text-muted-foreground gap-4 mb-8">
             <div className="flex items-center gap-1">
@@ -161,7 +172,7 @@ const BlogPostPage = () => {
             <div className="aspect-video overflow-hidden rounded-lg mb-8">
               <LazyOptimizedImage 
                 src={post.imageSrc}
-                alt={post.title}
+                alt={title}
                 className="h-full w-full"
                 onError={handleImageError}
                 priority={true}
@@ -169,12 +180,12 @@ const BlogPostPage = () => {
             </div>
           )}
 
-          <div className="content" dangerouslySetInnerHTML={{ __html: post.content || '' }} />
+          <div className="content" dangerouslySetInnerHTML={{ __html: content }} />
           
-          {post.keyLearning && (
+          {keyLearning && (
             <Card className="my-8 p-6 bg-muted/50 border-l-4 border-l-primary not-prose">
               <h3 className="text-xl font-semibold mb-3">Aprendizado chave</h3>
-              <div dangerouslySetInnerHTML={{ __html: post.keyLearning }} />
+              <div dangerouslySetInnerHTML={{ __html: keyLearning }} />
             </Card>
           )}
           
