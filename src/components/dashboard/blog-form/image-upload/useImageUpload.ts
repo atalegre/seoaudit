@@ -4,6 +4,7 @@ import { UseFormReturn } from 'react-hook-form';
 import { BlogFormValues } from '../types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
+import { getTrulyRandomUnsplashImage } from '@/utils/blog/unsplashService';
 
 export const useImageUpload = (form: UseFormReturn<BlogFormValues>) => {
   const { language } = useLanguage();
@@ -28,13 +29,15 @@ export const useImageUpload = (form: UseFormReturn<BlogFormValues>) => {
   };
 
   const handleRandomImageClick = () => {
-    // Get a random Unsplash image optimized for blog content
-    const randomSearchTerms = ['seo', 'digital', 'computer', 'marketing', 'business', 'technology', 'data', 'ai'];
-    const randomTerm = randomSearchTerms[Math.floor(Math.random() * randomSearchTerms.length)];
-    const randomImage = `https://source.unsplash.com/random/1200x800/?${randomTerm}`;
+    // Get a truly random Unsplash image
+    const randomImage = getTrulyRandomUnsplashImage();
     
     setImagePreview(randomImage);
     form.setValue('imageSrc', randomImage);
+    
+    toast.success(language === 'pt' 
+      ? 'Imagem aleatória selecionada!' 
+      : 'Random image selected!');
   };
   
   const handleGenerateThematicImage = () => {
@@ -50,7 +53,7 @@ export const useImageUpload = (form: UseFormReturn<BlogFormValues>) => {
     }
     
     const searchQuery = `${category || ''} ${title}`.trim();
-    const encodedQuery = encodeURIComponent(searchQuery);
+    const encodedQuery = encodeURIComponent(searchQuery.replace(/<[^>]*>/g, ''));
     const timestamp = new Date().getTime(); // Add timestamp to avoid caching
     const thematicImage = `https://source.unsplash.com/featured/1200x800/?${encodedQuery}&t=${timestamp}`;
     
@@ -69,7 +72,7 @@ export const useImageUpload = (form: UseFormReturn<BlogFormValues>) => {
     };
     tempImg.onerror = () => {
       // Fallback to a different search term if the specific one fails
-      const fallbackImage = `https://source.unsplash.com/featured/1200x800/?${category || 'blog'}&t=${timestamp}`;
+      const fallbackImage = getTrulyRandomUnsplashImage();
       setImagePreview(fallbackImage);
       form.setValue('imageSrc', fallbackImage);
       toast.success(language === 'pt' 

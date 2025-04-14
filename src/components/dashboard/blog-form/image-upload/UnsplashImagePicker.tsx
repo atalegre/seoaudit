@@ -1,13 +1,14 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2, Image, Check, RefreshCw } from 'lucide-react';
+import { Loader2, Image, Check, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { 
   UnsplashImage, 
   searchUnsplashImages, 
   generateSearchTerms, 
   getUnsplashAttribution,
-  getRandomUnsplashImage 
+  getRandomUnsplashImage,
+  getTrulyRandomUnsplashImage
 } from '@/utils/blog/unsplashService';
 import { UseFormReturn } from 'react-hook-form';
 import { BlogFormValues } from '../types';
@@ -25,8 +26,10 @@ const UnsplashImagePicker: React.FC<UnsplashImagePickerProps> = ({ form, onImage
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [lastSearchTerms, setLastSearchTerms] = useState<string>('');
   
-  const fetchImagesFromUnsplash = async () => {
+  const fetchImagesFromUnsplash = async (page: number = 1) => {
     try {
       setLoading(true);
       setError(null);
@@ -44,9 +47,10 @@ const UnsplashImagePicker: React.FC<UnsplashImagePickerProps> = ({ form, onImage
       }
       
       const searchTerms = generateSearchTerms(title, category, content);
-      console.log('Fetching Unsplash images for terms:', searchTerms);
+      setLastSearchTerms(searchTerms);
+      console.log('Fetching Unsplash images for terms:', searchTerms, 'page:', page);
       
-      const fetchedImages = await searchUnsplashImages(searchTerms);
+      const fetchedImages = await searchUnsplashImages(searchTerms, 3, page);
       
       if (fetchedImages.length === 0) {
         setError(language === 'pt'
@@ -58,6 +62,7 @@ const UnsplashImagePicker: React.FC<UnsplashImagePickerProps> = ({ form, onImage
       } else {
         setImages(fetchedImages);
         setError(null);
+        setCurrentPage(page);
       }
     } catch (error) {
       console.error('Error fetching Unsplash images:', error);
@@ -70,6 +75,20 @@ const UnsplashImagePicker: React.FC<UnsplashImagePickerProps> = ({ form, onImage
     } finally {
       setLoading(false);
     }
+  };
+  
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      fetchImagesFromUnsplash(currentPage - 1);
+    }
+  };
+  
+  const handleNextPage = () => {
+    fetchImagesFromUnsplash(currentPage + 1);
+  };
+  
+  const handleRefreshImages = () => {
+    fetchImagesFromUnsplash(Math.floor(Math.random() * 10) + 1); // Random page between 1-10
   };
   
   const handleSelectImage = (image: UnsplashImage) => {
@@ -105,6 +124,14 @@ const UnsplashImagePicker: React.FC<UnsplashImagePickerProps> = ({ form, onImage
       : 'Random image selected');
   };
   
+  const handleTrulyRandomImage = () => {
+    const randomImageUrl = getTrulyRandomUnsplashImage();
+    onImageSelect(randomImageUrl);
+    toast.success(language === 'pt'
+      ? 'Imagem aleatória selecionada'
+      : 'Random image selected');
+  };
+  
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -116,7 +143,7 @@ const UnsplashImagePicker: React.FC<UnsplashImagePickerProps> = ({ form, onImage
             type="button" 
             size="sm" 
             variant="outline" 
-            onClick={handleUseFallbackImage}
+            onClick={handleTrulyRandomImage}
           >
             <RefreshCw className="h-4 w-4 mr-2" />
             {language === 'pt' ? 'Imagem Aleatória' : 'Random Image'}
@@ -125,7 +152,7 @@ const UnsplashImagePicker: React.FC<UnsplashImagePickerProps> = ({ form, onImage
             type="button" 
             size="sm" 
             variant="outline" 
-            onClick={fetchImagesFromUnsplash}
+            onClick={() => fetchImagesFromUnsplash(1)}
             disabled={loading}
           >
             {loading ? (
@@ -145,28 +172,65 @@ const UnsplashImagePicker: React.FC<UnsplashImagePickerProps> = ({ form, onImage
       )}
       
       {images.length > 0 && (
-        <div className="grid grid-cols-3 gap-2">
-          {images.map((image) => (
-            <div 
-              key={image.id} 
-              className={`relative aspect-video rounded-md overflow-hidden border-2 cursor-pointer transition-all ${
-                selectedImageId === image.id ? 'border-primary' : 'border-transparent hover:border-muted'
-              }`}
-              onClick={() => handleSelectImage(image)}
+        <>
+          <div className="grid grid-cols-3 gap-2">
+            {images.map((image) => (
+              <div 
+                key={image.id} 
+                className={`relative aspect-video rounded-md overflow-hidden border-2 cursor-pointer transition-all ${
+                  selectedImageId === image.id ? 'border-primary' : 'border-transparent hover:border-muted'
+                }`}
+                onClick={() => handleSelectImage(image)}
+              >
+                <img 
+                  src={image.urls.small} 
+                  alt={image.alt_description || 'Unsplash image'} 
+                  className="w-full h-full object-cover"
+                />
+                {selectedImageId === image.id && (
+                  <div className="absolute top-2 right-2 bg-primary text-white rounded-full p-1">
+                    <Check className="h-4 w-4" />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          
+          <div className="flex justify-between items-center">
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={handlePreviousPage}
+              disabled={currentPage <= 1 || loading}
             >
-              <img 
-                src={image.urls.small} 
-                alt={image.alt_description || 'Unsplash image'} 
-                className="w-full h-full object-cover"
-              />
-              {selectedImageId === image.id && (
-                <div className="absolute top-2 right-2 bg-primary text-white rounded-full p-1">
-                  <Check className="h-4 w-4" />
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              {language === 'pt' ? 'Anterior' : 'Previous'}
+            </Button>
+            
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={handleRefreshImages}
+              disabled={loading}
+            >
+              <RefreshCw className="h-4 w-4 mr-1" />
+              {language === 'pt' ? 'Atualizar' : 'Refresh'}
+            </Button>
+            
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={handleNextPage}
+              disabled={loading}
+            >
+              {language === 'pt' ? 'Próximo' : 'Next'}
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
+        </>
       )}
       
       {images.length > 0 && (

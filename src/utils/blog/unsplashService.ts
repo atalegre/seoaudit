@@ -28,7 +28,8 @@ export interface UnsplashImage {
 
 export const searchUnsplashImages = async (
   query: string,
-  count: number = 3
+  count: number = 3,
+  page: number = 1
 ): Promise<UnsplashImage[]> => {
   try {
     // Validate API key
@@ -37,11 +38,12 @@ export const searchUnsplashImages = async (
       return [];
     }
 
-    console.log(`Searching Unsplash for: "${query}" (${count} images)`);
+    console.log(`Searching Unsplash for: "${query}" (${count} images, page ${page})`);
     
     const params = new URLSearchParams({
       query: query,
       per_page: count.toString(),
+      page: page.toString(),
       orientation: 'landscape',
     });
 
@@ -54,6 +56,7 @@ export const searchUnsplashImages = async (
         headers: {
           Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}`,
         },
+        cache: 'no-store', // Ensure no caching
       }
     );
 
@@ -111,6 +114,9 @@ export const generateSearchTerms = (
     }
   }
 
+  // Clean up any HTML tags that might have been included
+  terms = terms.replace(/<[^>]*>/g, '');
+  
   console.log(`Generated Unsplash search terms: "${terms}"`);
   return terms;
 };
@@ -129,7 +135,18 @@ export const getUnsplashAttribution = (image: UnsplashImage): string => {
  * This doesn't use the API key and has less restrictions
  */
 export const getRandomUnsplashImage = (query: string): string => {
-  const encodedQuery = encodeURIComponent(query);
+  const encodedQuery = encodeURIComponent(query.replace(/<[^>]*>/g, ''));
   const timestamp = new Date().getTime(); // Add timestamp to avoid caching
   return `https://source.unsplash.com/random/1200x800/?${encodedQuery}&t=${timestamp}`;
 };
+
+/**
+ * Get a truly random image from Unsplash with varied topics
+ */
+export const getTrulyRandomUnsplashImage = (): string => {
+  const randomTopics = ['business', 'marketing', 'technology', 'social media', 'computer', 'design', 'creative', 'office', 'website'];
+  const randomTopic = randomTopics[Math.floor(Math.random() * randomTopics.length)];
+  const timestamp = new Date().getTime();
+  return `https://source.unsplash.com/featured/1200x800/?${randomTopic}&t=${timestamp}`;
+};
+
