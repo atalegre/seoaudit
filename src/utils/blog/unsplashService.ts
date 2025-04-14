@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -81,7 +82,7 @@ export const searchUnsplashImages = async (
 };
 
 /**
- * Generate search terms from blog post content
+ * Generate search terms from blog post content with improved content analysis
  * @param title - Blog post title
  * @param category - Blog post category
  * @param content - Blog post content
@@ -92,32 +93,92 @@ export const generateSearchTerms = (
   category?: string,
   content?: string
 ): string => {
-  // Start with title and category
-  let terms = `${title} ${category || ''}`.trim();
+  // Start with title and category - core terms
+  let baseTerms = `${title} ${category || ''}`.trim();
+  let contentKeywords = [];
 
-  // If content is provided, extract potential keywords
+  // If content is provided, extract potential keywords using more advanced analysis
   if (content) {
-    // Extract first few sentences for context
-    const firstParagraph = content.split('\n')[0];
-    const firstSentences = firstParagraph.split('.').slice(0, 2).join('.');
-
-    // Simple keyword extraction - get longer words that might be important
-    const keywords = firstSentences
-      .split(' ')
-      .filter(word => word.length > 5)
-      .slice(0, 3)
-      .join(' ');
-
-    if (keywords) {
-      terms = `${terms} ${keywords}`.trim();
+    // Remove any HTML tags that might be in the content
+    const cleanContent = content.replace(/<[^>]*>/g, '');
+    
+    // Extract the first two paragraphs for more context
+    const paragraphs = cleanContent.split('\n').filter(p => p.trim().length > 0).slice(0, 2);
+    
+    if (paragraphs.length > 0) {
+      // Analyze first two paragraphs
+      const firstParagraphs = paragraphs.join(' ');
+      
+      // Extract potential keywords - longer words that might be important concepts
+      // Skip common words and focus on potential subject matter
+      const commonWords = ['about', 'after', 'again', 'also', 'always', 'and', 'because', 'before', 
+                          'between', 'could', 'during', 'each', 'from', 'have', 'should', 'their', 
+                          'there', 'these', 'they', 'this', 'through', 'very', 'were', 'which', 'while', 
+                          'with', 'would', 'your', 'that', 'them', 'then', 'those'];
+      
+      // Extract words longer than 6 characters, skip common words
+      const potentialKeywords = firstParagraphs.split(/\s+/)
+        .filter(word => {
+          const cleaned = word.replace(/[^\w]/g, '').toLowerCase();
+          return cleaned.length > 6 && !commonWords.includes(cleaned);
+        })
+        .map(word => word.replace(/[^\w]/g, ''))
+        .filter(Boolean);
+      
+      // Get unique keywords to avoid repetition
+      contentKeywords = [...new Set(potentialKeywords)].slice(0, 5); // Top 5 unique keywords
+      
+      console.log('Extracted content keywords:', contentKeywords);
     }
+  }
+  
+  // Combine base terms with content keywords
+  let finalTerms = contentKeywords.length > 0
+    ? `${baseTerms} ${contentKeywords.join(' ')}`
+    : baseTerms;
+    
+  // Add industry-related terms based on category
+  if (category) {
+    let industryTerms = '';
+    
+    switch(category.toLowerCase()) {
+      case 'seo':
+        industryTerms = 'website search engine optimization digital marketing';
+        break;
+      case 'aio':
+      case 'ai optimization':
+        industryTerms = 'artificial intelligence AI technology digital innovation machine learning';
+        break;
+      case 'technical-seo':
+        industryTerms = 'website development coding technical optimization';
+        break;
+      case 'content':
+        industryTerms = 'content creation writing publishing blog articles';
+        break;
+      case 'analytics':
+        industryTerms = 'data analysis charts statistics insights reporting';
+        break;
+      case 'updates':
+        industryTerms = 'news updates announcements digital';
+        break;
+      default:
+        industryTerms = 'digital business professional';
+    }
+    
+    // Add industry terms but with lower weight (at the end)
+    finalTerms = `${finalTerms} ${industryTerms}`;
   }
 
   // Clean up any HTML tags that might have been included
-  terms = terms.replace(/<[^>]*>/g, '');
+  finalTerms = finalTerms.replace(/<[^>]*>/g, '');
   
-  console.log(`Generated Unsplash search terms: "${terms}"`);
-  return terms;
+  // Limit length to avoid overly complex queries
+  if (finalTerms.length > 100) {
+    finalTerms = finalTerms.substring(0, 100);
+  }
+  
+  console.log(`Generated refined Unsplash search terms: "${finalTerms}"`);
+  return finalTerms;
 };
 
 /**

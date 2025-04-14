@@ -41,10 +41,14 @@ const BlogFormImageUpload: React.FC<BlogFormImageUploadProps> = ({
     form.setValue('imageSrc', imageUrl);
     setImageFile(null);
     setImageError(null); // Reset any previous errors
+    
+    // Log the selection for debugging
+    console.log('Selected Unsplash image:', imageUrl);
   };
   
   const handleImageError = (error: string) => {
     setImageError(error);
+    console.error('Image error occurred:', error);
     toast.error(language === 'pt' 
       ? 'Erro ao carregar imagem. Usando imagem alternativa.' 
       : 'Error loading image. Using fallback image.');
@@ -88,7 +92,7 @@ const BlogFormImageUpload: React.FC<BlogFormImageUploadProps> = ({
                   isLoading={isImageLoading}
                 />
                 
-                {/* Unsplash image picker component */}
+                {/* Unsplash image picker component with blog content context */}
                 <UnsplashImagePicker 
                   form={form}
                   onImageSelect={handleUnsplashImageSelect}

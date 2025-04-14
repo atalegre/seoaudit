@@ -50,11 +50,13 @@ const UnsplashImagePicker: React.FC<UnsplashImagePickerProps> = ({ form, onImage
         return;
       }
       
+      // Use the enhanced generateSearchTerms that analyzes content deeply
       const searchTerms = generateSearchTerms(title, category, content);
       setLastSearchTerms(searchTerms);
-      console.log('Fetching Unsplash images for terms:', searchTerms, 'page:', page);
+      console.log('Fetching Unsplash images for refined terms:', searchTerms, 'page:', page);
       
-      const fetchedImages = await searchUnsplashImages(searchTerms, 3, page);
+      // Increased number of results to provide more options
+      const fetchedImages = await searchUnsplashImages(searchTerms, 6, page);
       
       if (fetchedImages.length === 0) {
         setError(language === 'pt'
@@ -67,6 +69,9 @@ const UnsplashImagePicker: React.FC<UnsplashImagePickerProps> = ({ form, onImage
         setImages(fetchedImages);
         setError(null);
         setCurrentPage(page);
+        toast.success(language === 'pt'
+          ? `${fetchedImages.length} imagens relacionadas encontradas!`
+          : `${fetchedImages.length} related images found!`);
       }
     } catch (error) {
       console.error('Error fetching Unsplash images:', error);
@@ -92,7 +97,8 @@ const UnsplashImagePicker: React.FC<UnsplashImagePickerProps> = ({ form, onImage
   };
   
   const handleRefreshImages = () => {
-    fetchImagesFromUnsplash(Math.floor(Math.random() * 10) + 1); // Random page between 1-10
+    // Use last search terms but request a different page for more variety
+    fetchImagesFromUnsplash(Math.floor(Math.random() * 5) + 1); // Random page between 1-5
   };
   
   const handleSelectImage = (image: UnsplashImage) => {

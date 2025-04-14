@@ -4,7 +4,7 @@ import { UseFormReturn } from 'react-hook-form';
 import { BlogFormValues } from '../types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
-import { getTrulyRandomUnsplashImage } from '@/utils/blog/unsplashService';
+import { getTrulyRandomUnsplashImage, generateSearchTerms } from '@/utils/blog/unsplashService';
 
 export const useImageUpload = (form: UseFormReturn<BlogFormValues>) => {
   const { language } = useLanguage();
@@ -80,6 +80,7 @@ export const useImageUpload = (form: UseFormReturn<BlogFormValues>) => {
     // Generate image based on title and category
     const title = form.getValues('title');
     const category = form.getValues('category');
+    const content = form.getValues('content');
     
     if (!title) {
       toast.error(language === 'pt' 
@@ -88,10 +89,10 @@ export const useImageUpload = (form: UseFormReturn<BlogFormValues>) => {
       return;
     }
     
-    const searchQuery = `${category || ''} ${title}`.trim();
-    const encodedQuery = encodeURIComponent(searchQuery.replace(/<[^>]*>/g, ''));
+    // Use the improved generateSearchTerms function that analyzes content
+    const searchQuery = generateSearchTerms(title, category, content);
     const timestamp = new Date().getTime(); // Add timestamp to avoid caching
-    const thematicImage = `https://source.unsplash.com/featured/1200x800/?${encodedQuery}&t=${timestamp}`;
+    const thematicImage = `https://source.unsplash.com/featured/1200x800/?${encodeURIComponent(searchQuery)}&t=${timestamp}`;
     
     toast.info(language === 'pt' 
       ? 'Gerando imagem temática...' 

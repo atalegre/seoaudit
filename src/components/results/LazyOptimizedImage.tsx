@@ -17,6 +17,7 @@ interface LazyOptimizedImageProps {
   onError?: (e: React.SyntheticEvent<HTMLImageElement, Event>) => void;
   fallbackSrc?: string;
   useRandomFallback?: boolean;
+  category?: string; // Optional category for relevant fallback images
 }
 
 const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
@@ -33,6 +34,7 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
   onError,
   fallbackSrc = '/placeholder.svg', // Default fallback
   useRandomFallback = false,
+  category,
 }) => {
   const isMobile = useIsMobile();
   const [isLoaded, setIsLoaded] = useState(false);
@@ -53,6 +55,26 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
     if (onLoad) onLoad();
   };
   
+  const getRelevantFallbackImage = () => {
+    if (category) {
+      // If we have a category, generate a more relevant fallback
+      const fallbackTopics = {
+        'seo': 'seo optimization search engine marketing',
+        'aio': 'ai artificial intelligence machine learning',
+        'technical-seo': 'web development coding technical',
+        'content': 'content writing blog articles',
+        'analytics': 'data analytics dashboard charts',
+        'updates': 'news digital information updates'
+      };
+      
+      const topic = fallbackTopics[category as keyof typeof fallbackTopics] || 'digital marketing business';
+      const timestamp = new Date().getTime();
+      return `https://source.unsplash.com/featured/1200x800/?${encodeURIComponent(topic)}&t=${timestamp}`;
+    }
+    
+    return getTrulyRandomUnsplashImage();
+  };
+  
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     console.error(`Image failed to load: ${imgSrc}, retries: ${retryCount}`);
     
@@ -60,11 +82,11 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
     if (retryCount < 2) {
       setRetryCount(prev => prev + 1);
       
-      // If random fallback is enabled, use Unsplash random image
+      // If random fallback is enabled, use a relevant or random Unsplash image
       if (useRandomFallback) {
-        const randomImage = getTrulyRandomUnsplashImage();
-        console.log(`Using random fallback: ${randomImage}`);
-        setImgSrc(randomImage);
+        const relevantImage = getRelevantFallbackImage();
+        console.log(`Using relevant fallback: ${relevantImage}`);
+        setImgSrc(relevantImage);
       } else if (retryCount === 0 && fallbackSrc) {
         // First retry with provided fallback
         setImgSrc(fallbackSrc);
