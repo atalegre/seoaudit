@@ -1,13 +1,25 @@
 
 import { z } from 'zod';
 
-// Schema for blog post form
+// Schema for multilingual blog post form
 export const blogPostSchema = z.object({
-  title: z.string().min(5, { message: 'Title must be at least 5 characters' }),
+  title: z.object({
+    pt: z.string().min(5, { message: 'Título deve ter pelo menos 5 caracteres' }),
+    en: z.string().min(5, { message: 'Title must be at least 5 characters' })
+  }),
   slug: z.string().min(5, { message: 'Slug must be at least 5 characters' }),
-  excerpt: z.string().optional(),
-  content: z.string().optional(),
-  keyLearning: z.string().optional(),
+  excerpt: z.object({
+    pt: z.string().optional(),
+    en: z.string().optional()
+  }),
+  content: z.object({
+    pt: z.string().optional(),
+    en: z.string().optional()
+  }),
+  keyLearning: z.object({
+    pt: z.string().optional(),
+    en: z.string().optional()
+  }),
   category: z.string().optional(),
   tags: z.string().optional(),
   imageSrc: z.string().optional(),

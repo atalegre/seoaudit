@@ -10,10 +10,14 @@ export const createBlogPost = async (post: BlogPost): Promise<BlogPost | null> =
     // Ensure tags is always an array
     const formattedPost = {
       title: post.title,
+      title_en: post.title_en,
       slug: post.slug,
       excerpt: post.excerpt,
+      excerpt_en: post.excerpt_en,
       content: post.content,
-      key_learning: post.keyLearning, // Make sure this matches the database column name
+      content_en: post.content_en,
+      key_learning: post.keyLearning,
+      key_learning_en: post.keyLearning_en,
       category: post.category,
       tags: Array.isArray(post.tags) ? post.tags : [],
       image_src: post.imageSrc,
