@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import BlogPostsHeader from '@/components/dashboard/BlogPostsHeader';
 import BlogPostsTable from '@/components/dashboard/BlogPostsTable';
 import BlogPostFormDialog from '@/components/dashboard/BlogPostFormDialog';
@@ -112,57 +111,55 @@ const BlogPostsPage = () => {
   console.log('Current loading state:', loading);
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <BlogPostsHeader onCreatePost={handleCreatePost} />
+    <div className="space-y-6">
+      <BlogPostsHeader onCreatePost={handleCreatePost} />
 
-        <Card>
-          <CardHeader>
-            <div className="flex flex-col sm:flex-row justify-between items-start">
-              <CardTitle>Todos os Posts</CardTitle>
-            </div>
-            <BlogPostsSearch 
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-              postsCount={posts.length}
-            />
-          </CardHeader>
-          <CardContent>
-            {error ? (
-              <div className="bg-destructive/20 p-4 rounded-md">
-                <div className="flex items-center space-x-2">
-                  <AlertTriangle className="h-5 w-5 text-destructive" />
-                  <p className="text-destructive font-medium">Erro ao carregar posts</p>
-                </div>
-                <p className="mt-2 text-sm text-muted-foreground">{error}</p>
-                <Button 
-                  onClick={fetchPosts} 
-                  variant="outline" 
-                  className="mt-4"
-                >
-                  Tentar novamente
-                </Button>
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row justify-between items-start">
+            <CardTitle>Todos os Posts</CardTitle>
+          </div>
+          <BlogPostsSearch 
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            postsCount={posts.length}
+          />
+        </CardHeader>
+        <CardContent>
+          {error ? (
+            <div className="bg-destructive/20 p-4 rounded-md">
+              <div className="flex items-center space-x-2">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+                <p className="text-destructive font-medium">Erro ao carregar posts</p>
               </div>
-            ) : (
-              <BlogPostsTable
-                posts={posts}
-                loading={loading}
-                onEdit={handleEditPost}
-                onDelete={handleDeletePost}
-                searchTerm={searchTerm}
-              />
-            )}
-          </CardContent>
-        </Card>
+              <p className="mt-2 text-sm text-muted-foreground">{error}</p>
+              <Button 
+                onClick={fetchPosts} 
+                variant="outline" 
+                className="mt-4"
+              >
+                Tentar novamente
+              </Button>
+            </div>
+          ) : (
+            <BlogPostsTable
+              posts={posts}
+              loading={loading}
+              onEdit={handleEditPost}
+              onDelete={handleDeletePost}
+              searchTerm={searchTerm}
+            />
+          )}
+        </CardContent>
+      </Card>
 
-        <BlogPostFormDialog
-          isOpen={isFormOpen}
-          onOpenChange={setIsFormOpen}
-          currentPost={currentPost}
-          onSuccess={handleFormClose}
-        />
-      </div>
-    </DashboardLayout>
+      <BlogPostFormDialog
+        isOpen={isFormOpen}
+        onOpenChange={setIsFormOpen}
+        currentPost={currentPost}
+        onSuccess={handleFormClose}
+      />
+    </div>
   );
 };
 

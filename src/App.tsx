@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -102,6 +103,7 @@ function App() {
                 <Route path="/verification" element={<VerificationPage />} />
                 <Route path="/auth/callback" element={<Navigate to="/dashboard" />} />
                 
+                {/* Dashboard routes with a single DashboardLayout wrapper */}
                 <Route path="/dashboard" element={<DashboardLayout><Outlet /></DashboardLayout>}>
                   <Route index element={<DashboardPage />} />
                   <Route path="clients" element={<ClientsPage />} />
