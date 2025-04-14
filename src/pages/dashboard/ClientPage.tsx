@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { useClientData } from '@/hooks/useClientData';
@@ -45,7 +44,7 @@ const ClientPage = () => {
   );
 
   return (
-    <DashboardLayout>
+    <>
       {isLoading ? (
         <LoadingState />
       ) : error ? (
@@ -59,7 +58,7 @@ const ClientPage = () => {
       ) : (
         <EmptyState />
       )}
-    </DashboardLayout>
+    </>
   );
 };
 

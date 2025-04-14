@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { Client } from '@/utils/api/types';
 import { getClientsFromDatabase } from '@/utils/api/clientService';
 import { toast } from 'sonner';
@@ -41,25 +40,23 @@ const ClientsPage = () => {
   );
   
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <ClientsHeader 
-          title={t('clients')}
-          description={t('manage-clients')}
-        />
-        
-        <ClientsSearch 
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-        />
-        
-        <ClientsTable 
-          clients={clients}
-          filteredClients={filteredClients}
-          isLoading={isLoading}
-        />
-      </div>
-    </DashboardLayout>
+    <div className="space-y-6">
+      <ClientsHeader 
+        title={t('clients')}
+        description={t('manage-clients')}
+      />
+      
+      <ClientsSearch 
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+      />
+      
+      <ClientsTable 
+        clients={clients}
+        filteredClients={filteredClients}
+        isLoading={isLoading}
+      />
+    </div>
   );
 };
 
