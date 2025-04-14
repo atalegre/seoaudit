@@ -28,15 +28,51 @@ export const getEnglishValidationMessages = () => ({
   imageSrc: 'Image is required',
 });
 
+// Define proper category type with value and label
+export type BlogCategory = {
+  value: string;
+  label: {
+    en: string;
+    pt: string;
+  };
+};
+
 // Blog post categories that match those in the database
-export const blogCategories = [
-  'SEO',
-  'Technical SEO',
-  'Content Strategy',
-  'Local SEO',
-  'Mobile SEO',
-  'AI Optimization',
-  'E-commerce SEO',
-  'Analytics',
-  'Link Building',
+export const blogCategories: BlogCategory[] = [
+  {
+    value: 'SEO',
+    label: { en: 'SEO', pt: 'SEO' }
+  },
+  {
+    value: 'Technical SEO',
+    label: { en: 'Technical SEO', pt: 'SEO Técnico' }
+  },
+  {
+    value: 'Content Strategy',
+    label: { en: 'Content Strategy', pt: 'Estratégia de Conteúdo' }
+  },
+  {
+    value: 'Local SEO',
+    label: { en: 'Local SEO', pt: 'SEO Local' }
+  },
+  {
+    value: 'Mobile SEO',
+    label: { en: 'Mobile SEO', pt: 'SEO Mobile' }
+  },
+  {
+    value: 'AI Optimization',
+    label: { en: 'AI Optimization', pt: 'Otimização com IA' }
+  },
+  {
+    value: 'E-commerce SEO',
+    label: { en: 'E-commerce SEO', pt: 'SEO para E-commerce' }
+  },
+  {
+    value: 'Analytics',
+    label: { en: 'Analytics', pt: 'Analytics' }
+  },
+  {
+    value: 'Link Building',
+    label: { en: 'Link Building', pt: 'Construção de Links' }
+  },
 ];
