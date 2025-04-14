@@ -27,5 +27,23 @@ export default defineConfig(({ mode }) => ({
     },
     'process.browser': true,
     'process.version': JSON.stringify('16.0.0'), // Mock Node.js version
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
+          charts: ['recharts'],
+        },
+      }
+    },
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: mode === 'production',
+        drop_debugger: mode === 'production',
+      }
+    }
   }
 }));
