@@ -16,6 +16,16 @@ export const blogPostSchema = z.object({
 
 export type BlogFormValues = z.infer<typeof blogPostSchema>;
 
+// Define the blog categories to ensure consistency across the application
+export const blogCategories = [
+  { value: 'seo', label: { pt: 'SEO', en: 'SEO' } },
+  { value: 'aio', label: { pt: 'Otimização para IA', en: 'AI Optimization' } },
+  { value: 'technical-seo', label: { pt: 'SEO Técnico', en: 'Technical SEO' } },
+  { value: 'content', label: { pt: 'Conteúdo', en: 'Content' } },
+  { value: 'analytics', label: { pt: 'Analytics', en: 'Analytics' } },
+  { value: 'updates', label: { pt: 'Atualizações', en: 'Updates' } },
+];
+
 // Validation messages in English
 export const getEnglishValidationMessages = () => ({
   title: "Title must be at least 5 characters",

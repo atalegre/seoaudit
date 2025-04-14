@@ -4,7 +4,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/comp
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
-import { BlogFormValues } from './types';
+import { BlogFormValues, blogCategories } from './types';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface BlogFormCategoriesProps {
@@ -13,15 +13,6 @@ interface BlogFormCategoriesProps {
 
 const BlogFormCategories: React.FC<BlogFormCategoriesProps> = ({ form }) => {
   const { language } = useLanguage();
-  
-  const categories = [
-    { value: 'seo', label: { pt: 'SEO', en: 'SEO' } },
-    { value: 'aio', label: { pt: 'Otimização para IA', en: 'AI Optimization' } },
-    { value: 'technical-seo', label: { pt: 'SEO Técnico', en: 'Technical SEO' } },
-    { value: 'content', label: { pt: 'Conteúdo', en: 'Content' } },
-    { value: 'analytics', label: { pt: 'Analytics', en: 'Analytics' } },
-    { value: 'updates', label: { pt: 'Atualizações', en: 'Updates' } },
-  ];
   
   return (
     <div className="space-y-4">
@@ -41,7 +32,7 @@ const BlogFormCategories: React.FC<BlogFormCategoriesProps> = ({ form }) => {
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                {categories.map((category) => (
+                {blogCategories.map((category) => (
                   <SelectItem key={category.value} value={category.value}>
                     {language === 'pt' ? category.label.pt : category.label.en}
                   </SelectItem>

@@ -14,6 +14,7 @@ const BlogPage = () => {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [categories, setCategories] = useState<string[]>(['all']);
   
   const fetchPosts = async () => {
     setLoading(true);
@@ -21,6 +22,13 @@ const BlogPage = () => {
     try {
       const posts = await getBlogPosts();
       setBlogPosts(posts);
+      
+      // Extract unique categories from posts
+      const uniqueCategories = Array.from(
+        new Set(posts.map(post => post.category).filter(Boolean))
+      ) as string[];
+      
+      setCategories(['all', ...uniqueCategories]);
     } catch (err) {
       console.error('Error fetching blog posts:', err);
       setError('Não foi possível carregar os posts do blog.');
@@ -42,18 +50,13 @@ const BlogPage = () => {
   });
 
   const getCategoryColor = (category: string) => {
-    switch (category) {
-      case 'SEO': return 'bg-seo text-primary-foreground';
-      case 'AIO': return 'bg-aio text-primary-foreground';
-      case 'IA': return 'bg-indigo-500 text-white';
-      case 'AI': return 'bg-indigo-500 text-white';
-      case 'Técnico': return 'bg-slate-700 text-white';
-      case 'Exemplos': return 'bg-emerald-500 text-white';
-      case 'Content Marketing': return 'bg-orange-500 text-white';
-      case 'Social Media': return 'bg-blue-500 text-white';
-      case 'Email Marketing': return 'bg-green-500 text-white';
-      case 'Marketing Digital': return 'bg-orange-500 text-white';
-      case 'E-commerce': return 'bg-blue-600 text-white';
+    switch (category?.toLowerCase()) {
+      case 'seo': return 'bg-seo text-primary-foreground';
+      case 'aio': return 'bg-aio text-primary-foreground';
+      case 'technical-seo': case 'seo técnico': return 'bg-slate-700 text-white';
+      case 'content': case 'conteúdo': return 'bg-emerald-500 text-white';
+      case 'analytics': return 'bg-indigo-500 text-white';
+      case 'updates': case 'atualizações': return 'bg-orange-500 text-white';
       default: return 'bg-slate-500 text-white';
     }
   };
@@ -95,6 +98,7 @@ const BlogPage = () => {
           filteredPosts={filteredPosts}
           getCategoryColor={getCategoryColor}
           handleImageError={handleImageError}
+          categories={categories}
         />
 
         <CTACard 
