@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { UseFormReturn } from 'react-hook-form';
@@ -9,6 +9,7 @@ import ImagePreview from './image-upload/ImagePreview';
 import ImageUploadButtons from './image-upload/ImageUploadButtons';
 import UnsplashImagePicker from './image-upload/UnsplashImagePicker';
 import { useImageUpload } from './image-upload/useImageUpload';
+import { toast } from 'sonner';
 
 interface BlogFormImageUploadProps {
   form: UseFormReturn<BlogFormValues>;
@@ -24,6 +25,8 @@ const BlogFormImageUpload: React.FC<BlogFormImageUploadProps> = ({
   setImageFile 
 }) => {
   const { language } = useLanguage();
+  const [imageError, setImageError] = useState<string | null>(null);
+  
   const { 
     fileInputRef, 
     handleFileChange, 
@@ -37,6 +40,14 @@ const BlogFormImageUpload: React.FC<BlogFormImageUploadProps> = ({
     setImagePreview(imageUrl);
     form.setValue('imageSrc', imageUrl);
     setImageFile(null);
+    setImageError(null); // Reset any previous errors
+  };
+  
+  const handleImageError = (error: string) => {
+    setImageError(error);
+    toast.error(language === 'pt' 
+      ? 'Erro ao carregar imagem. Usando imagem alternativa.' 
+      : 'Error loading image. Using fallback image.');
   };
   
   return (
@@ -66,6 +77,7 @@ const BlogFormImageUpload: React.FC<BlogFormImageUploadProps> = ({
                 <ImagePreview 
                   imagePreview={imagePreview} 
                   isLoading={isImageLoading}
+                  onImageError={handleImageError}
                 />
                 
                 {/* Button group */}
