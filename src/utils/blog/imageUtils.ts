@@ -9,6 +9,13 @@ export const uploadBlogImage = async (file: File): Promise<string> => {
     const fileName = `blog-image-${timestamp}.${fileExt}`;
     const filePath = `${fileName}`;
 
+    console.log('Uploading image to Supabase storage:', {
+      fileName,
+      contentType: file.type,
+      size: file.size
+    });
+
+    // Upload the file to Supabase storage
     const { data, error } = await supabase.storage
       .from('blog-images')
       .upload(filePath, file, {
@@ -17,13 +24,20 @@ export const uploadBlogImage = async (file: File): Promise<string> => {
       });
 
     if (error) {
-      console.error('Error uploading image:', error);
+      console.error('Error uploading image to Supabase:', error);
       throw error;
     }
 
-    // Construct public URL
-    const imageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/blog-images/${filePath}`;
-    return imageUrl;
+    console.log('Image uploaded successfully:', data);
+
+    // Generate the public URL
+    const { data: publicUrlData } = supabase.storage
+      .from('blog-images')
+      .getPublicUrl(filePath);
+
+    console.log('Generated public URL:', publicUrlData.publicUrl);
+    
+    return publicUrlData.publicUrl;
   } catch (error) {
     console.error('Error in uploadBlogImage:', error);
     throw error;

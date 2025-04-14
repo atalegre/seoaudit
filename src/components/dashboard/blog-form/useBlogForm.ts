@@ -51,11 +51,31 @@ export const useBlogForm = (initialData: BlogPost | null = null, onSuccess?: () 
   const onSubmit = async (data: BlogFormValues) => {
     try {
       setIsSubmitting(true);
+      console.log('Submitting blog post with data:', data);
       let imageSrc = data.imageSrc;
       
       // Upload image if a new one is selected
       if (imageFile) {
-        imageSrc = await uploadBlogImage(imageFile);
+        console.log('Uploading image file:', imageFile.name);
+        try {
+          imageSrc = await uploadBlogImage(imageFile);
+          console.log('Image uploaded successfully:', imageSrc);
+        } catch (uploadError) {
+          console.error('Error uploading image:', uploadError);
+          toast.error(language === 'pt' 
+            ? 'Erro ao fazer upload da imagem. Por favor, tente novamente.' 
+            : 'Error uploading image. Please try again.');
+          setIsSubmitting(false);
+          return;
+        }
+      } else if (imagePreview && imagePreview.startsWith('data:')) {
+        // If imagePreview is a data URL (from paste or drag-and-drop) but no file is set
+        console.error('Image preview is a data URL but no file is set. This should not happen.');
+        toast.error(language === 'pt' 
+          ? 'Formato de imagem inválido. Por favor, tente novamente.' 
+          : 'Invalid image format. Please try again.');
+        setIsSubmitting(false);
+        return;
       }
       
       // Prepare post data with required properties explicitly defined
@@ -73,6 +93,8 @@ export const useBlogForm = (initialData: BlogPost | null = null, onSuccess?: () 
         date: initialData?.date || new Date().toISOString(),
         popularity: initialData?.popularity || 0,
       };
+      
+      console.log('Prepared post data:', postData);
       
       // Create or update post
       if (isEditing && initialData?.id) {

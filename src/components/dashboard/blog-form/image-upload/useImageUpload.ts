@@ -6,22 +6,50 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 import { getTrulyRandomUnsplashImage, generateSearchTerms } from '@/utils/blog/unsplashService';
 
-export const useImageUpload = (form: UseFormReturn<BlogFormValues>) => {
+interface UseImageUploadProps {
+  form: UseFormReturn<BlogFormValues>;
+  setImagePreview: React.Dispatch<React.SetStateAction<string | null>>;
+  setImageFile: React.Dispatch<React.SetStateAction<File | null>>;
+}
+
+export const useImageUpload = ({ 
+  form, 
+  setImagePreview, 
+  setImageFile 
+}: UseImageUploadProps) => {
   const { language } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isImageLoading, setIsImageLoading] = useState(false);
   
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      console.log('File selected:', file.name, file.type, file.size);
+      
+      // Check if the file is an image
+      if (!file.type.startsWith('image/')) {
+        toast.error(language === 'pt' 
+          ? 'Por favor, selecione um arquivo de imagem válido' 
+          : 'Please select a valid image file');
+        return;
+      }
+      
+      // Check file size (limit to 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(language === 'pt' 
+          ? 'A imagem é muito grande. O tamanho máximo é 5MB' 
+          : 'Image is too large. Maximum size is 5MB');
+        return;
+      }
+      
       setImageFile(file);
       const reader = new FileReader();
       reader.onload = () => {
-        setImagePreview(reader.result as string);
+        const result = reader.result as string;
+        setImagePreview(result);
         // Ensure the form value is updated
-        form.setValue('imageSrc', reader.result as string);
+        form.setValue('imageSrc', result);
+        console.log('Image preview set:', result.substring(0, 50) + '...');
       };
       reader.readAsDataURL(file);
     }
@@ -37,6 +65,7 @@ export const useImageUpload = (form: UseFormReturn<BlogFormValues>) => {
     tempImg.onload = () => {
       setImagePreview(imageUrl);
       form.setValue('imageSrc', imageUrl);
+      setImageFile(null); // Clear any uploaded file since we're using a URL
       setIsImageLoading(false);
       toast.success(language === 'pt' 
         ? `${description} selecionada!` 
@@ -48,6 +77,7 @@ export const useImageUpload = (form: UseFormReturn<BlogFormValues>) => {
       const fallbackImage = getTrulyRandomUnsplashImage();
       setImagePreview(fallbackImage);
       form.setValue('imageSrc', fallbackImage);
+      setImageFile(null); // Clear any uploaded file
       setIsImageLoading(false);
       toast.success(language === 'pt' 
         ? 'Imagem alternativa gerada!' 
@@ -60,6 +90,7 @@ export const useImageUpload = (form: UseFormReturn<BlogFormValues>) => {
         const fallbackImage = getTrulyRandomUnsplashImage();
         setImagePreview(fallbackImage);
         form.setValue('imageSrc', fallbackImage);
+        setImageFile(null); // Clear any uploaded file
         setIsImageLoading(false);
         toast.info(language === 'pt' 
           ? 'Timeout ao carregar imagem, usando alternativa' 
@@ -102,10 +133,6 @@ export const useImageUpload = (form: UseFormReturn<BlogFormValues>) => {
   };
   
   return {
-    imageFile,
-    setImageFile,
-    imagePreview,
-    setImagePreview,
     fileInputRef,
     isImageLoading,
     handleFileChange,

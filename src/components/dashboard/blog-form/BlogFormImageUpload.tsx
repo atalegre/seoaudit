@@ -34,7 +34,11 @@ const BlogFormImageUpload: React.FC<BlogFormImageUploadProps> = ({
     handleRandomImageClick, 
     handleGenerateThematicImage,
     isImageLoading
-  } = useImageUpload(form);
+  } = useImageUpload({
+    form,
+    setImagePreview,
+    setImageFile
+  });
   
   const handleUnsplashImageSelect = (imageUrl: string) => {
     setImagePreview(imageUrl);
