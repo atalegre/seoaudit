@@ -11,7 +11,16 @@ interface BlogFormContentProps {
 }
 
 const BlogFormContent: React.FC<BlogFormContentProps> = ({ form }) => {
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
+  
+  // Let's log what values we have in the form
+  const contentValue = form.watch('content');
+  const keyLearningValue = form.watch('keyLearning');
+  
+  console.log('Content form values:', { 
+    content: contentValue,
+    keyLearning: keyLearningValue
+  });
   
   return (
     <>
@@ -20,10 +29,10 @@ const BlogFormContent: React.FC<BlogFormContentProps> = ({ form }) => {
         name="content"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>{t('content')}</FormLabel>
+            <FormLabel>{language === 'pt' ? 'Conteúdo' : 'Content'}</FormLabel>
             <FormControl>
               <Textarea 
-                placeholder={t('content-placeholder')} 
+                placeholder={language === 'pt' ? 'Escreva o conteúdo do post aqui...' : 'Write post content here...'} 
                 {...field}
                 className="min-h-[300px] font-mono"
               />
@@ -38,12 +47,16 @@ const BlogFormContent: React.FC<BlogFormContentProps> = ({ form }) => {
         name="keyLearning"
         render={({ field }) => (
           <FormItem className="mt-4">
-            <FormLabel>{t('key-learning')}</FormLabel>
+            <FormLabel>{language === 'pt' ? 'Aprendizados Principais' : 'Key Learning'}</FormLabel>
             <FormControl>
               <Textarea 
-                placeholder={t('key-learning-placeholder')} 
+                placeholder={language === 'pt' ? 'Destaque os principais pontos de aprendizado...' : 'Highlight key learning points...'} 
                 {...field}
                 className="min-h-[100px]"
+                onChange={(e) => {
+                  console.log('keyLearning value changed:', e.target.value);
+                  field.onChange(e);
+                }}
               />
             </FormControl>
             <FormMessage />

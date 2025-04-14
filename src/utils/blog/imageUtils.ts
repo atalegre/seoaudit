@@ -20,7 +20,7 @@ export const uploadBlogImage = async (file: File): Promise<string> => {
       .from('blog-images')
       .upload(filePath, file, {
         cacheControl: '3600',
-        upsert: false
+        upsert: true // Changed to true to allow overwriting existing files
       });
 
     if (error) {
@@ -30,7 +30,7 @@ export const uploadBlogImage = async (file: File): Promise<string> => {
 
     console.log('Image uploaded successfully:', data);
 
-    // Generate the public URL
+    // Generate the public URL - ensuring we get a fresh URL
     const { data: publicUrlData } = supabase.storage
       .from('blog-images')
       .getPublicUrl(filePath);

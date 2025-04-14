@@ -5,19 +5,23 @@ import { BlogPost } from '@/types/blog';
 // Function to create a new blog post in Supabase
 export const createBlogPost = async (post: BlogPost): Promise<BlogPost | null> => {
   try {
+    console.log('Creating blog post with data:', post);
+
     // Ensure tags is always an array
     const formattedPost = {
       title: post.title,
       slug: post.slug,
       excerpt: post.excerpt,
       content: post.content,
-      key_learning: post.keyLearning,
+      key_learning: post.keyLearning, // Make sure this matches the database column name
       category: post.category,
       tags: Array.isArray(post.tags) ? post.tags : [],
       image_src: post.imageSrc,
       popularity: post.popularity,
       date: post.date,
     };
+
+    console.log('Formatted post for database:', formattedPost);
 
     const { data, error } = await supabase
       .from('blog_posts')
@@ -30,6 +34,7 @@ export const createBlogPost = async (post: BlogPost): Promise<BlogPost | null> =
       throw error;
     }
 
+    console.log('Blog post created successfully:', data);
     return data as unknown as BlogPost;
   } catch (error) {
     console.error('Error in createBlogPost:', error);
@@ -40,19 +45,24 @@ export const createBlogPost = async (post: BlogPost): Promise<BlogPost | null> =
 // Function to update an existing blog post in Supabase
 export const updateBlogPost = async (id: string, post: BlogPost): Promise<BlogPost | null> => {
   try {
+    console.log('Updating blog post with ID:', id);
+    console.log('Post data:', post);
+
     // Ensure tags is always an array
     const formattedPost = {
       title: post.title,
       slug: post.slug,
       excerpt: post.excerpt,
       content: post.content,
-      key_learning: post.keyLearning,
+      key_learning: post.keyLearning, // Make sure this matches the database column name
       category: post.category,
       tags: Array.isArray(post.tags) ? post.tags : [],
       image_src: post.imageSrc,
       popularity: post.popularity,
       date: post.date,
     };
+
+    console.log('Formatted post for database update:', formattedPost);
 
     const { data, error } = await supabase
       .from('blog_posts')
@@ -66,6 +76,7 @@ export const updateBlogPost = async (id: string, post: BlogPost): Promise<BlogPo
       throw error;
     }
 
+    console.log('Blog post updated successfully:', data);
     return data as unknown as BlogPost;
   } catch (error) {
     console.error('Error in updateBlogPost:', error);

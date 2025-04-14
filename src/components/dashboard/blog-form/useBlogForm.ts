@@ -32,6 +32,8 @@ export const useBlogForm = (initialData: BlogPost | null = null, onSuccess?: () 
     imageSrc: initialData?.imageSrc || '',
   };
 
+  console.log('Form initialized with these default values:', defaultValues);
+
   // Get the correct error messages based on language
   const getErrorMessage = (field: keyof BlogFormValues, error: string) => {
     if (language === 'en') {
@@ -68,14 +70,6 @@ export const useBlogForm = (initialData: BlogPost | null = null, onSuccess?: () 
           setIsSubmitting(false);
           return;
         }
-      } else if (imagePreview && imagePreview.startsWith('data:')) {
-        // If imagePreview is a data URL (from paste or drag-and-drop) but no file is set
-        console.error('Image preview is a data URL but no file is set. This should not happen.');
-        toast.error(language === 'pt' 
-          ? 'Formato de imagem inválido. Por favor, tente novamente.' 
-          : 'Invalid image format. Please try again.');
-        setIsSubmitting(false);
-        return;
       }
       
       // Prepare post data with required properties explicitly defined
@@ -85,7 +79,7 @@ export const useBlogForm = (initialData: BlogPost | null = null, onSuccess?: () 
         slug: data.slug,
         excerpt: data.excerpt,
         content: data.content,
-        keyLearning: data.keyLearning,
+        keyLearning: data.keyLearning, // Ensure keyLearning is included here
         category: data.category,
         tags: data.tags ? data.tags.split(',').map(tag => tag.trim()) : [],
         imageSrc,
