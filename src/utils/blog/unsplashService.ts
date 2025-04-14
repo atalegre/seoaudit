@@ -1,8 +1,8 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
-// Remove hardcoded access key
+// Unsplash API configuration
 const UNSPLASH_API_URL = 'https://api.unsplash.com';
+const UNSPLASH_ACCESS_KEY = 'xzK4bLwEXC7hsly8DxFLKuh5Gym0CncLe1HCfihQC9M';
 
 export interface UnsplashImage {
   id: string;
@@ -29,11 +29,7 @@ export const searchUnsplashImages = async (
   count: number = 3
 ): Promise<UnsplashImage[]> => {
   try {
-    // Using the Access Key from Supabase Secrets
-    // This is directly using the value stored in the secret
-    // For production, you should use Supabase Edge Functions to hide this key
-    const UNSPLASH_ACCESS_KEY = 'xzK4bLwEXC7hsly8DxFLKuh5Gym0CncLe1HCfihQC9M';
-
+    // Validate API key
     if (!UNSPLASH_ACCESS_KEY) {
       console.error('Unsplash API key not found');
       return [];
