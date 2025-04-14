@@ -14,6 +14,7 @@ interface LazyOptimizedImageProps {
   sizes?: string;
   onLoad?: () => void;
   onError?: (e: React.SyntheticEvent<HTMLImageElement, Event>) => void;
+  fallbackSrc?: string;
 }
 
 const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
@@ -28,10 +29,12 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
   sizes,
   onLoad,
   onError,
+  fallbackSrc = '/placeholder.svg', // Default fallback
 }) => {
   const isMobile = useIsMobile();
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [imgSrc, setImgSrc] = useState(src);
   
   const handleImageLoad = () => {
     setIsLoaded(true);
@@ -39,7 +42,11 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
   };
   
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    setHasError(true);
+    if (!hasError && fallbackSrc) {
+      // Only switch to fallback once to prevent infinite error loop
+      setHasError(true);
+      setImgSrc(fallbackSrc);
+    }
     if (onError) onError(e);
   };
   
@@ -51,7 +58,7 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
     return (
       <div className={`relative overflow-hidden ${className}`} style={{ backgroundColor: placeholderColor }}>
         <img
-          src={src}
+          src={imgSrc}
           alt={alt}
           width={width}
           height={height}
@@ -70,7 +77,7 @@ const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
   return (
     <div className={`relative overflow-hidden ${className}`} style={{ backgroundColor: placeholderColor }}>
       <img
-        src={src}
+        src={imgSrc}
         alt={alt}
         width={width}
         height={height}

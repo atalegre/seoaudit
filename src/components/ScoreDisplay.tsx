@@ -86,17 +86,26 @@ const ScoreDisplay = (props: ScoreDisplayProps) => {
       <div className="px-6 py-4 border-b bg-gray-50">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
           <div className="flex items-center gap-3">
-            {logoUrl ? (
-              <img 
-                src={logoUrl} 
-                alt={`Logo de ${url}`} 
-                className="w-10 h-10 object-contain rounded-md" 
-                loading="eager" 
-                fetchPriority="high"
-              />
-            ) : (
-              <Globe className="w-8 h-8 text-primary" aria-hidden="true" />
-            )}
+            <div className="w-10 h-10 rounded-md flex items-center justify-center bg-white border overflow-hidden">
+              {logoUrl ? (
+                <img 
+                  src={logoUrl} 
+                  alt={`Logo de ${url}`} 
+                  className="w-full h-full object-contain" 
+                  loading="eager" 
+                  fetchPriority="high"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    const container = e.currentTarget.parentElement;
+                    if (container) {
+                      container.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12H22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 2C14.5013 4.73835 15.9228 8.29203 16 12C15.9228 15.708 14.5013 19.2616 12 22C9.49872 19.2616 8.07725 15.708 8 12C8.07725 8.29203 9.49872 4.73835 12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+                    }
+                  }}
+                />
+              ) : (
+                <Globe className="w-6 h-6 text-gray-400" aria-hidden="true" />
+              )}
+            </div>
             <div>
               <h2 className="text-lg font-semibold">{url}</h2>
               <p className={`text-sm ${statusColorClass}`}>
