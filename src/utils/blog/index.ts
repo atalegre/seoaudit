@@ -1,6 +1,7 @@
 
 // Export image utilities
 export * from './imageUtils';
+export * from './unsplashService';
 
 // Export post operations
 export * from './postOperations';

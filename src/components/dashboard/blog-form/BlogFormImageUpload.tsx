@@ -7,6 +7,7 @@ import { BlogFormValues } from './types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import ImagePreview from './image-upload/ImagePreview';
 import ImageUploadButtons from './image-upload/ImageUploadButtons';
+import UnsplashImagePicker from './image-upload/UnsplashImagePicker';
 import { useImageUpload } from './image-upload/useImageUpload';
 
 interface BlogFormImageUploadProps {
@@ -30,6 +31,12 @@ const BlogFormImageUpload: React.FC<BlogFormImageUploadProps> = ({
     handleRandomImageClick, 
     handleGenerateThematicImage 
   } = useImageUpload(form);
+  
+  const handleUnsplashImageSelect = (imageUrl: string) => {
+    setImagePreview(imageUrl);
+    form.setValue('imageSrc', imageUrl);
+    setImageFile(null);
+  };
   
   return (
     <div className="space-y-4">
@@ -62,6 +69,12 @@ const BlogFormImageUpload: React.FC<BlogFormImageUploadProps> = ({
                   onBrowseClick={handleBrowseClick}
                   onRandomImageClick={handleRandomImageClick}
                   onGenerateThematicImage={handleGenerateThematicImage}
+                />
+                
+                {/* Unsplash image picker component */}
+                <UnsplashImagePicker 
+                  form={form}
+                  onImageSelect={handleUnsplashImageSelect}
                 />
               </div>
             </FormControl>
