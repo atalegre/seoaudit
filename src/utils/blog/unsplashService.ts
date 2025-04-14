@@ -1,10 +1,6 @@
+import { supabase } from '@/integrations/supabase/client';
 
-/**
- * Unsplash API service for fetching images based on search terms
- */
-
-// Access key for Unsplash API (this is a public access key)
-const UNSPLASH_ACCESS_KEY = 'EaAS2PxpTVFzMQZ6iuU6GJm4TqGAZZGZ8yaKmTIkeSs';
+// Remove hardcoded access key
 const UNSPLASH_API_URL = 'https://api.unsplash.com';
 
 export interface UnsplashImage {
@@ -27,17 +23,19 @@ export interface UnsplashImage {
   };
 }
 
-/**
- * Fetch images from Unsplash based on search query
- * @param query - Search query for images
- * @param count - Number of images to return (default: 3)
- * @returns Array of Unsplash images
- */
 export const searchUnsplashImages = async (
   query: string,
   count: number = 3
 ): Promise<UnsplashImage[]> => {
   try {
+    // Fetch Unsplash API key from Supabase secrets
+    const { data: { publicUrl: UNSPLASH_ACCESS_KEY } } = await supabase.functions.getSecret('UNSPLASH_ACCESS_KEY');
+
+    if (!UNSPLASH_ACCESS_KEY) {
+      console.error('Unsplash API key not found');
+      return [];
+    }
+
     const params = new URLSearchParams({
       query: query,
       per_page: count.toString(),
