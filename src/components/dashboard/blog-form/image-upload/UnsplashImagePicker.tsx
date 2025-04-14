@@ -1,19 +1,23 @@
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Loader2, Image, Check, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { 
   UnsplashImage, 
   searchUnsplashImages, 
   generateSearchTerms, 
   getUnsplashAttribution,
-  getRandomUnsplashImage,
   getTrulyRandomUnsplashImage
 } from '@/utils/blog/unsplashService';
 import { UseFormReturn } from 'react-hook-form';
 import { BlogFormValues } from '../types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
+
+// Import the new components
+import UnsplashSearchForm from './unsplash-components/UnsplashSearchForm';
+import UnsplashImageGrid from './unsplash-components/UnsplashImageGrid';
+import UnsplashPagination from './unsplash-components/UnsplashPagination';
+import UnsplashErrorDisplay from './unsplash-components/UnsplashErrorDisplay';
+import UnsplashAttribution from './unsplash-components/UnsplashAttribution';
 
 interface UnsplashImagePickerProps {
   form: UseFormReturn<BlogFormValues>;
@@ -104,26 +108,6 @@ const UnsplashImagePicker: React.FC<UnsplashImagePickerProps> = ({ form, onImage
       : 'Image selected');
   };
   
-  const handleUseFallbackImage = () => {
-    const title = form.getValues('title');
-    const category = form.getValues('category');
-    
-    if (!title) {
-      toast.error(language === 'pt' 
-        ? 'Adicione um título para gerar uma imagem' 
-        : 'Add a title to generate an image');
-      return;
-    }
-    
-    const searchTerms = generateSearchTerms(title, category, '');
-    const randomImageUrl = getRandomUnsplashImage(searchTerms);
-    
-    onImageSelect(randomImageUrl);
-    toast.success(language === 'pt'
-      ? 'Imagem aleatória selecionada'
-      : 'Random image selected');
-  };
-  
   const handleTrulyRandomImage = () => {
     const randomImageUrl = getTrulyRandomUnsplashImage();
     onImageSelect(randomImageUrl);
@@ -134,112 +118,36 @@ const UnsplashImagePicker: React.FC<UnsplashImagePickerProps> = ({ form, onImage
   
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h3 className="text-sm font-medium">
-          {language === 'pt' ? 'Imagens do Unsplash' : 'Unsplash Images'}
-        </h3>
-        <div className="flex gap-2">
-          <Button 
-            type="button" 
-            size="sm" 
-            variant="outline" 
-            onClick={handleTrulyRandomImage}
-          >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            {language === 'pt' ? 'Imagem Aleatória' : 'Random Image'}
-          </Button>
-          <Button 
-            type="button" 
-            size="sm" 
-            variant="outline" 
-            onClick={() => fetchImagesFromUnsplash(1)}
-            disabled={loading}
-          >
-            {loading ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Image className="h-4 w-4 mr-2" />
-            )}
-            {language === 'pt' ? 'Buscar Imagens' : 'Search Images'}
-          </Button>
-        </div>
-      </div>
+      {/* Search Form Component */}
+      <UnsplashSearchForm 
+        onFetchImages={() => fetchImagesFromUnsplash(1)}
+        onTrulyRandomImage={handleTrulyRandomImage}
+        loading={loading}
+      />
       
-      {error && (
-        <div className="p-3 text-sm bg-destructive/10 text-destructive rounded-md">
-          {error}
-        </div>
-      )}
+      {/* Error Display Component */}
+      <UnsplashErrorDisplay error={error} />
       
+      {/* Image Grid */}
+      <UnsplashImageGrid 
+        images={images}
+        selectedImageId={selectedImageId}
+        onSelectImage={handleSelectImage}
+      />
+      
+      {/* Pagination */}
       {images.length > 0 && (
-        <>
-          <div className="grid grid-cols-3 gap-2">
-            {images.map((image) => (
-              <div 
-                key={image.id} 
-                className={`relative aspect-video rounded-md overflow-hidden border-2 cursor-pointer transition-all ${
-                  selectedImageId === image.id ? 'border-primary' : 'border-transparent hover:border-muted'
-                }`}
-                onClick={() => handleSelectImage(image)}
-              >
-                <img 
-                  src={image.urls.small} 
-                  alt={image.alt_description || 'Unsplash image'} 
-                  className="w-full h-full object-cover"
-                />
-                {selectedImageId === image.id && (
-                  <div className="absolute top-2 right-2 bg-primary text-white rounded-full p-1">
-                    <Check className="h-4 w-4" />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-          
-          <div className="flex justify-between items-center">
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={handlePreviousPage}
-              disabled={currentPage <= 1 || loading}
-            >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              {language === 'pt' ? 'Anterior' : 'Previous'}
-            </Button>
-            
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={handleRefreshImages}
-              disabled={loading}
-            >
-              <RefreshCw className="h-4 w-4 mr-1" />
-              {language === 'pt' ? 'Atualizar' : 'Refresh'}
-            </Button>
-            
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={handleNextPage}
-              disabled={loading}
-            >
-              {language === 'pt' ? 'Próximo' : 'Next'}
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
-          </div>
-        </>
+        <UnsplashPagination 
+          currentPage={currentPage}
+          onPreviousPage={handlePreviousPage}
+          onNextPage={handleNextPage}
+          onRefresh={handleRefreshImages}
+          loading={loading}
+        />
       )}
       
-      {images.length > 0 && (
-        <p className="text-xs text-muted-foreground">
-          {language === 'pt' 
-            ? 'Clique em uma imagem para selecioná-la. Imagens fornecidas pelo Unsplash.'
-            : 'Click on an image to select it. Images provided by Unsplash.'}
-        </p>
-      )}
+      {/* Attribution */}
+      <UnsplashAttribution showAttribution={images.length > 0} />
     </div>
   );
 };
