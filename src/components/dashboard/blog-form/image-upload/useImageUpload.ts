@@ -11,6 +11,7 @@ export const useImageUpload = (form: UseFormReturn<BlogFormValues>) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isImageLoading, setIsImageLoading] = useState(false);
   
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -19,6 +20,8 @@ export const useImageUpload = (form: UseFormReturn<BlogFormValues>) => {
       const reader = new FileReader();
       reader.onload = () => {
         setImagePreview(reader.result as string);
+        // Ensure the form value is updated
+        form.setValue('imageSrc', reader.result as string);
       };
       reader.readAsDataURL(file);
     }
@@ -28,16 +31,49 @@ export const useImageUpload = (form: UseFormReturn<BlogFormValues>) => {
     fileInputRef.current?.click();
   };
 
+  const loadImageWithFallback = (imageUrl: string, description: string) => {
+    setIsImageLoading(true);
+    const tempImg = new window.Image();
+    tempImg.onload = () => {
+      setImagePreview(imageUrl);
+      form.setValue('imageSrc', imageUrl);
+      setIsImageLoading(false);
+      toast.success(language === 'pt' 
+        ? `${description} selecionada!` 
+        : `${description} selected!`);
+    };
+    tempImg.onerror = () => {
+      // Fallback to a different random image
+      console.error(`Failed to load image: ${imageUrl}`);
+      const fallbackImage = getTrulyRandomUnsplashImage();
+      setImagePreview(fallbackImage);
+      form.setValue('imageSrc', fallbackImage);
+      setIsImageLoading(false);
+      toast.success(language === 'pt' 
+        ? 'Imagem alternativa gerada!' 
+        : 'Alternative image generated!');
+    };
+    // Set a timeout to prevent hanging
+    setTimeout(() => {
+      if (tempImg.complete === false) {
+        tempImg.src = ''; // Cancel loading
+        const fallbackImage = getTrulyRandomUnsplashImage();
+        setImagePreview(fallbackImage);
+        form.setValue('imageSrc', fallbackImage);
+        setIsImageLoading(false);
+        toast.info(language === 'pt' 
+          ? 'Timeout ao carregar imagem, usando alternativa' 
+          : 'Image loading timeout, using alternative');
+      }
+    }, 8000);
+    
+    tempImg.src = imageUrl; // This triggers loading
+  };
+
   const handleRandomImageClick = () => {
     // Get a truly random Unsplash image
     const randomImage = getTrulyRandomUnsplashImage();
-    
-    setImagePreview(randomImage);
-    form.setValue('imageSrc', randomImage);
-    
-    toast.success(language === 'pt' 
-      ? 'Imagem aleatória selecionada!' 
-      : 'Random image selected!');
+    loadImageWithFallback(randomImage, language === 'pt' ? 'Imagem aleatória' : 'Random image');
   };
   
   const handleGenerateThematicImage = () => {
@@ -61,25 +97,7 @@ export const useImageUpload = (form: UseFormReturn<BlogFormValues>) => {
       ? 'Gerando imagem temática...' 
       : 'Generating thematic image...');
     
-    // Correctly create and use Image object
-    const tempImg = new window.Image();
-    tempImg.onload = () => {
-      setImagePreview(thematicImage);
-      form.setValue('imageSrc', thematicImage);
-      toast.success(language === 'pt' 
-        ? 'Imagem temática gerada com sucesso!' 
-        : 'Thematic image generated successfully!');
-    };
-    tempImg.onerror = () => {
-      // Fallback to a different search term if the specific one fails
-      const fallbackImage = getTrulyRandomUnsplashImage();
-      setImagePreview(fallbackImage);
-      form.setValue('imageSrc', fallbackImage);
-      toast.success(language === 'pt' 
-        ? 'Imagem alternativa gerada!' 
-        : 'Alternative image generated!');
-    };
-    tempImg.src = thematicImage; // This is crucial to trigger loading
+    loadImageWithFallback(thematicImage, language === 'pt' ? 'Imagem temática' : 'Thematic image');
   };
   
   return {
@@ -88,6 +106,7 @@ export const useImageUpload = (form: UseFormReturn<BlogFormValues>) => {
     imagePreview,
     setImagePreview,
     fileInputRef,
+    isImageLoading,
     handleFileChange,
     handleBrowseClick,
     handleRandomImageClick,

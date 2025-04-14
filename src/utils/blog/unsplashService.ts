@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -140,13 +139,49 @@ export const getRandomUnsplashImage = (query: string): string => {
   return `https://source.unsplash.com/random/1200x800/?${encodedQuery}&t=${timestamp}`;
 };
 
+// Cache of previously used topics to avoid repetition
+let previousTopics: string[] = [];
+
 /**
  * Get a truly random image from Unsplash with varied topics
  */
 export const getTrulyRandomUnsplashImage = (): string => {
-  const randomTopics = ['business', 'marketing', 'technology', 'social media', 'computer', 'design', 'creative', 'office', 'website'];
-  const randomTopic = randomTopics[Math.floor(Math.random() * randomTopics.length)];
+  const allTopics = [
+    'business', 'marketing', 'technology', 'social media', 'computer', 
+    'design', 'creative', 'office', 'website', 'innovation', 'digital', 
+    'workspace', 'professional', 'meeting', 'conference', 'presentation',
+    'strategy', 'growth', 'development', 'success', 'teamwork', 
+    'collaboration', 'brainstorming', 'ideas', 'planning', 'startup',
+    'entrepreneur', 'analysis', 'research', 'data', 'communication',
+    'network', 'connection', 'modern', 'urban', 'corporate', 'finance'
+  ];
+  
+  // Filter out previously used topics if possible
+  const availableTopics = allTopics.filter(topic => !previousTopics.includes(topic));
+  
+  // If we've used all topics, reset the cache
+  if (availableTopics.length === 0) {
+    previousTopics = [];
+  }
+  
+  // Select a random topic from available ones
+  const randomTopic = availableTopics.length > 0 
+    ? availableTopics[Math.floor(Math.random() * availableTopics.length)]
+    : allTopics[Math.floor(Math.random() * allTopics.length)];
+  
+  // Add to the cache of used topics
+  previousTopics.push(randomTopic);
+  
+  // Keep cache size manageable
+  if (previousTopics.length > 10) {
+    previousTopics.shift(); // Remove oldest topic
+  }
+  
+  console.log(`Getting truly random image with topic: ${randomTopic}`);
+  
+  // Create unique URL with current timestamp to avoid browser caching
   const timestamp = new Date().getTime();
-  return `https://source.unsplash.com/featured/1200x800/?${randomTopic}&t=${timestamp}`;
+  const randomizer = Math.floor(Math.random() * 1000); // Add extra randomness
+  
+  return `https://source.unsplash.com/featured/1200x800/?${randomTopic}&t=${timestamp}&r=${randomizer}`;
 };
-

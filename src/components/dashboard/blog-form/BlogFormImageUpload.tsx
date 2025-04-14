@@ -29,7 +29,8 @@ const BlogFormImageUpload: React.FC<BlogFormImageUploadProps> = ({
     handleFileChange, 
     handleBrowseClick, 
     handleRandomImageClick, 
-    handleGenerateThematicImage 
+    handleGenerateThematicImage,
+    isImageLoading
   } = useImageUpload(form);
   
   const handleUnsplashImageSelect = (imageUrl: string) => {
@@ -62,13 +63,17 @@ const BlogFormImageUpload: React.FC<BlogFormImageUploadProps> = ({
                 />
                 
                 {/* Image preview component */}
-                <ImagePreview imagePreview={imagePreview} />
+                <ImagePreview 
+                  imagePreview={imagePreview} 
+                  isLoading={isImageLoading}
+                />
                 
                 {/* Button group */}
                 <ImageUploadButtons 
                   onBrowseClick={handleBrowseClick}
                   onRandomImageClick={handleRandomImageClick}
                   onGenerateThematicImage={handleGenerateThematicImage}
+                  isLoading={isImageLoading}
                 />
                 
                 {/* Unsplash image picker component */}
