@@ -40,11 +40,12 @@ export const createBlogPost = async (post: BlogPost): Promise<BlogPost | null> =
 
     // Transform the response back to our frontend format
     const transformedData: BlogPost = {
-      ...data,
+      id: data.id,
       title: {
         pt: data.title,
         en: data.title_en,
       },
+      slug: data.slug,
       excerpt: {
         pt: data.excerpt,
         en: data.excerpt_en,
@@ -57,7 +58,12 @@ export const createBlogPost = async (post: BlogPost): Promise<BlogPost | null> =
         pt: data.key_learning,
         en: data.key_learning_en,
       },
+      category: data.category,
+      tags: data.tags || [],
       imageSrc: data.image_src,
+      popularity: data.popularity,
+      date: data.date,
+      created_at: data.created_at,
     };
 
     console.log('Blog post created successfully:', transformedData);
@@ -107,11 +113,12 @@ export const updateBlogPost = async (id: string, post: BlogPost): Promise<BlogPo
 
     // Transform the response back to our frontend format
     const transformedData: BlogPost = {
-      ...data,
+      id: data.id,
       title: {
         pt: data.title,
         en: data.title_en,
       },
+      slug: data.slug,
       excerpt: {
         pt: data.excerpt,
         en: data.excerpt_en,
@@ -124,7 +131,12 @@ export const updateBlogPost = async (id: string, post: BlogPost): Promise<BlogPo
         pt: data.key_learning,
         en: data.key_learning_en,
       },
+      category: data.category,
+      tags: data.tags || [],
       imageSrc: data.image_src,
+      popularity: data.popularity,
+      date: data.date,
+      created_at: data.created_at,
     };
 
     console.log('Blog post updated successfully:', transformedData);
@@ -168,7 +180,35 @@ export const getBlogPosts = async (): Promise<BlogPost[]> => {
       throw error;
     }
 
-    return data as unknown as BlogPost[];
+    // Transform the data to match our frontend format
+    const transformedData: BlogPost[] = data.map(post => ({
+      id: post.id,
+      title: {
+        pt: post.title || '',
+        en: post.title_en || '',
+      },
+      slug: post.slug,
+      excerpt: {
+        pt: post.excerpt || '',
+        en: post.excerpt_en || '',
+      },
+      content: {
+        pt: post.content || '',
+        en: post.content_en || '',
+      },
+      keyLearning: {
+        pt: post.key_learning || '',
+        en: post.key_learning_en || '',
+      },
+      category: post.category,
+      tags: post.tags || [],
+      imageSrc: post.image_src,
+      popularity: post.popularity,
+      date: post.date,
+      created_at: post.created_at,
+    }));
+
+    return transformedData;
   } catch (error) {
     console.error('Error in getBlogPosts:', error);
     return [];
@@ -189,7 +229,35 @@ export const getBlogPostBySlug = async (slug: string): Promise<BlogPost | null> 
       throw error;
     }
 
-    return data as unknown as BlogPost;
+    // Transform the data to match our frontend format
+    const transformedData: BlogPost = {
+      id: data.id,
+      title: {
+        pt: data.title || '',
+        en: data.title_en || '',
+      },
+      slug: data.slug,
+      excerpt: {
+        pt: data.excerpt || '',
+        en: data.excerpt_en || '',
+      },
+      content: {
+        pt: data.content || '',
+        en: data.content_en || '',
+      },
+      keyLearning: {
+        pt: data.key_learning || '',
+        en: data.key_learning_en || '',
+      },
+      category: data.category,
+      tags: data.tags || [],
+      imageSrc: data.image_src,
+      popularity: data.popularity,
+      date: data.date,
+      created_at: data.created_at,
+    };
+
+    return transformedData;
   } catch (error) {
     console.error('Error in getBlogPostBySlug:', error);
     return null;

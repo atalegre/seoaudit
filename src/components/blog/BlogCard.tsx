@@ -5,6 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription }
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { BlogPost } from '@/types/blog';
+import { useLanguage } from '@/contexts/LanguageContext';
 import LazyOptimizedImage from '@/components/results/LazyOptimizedImage';
 
 interface BlogCardProps {
@@ -14,13 +15,21 @@ interface BlogCardProps {
 }
 
 const BlogCard: React.FC<BlogCardProps> = ({ post, getCategoryColor, handleImageError }) => {
+  const { language } = useLanguage();
+  
+  // Get content based on current language
+  const title = language === 'en' ? post.title.en : post.title.pt;
+  const excerpt = language === 'en' 
+    ? post.excerpt?.en || post.excerpt?.pt
+    : post.excerpt?.pt || post.excerpt?.en;
+
   return (
     <Link to={`/blog/${post.slug}`} className="group">
       <Card className="h-full overflow-hidden transition-all hover:shadow-md border border-gray-200">
         <div className="aspect-video overflow-hidden bg-muted">
           <LazyOptimizedImage 
             src={post.imageSrc || ''} 
-            alt={post.title}
+            alt={title}
             className="h-full w-full object-cover transition-transform group-hover:scale-105"
             onError={handleImageError}
           />
@@ -32,12 +41,12 @@ const BlogCard: React.FC<BlogCardProps> = ({ post, getCategoryColor, handleImage
             </Badge>
           </div>
           <CardTitle className="line-clamp-2 group-hover:text-primary transition-colors">
-            {post.title}
+            {title}
           </CardTitle>
         </CardHeader>
         <CardContent className="pb-4">
           <CardDescription className="line-clamp-2">
-            {post.excerpt}
+            {excerpt}
           </CardDescription>
         </CardContent>
         <CardFooter className="text-sm text-muted-foreground border-t pt-4">

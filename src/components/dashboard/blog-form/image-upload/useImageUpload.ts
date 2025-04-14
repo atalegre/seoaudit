@@ -1,143 +1,164 @@
 
-import { useState, useRef } from 'react';
-import { UseFormReturn } from 'react-hook-form';
-import { BlogFormValues } from '../types';
+import { useState, useCallback } from 'react';
+import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { toast } from 'sonner';
-import { getTrulyRandomUnsplashImage, generateSearchTerms } from '@/utils/blog/unsplashService';
+import { uploadBlogImage } from '@/utils/supabaseBlogClient';
+import { UnsplashImage } from './types';
 
-interface UseImageUploadProps {
-  form: UseFormReturn<BlogFormValues>;
-  setImagePreview: React.Dispatch<React.SetStateAction<string | null>>;
-  setImageFile: React.Dispatch<React.SetStateAction<File | null>>;
+export interface UseImageUploadOptions {
+  initialImageUrl?: string;
 }
 
-export const useImageUpload = ({ 
-  form, 
-  setImagePreview, 
-  setImageFile 
-}: UseImageUploadProps) => {
+export interface UseImageUploadResult {
+  imageUrl: string;
+  imageFile: File | null;
+  previewUrl: string | null;
+  isUploading: boolean;
+  unsplashDialogOpen: boolean;
+  handleImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleImageDrop: (e: React.DragEvent<HTMLDivElement>) => void;
+  handleDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
+  handleDragLeave: () => void;
+  handleDelete: () => void;
+  openUnsplashDialog: () => void;
+  closeUnsplashDialog: () => void;
+  handleUnsplashSelect: (url: string) => void;
+  searchUnsplashForTitle: (title: { pt: string; en: string }) => Promise<UnsplashImage[]>;
+  isDragging: boolean;
+}
+
+export const useImageUpload = (options: UseImageUploadOptions = {}): UseImageUploadResult => {
+  const { initialImageUrl = '' } = options;
+  const [imageUrl, setImageUrl] = useState<string>(initialImageUrl);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(initialImageUrl || null);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [unsplashDialogOpen, setUnsplashDialogOpen] = useState<boolean>(false);
+  const { toast } = useToast();
   const { language } = useLanguage();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isImageLoading, setIsImageLoading] = useState(false);
-  
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      console.log('File selected:', file.name, file.type, file.size);
-      
-      // Check if the file is an image
-      if (!file.type.startsWith('image/')) {
-        toast.error(language === 'pt' 
-          ? 'Por favor, selecione um arquivo de imagem válido' 
-          : 'Please select a valid image file');
-        return;
-      }
-      
-      // Check file size (limit to 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error(language === 'pt' 
-          ? 'A imagem é muito grande. O tamanho máximo é 5MB' 
-          : 'Image is too large. Maximum size is 5MB');
-        return;
-      }
-      
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result as string;
-        setImagePreview(result);
-        // Ensure the form value is updated
-        form.setValue('imageSrc', result);
-        console.log('Image preview set:', result.substring(0, 50) + '...');
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-  
-  const handleBrowseClick = () => {
-    fileInputRef.current?.click();
-  };
 
-  const loadImageWithFallback = (imageUrl: string, description: string) => {
-    setIsImageLoading(true);
-    const tempImg = new window.Image();
-    tempImg.onload = () => {
-      setImagePreview(imageUrl);
-      form.setValue('imageSrc', imageUrl);
-      setImageFile(null); // Clear any uploaded file since we're using a URL
-      setIsImageLoading(false);
-      toast.success(language === 'pt' 
-        ? `${description} selecionada!` 
-        : `${description} selected!`);
-    };
-    tempImg.onerror = () => {
-      // Fallback to a different random image
-      console.error(`Failed to load image: ${imageUrl}`);
-      const fallbackImage = getTrulyRandomUnsplashImage();
-      setImagePreview(fallbackImage);
-      form.setValue('imageSrc', fallbackImage);
-      setImageFile(null); // Clear any uploaded file
-      setIsImageLoading(false);
-      toast.success(language === 'pt' 
-        ? 'Imagem alternativa gerada!' 
-        : 'Alternative image generated!');
-    };
-    // Set a timeout to prevent hanging
-    setTimeout(() => {
-      if (tempImg.complete === false) {
-        tempImg.src = ''; // Cancel loading
-        const fallbackImage = getTrulyRandomUnsplashImage();
-        setImagePreview(fallbackImage);
-        form.setValue('imageSrc', fallbackImage);
-        setImageFile(null); // Clear any uploaded file
-        setIsImageLoading(false);
-        toast.info(language === 'pt' 
-          ? 'Timeout ao carregar imagem, usando alternativa' 
-          : 'Image loading timeout, using alternative');
-      }
-    }, 8000);
-    
-    tempImg.src = imageUrl; // This triggers loading
-  };
-
-  const handleRandomImageClick = () => {
-    // Get a truly random Unsplash image
-    const randomImage = getTrulyRandomUnsplashImage();
-    loadImageWithFallback(randomImage, language === 'pt' ? 'Imagem aleatória' : 'Random image');
-  };
-  
-  const handleGenerateThematicImage = () => {
-    // Generate image based on title and category
-    const title = form.getValues('title');
-    const category = form.getValues('category');
-    const content = form.getValues('content');
-    
-    if (!title) {
-      toast.error(language === 'pt' 
-        ? 'Adicione um título para gerar uma imagem temática' 
-        : 'Add a title to generate a thematic image');
+  // Process file upload (from input or drop)
+  const processFile = useCallback((file: File) => {
+    // Check if it's an image
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: language === 'pt' ? 'Arquivo inválido' : 'Invalid file',
+        description: language === 'pt' 
+          ? 'Por favor, selecione uma imagem (JPG, PNG, etc.)' 
+          : 'Please select an image file (JPG, PNG, etc.)',
+        variant: 'destructive',
+      });
       return;
     }
     
-    // Use the improved generateSearchTerms function that analyzes content
-    const searchQuery = generateSearchTerms(title, category, content);
-    const timestamp = new Date().getTime(); // Add timestamp to avoid caching
-    const thematicImage = `https://source.unsplash.com/featured/1200x800/?${encodeURIComponent(searchQuery)}&t=${timestamp}`;
+    // Check file size (limit to 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: language === 'pt' ? 'Arquivo muito grande' : 'File too large',
+        description: language === 'pt'
+          ? 'A imagem deve ter menos de 5MB'
+          : 'Image must be less than 5MB',
+        variant: 'destructive',
+      });
+      return;
+    }
     
-    toast.info(language === 'pt' 
-      ? 'Gerando imagem temática...' 
-      : 'Generating thematic image...');
+    setImageFile(file);
     
-    loadImageWithFallback(thematicImage, language === 'pt' ? 'Imagem temática' : 'Thematic image');
+    // Create a preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewUrl(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  }, [toast, language]);
+
+  // Handle image selection from input
+  const handleImageChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      processFile(file);
+    }
+  }, [processFile]);
+
+  // Handle drag over event
+  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  // Handle drag leave event
+  const handleDragLeave = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  // Handle image drop
+  const handleImageDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      processFile(file);
+    }
+  }, [processFile]);
+
+  // Handle image deletion
+  const handleDelete = useCallback(() => {
+    setImageFile(null);
+    setPreviewUrl(null);
+    setImageUrl('');
+  }, []);
+
+  // Search Unsplash for a title
+  const searchUnsplashForTitle = async (title: { pt: string; en: string }) => {
+    try {
+      // Choose title based on current language
+      const searchTitle = language === 'en' ? title.en : title.pt;
+      
+      // This function should be implemented in your unsplashService.ts
+      // Import searchUnsplashImages from './unsplashService';
+      // const results = await searchUnsplashImages(searchTitle);
+      // return results;
+      
+      // For now, return empty array as placeholder
+      return [];
+    } catch (error) {
+      console.error('Error searching Unsplash:', error);
+      return [];
+    }
   };
+
+  // Unsplash dialog handlers
+  const openUnsplashDialog = () => setUnsplashDialogOpen(true);
+  const closeUnsplashDialog = () => setUnsplashDialogOpen(false);
   
+  // Handle Unsplash image selection
+  const handleUnsplashSelect = (url: string) => {
+    setPreviewUrl(url);
+    setImageUrl(url);
+    setImageFile(null);
+    closeUnsplashDialog();
+  };
+
   return {
-    fileInputRef,
-    isImageLoading,
-    handleFileChange,
-    handleBrowseClick,
-    handleRandomImageClick,
-    handleGenerateThematicImage
+    imageUrl,
+    imageFile,
+    previewUrl,
+    isUploading,
+    unsplashDialogOpen,
+    handleImageChange,
+    handleImageDrop,
+    handleDragOver,
+    handleDragLeave,
+    handleDelete,
+    openUnsplashDialog,
+    closeUnsplashDialog,
+    handleUnsplashSelect,
+    searchUnsplashForTitle,
+    isDragging
   };
 };
+
+export default useImageUpload;

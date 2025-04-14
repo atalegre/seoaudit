@@ -6,55 +6,111 @@ import { createBlogPost } from '@/utils/supabaseBlogClient';
 export const generateSEOBlogPosts = async () => {
   const blogPosts: BlogPost[] = [
     {
-      title: "How AI and SEO Work Together to Maximize Website Visibility",
+      title: {
+        pt: "Como a IA e o SEO Funcionam Juntos para Maximizar a Visibilidade do Site",
+        en: "How AI and SEO Work Together to Maximize Website Visibility"
+      },
       slug: "ai-seo-maximize-website-visibility",
-      excerpt: "Discover how artificial intelligence and search engine optimization complement each other to improve your website's visibility and performance in both human and AI-powered search environments.",
-      content: `
-        <h2>The Evolving Landscape of Search and Discovery</h2>
-        <p>The way users find information online is rapidly changing. Traditional search engines like Google are increasingly incorporating AI into their algorithms, while AI assistants like ChatGPT and Claude are becoming new gatekeepers of information discovery.</p>
-        
-        <p>This shift creates a dual optimization challenge for website owners: optimizing not just for traditional search engines (SEO) but also for AI systems (AIO).</p>
-        
-        <h2>The Synergy Between SEO and AI Optimization</h2>
-        <p>SEO focuses on making your website visible and attractive to search engines, while AI optimization ensures your content is correctly understood and valued by AI systems. When combined effectively, these approaches create a powerful synergy that can significantly boost your online visibility.</p>
-        
-        <h3>Key Synergies:</h3>
-        <ul>
-          <li><strong>Structured Data:</strong> Schema markup benefits both SEO and AI understanding</li>
-          <li><strong>Clear Content Structure:</strong> Logical organization helps both humans and AI comprehend your content</li>
-          <li><strong>Natural Language:</strong> Conversational content that answers specific questions performs well in both contexts</li>
-          <li><strong>E-E-A-T Principles:</strong> Experience, Expertise, Authoritativeness, and Trustworthiness matter to both Google and AI systems</li>
-        </ul>
-        
-        <h2>Practical Implementation Strategies</h2>
-        
-        <h3>1. Content Structure and Organization</h3>
-        <p>Well-structured content with clear headings, lists, and organization helps both search engines and AI systems understand your content hierarchy and main points.</p>
-        
-        <h3>2. Semantic Richness</h3>
-        <p>Create semantically rich content that explores topics thoroughly, establishing relationships between concepts. This helps AI systems understand the context and depth of your expertise.</p>
-        
-        <h3>3. Factual Accuracy</h3>
-        <p>AI systems are increasingly verifying factual claims. Ensure your content is accurate, well-cited, and up-to-date to build trust with both search engines and AI systems.</p>
-        
-        <h3>4. Question-Focused Content</h3>
-        <p>Structure content to directly answer specific questions users might ask, as this aligns with both search intent optimization and how AI assistants retrieve information.</p>
-        
-        <h2>Measuring Success in the Dual Landscape</h2>
-        <p>Traditional SEO metrics like rankings and organic traffic remain important, but need to be supplemented with new measurements for AI visibility:</p>
-        
-        <ul>
-          <li>How often your content is cited by AI assistants</li>
-          <li>Accuracy of AI-generated answers based on your content</li>
-          <li>Presence in AI knowledge graphs and information models</li>
-        </ul>
-        
-        <h2>Conclusion</h2>
-        <p>The future of online visibility lies at the intersection of SEO and AI optimization. By understanding and implementing strategies that cater to both traditional search engines and emerging AI systems, website owners can ensure comprehensive discoverability in this evolving landscape.</p>
-        
-        <p>Regular analysis using tools that measure both SEO and AIO performance, like the SEO AI Checker, will be essential to staying competitive as the lines between traditional search and AI-powered discovery continue to blur.</p>
-      `,
-      keyLearning: "SEO and AI optimization are complementary strategies that, when used together, can significantly improve your website's visibility in both traditional search results and AI-powered information discovery systems.",
+      excerpt: {
+        pt: "Descubra como a inteligência artificial e a otimização para motores de busca se complementam para melhorar a visibilidade e o desempenho do seu site em ambientes de busca humanos e baseados em IA.",
+        en: "Discover how artificial intelligence and search engine optimization complement each other to improve your website's visibility and performance in both human and AI-powered search environments."
+      },
+      content: {
+        pt: `
+          <h2>O Cenário em Evolução de Busca e Descoberta</h2>
+          <p>A forma como os usuários encontram informações online está mudando rapidamente. Os motores de busca tradicionais como o Google estão cada vez mais incorporando IA em seus algoritmos, enquanto assistentes de IA como ChatGPT e Claude estão se tornando novos porteiros da descoberta de informações.</p>
+          
+          <p>Essa mudança cria um desafio duplo de otimização para proprietários de sites: otimizar não apenas para motores de busca tradicionais (SEO), mas também para sistemas de IA (AIO).</p>
+          
+          <h2>A Sinergia Entre SEO e Otimização para IA</h2>
+          <p>O SEO se concentra em tornar seu site visível e atraente para os motores de busca, enquanto a otimização para IA garante que seu conteúdo seja corretamente compreendido e valorizado por sistemas de IA. Quando combinados efetivamente, essas abordagens criam uma sinergia poderosa que pode aumentar significativamente sua visibilidade online.</p>
+          
+          <h3>Sinergias-chave:</h3>
+          <ul>
+            <li><strong>Dados Estruturados:</strong> A marcação Schema beneficia tanto o SEO quanto a compreensão da IA</li>
+            <li><strong>Estrutura Clara de Conteúdo:</strong> A organização lógica ajuda tanto humanos quanto IA a compreenderem seu conteúdo</li>
+            <li><strong>Linguagem Natural:</strong> Conteúdo conversacional que responde a perguntas específicas tem bom desempenho em ambos os contextos</li>
+            <li><strong>Princípios E-E-A-T:</strong> Experiência, Especialização, Autoridade e Confiabilidade importam tanto para o Google quanto para sistemas de IA</li>
+          </ul>
+          
+          <h2>Estratégias Práticas de Implementação</h2>
+          
+          <h3>1. Estrutura e Organização de Conteúdo</h3>
+          <p>Conteúdo bem estruturado com títulos claros, listas e organização ajuda tanto os motores de busca quanto os sistemas de IA a entenderem a hierarquia do seu conteúdo e os pontos principais.</p>
+          
+          <h3>2. Riqueza Semântica</h3>
+          <p>Crie conteúdo semanticamente rico que explore os tópicos de forma completa, estabelecendo relações entre conceitos. Isso ajuda os sistemas de IA a entenderem o contexto e a profundidade de sua expertise.</p>
+          
+          <h3>3. Precisão Factual</h3>
+          <p>Os sistemas de IA estão cada vez mais verificando alegações factuais. Garanta que seu conteúdo seja preciso, bem citado e atualizado para construir confiança com motores de busca e sistemas de IA.</p>
+          
+          <h3>4. Conteúdo Focado em Perguntas</h3>
+          <p>Estruture o conteúdo para responder diretamente a perguntas específicas que os usuários possam fazer, pois isso se alinha com a otimização de intenção de busca e como os assistentes de IA recuperam informações.</p>
+          
+          <h2>Medindo o Sucesso no Cenário Duplo</h2>
+          <p>Métricas tradicionais de SEO como rankings e tráfego orgânico permanecem importantes, mas precisam ser complementadas com novas medições de visibilidade de IA:</p>
+          
+          <ul>
+            <li>Com que frequência seu conteúdo é citado por assistentes de IA</li>
+            <li>Precisão das respostas geradas por IA com base em seu conteúdo</li>
+            <li>Presença em grafos de conhecimento de IA e modelos de informação</li>
+          </ul>
+          
+          <h2>Conclusão</h2>
+          <p>O futuro da visibilidade online está na interseção de SEO e otimização para IA. Ao entender e implementar estratégias que atendam tanto os motores de busca tradicionais quanto os sistemas emergentes de IA, os proprietários de sites podem garantir uma descoberta abrangente neste cenário em evolução.</p>
+          
+          <p>Análises regulares usando ferramentas que medem o desempenho tanto de SEO quanto de AIO, como o SEO AI Checker, serão essenciais para manter a competitividade à medida que as linhas entre a busca tradicional e a descoberta baseada em IA continuam a se confundir.</p>
+        `,
+        en: `
+          <h2>The Evolving Landscape of Search and Discovery</h2>
+          <p>The way users find information online is rapidly changing. Traditional search engines like Google are increasingly incorporating AI into their algorithms, while AI assistants like ChatGPT and Claude are becoming new gatekeepers of information discovery.</p>
+          
+          <p>This shift creates a dual optimization challenge for website owners: optimizing not just for traditional search engines (SEO) but also for AI systems (AIO).</p>
+          
+          <h2>The Synergy Between SEO and AI Optimization</h2>
+          <p>SEO focuses on making your website visible and attractive to search engines, while AI optimization ensures your content is correctly understood and valued by AI systems. When combined effectively, these approaches create a powerful synergy that can significantly boost your online visibility.</p>
+          
+          <h3>Key Synergies:</h3>
+          <ul>
+            <li><strong>Structured Data:</strong> Schema markup benefits both SEO and AI understanding</li>
+            <li><strong>Clear Content Structure:</strong> Logical organization helps both humans and AI comprehend your content</li>
+            <li><strong>Natural Language:</strong> Conversational content that answers specific questions performs well in both contexts</li>
+            <li><strong>E-E-A-T Principles:</strong> Experience, Expertise, Authoritativeness, and Trustworthiness matter to both Google and AI systems</li>
+          </ul>
+          
+          <h2>Practical Implementation Strategies</h2>
+          
+          <h3>1. Content Structure and Organization</h3>
+          <p>Well-structured content with clear headings, lists, and organization helps both search engines and AI systems understand your content hierarchy and main points.</p>
+          
+          <h3>2. Semantic Richness</h3>
+          <p>Create semantically rich content that explores topics thoroughly, establishing relationships between concepts. This helps AI systems understand the context and depth of your expertise.</p>
+          
+          <h3>3. Factual Accuracy</h3>
+          <p>AI systems are increasingly verifying factual claims. Ensure your content is accurate, well-cited, and up-to-date to build trust with both search engines and AI systems.</p>
+          
+          <h3>4. Question-Focused Content</h3>
+          <p>Structure content to directly answer specific questions users might ask, as this aligns with both search intent optimization and how AI assistants retrieve information.</p>
+          
+          <h2>Measuring Success in the Dual Landscape</h2>
+          <p>Traditional SEO metrics like rankings and organic traffic remain important, but need to be supplemented with new measurements for AI visibility:</p>
+          
+          <ul>
+            <li>How often your content is cited by AI assistants</li>
+            <li>Accuracy of AI-generated answers based on your content</li>
+            <li>Presence in AI knowledge graphs and information models</li>
+          </ul>
+          
+          <h2>Conclusion</h2>
+          <p>The future of online visibility lies at the intersection of SEO and AI optimization. By understanding and implementing strategies that cater to both traditional search engines and emerging AI systems, website owners can ensure comprehensive discoverability in this evolving landscape.</p>
+          
+          <p>Regular analysis using tools that measure both SEO and AIO performance, like the SEO AI Checker, will be essential to staying competitive as the lines between traditional search and AI-powered discovery continue to blur.</p>
+        `
+      },
+      keyLearning: {
+        pt: "SEO e otimização para IA são estratégias complementares que, quando usadas juntas, podem melhorar significativamente a visibilidade do seu site tanto nos resultados de busca tradicionais quanto nos sistemas de descoberta alimentados por IA.",
+        en: "SEO and AI optimization are complementary strategies that, when used together, can significantly improve your website's visibility in both traditional search results and AI-powered information discovery systems."
+      },
       category: "SEO",
       imageSrc: "/placeholder.svg",
       tags: ["SEO", "AI Optimization", "Content Strategy", "Website Visibility"],

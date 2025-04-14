@@ -2,6 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BlogPost } from '@/types/blog';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { 
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
 } from '@/components/ui/table';
@@ -29,13 +30,15 @@ const BlogPostsTable = ({
   searchTerm
 }: BlogPostsTableProps) => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
   
   const filteredPosts = searchTerm
-    ? posts.filter(post => 
-        post.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        post.slug?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        post.category?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+    ? posts.filter(post => {
+        const title = language === 'en' ? post.title.en : post.title.pt;
+        return title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+               post.slug?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+               post.category?.toLowerCase().includes(searchTerm.toLowerCase());
+      })
     : posts;
 
   if (loading) {
@@ -67,67 +70,71 @@ const BlogPostsTable = ({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {filteredPosts.map((post) => (
-          <TableRow key={post.id || post.slug}>
-            <TableCell className="font-medium">{post.title}</TableCell>
-            <TableCell>{post.slug}</TableCell>
-            <TableCell>
-              <Badge variant="outline">{post.category}</Badge>
-            </TableCell>
-            <TableCell>
-              {post.date ? new Date(post.date).toLocaleDateString('pt-PT') : 'N/A'}
-            </TableCell>
-            <TableCell className="text-right space-x-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => onEdit(post)}
-                title="Editar"
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate(`/blog/${post.slug}`)}
-                title="Visualizar"
-              >
-                <Eye className="h-4 w-4" />
-              </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-destructive"
-                    title="Excluir"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>
-                      Excluir post
-                    </AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Tem certeza que deseja excluir o post "{post.title}"? Esta ação não pode ser desfeita.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction 
-                      onClick={() => post.id && onDelete(post.id)}
-                      className="bg-destructive text-destructive-foreground"
+        {filteredPosts.map((post) => {
+          const title = language === 'en' ? post.title.en : post.title.pt;
+          
+          return (
+            <TableRow key={post.id || post.slug}>
+              <TableCell className="font-medium">{title}</TableCell>
+              <TableCell>{post.slug}</TableCell>
+              <TableCell>
+                <Badge variant="outline">{post.category}</Badge>
+              </TableCell>
+              <TableCell>
+                {post.date ? new Date(post.date).toLocaleDateString('pt-PT') : 'N/A'}
+              </TableCell>
+              <TableCell className="text-right space-x-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onEdit(post)}
+                  title="Editar"
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => navigate(`/blog/${post.slug}`)}
+                  title="Visualizar"
+                >
+                  <Eye className="h-4 w-4" />
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-destructive"
+                      title="Excluir"
                     >
-                      Excluir
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </TableCell>
-          </TableRow>
-        ))}
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        Excluir post
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Tem certeza que deseja excluir o post "{title}"? Esta ação não pode ser desfeita.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={() => post.id && onDelete(post.id)}
+                        className="bg-destructive text-destructive-foreground"
+                      >
+                        Excluir
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </TableCell>
+            </TableRow>
+          );
+        })}
       </TableBody>
     </Table>
   );

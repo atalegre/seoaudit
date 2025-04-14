@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { BlogPost } from '@/types/blog';
 import { getBlogPosts } from '@/utils/supabaseBlogClient';
+import { useLanguage } from '@/contexts/LanguageContext';
 import BlogHeader from '@/components/blog/BlogHeader';
 import SearchInput from '@/components/blog/SearchInput';
 import CategoryTabs from '@/components/blog/CategoryTabs';
@@ -15,6 +16,7 @@ const BlogPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>(['all']);
+  const { language } = useLanguage();
   
   const fetchPosts = async () => {
     setLoading(true);
@@ -43,8 +45,14 @@ const BlogPage = () => {
   
   const filteredPosts = blogPosts.filter(post => {
     const matchesCategory = activeCategory === 'all' || post.category === activeCategory;
-    const matchesSearch = post.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         post.excerpt?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const postTitle = language === 'en' ? post.title.en : post.title.pt;
+    const postExcerpt = language === 'en' 
+      ? post.excerpt?.en || '' 
+      : post.excerpt?.pt || '';
+    
+    const matchesSearch = postTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         postExcerpt.toLowerCase().includes(searchQuery.toLowerCase());
     
     return matchesCategory && matchesSearch;
   });

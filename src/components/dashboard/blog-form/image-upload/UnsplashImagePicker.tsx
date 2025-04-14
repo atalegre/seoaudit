@@ -1,160 +1,123 @@
 
 import React, { useState } from 'react';
-import { 
-  UnsplashImage, 
-  searchUnsplashImages, 
-  generateSearchTerms, 
-  getUnsplashAttribution,
-  getTrulyRandomUnsplashImage
-} from '@/utils/blog/unsplashService';
-import { UseFormReturn } from 'react-hook-form';
-import { BlogFormValues } from '../types';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Search, Loader2 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { toast } from 'sonner';
-
-// Import the new components
-import UnsplashSearchForm from './unsplash-components/UnsplashSearchForm';
-import UnsplashImageGrid from './unsplash-components/UnsplashImageGrid';
-import UnsplashPagination from './unsplash-components/UnsplashPagination';
-import UnsplashErrorDisplay from './unsplash-components/UnsplashErrorDisplay';
-import UnsplashAttribution from './unsplash-components/UnsplashAttribution';
+import { searchUnsplashImages } from './unsplashService';
+import { UnsplashImage } from './types';
 
 interface UnsplashImagePickerProps {
-  form: UseFormReturn<BlogFormValues>;
-  onImageSelect: (imageUrl: string) => void;
+  isOpen: boolean;
+  onClose: () => void;
+  onSelectImage: (imageUrl: string) => void;
+  blogTitle: { pt: string; en: string };
 }
 
-const UnsplashImagePicker: React.FC<UnsplashImagePickerProps> = ({ form, onImageSelect }) => {
-  const { language } = useLanguage();
+const UnsplashImagePicker: React.FC<UnsplashImagePickerProps> = ({ 
+  isOpen, 
+  onClose, 
+  onSelectImage,
+  blogTitle
+}) => {
+  const [searchQuery, setSearchQuery] = useState('');
   const [images, setImages] = useState<UnsplashImage[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [lastSearchTerms, setLastSearchTerms] = useState<string>('');
+  const { language } = useLanguage();
   
-  const fetchImagesFromUnsplash = async (page: number = 1) => {
+  // Use title from current language or default to Portuguese
+  const title = language === 'en' ? blogTitle.en : blogTitle.pt;
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    
     try {
-      setLoading(true);
-      setError(null);
-      
-      const title = form.getValues('title');
-      const category = form.getValues('category');
-      const content = form.getValues('content');
-      
-      if (!title) {
-        toast.error(language === 'pt' 
-          ? 'Adicione um título para gerar imagens' 
-          : 'Add a title to generate images');
+      const query = searchQuery || title;
+      if (!query) {
+        setError('Please enter a search term');
         setLoading(false);
         return;
       }
       
-      // Use the enhanced generateSearchTerms that analyzes content deeply
-      const searchTerms = generateSearchTerms(title, category, content);
-      setLastSearchTerms(searchTerms);
-      console.log('Fetching Unsplash images for refined terms:', searchTerms, 'page:', page);
-      
-      // Increased number of results to provide more options
-      const fetchedImages = await searchUnsplashImages(searchTerms, 6, page);
-      
-      if (fetchedImages.length === 0) {
-        setError(language === 'pt'
-          ? 'Não foram encontradas imagens. Tente termos diferentes ou use a opção aleatória.'
-          : 'No images found. Try different terms or use the random option.');
-        toast.error(language === 'pt'
-          ? 'Não foram encontradas imagens. Tente termos diferentes.'
-          : 'No images found. Try different terms.');
-      } else {
-        setImages(fetchedImages);
-        setError(null);
-        setCurrentPage(page);
-        toast.success(language === 'pt'
-          ? `${fetchedImages.length} imagens relacionadas encontradas!`
-          : `${fetchedImages.length} related images found!`);
-      }
-    } catch (error) {
-      console.error('Error fetching Unsplash images:', error);
-      setError(language === 'pt'
-        ? `Erro ao buscar imagens: ${error.message || 'Falha na API'}`
-        : `Error fetching images: ${error.message || 'API failure'}`);
-      toast.error(language === 'pt'
-        ? 'Erro ao buscar imagens do Unsplash'
-        : 'Error fetching images from Unsplash');
+      const results = await searchUnsplashImages(query);
+      setImages(results);
+    } catch (err) {
+      console.error('Error searching Unsplash:', err);
+      setError('Failed to search images. Please try again.');
     } finally {
       setLoading(false);
     }
   };
   
-  const handlePreviousPage = () => {
-    if (currentPage > 1) {
-      fetchImagesFromUnsplash(currentPage - 1);
-    }
-  };
-  
-  const handleNextPage = () => {
-    fetchImagesFromUnsplash(currentPage + 1);
-  };
-  
-  const handleRefreshImages = () => {
-    // Use last search terms but request a different page for more variety
-    fetchImagesFromUnsplash(Math.floor(Math.random() * 5) + 1); // Random page between 1-5
-  };
-  
-  const handleSelectImage = (image: UnsplashImage) => {
-    setSelectedImageId(image.id);
-    onImageSelect(image.urls.regular);
-    
-    // Store attribution in form data if needed
-    const attribution = getUnsplashAttribution(image);
-    console.log('Image attribution:', attribution);
-    
-    toast.success(language === 'pt'
-      ? 'Imagem selecionada'
-      : 'Image selected');
-  };
-  
-  const handleTrulyRandomImage = () => {
-    const randomImageUrl = getTrulyRandomUnsplashImage();
-    onImageSelect(randomImageUrl);
-    toast.success(language === 'pt'
-      ? 'Imagem aleatória selecionada'
-      : 'Random image selected');
-  };
-  
   return (
-    <div className="space-y-4">
-      {/* Search Form Component */}
-      <UnsplashSearchForm 
-        onFetchImages={() => fetchImagesFromUnsplash(1)}
-        onTrulyRandomImage={handleTrulyRandomImage}
-        loading={loading}
-      />
-      
-      {/* Error Display Component */}
-      <UnsplashErrorDisplay error={error} />
-      
-      {/* Image Grid */}
-      <UnsplashImageGrid 
-        images={images}
-        selectedImageId={selectedImageId}
-        onSelectImage={handleSelectImage}
-      />
-      
-      {/* Pagination */}
-      {images.length > 0 && (
-        <UnsplashPagination 
-          currentPage={currentPage}
-          onPreviousPage={handlePreviousPage}
-          onNextPage={handleNextPage}
-          onRefresh={handleRefreshImages}
-          loading={loading}
-        />
-      )}
-      
-      {/* Attribution */}
-      <UnsplashAttribution showAttribution={images.length > 0} />
-    </div>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Search Unsplash Images</DialogTitle>
+          <DialogDescription>
+            Find and select royalty-free images for your blog post
+          </DialogDescription>
+        </DialogHeader>
+        
+        <form onSubmit={handleSearch} className="flex gap-2 my-4">
+          <Input
+            placeholder={`Search images (defaults to blog title: ${title})`}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="flex-1"
+          />
+          <Button type="submit" disabled={loading}>
+            {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Search className="h-4 w-4 mr-2" />}
+            Search
+          </Button>
+        </form>
+        
+        {error && <p className="text-destructive text-sm my-2">{error}</p>}
+        
+        {loading ? (
+          <div className="flex justify-center my-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+            {images.map((image) => (
+              <div 
+                key={image.id} 
+                className="relative aspect-video overflow-hidden rounded-md border cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => onSelectImage(image.urls.regular)}
+              >
+                <img 
+                  src={image.urls.small} 
+                  alt={image.alt_description || 'Unsplash image'} 
+                  className="object-cover w-full h-full"
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-1">
+                  by <a 
+                    href={`https://unsplash.com/@${image.user.username}?utm_source=seo_ai_checker&utm_medium=referral`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="underline"
+                  >
+                    {image.user.name}
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        {!loading && images.length === 0 && (
+          <p className="text-center text-muted-foreground my-8">
+            No images found. Try a different search term.
+          </p>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 };
 
