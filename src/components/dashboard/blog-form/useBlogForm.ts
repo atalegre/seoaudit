@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,11 +19,23 @@ export const useBlogForm = (initialData: BlogPost | null = null, onSuccess?: () 
   
   // Prepare default values from initial data or empty values
   const defaultValues: Partial<BlogFormValues> = {
-    title: initialData?.title || '',
+    title: {
+      pt: initialData?.title?.pt || '',
+      en: initialData?.title?.en || '',
+    },
     slug: initialData?.slug || '',
-    excerpt: initialData?.excerpt || '',
-    content: initialData?.content || '',
-    keyLearning: initialData?.keyLearning || '',
+    excerpt: {
+      pt: initialData?.excerpt?.pt || '',
+      en: initialData?.excerpt?.en || '',
+    },
+    content: {
+      pt: initialData?.content?.pt || '',
+      en: initialData?.content?.en || '',
+    },
+    keyLearning: {
+      pt: initialData?.keyLearning?.pt || '',
+      en: initialData?.keyLearning?.en || '',
+    },
     category: initialData?.category || '',
     tags: Array.isArray(initialData?.tags) 
       ? initialData?.tags.join(', ') 
@@ -56,7 +67,6 @@ export const useBlogForm = (initialData: BlogPost | null = null, onSuccess?: () 
       console.log('Submitting blog post with data:', data);
       let imageSrc = data.imageSrc;
       
-      // Upload image if a new one is selected
       if (imageFile) {
         console.log('Uploading image file:', imageFile.name);
         try {
@@ -72,14 +82,24 @@ export const useBlogForm = (initialData: BlogPost | null = null, onSuccess?: () 
         }
       }
       
-      // Prepare post data with required properties explicitly defined
-      // Ensure tags is always an array
       const postData: BlogPost = {
-        title: data.title,
+        title: {
+          pt: data.title.pt,
+          en: data.title.en,
+        },
         slug: data.slug,
-        excerpt: data.excerpt,
-        content: data.content,
-        keyLearning: data.keyLearning, // Ensure keyLearning is included here
+        excerpt: {
+          pt: data.excerpt?.pt,
+          en: data.excerpt?.en,
+        },
+        content: {
+          pt: data.content?.pt,
+          en: data.content?.en,
+        },
+        keyLearning: {
+          pt: data.keyLearning?.pt,
+          en: data.keyLearning?.en,
+        },
         category: data.category,
         tags: data.tags ? data.tags.split(',').map(tag => tag.trim()) : [],
         imageSrc,
@@ -90,7 +110,6 @@ export const useBlogForm = (initialData: BlogPost | null = null, onSuccess?: () 
       
       console.log('Prepared post data:', postData);
       
-      // Create or update post
       if (isEditing && initialData?.id) {
         await updateBlogPost(initialData.id, postData);
         toast.success(language === 'pt' ? 'Post atualizado com sucesso!' : 'Post updated successfully!');
@@ -99,7 +118,6 @@ export const useBlogForm = (initialData: BlogPost | null = null, onSuccess?: () 
         toast.success(language === 'pt' ? 'Post criado com sucesso!' : 'Post created successfully!');
       }
       
-      // Clear form and navigate
       if (onSuccess) {
         onSuccess();
       } else {

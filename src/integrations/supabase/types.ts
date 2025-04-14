@@ -79,44 +79,56 @@ export type Database = {
         Row: {
           category: string | null
           content: string | null
+          content_en: string | null
           created_at: string | null
           date: string | null
           excerpt: string | null
+          excerpt_en: string | null
           id: string
           image_src: string | null
           key_learning: string | null
+          key_learning_en: string | null
           popularity: number | null
           slug: string
           tags: string[] | null
           title: string
+          title_en: string
         }
         Insert: {
           category?: string | null
           content?: string | null
+          content_en?: string | null
           created_at?: string | null
           date?: string | null
           excerpt?: string | null
+          excerpt_en?: string | null
           id?: string
           image_src?: string | null
           key_learning?: string | null
+          key_learning_en?: string | null
           popularity?: number | null
           slug: string
           tags?: string[] | null
           title: string
+          title_en: string
         }
         Update: {
           category?: string | null
           content?: string | null
+          content_en?: string | null
           created_at?: string | null
           date?: string | null
           excerpt?: string | null
+          excerpt_en?: string | null
           id?: string
           image_src?: string | null
           key_learning?: string | null
+          key_learning_en?: string | null
           popularity?: number | null
           slug?: string
           tags?: string[] | null
           title?: string
+          title_en?: string
         }
         Relationships: []
       }

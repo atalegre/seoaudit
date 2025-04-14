@@ -1,13 +1,25 @@
 
 export interface BlogPost {
   id?: string;
-  title: string;
+  title: {
+    pt: string;
+    en: string;
+  };
   slug: string;
-  excerpt?: string;
-  content?: string;
-  keyLearning?: string;
+  excerpt?: {
+    pt?: string;
+    en?: string;
+  };
+  content?: {
+    pt?: string;
+    en?: string;
+  };
+  keyLearning?: {
+    pt?: string;
+    en?: string;
+  };
   category?: string;
-  tags: string[]; // Changed to make it explicitly an array of strings
+  tags: string[];
   imageSrc?: string;
   popularity?: number;
   date?: string;

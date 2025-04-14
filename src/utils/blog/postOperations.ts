@@ -9,15 +9,15 @@ export const createBlogPost = async (post: BlogPost): Promise<BlogPost | null> =
 
     // Ensure tags is always an array
     const formattedPost = {
-      title: post.title,
-      title_en: post.title_en,
+      title: post.title.pt,
+      title_en: post.title.en,
       slug: post.slug,
-      excerpt: post.excerpt,
-      excerpt_en: post.excerpt_en,
-      content: post.content,
-      content_en: post.content_en,
-      key_learning: post.keyLearning,
-      key_learning_en: post.keyLearning_en,
+      excerpt: post.excerpt?.pt,
+      excerpt_en: post.excerpt?.en,
+      content: post.content?.pt,
+      content_en: post.content?.en,
+      key_learning: post.keyLearning?.pt,
+      key_learning_en: post.keyLearning?.en,
       category: post.category,
       tags: Array.isArray(post.tags) ? post.tags : [],
       image_src: post.imageSrc,
@@ -38,27 +38,52 @@ export const createBlogPost = async (post: BlogPost): Promise<BlogPost | null> =
       throw error;
     }
 
-    console.log('Blog post created successfully:', data);
-    return data as unknown as BlogPost;
+    // Transform the response back to our frontend format
+    const transformedData: BlogPost = {
+      ...data,
+      title: {
+        pt: data.title,
+        en: data.title_en,
+      },
+      excerpt: {
+        pt: data.excerpt,
+        en: data.excerpt_en,
+      },
+      content: {
+        pt: data.content,
+        en: data.content_en,
+      },
+      keyLearning: {
+        pt: data.key_learning,
+        en: data.key_learning_en,
+      },
+      imageSrc: data.image_src,
+    };
+
+    console.log('Blog post created successfully:', transformedData);
+    return transformedData;
   } catch (error) {
     console.error('Error in createBlogPost:', error);
     return null;
   }
 };
 
-// Function to update an existing blog post in Supabase
+// Function to update an existing blog post
 export const updateBlogPost = async (id: string, post: BlogPost): Promise<BlogPost | null> => {
   try {
     console.log('Updating blog post with ID:', id);
     console.log('Post data:', post);
 
-    // Ensure tags is always an array
     const formattedPost = {
-      title: post.title,
+      title: post.title.pt,
+      title_en: post.title.en,
       slug: post.slug,
-      excerpt: post.excerpt,
-      content: post.content,
-      key_learning: post.keyLearning, // Make sure this matches the database column name
+      excerpt: post.excerpt?.pt,
+      excerpt_en: post.excerpt?.en,
+      content: post.content?.pt,
+      content_en: post.content?.en,
+      key_learning: post.keyLearning?.pt,
+      key_learning_en: post.keyLearning?.en,
       category: post.category,
       tags: Array.isArray(post.tags) ? post.tags : [],
       image_src: post.imageSrc,
@@ -71,7 +96,7 @@ export const updateBlogPost = async (id: string, post: BlogPost): Promise<BlogPo
     const { data, error } = await supabase
       .from('blog_posts')
       .update(formattedPost as any)
-      .eq('id', id as any)
+      .eq('id', id)
       .select()
       .single();
 
@@ -80,8 +105,30 @@ export const updateBlogPost = async (id: string, post: BlogPost): Promise<BlogPo
       throw error;
     }
 
-    console.log('Blog post updated successfully:', data);
-    return data as unknown as BlogPost;
+    // Transform the response back to our frontend format
+    const transformedData: BlogPost = {
+      ...data,
+      title: {
+        pt: data.title,
+        en: data.title_en,
+      },
+      excerpt: {
+        pt: data.excerpt,
+        en: data.excerpt_en,
+      },
+      content: {
+        pt: data.content,
+        en: data.content_en,
+      },
+      keyLearning: {
+        pt: data.key_learning,
+        en: data.key_learning_en,
+      },
+      imageSrc: data.image_src,
+    };
+
+    console.log('Blog post updated successfully:', transformedData);
+    return transformedData;
   } catch (error) {
     console.error('Error in updateBlogPost:', error);
     return null;
