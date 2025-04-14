@@ -17,7 +17,8 @@ export const generateMarketingDigitalPosts = async (): Promise<boolean> => {
         excerpt: 'Descubra as tendências e estratégias de marketing digital que dominarão 2025 e como implementá-las no seu negócio.',
         content: 'Conteúdo detalhado sobre estratégias de marketing digital para 2025...',
         keyLearning: 'Aprenda a adaptar suas estratégias de marketing para o próximo ano.',
-        tags: ['Marketing Digital', 'Tendências', 'Estratégia']
+        tags: ['Marketing Digital', 'Tendências', 'Estratégia'],
+        date: new Date().toISOString()
       },
       {
         title: 'Como Criar Campanhas de Email Marketing Eficazes',
@@ -26,7 +27,8 @@ export const generateMarketingDigitalPosts = async (): Promise<boolean> => {
         excerpt: 'Guia passo a passo para criar campanhas de email marketing que geram resultados mensuráveis e aumentam suas conversões.',
         content: 'Conteúdo detalhado sobre como criar campanhas de email marketing eficazes...',
         keyLearning: 'Domine as técnicas de email marketing para maior engajamento.',
-        tags: ['Email Marketing', 'Conversões', 'Engajamento']
+        tags: ['Email Marketing', 'Conversões', 'Engajamento'],
+        date: new Date().toISOString()
       },
       {
         title: 'Estratégias de Marketing de Conteúdo para Pequenos Negócios',
@@ -35,7 +37,8 @@ export const generateMarketingDigitalPosts = async (): Promise<boolean> => {
         excerpt: 'Aprenda como pequenos negócios podem implementar estratégias de marketing de conteúdo mesmo com recursos limitados.',
         content: 'Conteúdo detalhado sobre estratégias de marketing de conteúdo para pequenos negócios...',
         keyLearning: 'Implemente marketing de conteúdo eficaz com orçamento limitado.',
-        tags: ['Marketing de Conteúdo', 'Pequenos Negócios', 'Orçamento Limitado']
+        tags: ['Marketing de Conteúdo', 'Pequenos Negócios', 'Orçamento Limitado'],
+        date: new Date().toISOString()
       },
       {
         title: 'O Poder do Marketing Visual nas Redes Sociais',
@@ -44,7 +47,8 @@ export const generateMarketingDigitalPosts = async (): Promise<boolean> => {
         excerpt: 'Descubra por que o conteúdo visual é essencial para o sucesso nas redes sociais e como criar imagens e vídeos impactantes.',
         content: 'Conteúdo detalhado sobre o poder do marketing visual nas redes sociais...',
         keyLearning: 'Crie conteúdo visual atraente para aumentar seu alcance nas redes sociais.',
-        tags: ['Marketing Visual', 'Redes Sociais', 'Conteúdo']
+        tags: ['Marketing Visual', 'Redes Sociais', 'Conteúdo'],
+        date: new Date().toISOString()
       }
     ];
 

@@ -17,7 +17,8 @@ export const generateEcommercePosts = async (): Promise<boolean> => {
         excerpt: 'Estratégias práticas para aumentar a taxa de conversão da sua loja online e maximizar suas vendas.',
         content: 'Conteúdo detalhado sobre como otimizar a taxa de conversão da sua loja virtual...',
         keyLearning: 'Aplique técnicas de CRO para aumentar suas vendas online.',
-        tags: ['E-commerce', 'Conversão', 'Vendas']
+        tags: ['E-commerce', 'Conversão', 'Vendas'],
+        date: new Date().toISOString()
       },
       {
         title: 'Guia Completo de SEO para E-commerce',
@@ -26,7 +27,8 @@ export const generateEcommercePosts = async (): Promise<boolean> => {
         excerpt: 'Aprenda a otimizar sua loja virtual para os motores de busca e aumentar o tráfego orgânico.',
         content: 'Conteúdo detalhado sobre SEO para e-commerce...',
         keyLearning: 'Implemente estratégias de SEO específicas para e-commerce.',
-        tags: ['E-commerce', 'SEO', 'Tráfego Orgânico']
+        tags: ['E-commerce', 'SEO', 'Tráfego Orgânico'],
+        date: new Date().toISOString()
       },
       {
         title: 'Estratégias de Fidelização de Clientes para E-commerce',
@@ -35,7 +37,8 @@ export const generateEcommercePosts = async (): Promise<boolean> => {
         excerpt: 'Descubra como transformar compradores de primeira viagem em clientes fiéis que retornam constantemente.',
         content: 'Conteúdo detalhado sobre estratégias de fidelização de clientes para e-commerce...',
         keyLearning: 'Desenvolva programas de fidelidade eficazes para sua loja virtual.',
-        tags: ['E-commerce', 'Fidelização', 'Cliente Recorrente']
+        tags: ['E-commerce', 'Fidelização', 'Cliente Recorrente'],
+        date: new Date().toISOString()
       },
       {
         title: 'Tendências de E-commerce para 2025',
@@ -44,7 +47,8 @@ export const generateEcommercePosts = async (): Promise<boolean> => {
         excerpt: 'Fique à frente da concorrência conhecendo as principais tendências que moldarão o comércio eletrônico em 2025.',
         content: 'Conteúdo detalhado sobre tendências de e-commerce para 2025...',
         keyLearning: 'Prepare sua loja para as futuras tendências do mercado online.',
-        tags: ['E-commerce', 'Tendências', '2025']
+        tags: ['E-commerce', 'Tendências', '2025'],
+        date: new Date().toISOString()
       }
     ];
 

@@ -6,6 +6,11 @@ import BlogHeader from '@/components/blog/BlogHeader';
 import SearchInput from '@/components/blog/SearchInput';
 import CategoryTabs from '@/components/blog/CategoryTabs';
 import CTACard from '@/components/blog/CTACard';
+import { Button } from '@/components/ui/button';
+import { Brain, RefreshCcw } from 'lucide-react';
+import { toast } from 'sonner';
+import { createOptimizedBlogPosts } from '@/services/blog/articleGenerationService';
+import { useUser } from '@/contexts/UserContext';
 
 const BlogPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -13,24 +18,52 @@ const BlogPage = () => {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [generating, setGenerating] = useState(false);
+  const { user } = useUser();
+  
+  const fetchPosts = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const posts = await getBlogPosts();
+      setBlogPosts(posts);
+    } catch (err) {
+      console.error('Error fetching blog posts:', err);
+      setError('Não foi possível carregar os posts do blog.');
+    } finally {
+      setLoading(false);
+    }
+  };
   
   useEffect(() => {
-    const fetchPosts = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const posts = await getBlogPosts();
-        setBlogPosts(posts);
-      } catch (err) {
-        console.error('Error fetching blog posts:', err);
-        setError('Não foi possível carregar os posts do blog.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
     fetchPosts();
   }, []);
+  
+  const handleGeneratePosts = async () => {
+    if (!user) {
+      toast.error('Você precisa estar logado para gerar posts.');
+      return;
+    }
+    
+    setGenerating(true);
+    toast.loading('Gerando posts otimizados...');
+    
+    try {
+      const result = await createOptimizedBlogPosts();
+      if (result) {
+        toast.success('Posts gerados com sucesso!');
+        // Refetch posts
+        fetchPosts();
+      } else {
+        toast.error('Falha ao gerar posts. Tente novamente.');
+      }
+    } catch (error) {
+      console.error('Error generating posts:', error);
+      toast.error('Falha ao gerar posts. Tente novamente.');
+    } finally {
+      setGenerating(false);
+    }
+  };
   
   const filteredPosts = blogPosts.filter(post => {
     const matchesCategory = activeCategory === 'all' || post.category === activeCategory;
@@ -74,10 +107,27 @@ const BlogPage = () => {
   return (
     <div className="container mx-auto px-4 py-8 bg-background">
       <div className="space-y-8">
-        <BlogHeader 
-          title="Blog SEO+AI"
-          description="Artigos, tutoriais e insights sobre SEO e Otimização para Inteligência Artificial"
-        />
+        <div className="flex justify-between items-center">
+          <BlogHeader 
+            title="Blog SEO+AI"
+            description="Artigos, tutoriais e insights sobre SEO e Otimização para Inteligência Artificial"
+          />
+          
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleGeneratePosts}
+            disabled={generating || !user}
+            className="flex items-center gap-2"
+          >
+            {generating ? (
+              <RefreshCcw className="h-4 w-4 animate-spin" />
+            ) : (
+              <Brain className="h-4 w-4" />
+            )}
+            Gerar Posts
+          </Button>
+        </div>
 
         <SearchInput 
           searchQuery={searchQuery}

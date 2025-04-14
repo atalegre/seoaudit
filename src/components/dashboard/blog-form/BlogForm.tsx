@@ -10,7 +10,7 @@ import BlogFormActions from './BlogFormActions';
 import { useBlogForm } from './useBlogForm';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
-import { createOptimizedBlogPosts } from '@/utils/blog';
+import { createOptimizedBlogPosts } from '@/services/blog/articleGenerationService';
 import { Button } from '@/components/ui/button';
 import { Brain } from 'lucide-react';
 
