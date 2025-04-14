@@ -1,4 +1,6 @@
+
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 // Unsplash API configuration
 const UNSPLASH_API_URL = 'https://api.unsplash.com';
@@ -35,14 +37,19 @@ export const searchUnsplashImages = async (
       return [];
     }
 
+    console.log(`Searching Unsplash for: "${query}" (${count} images)`);
+    
     const params = new URLSearchParams({
       query: query,
       per_page: count.toString(),
       orientation: 'landscape',
     });
 
+    const url = `${UNSPLASH_API_URL}/search/photos?${params.toString()}`;
+    console.log(`Fetching from Unsplash URL: ${url}`);
+    
     const response = await fetch(
-      `${UNSPLASH_API_URL}/search/photos?${params.toString()}`,
+      url,
       {
         headers: {
           Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}`,
@@ -51,13 +58,22 @@ export const searchUnsplashImages = async (
     );
 
     if (!response.ok) {
-      throw new Error(`Unsplash API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error(`Unsplash API error (${response.status}):`, errorText);
+      throw new Error(`Unsplash API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
-    return data.results;
+    console.log(`Unsplash returned ${data.results?.length || 0} images`);
+    
+    if (!data.results || data.results.length === 0) {
+      console.log('No images found on Unsplash for this query');
+    }
+    
+    return data.results || [];
   } catch (error) {
     console.error('Error fetching images from Unsplash:', error);
+    toast.error(`Erro ao buscar imagens: ${error.message || 'Falha na API do Unsplash'}`);
     return [];
   }
 };
@@ -95,6 +111,7 @@ export const generateSearchTerms = (
     }
   }
 
+  console.log(`Generated Unsplash search terms: "${terms}"`);
   return terms;
 };
 
@@ -105,4 +122,14 @@ export const generateSearchTerms = (
  */
 export const getUnsplashAttribution = (image: UnsplashImage): string => {
   return `Photo by ${image.user.name} on Unsplash`;
+};
+
+/**
+ * Fallback method to get a random image from Unsplash's source.unsplash.com service
+ * This doesn't use the API key and has less restrictions
+ */
+export const getRandomUnsplashImage = (query: string): string => {
+  const encodedQuery = encodeURIComponent(query);
+  const timestamp = new Date().getTime(); // Add timestamp to avoid caching
+  return `https://source.unsplash.com/random/1200x800/?${encodedQuery}&t=${timestamp}`;
 };
