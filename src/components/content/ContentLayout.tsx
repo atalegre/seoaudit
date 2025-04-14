@@ -12,8 +12,6 @@ interface ContentLayoutProps {
 }
 
 const ContentLayout = ({ children, sidebar, className }: ContentLayoutProps) => {
-  const isMobile = useIsMobile();
-  
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
