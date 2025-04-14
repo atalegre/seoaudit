@@ -1,10 +1,10 @@
-
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
+import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 
 import Index from "./pages/Index";
 import ResultsPage from "./pages/ResultsPage";
@@ -47,7 +47,6 @@ import ChangePasswordPage from "./pages/dashboard/ChangePasswordPage";
 import DetailsPage from "./pages/DetailsPage";
 import ProfilePage from "./pages/dashboard/ProfilePage";
 
-// Adicione os imports para os novos componentes de perfil e configurações do usuário comum
 import UserProfilePage from "./pages/suite/UserProfilePage";
 import UserSettingsPage from "./pages/suite/UserSettingsPage";
 import UserChangePasswordPage from "./pages/suite/UserChangePasswordPage";
@@ -74,6 +73,7 @@ function App() {
       <UserProvider>
         <LanguageProvider>
           <BrowserRouter>
+            <GoogleAnalytics />
             <ScrollToTop />
             <TooltipProvider>
               <Toaster />
@@ -84,7 +84,6 @@ function App() {
                 <Route path="/results" element={<ResultsPage />} />
                 <Route path="/details" element={<DetailsPage />} />
                 
-                {/* Rotas em português e inglês para compatibilidade com os dois idiomas */}
                 <Route path="/como-funciona" element={<HowItWorksPage />} />
                 <Route path="/how-it-works" element={<HowItWorksPage />} />
                 
@@ -103,7 +102,6 @@ function App() {
                 <Route path="/verification" element={<VerificationPage />} />
                 <Route path="/auth/callback" element={<Navigate to="/dashboard" />} />
                 
-                {/* Admin Dashboard Routes - apenas para administradores */}
                 <Route path="/dashboard" element={<DashboardLayout><Outlet /></DashboardLayout>}>
                   <Route index element={<DashboardPage />} />
                   <Route path="clients" element={<ClientsPage />} />
@@ -114,7 +112,6 @@ function App() {
                   <Route path="profile" element={<ProfilePage />} />
                 </Route>
                 
-                {/* Suite Routes - para usuários comuns */}
                 <Route path="/suite" element={<SuiteDashboard />} />
                 <Route path="/suite/seo" element={<SeoAnalysisPage />} />
                 <Route path="/suite/aio" element={<AioOptimizationPage />} />
@@ -125,12 +122,10 @@ function App() {
                 <Route path="/suite/keywords" element={<KeywordsPage />} />
                 <Route path="/suite/reports" element={<SuiteDashboard />} />
                 
-                {/* Novas rotas para perfil e configurações de usuário comum */}
                 <Route path="/suite/profile" element={<UserProfilePage />} />
                 <Route path="/suite/settings" element={<UserSettingsPage />} />
                 <Route path="/suite/change-password" element={<UserChangePasswordPage />} />
                 
-                {/* Content Routes - Dual language */}
                 <Route path="/blog" element={<BlogPage />} />
                 <Route path="/blog/:slug" element={<BlogPostPage />} />
                 
