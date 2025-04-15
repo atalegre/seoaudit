@@ -15,12 +15,24 @@ export const uploadBlogImage = async (file: File): Promise<string> => {
       size: file.size
     });
 
+    // Check if the blog-images bucket exists, create it if it doesn't
+    const { data: buckets } = await supabase.storage.listBuckets();
+    const bucketExists = buckets?.some(bucket => bucket.name === 'blog-images');
+    
+    if (!bucketExists) {
+      console.log('Creating blog-images bucket');
+      await supabase.storage.createBucket('blog-images', {
+        public: true,
+        fileSizeLimit: 5242880 // 5MB
+      });
+    }
+
     // Upload the file to Supabase storage
     const { data, error } = await supabase.storage
       .from('blog-images')
       .upload(filePath, file, {
         cacheControl: '3600',
-        upsert: true // Changed to true to allow overwriting existing files
+        upsert: true // Allow overwriting existing files
       });
 
     if (error) {

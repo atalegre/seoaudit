@@ -63,3 +63,6 @@ const fetchAIServiceContent = async (storeType: string, industry: string): Promi
 
   return { pt: ptContent, en: enContent };
 };
+
+// For compatibility with imports expecting generateEcommercePosts (plural)
+export const generateEcommercePosts = generateEcommercePost;
