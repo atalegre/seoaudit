@@ -3,6 +3,7 @@ import { BlogPost } from '@/types/blog';
 import { generateSEOBlogPosts } from './blogPostService';
 import { generateEcommercePost } from './ecommercePostService';
 import { generateMarketingPost } from './marketingPostService';
+import { generateThematicImageUrl } from '@/utils/blog/imageUtils';
 
 // Create a batch of optimized blog posts
 export const createOptimizedBlogPosts = async (): Promise<boolean> => {
@@ -23,6 +24,21 @@ export const createOptimizedBlogPosts = async (): Promise<boolean> => {
   }
 };
 
-// For compatibility with imports expecting other names
-export { generateEcommercePost as generateEcommercePosts };
-export { generateMarketingPost as generateMarketingDigitalPosts };
+// Generate a thematic blog post with a relevant image
+export const generateThematicBlogPost = async (topic: string, category: string): Promise<BlogPost | null> => {
+  try {
+    // For now, we'll use the marketing post generator for thematic posts
+    return await generateMarketingPost(category, topic);
+  } catch (error) {
+    console.error('Error generating thematic blog post:', error);
+    return null;
+  }
+};
+
+// Get a blog image for a specific topic and category
+export const getBlogImage = async (topic: string, category: string): Promise<string> => {
+  return generateThematicImageUrl(topic, category);
+};
+
+// For compatibility with other files, these exports are now handled differently
+// We no longer re-export these here to avoid conflicts
