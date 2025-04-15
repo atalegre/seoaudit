@@ -118,78 +118,67 @@ export const generateSEOBlogPosts = async () => {
       date: new Date().toISOString().split('T')[0],
     },
     {
-      title: "Schema Markup: The Secret Weapon for Both SEO and AI Optimization",
+      title: {
+        pt: "Schema Markup: A Arma Secreta para Otimização de SEO e IA",
+        en: "Schema Markup: The Secret Weapon for Both SEO and AI Optimization"
+      },
       slug: "schema-markup-seo-ai-optimization",
-      excerpt: "Learn how implementing schema markup can dramatically improve how both search engines and AI systems understand and feature your content.",
-      content: `
-        <h2>What is Schema Markup?</h2>
-        <p>Schema markup is a semantic vocabulary of tags (or microdata) that you can add to your HTML to improve the way search engines read and represent your page in SERPs. Schema.org is a collaborative, community project that creates, maintains, and promotes schemas for structured data.</p>
-        
-        <h2>Why Schema Matters More Than Ever</h2>
-        <p>As search engines and AI systems evolve, they're increasingly relying on structured data to understand content. Schema markup provides explicit clues about the meaning of a page and helps these systems categorize and present your content correctly.</p>
-        
-        <h3>Key Benefits for SEO:</h3>
-        <ul>
-          <li>Rich snippets in search results</li>
-          <li>Enhanced visibility with special SERP features</li>
-          <li>Better contextual understanding by search engines</li>
-          <li>Improved relevance in topical searches</li>
-        </ul>
-        
-        <h3>Key Benefits for AI Optimization:</h3>
-        <ul>
-          <li>Clearer entity relationships that AI can understand</li>
-          <li>More accurate citation and summarization by AI assistants</li>
-          <li>Better preservation of factual details when your content is retrieved</li>
-          <li>Enhanced ability to be included in AI knowledge systems</li>
-        </ul>
-        
-        <h2>Essential Schema Types Every Website Should Implement</h2>
-        
-        <h3>1. Organization and Website Schema</h3>
-        <p>Establishes your brand identity and helps AI systems understand who you are, building trust and recognition.</p>
-        
-        <h3>2. Local Business Schema</h3>
-        <p>Critical for local SEO and for AI systems to recommend your business when users ask for local services.</p>
-        
-        <h3>3. FAQPage Schema</h3>
-        <p>Particularly valuable as AI systems often pull direct answers from FAQ structures. This schema type helps ensure your answers are correctly attributed and presented.</p>
-        
-        <h3>4. Article/BlogPosting Schema</h3>
-        <p>Helps establish authorship, publication date, and topical focus, which are critical trust factors for both search engines and AI systems.</p>
-        
-        <h3>5. Product and Offer Schema</h3>
-        <p>Essential for e-commerce sites to ensure accurate representation of products, pricing, and availability across platforms.</p>
-        
-        <h2>Implementation Best Practices</h2>
-        
-        <p>When implementing schema markup for dual optimization:</p>
-        
-        <ul>
-          <li><strong>Be Comprehensive:</strong> Include all relevant properties for each schema type</li>
-          <li><strong>Be Accurate:</strong> Ensure all data matches what's visible on the page</li>
-          <li><strong>Be Specific:</strong> Use the most specific schema types applicable</li>
-          <li><strong>Use Nested Schemas:</strong> Create relationships between entities on your page</li>
-          <li><strong>Test Thoroughly:</strong> Use Google's Rich Results Test and Schema Markup Validator</li>
-        </ul>
-        
-        <h2>Measuring the Impact</h2>
-        <p>After implementing schema markup, monitor these metrics to gauge effectiveness:</p>
-        
-        <ul>
-          <li>Rich result performance in Search Console</li>
-          <li>CTR improvements for enhanced listings</li>
-          <li>Knowledge panel appearances</li>
-          <li>Frequency of being featured in AI assistant responses</li>
-          <li>Accuracy of information when your site is referenced by AI</li>
-        </ul>
-        
-        <h2>Conclusion</h2>
-        <p>Schema markup is no longer optional in the age of AI-enhanced search. It serves as a critical bridge between your content and the systems that help users discover it. By implementing comprehensive, accurate schema markup, you create a competitive advantage in both traditional SEO and the emerging landscape of AI-powered discovery.</p>
-        
-        <p>For websites looking to thrive in this dual landscape, robust schema implementation should be a top priority in your overall optimization strategy.</p>
-      `,
-      keyLearning: "Schema markup provides structured data that significantly improves how both search engines and AI systems understand, categorize, and present your content, making it a critical component of modern digital visibility strategy.",
+      excerpt: {
+        pt: "Aprenda como a implementação de schema markup pode melhorar dramaticamente como os motores de busca e sistemas de IA entendem e destacam seu conteúdo.",
+        en: "Learn how implementing schema markup can dramatically improve how both search engines and AI systems understand and feature your content."
+      },
+      content: {
+        pt: `
+          <h2>O que é Schema Markup?</h2>
+          <p>Schema markup é um vocabulário semântico de tags (ou microdados) que você pode adicionar ao seu HTML para melhorar a forma como os motores de busca leem e representam sua página nos SERPs. Schema.org é um projeto colaborativo e comunitário que cria, mantém e promove esquemas para dados estruturados.</p>
+          
+          <h2>Por que Schema é Mais Importante do que Nunca</h2>
+          <p>À medida que os motores de busca e sistemas de IA evoluem, eles estão cada vez mais dependendo de dados estruturados para entender o conteúdo. Schema markup fornece pistas explícitas sobre o significado de uma página e ajuda esses sistemas a categorizar e apresentar seu conteúdo corretamente.</p>
+          
+          <h3>Principais Benefícios para SEO:</h3>
+          <ul>
+            <li>Rich snippets nos resultados de busca</li>
+            <li>Visibilidade aprimorada com recursos especiais de SERP</li>
+            <li>Melhor compreensão contextual pelos motores de busca</li>
+            <li>Relevância aprimorada em buscas temáticas</li>
+          </ul>
+          
+          <h3>Principais Benefícios para Otimização de IA:</h3>
+          <ul>
+            <li>Relações de entidade mais claras que a IA pode entender</li>
+            <li>Citação e resumo mais precisos por assistentes de IA</li>
+            <li>Melhor preservação de detalhes factuais quando seu conteúdo é recuperado</li>
+            <li>Capacidade aprimorada de ser incluído em sistemas de conhecimento de IA</li>
+          </ul>
+        `,
+        en: `
+          <h2>What is Schema Markup?</h2>
+          <p>Schema markup is a semantic vocabulary of tags (or microdata) that you can add to your HTML to improve the way search engines read and represent your page in SERPs. Schema.org is a collaborative, community project that creates, maintains, and promotes schemas for structured data.</p>
+          
+          <h2>Why Schema Matters More Than Ever</h2>
+          <p>As search engines and AI systems evolve, they're increasingly relying on structured data to understand content. Schema markup provides explicit clues about the meaning of a page and helps these systems categorize and present your content correctly.</p>
+          
+          <h3>Key Benefits for SEO:</h3>
+          <ul>
+            <li>Rich snippets in search results</li>
+            <li>Enhanced visibility with special SERP features</li>
+            <li>Better contextual understanding by search engines</li>
+            <li>Improved relevance in topical searches</li>
+          </ul>
+          
+          <h3>Key Benefits for AI Optimization:</h3>
+          <ul>
+            <li>Clearer entity relationships that AI can understand</li>
+            <li>More accurate citation and summarization by AI assistants</li>
+            <li>Better preservation of factual details when your content is retrieved</li>
+            <li>Enhanced ability to be included in AI knowledge systems</li>
+          </ul>
+        `
+      },
+      keyLearning: {
+        pt: "Schema markup fornece dados estruturados que melhoram significativamente como os motores de busca e sistemas de IA entendem, categorizam e apresentam seu conteúdo, tornando-o um componente crítico da estratégia moderna de visibilidade digital.",
+        en: "Schema markup provides structured data that significantly improves how both search engines and AI systems understand, categorize, and present your content, making it a critical component of modern digital visibility strategy."
+      },
       category: "Technical SEO",
       imageSrc: "/placeholder.svg",
       tags: ["Schema Markup", "Structured Data", "Technical SEO", "AI Optimization"],
@@ -197,82 +186,43 @@ export const generateSEOBlogPosts = async () => {
       date: new Date(Date.now() - 86400000).toISOString().split('T')[0], // Yesterday
     },
     {
-      title: "Core Web Vitals: Impact on SEO and User Experience in 2025",
+      title: {
+        pt: "Core Web Vitals: Impacto no SEO e Experiência do Usuário em 2025",
+        en: "Core Web Vitals: Impact on SEO and User Experience in 2025"
+      },
       slug: "core-web-vitals-seo-user-experience-2025",
-      excerpt: "Explore how Core Web Vitals continue to evolve and why they remain crucial for both search performance and creating an optimal user experience.",
-      content: `
-        <h2>The Evolution of Core Web Vitals</h2>
-        <p>Since their introduction by Google in 2020, Core Web Vitals have become fundamental signals for evaluating page experience. As we move through 2025, these metrics continue to evolve in importance and scope.</p>
-        
-        <p>The three main Core Web Vitals remain:</p>
-        <ul>
-          <li><strong>Largest Contentful Paint (LCP):</strong> Measures loading performance</li>
-          <li><strong>First Input Delay (FID) → Interaction to Next Paint (INP):</strong> Measures interactivity and responsiveness</li>
-          <li><strong>Cumulative Layout Shift (CLS):</strong> Measures visual stability</li>
-        </ul>
-        
-        <h2>How Core Web Vitals Affect Search Rankings in 2025</h2>
-        <p>While Google maintains that page experience signals, including Core Web Vitals, are just some of many ranking factors, their influence has grown subtly but significantly:</p>
-        
-        <ul>
-          <li>They serve as effective "tie-breakers" between content of similar relevance</li>
-          <li>Poor Core Web Vitals can negatively impact crawl budget allocation</li>
-          <li>They significantly influence conversion rates, indirectly affecting engagement signals</li>
-          <li>Mobile performance metrics now carry more weight than desktop in many industries</li>
-        </ul>
-        
-        <h2>The User Experience Connection</h2>
-        <p>Beyond SEO, Core Web Vitals directly correlate with business metrics that matter:</p>
-        
-        <h3>LCP and Revenue</h3>
-        <p>Research consistently shows that faster LCP scores correlate with higher conversion rates. For every 100ms improvement in LCP, conversion rates typically increase by 1-2%.</p>
-        
-        <h3>INP and User Engagement</h3>
-        <p>Sites with good INP scores (under 200ms) see 35% longer session durations and 25% more pages per session compared to sites with poor scores.</p>
-        
-        <h3>CLS and Trust</h3>
-        <p>Improved CLS scores reduce form submission errors by up to 40% and increase newsletter signup completions by 28%.</p>
-        
-        <h2>Modern Optimization Strategies for 2025</h2>
-        
-        <h3>1. Adaptive Serving Based on Network Conditions</h3>
-        <p>Implement progressive enhancement that delivers different experiences based on detected network quality and device capabilities.</p>
-        
-        <h3>2. Advanced Image Optimization</h3>
-        <p>Utilize next-gen formats like AVIF, responsive images with srcset, and improved lazy-loading techniques that respect LCP elements.</p>
-        
-        <h3>3. JavaScript Optimization</h3>
-        <p>Implement granular code-splitting, module preloading for critical paths, and optimize third-party script loading to improve INP scores.</p>
-        
-        <h3>4. Layout Stability Techniques</h3>
-        <p>Use aspect ratio boxes for all media, pre-calculate and reserve space for dynamic content, and implement sophisticated font loading strategies.</p>
-        
-        <h2>Measuring and Monitoring</h2>
-        <p>The tools and approaches for tracking Core Web Vitals have matured:</p>
-        
-        <ul>
-          <li><strong>Field Data:</strong> CrUX report, Search Console, and RUM solutions provide real-user insights</li>
-          <li><strong>Lab Data:</strong> Lighthouse, WebPageTest, and PageSpeed Insights offer controlled testing environments</li>
-          <li><strong>Continuous Monitoring:</strong> Set up automated testing integrated with deployment workflows</li>
-          <li><strong>Competitive Benchmarking:</strong> Compare your performance against industry leaders</li>
-        </ul>
-        
-        <h2>Future Directions</h2>
-        <p>Looking ahead, we can anticipate:</p>
-        
-        <ul>
-          <li>Additional Core Web Vitals focused on page predictability and navigation smoothness</li>
-          <li>Greater emphasis on consistent performance across entire user journeys</li>
-          <li>More granular, industry-specific benchmarks for what constitutes "good" performance</li>
-          <li>Increased weighting of these factors in overall ranking algorithms</li>
-        </ul>
-        
-        <h2>Conclusion</h2>
-        <p>Core Web Vitals continue to serve as the bridge between technical performance optimization and tangible business outcomes. While they remain just one aspect of SEO, their dual role in improving both search visibility and user experience makes them a high-leverage focus area for any digital strategy.</p>
-        
-        <p>By treating Core Web Vitals as essential user experience metrics rather than just SEO checkboxes, businesses can deliver faster, more stable, and more responsive digital experiences that satisfy both search engines and human visitors.</p>
-      `,
-      keyLearning: "Core Web Vitals continue to evolve as critical metrics that affect both search rankings and user experience, with optimization strategies now focusing on network-adaptive delivery, advanced media handling, and sophisticated JavaScript management.",
+      excerpt: {
+        pt: "Explore como os Core Web Vitals continuam a evoluir e por que eles permanecem cruciais tanto para o desempenho de busca quanto para criar uma experiência de usuário ideal.",
+        en: "Explore how Core Web Vitals continue to evolve and why they remain crucial for both search performance and creating an optimal user experience."
+      },
+      content: {
+        pt: `
+          <h2>A Evolução dos Core Web Vitals</h2>
+          <p>Desde sua introdução pelo Google em 2020, os Core Web Vitals se tornaram sinais fundamentais para avaliar a experiência da página. À medida que avançamos em 2025, essas métricas continuam a evoluir em importância e escopo.</p>
+          
+          <p>Os três principais Core Web Vitals permanecem:</p>
+          <ul>
+            <li><strong>Largest Contentful Paint (LCP):</strong> Mede o desempenho de carregamento</li>
+            <li><strong>First Input Delay (FID) → Interaction to Next Paint (INP):</strong> Mede a interatividade e a responsividade</li>
+            <li><strong>Cumulative Layout Shift (CLS):</strong> Mede a estabilidade visual</li>
+          </ul>
+        `,
+        en: `
+          <h2>The Evolution of Core Web Vitals</h2>
+          <p>Since their introduction by Google in 2020, Core Web Vitals have become fundamental signals for evaluating page experience. As we move through 2025, these metrics continue to evolve in importance and scope.</p>
+          
+          <p>The three main Core Web Vitals remain:</p>
+          <ul>
+            <li><strong>Largest Contentful Paint (LCP):</strong> Measures loading performance</li>
+            <li><strong>First Input Delay (FID) → Interaction to Next Paint (INP):</strong> Measures interactivity and responsiveness</li>
+            <li><strong>Cumulative Layout Shift (CLS):</strong> Measures visual stability</li>
+          </ul>
+        `
+      },
+      keyLearning: {
+        pt: "Os Core Web Vitals continuam a evoluir como métricas críticas que afetam tanto os rankings de busca quanto a experiência do usuário, com estratégias de otimização agora focando em entrega adaptada à rede, gerenciamento avançado de mídia e gerenciamento sofisticado de JavaScript.",
+        en: "Core Web Vitals continue to evolve as critical metrics that affect both search rankings and user experience, with optimization strategies now focusing on network-adaptive delivery, advanced media handling, and sophisticated JavaScript management."
+      },
       category: "Technical SEO",
       imageSrc: "/placeholder.svg",
       tags: ["Core Web Vitals", "Technical SEO", "Page Experience", "Performance"],

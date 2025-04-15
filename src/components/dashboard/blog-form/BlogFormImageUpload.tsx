@@ -105,7 +105,7 @@ const BlogFormImageUpload: React.FC<BlogFormImageUploadProps> = ({
   // Get the current title for search queries - ensure it's a valid format for search
   const getCurrentTitle = () => {
     const formTitle = form.getValues().title;
-    // Ensure we return a valid title object with both pt and en properties
+    // Ensure we return a valid title object with both pt and en properties 
     return {
       pt: formTitle?.pt || '',
       en: formTitle?.en || ''
