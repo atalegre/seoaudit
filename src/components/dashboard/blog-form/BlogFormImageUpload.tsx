@@ -102,6 +102,16 @@ const BlogFormImageUpload: React.FC<BlogFormImageUploadProps> = ({
       : 'Error loading image. Using fallback image.');
   };
   
+  // Get the current title for search queries - ensure it's a valid format for search
+  const getCurrentTitle = () => {
+    const formTitle = form.getValues().title;
+    // Ensure we return a valid title object with both pt and en properties
+    return {
+      pt: formTitle?.pt || '',
+      en: formTitle?.en || ''
+    };
+  };
+  
   return (
     <div className="space-y-4">
       <FormField
@@ -145,7 +155,7 @@ const BlogFormImageUpload: React.FC<BlogFormImageUploadProps> = ({
                   isOpen={isUnsplashOpen}
                   onClose={() => setIsUnsplashOpen(false)}
                   onSelectImage={handleUnsplashImageSelect}
-                  blogTitle={form.getValues().title || { pt: '', en: '' }}
+                  blogTitle={getCurrentTitle()}
                 />
               </div>
             </FormControl>

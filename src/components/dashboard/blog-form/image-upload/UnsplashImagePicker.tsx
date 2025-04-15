@@ -1,10 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Search, Loader2 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Loader2, Search, X } from 'lucide-react';
 import { searchUnsplashImages } from './unsplashService';
 import { UnsplashImage } from './types';
 
@@ -12,7 +12,10 @@ interface UnsplashImagePickerProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectImage: (imageUrl: string) => void;
-  blogTitle: { pt: string; en: string };
+  blogTitle: {
+    pt: string;
+    en: string;
+  };
 }
 
 const UnsplashImagePicker: React.FC<UnsplashImagePickerProps> = ({ 
@@ -21,101 +24,142 @@ const UnsplashImagePicker: React.FC<UnsplashImagePickerProps> = ({
   onSelectImage,
   blogTitle
 }) => {
+  const { language } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [images, setImages] = useState<UnsplashImage[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { language } = useLanguage();
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   
-  // Use title from current language or default to Portuguese
-  const title = language === 'en' ? blogTitle.en : blogTitle.pt;
-
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const query = searchQuery || title;
-      if (!query) {
-        setError('Please enter a search term');
-        setLoading(false);
-        return;
-      }
+  // Set initial search term from blog title when dialog opens
+  useEffect(() => {
+    if (isOpen) {
+      // Use the appropriate language title for search
+      const titleText = language === 'en' ? blogTitle.en : blogTitle.pt;
+      setSearchQuery(titleText || '');
       
+      if (titleText) {
+        handleSearch(titleText);
+      }
+    }
+  }, [isOpen, blogTitle, language]);
+  
+  const handleSearch = async (query: string = searchQuery) => {
+    if (!query.trim()) return;
+    
+    setIsLoading(true);
+    try {
       const results = await searchUnsplashImages(query);
       setImages(results);
-    } catch (err) {
-      console.error('Error searching Unsplash:', err);
-      setError('Failed to search images. Please try again.');
+    } catch (error) {
+      console.error('Error searching Unsplash images:', error);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
+    }
+  };
+  
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSearch();
+    }
+  };
+  
+  const handleImageClick = (imageUrl: string) => {
+    setSelectedImage(imageUrl);
+  };
+  
+  const handleConfirmSelection = () => {
+    if (selectedImage) {
+      onSelectImage(selectedImage);
     }
   };
   
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-4xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Search Unsplash Images</DialogTitle>
-          <DialogDescription>
-            Find and select royalty-free images for your blog post
-          </DialogDescription>
+          <DialogTitle>
+            {language === 'pt' ? 'Escolher imagem do Unsplash' : 'Choose Unsplash Image'}
+          </DialogTitle>
         </DialogHeader>
         
-        <form onSubmit={handleSearch} className="flex gap-2 my-4">
+        <div className="relative mb-4">
           <Input
-            placeholder={`Search images (defaults to blog title: ${title})`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1"
+            onKeyDown={handleKeyDown}
+            placeholder={language === 'pt' ? 'Buscar imagens...' : 'Search images...'}
+            className="pr-24"
           />
-          <Button type="submit" disabled={loading}>
-            {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Search className="h-4 w-4 mr-2" />}
-            Search
-          </Button>
-        </form>
-        
-        {error && <p className="text-destructive text-sm my-2">{error}</p>}
-        
-        {loading ? (
-          <div className="flex justify-center my-8">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="absolute right-0 top-0 h-full flex items-center">
+            {searchQuery && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => setSearchQuery('')}
+                className="h-full aspect-square"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => handleSearch()}
+              className="h-full aspect-square"
+              disabled={isLoading}
+            >
+              <Search className="h-4 w-4" />
+            </Button>
           </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+        </div>
+        
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : images.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {images.map((image) => (
               <div 
-                key={image.id} 
-                className="relative aspect-video overflow-hidden rounded-md border cursor-pointer hover:opacity-80 transition-opacity"
-                onClick={() => onSelectImage(image.urls.regular)}
+                key={image.id}
+                className={`relative aspect-video overflow-hidden rounded-md border cursor-pointer transition-all ${
+                  selectedImage === image.urls.regular ? 'ring-2 ring-primary scale-95' : 'hover:scale-95'
+                }`}
+                onClick={() => handleImageClick(image.urls.regular)}
               >
                 <img 
                   src={image.urls.small} 
-                  alt={image.alt_description || 'Unsplash image'} 
+                  alt={image.alt_description || 'Unsplash image'}
                   className="object-cover w-full h-full"
                 />
-                <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-1">
-                  by <a 
-                    href={`https://unsplash.com/@${image.user.username}?utm_source=seo_ai_checker&utm_medium=referral`} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="underline"
-                  >
-                    {image.user.name}
-                  </a>
-                </div>
+                {selectedImage === image.urls.regular && (
+                  <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                    <div className="h-4 w-4 rounded-full bg-primary"></div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
+        ) : (
+          <div className="text-center py-12 text-muted-foreground">
+            {language === 'pt' 
+              ? 'Nenhuma imagem encontrada. Tente uma busca diferente.' 
+              : 'No images found. Try a different search.'}
+          </div>
         )}
         
-        {!loading && images.length === 0 && (
-          <p className="text-center text-muted-foreground my-8">
-            No images found. Try a different search term.
-          </p>
-        )}
+        <div className="flex justify-end space-x-2 mt-4">
+          <Button variant="outline" onClick={onClose}>
+            {language === 'pt' ? 'Cancelar' : 'Cancel'}
+          </Button>
+          <Button 
+            onClick={handleConfirmSelection} 
+            disabled={!selectedImage}
+          >
+            {language === 'pt' ? 'Selecionar' : 'Select'}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

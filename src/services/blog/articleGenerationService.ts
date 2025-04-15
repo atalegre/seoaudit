@@ -1,7 +1,7 @@
 
 import { BlogPost } from '@/types/blog';
-import { generateEcommercePosts } from './ecommercePostService';
-import { generateMarketingDigitalPosts } from './marketingPostService';
+import { generateEcommercePost } from './ecommercePostService';
+import { generateMarketingPost } from './marketingPostService';
 
 /**
  * Generate a thematic blog post
@@ -38,7 +38,7 @@ export const createOptimizedBlogPosts = async (): Promise<boolean> => {
     
     // Generate e-commerce posts
     console.log('Generating e-commerce posts...');
-    const ecommerceResult = await generateEcommercePosts();
+    const ecommerceResult = await generateEcommercePostsCollection();
     if (!ecommerceResult) {
       console.error('Failed to generate e-commerce posts');
     } else {
@@ -47,7 +47,7 @@ export const createOptimizedBlogPosts = async (): Promise<boolean> => {
     
     // Generate marketing digital posts
     console.log('Generating marketing digital posts...');
-    const marketingResult = await generateMarketingDigitalPosts();
+    const marketingResult = await generateMarketingPostsCollection();
     if (!marketingResult) {
       console.error('Failed to generate marketing digital posts');
     } else {
@@ -57,6 +57,62 @@ export const createOptimizedBlogPosts = async (): Promise<boolean> => {
     return ecommerceResult && marketingResult;
   } catch (error) {
     console.error('Error in createOptimizedBlogPosts:', error);
+    return false;
+  }
+};
+
+// Helper function to generate multiple e-commerce posts
+const generateEcommercePostsCollection = async (): Promise<boolean> => {
+  try {
+    // Generate a few sample e-commerce posts
+    const storeTypes = ['online', 'híbrida', 'marketplace'];
+    const industries = ['moda', 'tecnologia', 'alimentos', 'cosméticos'];
+    
+    let success = true;
+    
+    // Generate a post for each combination (limit to 2 for testing)
+    for (let i = 0; i < 2; i++) {
+      const storeType = storeTypes[i % storeTypes.length];
+      const industry = industries[i % industries.length];
+      
+      const post = await generateEcommercePost(storeType, industry);
+      if (!post) {
+        console.error(`Failed to generate e-commerce post for ${storeType} - ${industry}`);
+        success = false;
+      }
+    }
+    
+    return success;
+  } catch (error) {
+    console.error('Error generating e-commerce posts collection:', error);
+    return false;
+  }
+};
+
+// Helper function to generate multiple marketing posts
+const generateMarketingPostsCollection = async (): Promise<boolean> => {
+  try {
+    // Generate a few sample marketing posts
+    const topics = ['SEO', 'Redes Sociais', 'E-mail Marketing', 'Content Marketing'];
+    const audiences = ['pequenas empresas', 'startups', 'e-commerces', 'serviços locais'];
+    
+    let success = true;
+    
+    // Generate a post for each combination (limit to 2 for testing)
+    for (let i = 0; i < 2; i++) {
+      const topic = topics[i % topics.length];
+      const audience = audiences[i % audiences.length];
+      
+      const post = await generateMarketingPost(topic, audience);
+      if (!post) {
+        console.error(`Failed to generate marketing post for ${topic} - ${audience}`);
+        success = false;
+      }
+    }
+    
+    return success;
+  } catch (error) {
+    console.error('Error generating marketing posts collection:', error);
     return false;
   }
 };
