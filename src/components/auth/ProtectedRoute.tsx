@@ -34,12 +34,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
         returnTo={location.pathname}
       />
       
-      {/* Render the protected content without wrapping it in a relative div */}
+      {/* Show the children regardless of authentication status */}
       {children}
       
-      {/* Apply blur overlay just to the content area */}
+      {/* Apply blur overlay only to the main content area when not authenticated */}
       {!user && (
-        <div className="fixed inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-30 pointer-events-none">
+        <div className="fixed top-14 left-14 right-0 bottom-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-30 pointer-events-none">
           <div className="text-center p-6 bg-white/90 rounded-lg shadow-md pointer-events-auto">
             <h3 className="text-xl font-semibold mb-2">Acesso restrito</h3>
             <p className="text-gray-600 mb-4">Faça login para acessar este conteúdo premium.</p>
