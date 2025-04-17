@@ -12,13 +12,13 @@ export async function resetPassword(email: string) {
     
     if (error) {
       console.error("Error sending reset password email:", error);
-      throw error;
+      return { success: false, error };
     }
     
-    return { success: true };
+    return { success: true, error: null };
   } catch (error) {
     console.error("Exception during password reset:", error);
-    throw error;
+    return { success: false, error };
   }
 }
 

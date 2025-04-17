@@ -23,14 +23,14 @@ const PasswordResetForm = ({ setAuthError }: PasswordResetFormProps) => {
 
     try {
       // Using the passwordService utility to handle reset
-      const { success, error } = await resetPassword(email);
+      const result = await resetPassword(email);
 
-      if (error) {
-        setAuthError(error.message);
+      if (!result.success && result.error) {
+        setAuthError(result.error.message);
         toast({
           variant: "destructive",
           title: "Erro ao enviar email de recuperação",
-          description: error.message,
+          description: result.error.message,
         });
       } else {
         setSent(true);
