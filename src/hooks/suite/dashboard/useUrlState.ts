@@ -17,6 +17,22 @@ export function useUrlState() {
   const [analyzeDomain, setAnalyzeDomain] = useState<string>('');
   const [lastAnalysisDate, setLastAnalysisDate] = useState<string>(new Date().toLocaleDateString('pt-PT'));
 
+  // Normalize URL function
+  const normalizeUrl = (inputUrl: string) => {
+    // Remove any whitespace
+    let cleanUrl = inputUrl.trim();
+    
+    // If no protocol, add https://
+    if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+      cleanUrl = 'https://' + cleanUrl;
+    }
+    
+    // Remove www. if present
+    cleanUrl = cleanUrl.replace(/^https?:\/\/www\./, 'https://');
+    
+    return cleanUrl;
+  };
+
   // Update domain when URL changes
   useEffect(() => {
     if (url) {
@@ -34,18 +50,26 @@ export function useUrlState() {
   // Initialize from URL parameters
   useEffect(() => {
     if (urlParam && urlParam !== url) {
-      setUrl(urlParam);
-      localStorage.setItem('lastAnalyzedUrl', urlParam);
+      // Normalize the URL param before setting
+      const normalizedUrl = normalizeUrl(urlParam);
+      setUrl(normalizedUrl);
+      localStorage.setItem('lastAnalyzedUrl', normalizedUrl);
       
-      toast.success(`Site analisado: ${urlParam}`, {
+      toast.success(`Site analisado: ${normalizedUrl}`, {
         description: "Os resultados estão disponíveis no dashboard."
       });
     }
   }, [urlParam]);
 
+  // Custom setUrl that normalizes the input
+  const setNormalizedUrl = (inputUrl: string) => {
+    const normalizedUrl = normalizeUrl(inputUrl);
+    setUrl(normalizedUrl);
+  };
+
   return {
     url,
-    setUrl,
+    setUrl: setNormalizedUrl,
     domain,
     setDomain,
     analyzeDomain,
