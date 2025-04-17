@@ -31,7 +31,7 @@ const UrlInputSection: React.FC<UrlInputSectionProps> = ({
       <CardContent>
         <div className="flex gap-2">
           <Input
-            placeholder="https://exemplo.com"
+            placeholder="exemplo.com"
             value={url}
             onChange={onUrlChange}
             className="flex-1"

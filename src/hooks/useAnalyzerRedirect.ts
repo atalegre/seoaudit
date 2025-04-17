@@ -9,18 +9,30 @@ export const useAnalyzerRedirect = () => {
   const navigate = useNavigate();
   const { user } = useUser();
 
+  const normalizeUrl = (inputUrl: string) => {
+    // Remove any whitespace
+    let formattedUrl = inputUrl.trim();
+    
+    // If no protocol, add https://
+    if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+      formattedUrl = 'https://' + formattedUrl;
+    }
+    
+    // Remove www. if present (optional, based on your requirements)
+    formattedUrl = formattedUrl.replace(/^https?:\/\/www\./, 'https://');
+    
+    return formattedUrl;
+  };
+
   const handleAnalyzeAndRedirect = (url: string) => {
     if (!url) {
       toast.error("Por favor, insira um URL válido");
       return;
     }
 
-    // Normalize URL if needed
-    let formattedUrl = url;
-    if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
-      formattedUrl = 'https://' + formattedUrl;
-    }
-
+    // Normalize URL 
+    const formattedUrl = normalizeUrl(url);
+    
     // Store URL for later use
     localStorage.setItem('lastAnalyzedUrl', formattedUrl);
     

@@ -16,17 +16,11 @@ const MainAnalyzer = () => {
   const handleAnalysis = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Format URL if needed
-    let formattedUrl = url.trim();
-    if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
-      formattedUrl = 'https://' + formattedUrl;
-    }
-    
-    if (!validateUrl(formattedUrl)) {
+    if (!url.trim()) {
       return;
     }
     
-    handleAnalyzeAndRedirect(formattedUrl);
+    handleAnalyzeAndRedirect(url.trim());
   };
   
   return (
