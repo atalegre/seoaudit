@@ -1,9 +1,11 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { formatDistance } from 'date-fns';
+import { SeoAnalysisRequest } from '@/hooks/useSeoAnalysisHistory';
 
 interface AnalysisHistoryProps {
-  history: any[];
+  history: SeoAnalysisRequest[];
 }
 
 const AnalysisHistory = ({ history }: AnalysisHistoryProps) => {
@@ -27,12 +29,12 @@ const AnalysisHistory = ({ history }: AnalysisHistoryProps) => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {history.map((item, index) => (
-            <div key={index} className="flex justify-between items-center border-b pb-2">
+          {history.map((item) => (
+            <div key={item.id} className="flex justify-between items-center border-b pb-2">
               <div>
-                <p className="font-medium">{new Date(item.created_at).toLocaleDateString()}</p>
+                <p className="font-medium">{item.url}</p>
                 <p className="text-sm text-muted-foreground">
-                  SEO: {item.seoScore || 'N/A'} | AIO: {item.aioScore || 'N/A'}
+                  {new Date(item.created_at).toLocaleDateString()} • {formatDistance(new Date(item.created_at), new Date(), { addSuffix: true })}
                 </p>
               </div>
             </div>

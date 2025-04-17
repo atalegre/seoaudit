@@ -7,9 +7,7 @@ export interface SeoAnalysisRequest {
   id: string;
   url: string;
   created_at: string;
-  strategy: string;
-  request_status: string;
-  is_guest: boolean;
+  user_id?: string;
 }
 
 export function useSeoAnalysisHistory() {
@@ -27,15 +25,13 @@ export function useSeoAnalysisHistory() {
       
       let query = supabase
         .from('seo_analysis_requests')
-        .select('id, url, created_at, strategy, request_status, is_guest')
+        .select('id, url, created_at, user_id')
         .order('created_at', { ascending: false })
         .limit(20);
       
-      // If user is logged in, get their requests, otherwise get recent guest requests
+      // If user is logged in, get their requests
       if (user) {
         query = query.eq('user_id', user.id);
-      } else {
-        query = query.eq('is_guest', true);
       }
       
       const { data, error } = await query;

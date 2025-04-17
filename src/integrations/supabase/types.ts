@@ -250,30 +250,18 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          is_guest: boolean
-          request_status: string
-          response_data: Json | null
-          strategy: string
           url: string
           user_id: string | null
         }
         Insert: {
           created_at?: string
           id?: string
-          is_guest?: boolean
-          request_status?: string
-          response_data?: Json | null
-          strategy?: string
           url: string
           user_id?: string | null
         }
         Update: {
           created_at?: string
           id?: string
-          is_guest?: boolean
-          request_status?: string
-          response_data?: Json | null
-          strategy?: string
           url?: string
           user_id?: string | null
         }

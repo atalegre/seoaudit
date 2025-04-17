@@ -50,14 +50,12 @@ serve(async (req) => {
     console.log(`Using API key: ${PAGESPEED_API_KEY.substring(0, 4)}...${PAGESPEED_API_KEY.substring(PAGESPEED_API_KEY.length - 4)}`);
 
     // Create a new record in seo_analysis_requests
+    // Note: We're only storing the user_id, url, and created_at (which has a default value)
     const { data: requestRecord, error: insertError } = await supabase
       .from('seo_analysis_requests')
       .insert({
         url,
-        strategy,
-        user_id: userId,
-        is_guest: !userId,
-        request_status: 'processing'
+        user_id: userId
       })
       .select()
       .single();
@@ -103,19 +101,6 @@ serve(async (req) => {
         troubleshootingInfo = 'Invalid request. URL may be malformed or inaccessible.';
       }
       
-      // Update the request record with error status
-      await supabase
-        .from('seo_analysis_requests')
-        .update({
-          request_status: 'error',
-          response_data: { 
-            error: detailedError,
-            troubleshooting: troubleshootingInfo,
-            raw_error: errorText
-          }
-        })
-        .eq('id', requestRecord.id);
-      
       return new Response(
         JSON.stringify({ 
           error: detailedError,
@@ -128,15 +113,6 @@ serve(async (req) => {
 
     // Parse the response
     const data = await response.json();
-    
-    // Update the request record with success status and response data
-    await supabase
-      .from('seo_analysis_requests')
-      .update({
-        request_status: 'completed',
-        response_data: data
-      })
-      .eq('id', requestRecord.id);
     
     // Return the results
     return new Response(
