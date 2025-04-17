@@ -1,122 +1,15 @@
 
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SEOAudit - Análise de otimização para motores de busca e IA</title>
-    <meta name="description" content="Analise gratuitamente o seu site para motores de busca (SEO) e modelos de IA (AIO). Descubra como melhorar a sua presença digital." />
-    
-    <!-- Critical preloads -->
-    <link rel="preload" href="/src/main.tsx" as="script" fetchpriority="high" />
-    <link rel="preload" href="/lovable-uploads/d5a32965-2a6a-49a6-8474-6efb96afd0f7.png" as="image" fetchpriority="high" />
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" as="style" />
-    
-    <!-- Inline critical styles -->
-    <style>
-      :root {
-        --background: 0 0% 100%;
-        --foreground: 222.2 84% 4.9%;
-        --primary: 222.2 47.4% 11.2%;
-      }
-      body {
-        margin: 0;
-        padding: 0;
-        background-color: white;
-        color: #111827;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      }
-      .hero-title {
-        font-size: 2rem;
-        line-height: 1.2;
-        font-weight: 700;
-        margin-bottom: 1rem;
-      }
-      .hero-description {
-        font-size: 1rem;
-        margin-bottom: 1.5rem;
-        color: #666;
-      }
-      .hero-container {
-        max-width: 64rem;
-        margin-left: auto;
-        margin-right: auto;
-        padding: 1rem;
-        text-align: center;
-      }
-      .primary-button {
-        display: inline-block;
-        padding: 0.75rem 1.5rem;
-        background-color: #1f2937;
-        color: white;
-        border-radius: 0.375rem;
-        font-weight: 500;
-        border: none;
-        cursor: pointer;
-      }
-      input {
-        border: 1px solid #d1d5db;
-        padding: 0.75rem;
-        border-radius: 0.375rem;
-      }
-    </style>
-    
-    <!-- Optimized preconnects -->
-    <link rel="preconnect" href="https://logo.clearbit.com" crossorigin>
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    
-    <!-- Deferred font loading -->
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" 
-    onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap"></noscript>
-    
-    <!-- Social sharing metadata -->
-    <meta property="og:title" content="SEOAudit - Análise SEO e AIO" />
-    <meta property="og:description" content="Analise gratuitamente o seu site para motores de busca (SEO) e modelos de IA (AIO)." />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="/lovable-uploads/d5a32965-2a6a-49a6-8474-6efb96afd0f7.png" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Logo do SEOAudit" />
-    
-    <!-- Twitter card tags -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="SEOAudit - Análise SEO e AIO">
-    <meta name="twitter:description" content="Analise gratuitamente o seu site para motores de busca (SEO) e modelos de IA (AIO).">
-    <meta name="twitter:image" content="/lovable-uploads/d5a32965-2a6a-49a6-8474-6efb96afd0f7.png">
-    
-    <!-- Google Tag Manager -->
-    <script>
-      (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-      })(window,document,'script','dataLayer','GTM-WHKJ76ZT');
-    </script>
-  </head>
-
-  <body>
-    <!-- Google Tag Manager (noscript) -->
-    <noscript>
-      <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WHKJ76ZT" height="0" width="0" style="display:none;visibility:hidden"></iframe>
-    </noscript>
-    
-    <div id="root"></div>
-    
-    <!-- Main application script -->
-    <script type="module" src="/src/main.tsx"></script>
-    
-    <!-- Essential GPT Engineer script for Lovable features -->
+    <title>SEO Audit</title>
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
-    
-    <!-- Google Analytics (carregado apenas após o conteúdo principal) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-33EYX0JZM1"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-33EYX0JZM1', { 'send_page_view': false });
-    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
