@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { AlertCircle, Loader2, ExternalLink, Key } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 
-import { getApiKey, isApiNotEnabledError, PUBLIC_API_KEY } from '@/utils/api/pageInsights';
+import { getApiKey, isApiNotEnabledError } from '@/utils/api/pageInsights';
 
 interface AnalysisErrorViewProps {
   seoError: string | null;
@@ -56,7 +55,7 @@ const AnalysisErrorView: React.FC<AnalysisErrorViewProps> = ({
   const apiKey = getApiKey();
   const apiKeyPrefix = apiKey ? apiKey.substring(0, 4) : 'Não configurada';
   const apiKeySuffix = apiKey ? apiKey.substring(apiKey.length - 4) : '';
-  const isUsingPublicKey = apiKey === PUBLIC_API_KEY;
+  const isUsingPublicKey = false; // We'll remove this logic since we no longer have a public key
   
   return (
     <div className="max-w-6xl mx-auto">
@@ -155,15 +154,11 @@ const AnalysisErrorView: React.FC<AnalysisErrorViewProps> = ({
           
           <div className="mt-4 p-2 bg-blue-50 border border-blue-200 rounded text-blue-800">
             <p className="text-sm font-medium">Informação sobre a chave API:</p>
-            {isUsingPublicKey ? (
-              <p className="text-xs mt-1">
-                Este projeto está usando a chave API pública: <code>{PUBLIC_API_KEY}</code>
-              </p>
-            ) : (
+            
               <p className="text-xs mt-1">
                 Este projeto está usando uma chave API personalizada configurada no ambiente.
               </p>
-            )}
+            
             <p className="text-xs mt-1">
               A API PageSpeed Insights é uma API aberta da Google. Para garantir que funcione, você deve <a href={activateApiLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline inline-flex items-center">
                 ativar a API no Google Cloud Console <ExternalLink className="h-3 w-3 ml-1" />
