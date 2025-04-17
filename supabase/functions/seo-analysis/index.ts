@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -36,11 +37,17 @@ serve(async (req) => {
     
     // Check if API key is configured
     if (!PAGESPEED_API_KEY) {
+      console.error('PageSpeed API key not configured');
       return new Response(
-        JSON.stringify({ error: 'PageSpeed API key not configured on the server' }),
+        JSON.stringify({ 
+          error: 'PageSpeed API key not configured on the server',
+          details: 'Please configure GOOGLE_PAGESPEED_API_KEY in Supabase secrets'
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    console.log(`Using API key: ${PAGESPEED_API_KEY.substring(0, 4)}...${PAGESPEED_API_KEY.substring(PAGESPEED_API_KEY.length - 4)}`);
 
     // Create a new record in seo_analysis_requests
     const { data: requestRecord, error: insertError } = await supabase
@@ -84,18 +91,35 @@ serve(async (req) => {
       const errorText = await response.text();
       console.error(`PageSpeed API error: ${response.status} ${response.statusText}`, errorText);
       
+      let detailedError = `PageSpeed API returned ${response.status}: ${response.statusText}`;
+      let troubleshootingInfo = '';
+      
+      // Provide more helpful error messages based on status code
+      if (response.status === 403) {
+        troubleshootingInfo = 'API key may not be activated for PageSpeed Insights API. Enable it at https://console.cloud.google.com/apis/library/pagespeedonline.googleapis.com';
+      } else if (response.status === 429) {
+        troubleshootingInfo = 'API quota exceeded. Wait or increase quota limits.';
+      } else if (response.status === 400) {
+        troubleshootingInfo = 'Invalid request. URL may be malformed or inaccessible.';
+      }
+      
       // Update the request record with error status
       await supabase
         .from('seo_analysis_requests')
         .update({
           request_status: 'error',
-          response_data: { error: `API Error: ${response.status} ${response.statusText}` }
+          response_data: { 
+            error: detailedError,
+            troubleshooting: troubleshootingInfo,
+            raw_error: errorText
+          }
         })
         .eq('id', requestRecord.id);
       
       return new Response(
         JSON.stringify({ 
-          error: `PageSpeed API returned ${response.status}: ${response.statusText}`,
+          error: detailedError,
+          troubleshooting: troubleshootingInfo,
           requestId: requestRecord.id 
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -127,7 +151,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in seo-analysis function:', error);
     return new Response(
-      JSON.stringify({ error: error.message || 'Internal server error' }),
+      JSON.stringify({ 
+        error: error.message || 'Internal server error',
+        stack: error.stack || 'No stack trace available'
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
