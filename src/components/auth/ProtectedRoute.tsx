@@ -34,20 +34,24 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
         returnTo={location.pathname}
       />
       
-      {/* Render the protected content */}
-      <div className={!user ? 'relative' : ''}>
-        {children}
-        
-        {/* Apply blur overlay if not authenticated */}
-        {!user && (
-          <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-30">
-            <div className="text-center p-6">
-              <h3 className="text-xl font-semibold mb-2">Acesso restrito</h3>
-              <p className="text-gray-600">Faça login para acessar este conteúdo premium.</p>
-            </div>
+      {/* Render the protected content without wrapping it in a relative div */}
+      {children}
+      
+      {/* Apply blur overlay just to the content area */}
+      {!user && (
+        <div className="fixed inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-30 pointer-events-none">
+          <div className="text-center p-6 bg-white/90 rounded-lg shadow-md pointer-events-auto">
+            <h3 className="text-xl font-semibold mb-2">Acesso restrito</h3>
+            <p className="text-gray-600 mb-4">Faça login para acessar este conteúdo premium.</p>
+            <button 
+              onClick={() => setShowLoginDialog(true)}
+              className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors"
+            >
+              Fazer login
+            </button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </>
   );
 };
