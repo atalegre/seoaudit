@@ -1,173 +1,138 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Search } from 'lucide-react';
 import { toast } from 'sonner';
-import SuiteOnboarding from './SuiteOnboarding';
 import DomainHeader from './DomainHeader';
 import ScoreCards from './ScoreCards';
-import DashboardMetrics from './DashboardMetrics';
-import DashboardRecommendations from './DashboardRecommendations';
+import { useUser } from '@/contexts/UserContext';
+import HistoryTabs from './HistoryTabs';
 import AvailableTools from './AvailableTools';
 import FirstTimeExperience from './FirstTimeExperience';
-import { SampleRecommendation } from '@/hooks/suite/dashboard/useRecommendations';
+import EmptyDashboardState from './EmptyDashboardState';
+import DashboardRecommendations from './DashboardRecommendations';
+import DashboardMetrics from './DashboardMetrics';
+import RecommendationsSection from './RecommendationsSection';
+import { useDashboardState } from '@/hooks/suite/useDashboardState';
+import { useUrlState } from '@/hooks/suite/dashboard/useUrlState';
+import LoginDialog from '@/components/auth/LoginDialog';
 
-interface DashboardContentProps {
-  domain: string;
-  logoUrl?: string;
-  totalScore: number;
-  seoScore: number;
-  aioScore: number;
-  llmScore: number;
-  performanceScore: number;
-  directoryScore: number;
-  keywordScore: number;
-  recommendations: SampleRecommendation[];
-  isUserLoggedIn: boolean;
-  onViewMoreRecommendations: () => void;
-  lastAnalysisDate?: string;
-}
-
-const DashboardContent: React.FC<DashboardContentProps> = ({
-  domain,
-  logoUrl,
-  totalScore,
-  seoScore,
-  aioScore,
-  llmScore,
-  performanceScore,
-  directoryScore,
-  keywordScore,
-  recommendations,
-  isUserLoggedIn,
-  onViewMoreRecommendations,
-  lastAnalysisDate = new Date().toLocaleDateString()
-}) => {
+const DashboardContent = () => {
+  const { urlState, setUrlState } = useUrlState();
+  const dashboardState = useDashboardState(urlState.url);
+  const [urlInput, setUrlInput] = useState(urlState.url || '');
+  const { user } = useUser();
   const navigate = useNavigate();
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
   
-  // Check if this is the first visit to the dashboard
-  const [isFirstVisit, setIsFirstVisit] = useState(() => {
-    return !localStorage.getItem('suiteOnboardingCompleted');
-  });
-  
-  // Check if onboarding tour should be shown
-  const [showOnboardingTour, setShowOnboardingTour] = useState(() => {
-    return localStorage.getItem('showOnboardingTour') === 'true' || isFirstVisit;
-  });
-  
-  const [showOnboardingCompleted, setShowOnboardingCompleted] = useState(false);
-  
-  // Determine if this is the user's first time viewing results
-  const [isFirstTimeResults, setIsFirstTimeResults] = useState(() => {
-    const key = `dashboard_results_viewed_${domain}`;
-    return !localStorage.getItem(key);
-  });
-
-  const handleOnboardingComplete = () => {
-    setShowOnboardingCompleted(true);
-    setShowOnboardingTour(false);
-    localStorage.removeItem('showOnboardingTour');
+  const handleUrlSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     
-    toast.success("Bem-vindo à SEOaudit!", {
-      description: "Explore todas as ferramentas disponíveis para melhorar seu site."
-    });
-  };
-
-  const navigateTo = (path: string) => {
-    if (!isUserLoggedIn && (path === '/suite/writer' || path === '/suite/keywords' || path === '/suite/llm')) {
-      toast.info("Esta funcionalidade completa requer conta", {
-        description: "Registe-se para aceder a todas as ferramentas avançadas.",
-        action: {
-          label: "Criar conta",
-          onClick: () => navigate('/signin')
-        }
-      });
+    if (!urlInput.trim()) {
+      toast.error('Por favor, digite uma URL para analisar');
+      return;
     }
     
-    navigate(path);
+    // Simplistic validation
+    if (!urlInput.includes('.') || urlInput.length < 4) {
+      toast.error('Por favor, digite uma URL válida');
+      return;
+    }
+    
+    // If user is not logged in, we want to capture this URL for after login
+    if (!user) {
+      sessionStorage.setItem('pendingAnalysisUrl', urlInput);
+      setShowLoginDialog(true);
+      return;
+    }
+    
+    // Get a clean version of the URL
+    let cleanUrl = urlInput.trim();
+    if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+      cleanUrl = 'https://' + cleanUrl;
+    }
+    
+    setUrlState({ url: cleanUrl, isAnalyzing: true });
+    toast.info(`Analisando ${cleanUrl}...`);
   };
   
-  // Mark as viewed when user interacts with dashboard
-  const handleFirstTimeInteraction = () => {
-    if (isFirstTimeResults) {
-      const key = `dashboard_results_viewed_${domain}`;
-      localStorage.setItem(key, 'true');
-      setIsFirstTimeResults(false);
+  const handleStartAnalysis = () => {
+    // If there's no user, show login dialog
+    if (!user) {
+      setShowLoginDialog(true);
+      return;
+    }
+    
+    // Otherwise, scroll to input or focus it
+    const inputElement = document.getElementById('url-input');
+    if (inputElement) {
+      inputElement.focus();
+      inputElement.scrollIntoView({ behavior: 'smooth' });
     }
   };
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
+  
   return (
-    <motion.div 
-      className="space-y-6"
-      variants={containerVariants}
-      initial="hidden"
-      animate="show"
-      onClick={handleFirstTimeInteraction}
-    >
-      <SuiteOnboarding 
-        isFirstVisit={showOnboardingTour} 
-        onComplete={handleOnboardingComplete} 
-      />
-
-      <DomainHeader domain={domain} logoUrl={logoUrl} />
-
-      {isFirstTimeResults ? (
-        <FirstTimeExperience 
-          seoScore={seoScore}
-          aioScore={aioScore}
-          totalScore={totalScore}
-          lastAnalysisDate={lastAnalysisDate}
-          isUserLoggedIn={isUserLoggedIn}
-          navigateTo={navigateTo}
-        />
-      ) : (
+    <div className="space-y-6">
+      {/* URL Input form */}
+      <form onSubmit={handleUrlSubmit} className="mx-auto max-w-2xl mb-8">
+        <div className="flex space-x-2">
+          <Input
+            id="url-input"
+            type="text"
+            placeholder="Digite o URL do seu website"
+            value={urlInput}
+            onChange={(e) => setUrlInput(e.target.value)}
+            className="flex-1"
+          />
+          <Button type="submit" disabled={urlState.isAnalyzing}>
+            {urlState.isAnalyzing ? (
+              'Analisando...'
+            ) : (
+              <>
+                <Search className="mr-2 h-4 w-4" />
+                Analisar
+              </>
+            )}
+          </Button>
+        </div>
+      </form>
+      
+      {!urlState.url && !urlState.isAnalyzing && (
+        // First time / empty state
+        user ? <AvailableTools /> : <FirstTimeExperience onStartAnalysis={handleStartAnalysis} />
+      )}
+      
+      {urlState.url && !dashboardState.loading && (
         <>
-          <div id="dashboard-scores">
-            <ScoreCards 
-              seoScore={seoScore} 
-              aioScore={aioScore} 
-              navigateTo={navigateTo}
-            />
+          <DomainHeader 
+            domain={dashboardState.domain}
+            lastAnalysisDate={dashboardState.lastAnalysisDate}
+          />
+          
+          <HistoryTabs />
+          
+          <ScoreCards scores={dashboardState.scores} />
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <DashboardMetrics metrics={dashboardState.metrics} />
+            <DashboardRecommendations />
           </div>
-
-          <div id="dashboard-metrics" className="mt-8">
-            <DashboardMetrics 
-              performanceScore={performanceScore}
-              llmScore={llmScore}
-              directoryScore={directoryScore}
-              keywordScore={keywordScore}
-              isUserLoggedIn={isUserLoggedIn}
-              navigateTo={navigateTo}
-            />
-          </div>
-
-          <div id="dashboard-recommendations">
-            <DashboardRecommendations 
-              recommendations={recommendations}
-              isUserLoggedIn={isUserLoggedIn}
-              navigateTo={navigateTo}
-              onViewMoreRecommendations={onViewMoreRecommendations}
-            />
-          </div>
-
-          <div id="dashboard-tools">
-            <AvailableTools 
-              isUserLoggedIn={isUserLoggedIn}
-              navigateTo={navigateTo}
-            />
-          </div>
+          
+          <RecommendationsSection />
         </>
       )}
-    </motion.div>
+      
+      {urlState.url && !dashboardState.loading && dashboardState.isEmpty && (
+        <EmptyDashboardState onRestart={() => setUrlState({ url: '' })} />
+      )}
+      
+      <LoginDialog 
+        isOpen={showLoginDialog} 
+        onClose={() => setShowLoginDialog(false)} 
+        returnTo="/suite"
+      />
+    </div>
   );
 };
 

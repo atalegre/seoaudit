@@ -1,8 +1,11 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, LogIn, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useUser } from '@/contexts/UserContext';
+import LoginDialog from '@/components/auth/LoginDialog';
+import { useState } from 'react';
 
 interface SuiteHeaderProps {
   title?: string;
@@ -22,6 +25,8 @@ const SuiteHeader = ({
   isAnalyzing = false
 }: SuiteHeaderProps) => {
   const navigate = useNavigate();
+  const { user } = useUser();
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
 
   return (
     <header className="bg-white border-b p-4">
@@ -50,15 +55,45 @@ const SuiteHeader = ({
           </div>
         </div>
         
-        {onRerunAnalysis && (
-          <Button 
-            onClick={onRerunAnalysis} 
-            disabled={isAnalyzing}
-          >
-            {isAnalyzing ? 'Analisando...' : 'Analisar Novamente'}
-          </Button>
-        )}
+        <div className="flex items-center gap-3">
+          {user ? (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => navigate('/suite/profile')}
+              className="flex items-center gap-2"
+            >
+              <User className="h-4 w-4" />
+              <span className="hidden md:inline">{user.email}</span>
+            </Button>
+          ) : (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setShowLoginDialog(true)}
+              className="flex items-center gap-2"
+            >
+              <LogIn className="h-4 w-4" />
+              <span>Entrar</span>
+            </Button>
+          )}
+          
+          {onRerunAnalysis && (
+            <Button 
+              onClick={onRerunAnalysis} 
+              disabled={isAnalyzing}
+            >
+              {isAnalyzing ? 'Analisando...' : 'Analisar Novamente'}
+            </Button>
+          )}
+        </div>
       </div>
+      
+      <LoginDialog 
+        isOpen={showLoginDialog} 
+        onClose={() => setShowLoginDialog(false)} 
+        returnTo="/suite"
+      />
     </header>
   );
 };
