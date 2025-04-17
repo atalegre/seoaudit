@@ -1,10 +1,9 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// Get the PageSpeed API key from environment variable
-const PAGESPEED_API_KEY = Deno.env.get('PAGESPEED_API_KEY') || '';
+// Get the PageSpeed API key from environment variable with the new name
+const PAGESPEED_API_KEY = Deno.env.get('GOOGLE_PAGESPEED_API_KEY') || '';
 
 // Set up CORS headers
 const corsHeaders = {
