@@ -18,7 +18,6 @@ import { useDashboardState } from '@/hooks/suite/useDashboardState';
 import { useUrlState } from '@/hooks/suite/dashboard/useUrlState';
 import LoginDialog from '@/components/auth/LoginDialog';
 import DashboardRecommendations from './DashboardRecommendations';
-import { useNavigate as useNavigateHook } from 'react-router-dom';
 
 const DashboardContent = () => {
   const { url, setUrl, domain, lastAnalysisDate } = useUrlState();
@@ -28,6 +27,21 @@ const DashboardContent = () => {
   const navigate = useNavigate();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   
+  const normalizeUrl = (inputUrl: string) => {
+    // Remove any whitespace
+    let cleanUrl = inputUrl.trim();
+    
+    // If no protocol, add https://
+    if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+      cleanUrl = 'https://' + cleanUrl;
+    }
+    
+    // Remove www. if present
+    cleanUrl = cleanUrl.replace(/^https?:\/\/www\./, 'https://');
+    
+    return cleanUrl;
+  };
+  
   const handleUrlSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -36,23 +50,20 @@ const DashboardContent = () => {
       return;
     }
     
+    // Normalize the URL
+    const cleanUrl = normalizeUrl(urlInput);
+    
     // Simplistic validation
-    if (!urlInput.includes('.') || urlInput.length < 4) {
+    if (!cleanUrl.includes('.') || cleanUrl.length < 4) {
       toast.error('Por favor, digite uma URL válida');
       return;
     }
     
     // If user is not logged in, we want to capture this URL for after login
     if (!user) {
-      sessionStorage.setItem('pendingAnalysisUrl', urlInput);
+      sessionStorage.setItem('pendingAnalysisUrl', cleanUrl);
       setShowLoginDialog(true);
       return;
-    }
-    
-    // Get a clean version of the URL
-    let cleanUrl = urlInput.trim();
-    if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
-      cleanUrl = 'https://' + cleanUrl;
     }
     
     setUrl(cleanUrl);
@@ -171,3 +182,4 @@ const DashboardContent = () => {
 };
 
 export default DashboardContent;
+
