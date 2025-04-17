@@ -1,7 +1,9 @@
-
 /**
  * Configuration and utility functions for the PageSpeed Insights API
  */
+
+// Expose a public API key constant
+export const PUBLIC_API_KEY = 'AIzaSyD_9C6lkjO6gMgXqMD8VHjqTDqKwEcpPmU'; // Default public PageSpeed API key
 
 // Set to false to disable mock data usage on API failures
 export const USE_MOCK_DATA_ON_FAILURE = false;
@@ -16,7 +18,7 @@ export const CACHE_TTL = 1000 * 60 * 30;
 export function getApiKey(): string {
   // API Key is now stored and used only on the server
   console.log('🔒 A chave API agora está protegida no servidor');
-  return 'PROTECTED';
+  return PUBLIC_API_KEY;
 }
 
 /**
