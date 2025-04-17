@@ -56,7 +56,7 @@ export function useSeoAnalysis() {
       console.log(`🔍 URL normalizada para análise: ${normalizedUrl}`);
       
       // Salvar a URL no localStorage
-      localStorage.setItem('lastAnalyzedUrl', urlToAnalyze);
+      localStorage.setItem('lastAnalyzedUrl', normalizedUrl);
       
       // Obter dados para desktop e mobile usando a mesma API com estratégia diferente
       toast.info("Analisando...", {
