@@ -4,13 +4,8 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
   BarChart3,
   Sparkles,
-  BrainCircuit,
   MapPin,
-  Search,
-  Lightbulb,
-  FileText,
   BarChart2,
-  Pen,
   Home
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -18,7 +13,7 @@ import { cn } from '@/lib/utils';
 const SidebarContentItems = () => {
   const navigate = useNavigate();
   
-  // Array of links for the sidebar
+  // Array of links for the sidebar - removed LLM, Keywords, Content Recommender, Content Writer
   const links = [
     {
       to: '/suite',
@@ -39,38 +34,14 @@ const SidebarContentItems = () => {
       color: 'text-purple-600'
     },
     {
-      to: '/suite/llm',
-      icon: <BrainCircuit className="h-5 w-5" />,
-      label: 'LLM Presence',
-      color: 'text-green-600'
-    },
-    {
       to: '/suite/directories',
       icon: <MapPin className="h-5 w-5" />,
       label: 'Local Directories',
       color: 'text-red-600'
     },
     {
-      to: '/suite/keywords',
-      icon: <Search className="h-5 w-5" />,
-      label: 'Keyword Research',
-      color: 'text-amber-600'
-    },
-    {
-      to: '/suite/recommender',
-      icon: <Lightbulb className="h-5 w-5" />,
-      label: 'Content Recommender',
-      color: 'text-teal-600'
-    },
-    {
-      to: '/suite/writer',
-      icon: <Pen className="h-5 w-5" />,
-      label: 'Content Writer',
-      color: 'text-pink-600'
-    },
-    {
       to: '/suite/reports',
-      icon: <FileText className="h-5 w-5" />,
+      icon: <BarChart3 className="h-5 w-5" />,
       label: 'Reports',
       color: 'text-gray-600'
     }

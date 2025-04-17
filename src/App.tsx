@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -117,12 +116,14 @@ function App() {
                 <Route path="/suite" element={<SuiteDashboard />} />
                 <Route path="/suite/seo" element={<SeoAnalysisPage />} />
                 <Route path="/suite/aio" element={<AioOptimizationPage />} />
-                <Route path="/suite/writer" element={<ContentWriterPage />} />
-                <Route path="/suite/recommender" element={<ContentRecommenderPage />} />
-                <Route path="/suite/llm" element={<LLMPresencePage />} />
                 <Route path="/suite/directories" element={<DirectoriesPage />} />
-                <Route path="/suite/keywords" element={<KeywordsPage />} />
                 <Route path="/suite/reports" element={<SuiteDashboard />} />
+                
+                {/* Hidden routes - still accessible if accessed directly, but not shown in navigation */}
+                <Route path="/suite/llm" element={<LLMPresencePage />} />
+                <Route path="/suite/keywords" element={<KeywordsPage />} />
+                <Route path="/suite/recommender" element={<ContentRecommenderPage />} />
+                <Route path="/suite/writer" element={<ContentWriterPage />} />
                 
                 <Route path="/suite/profile" element={<UserProfilePage />} />
                 <Route path="/suite/settings" element={<UserSettingsPage />} />
