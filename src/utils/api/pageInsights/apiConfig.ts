@@ -1,4 +1,3 @@
-
 /**
  * Configuration and utility functions for the PageSpeed Insights API
  */
@@ -14,7 +13,7 @@ export const USE_MOCK_DATA_ON_FAILURE = false;
  * @returns Information about the API key configuration
  */
 export function getApiKey(): string {
-  return 'API_KEY_SECURED_ON_SERVER';
+  return 'API Key secured on server';
 }
 
 /**
