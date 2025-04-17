@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -5,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 import Index from "./pages/Index";
 import ResultsPage from "./pages/ResultsPage";
@@ -115,9 +117,23 @@ function App() {
                 
                 <Route path="/suite" element={<SuiteDashboard />} />
                 <Route path="/suite/seo" element={<SeoAnalysisPage />} />
-                <Route path="/suite/aio" element={<AioOptimizationPage />} />
-                <Route path="/suite/directories" element={<DirectoriesPage />} />
-                <Route path="/suite/reports" element={<SuiteDashboard />} />
+                
+                {/* Protected routes that require authentication */}
+                <Route path="/suite/aio" element={
+                  <ProtectedRoute>
+                    <AioOptimizationPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/suite/directories" element={
+                  <ProtectedRoute>
+                    <DirectoriesPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/suite/reports" element={
+                  <ProtectedRoute>
+                    <SuiteDashboard />
+                  </ProtectedRoute>
+                } />
                 
                 {/* Hidden routes - still accessible if accessed directly, but not shown in navigation */}
                 <Route path="/suite/llm" element={<LLMPresencePage />} />
