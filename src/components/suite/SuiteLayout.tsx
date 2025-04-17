@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import SuiteHeader from './SuiteHeader';
@@ -8,13 +9,17 @@ interface SuiteLayoutProps {
   title?: string;
   domain?: string;
   lastAnalysisDate?: string;
+  onRerunAnalysis?: () => void;
+  isAnalyzing?: boolean;
 }
 
 const SuiteLayout = ({ 
   children, 
   title, 
   domain, 
-  lastAnalysisDate 
+  lastAnalysisDate,
+  onRerunAnalysis,
+  isAnalyzing
 }: SuiteLayoutProps) => {
   const location = useLocation();
   const showBackButton = location.pathname !== '/suite';
@@ -27,6 +32,8 @@ const SuiteLayout = ({
         domain={domain} 
         lastAnalysisDate={lastAnalysisDate} 
         showBackButton={showBackButton}
+        onRerunAnalysis={onRerunAnalysis}
+        isAnalyzing={isAnalyzing}
       />
       
       <div className="flex flex-1 overflow-hidden">
