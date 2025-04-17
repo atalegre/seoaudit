@@ -1,93 +1,58 @@
 
 /**
- * Create a detailed error message for PageSpeed Insights API failures
- * @param url URL being analyzed
- * @param strategy Device strategy (mobile/desktop)
- * @param error The error object
- * @param apiKey Optional API key for masking in messages
- * @returns Detailed error message
- */
-export function createDetailedErrorMessage(url: string, strategy: 'mobile' | 'desktop', error: any, apiKey: string = ''): string {
-  // Get browser information
-  const userAgent = navigator.userAgent;
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
-  
-  // Create a standardized error message
-  let errorMessage = `Erro ao analisar ${url} (${strategy}) - ${error.message || 'Erro desconhecido'}`;
-  
-  // Add helpful troubleshooting tips based on error
-  if (error.message?.includes('quota')) {
-    errorMessage += '. Cota de API excedida. Tente novamente mais tarde.';
-  } else if (error.message?.includes('API key')) {
-    errorMessage += '. Problema com a chave da API PageSpeed.';
-  } else if (error.message?.includes('CORS')) {
-    errorMessage += '. Erro de CORS. Isso geralmente ocorre devido a restrições do navegador.';
-  } else if (error.message?.includes('timeout') || error.message?.includes('timed out')) {
-    errorMessage += '. A solicitação expirou. O site pode ser muito grande ou a conexão está lenta.';
-  } else if (error.message?.includes('network')) {
-    errorMessage += '. Erro de rede. Verifique sua conexão com a internet.';
-  }
-  
-  // Add browser info for debugging
-  errorMessage += `\nNavegador: ${userAgent.substring(0, 150)}${isMobile ? ' (Mobile)' : ' (Desktop)'}`;
-  
-  return errorMessage;
-}
-
-/**
- * Extract detailed error information from an HTTP response
- * @param response HTTP Response object
- * @returns Error message string
- */
-export async function extractHttpErrorDetails(response: Response): Promise<string> {
-  try {
-    // Try to parse as JSON first
-    const text = await response.text();
-    try {
-      const errorJson = JSON.parse(text);
-      if (errorJson.error) {
-        if (typeof errorJson.error === 'string') {
-          return errorJson.error;
-        } else if (errorJson.error.message) {
-          return errorJson.error.message;
-        } else {
-          return JSON.stringify(errorJson.error);
-        }
-      }
-      return text || `${response.status}: ${response.statusText}`;
-    } catch {
-      // If not JSON, return the text
-      return text || `${response.status}: ${response.statusText}`;
-    }
-  } catch (error) {
-    // If we can't read the response at all
-    return `${response.status}: ${response.statusText}`;
-  }
-}
-
-/**
- * Check if the error is related to API not being enabled
+ * Checks if the error message indicates that the API is not enabled
  * @param errorMessage Error message to check
- * @returns boolean indicating if error is about API not being enabled
+ * @returns boolean indicating if the API is not enabled
  */
 export function isApiNotEnabledError(errorMessage: string): boolean {
-  const apiNotEnabledPatterns = [
-    'API not enabled',
-    'has not been used',
-    'enable it',
-    'developer console',
-    'API',
-    'not enabled',
-    'project',
-    'Service',
-    'disabled'
-  ];
+  return (
+    errorMessage.includes('API not enabled') ||
+    errorMessage.includes('API não ativada') ||
+    errorMessage.includes('API not authorized') ||
+    errorMessage.includes('API não autorizada') ||
+    errorMessage.includes('RESOURCE_EXHAUSTED') ||
+    errorMessage.includes('Enable the PageSpeed') ||
+    errorMessage.includes('Ative a API PageSpeed')
+  );
+}
+
+/**
+ * Creates a detailed error message with instructions for troubleshooting
+ * @param url URL that was analyzed
+ * @param strategy Device strategy
+ * @param error Original error
+ * @param apiKeyInfo API key information
+ * @returns Detailed error message
+ */
+export function createDetailedErrorMessage(
+  url: string, 
+  strategy: 'desktop' | 'mobile', 
+  error: Error, 
+  apiKeyInfo: string
+): string {
+  // Extract the project ID from the error message if it exists
+  let projectId = '';
+  const projectMatch = error.message.match(/project=(\d+)/);
+  if (projectMatch && projectMatch[1]) {
+    projectId = projectMatch[1];
+  }
   
-  const lowercaseError = errorMessage.toLowerCase();
-  // Check if at least 3 patterns are in the error message
-  const matches = apiNotEnabledPatterns.filter(pattern => 
-    lowercaseError.includes(pattern.toLowerCase())
-  ).length;
+  // Check if it's an API not enabled error
+  const isNotEnabled = isApiNotEnabledError(error.message);
   
-  return matches >= 3;
+  // Build detailed error message
+  let detailedMessage = `Erro ao analisar ${url} para ${strategy}. `;
+  
+  // Add specific message based on error type
+  if (isNotEnabled) {
+    detailedMessage += `A API PageSpeed Insights não está habilitada. Acesse o Console Google Cloud para ativá-la${projectId ? ' (project=' + projectId + ')' : ''}.`;
+  } else if (error.message.includes('quota') || error.message.includes('rate limit')) {
+    detailedMessage += 'Cota de requisições excedida. Tente novamente mais tarde ou aumente sua cota no Console Google Cloud.';
+  } else if (error.message.includes('key') || error.message.includes('chave')) {
+    detailedMessage += `Problema com a chave API. Status da chave: ${apiKeyInfo}`;
+  } else {
+    detailedMessage += error.message;
+  }
+  
+  return detailedMessage;
 }
