@@ -9,10 +9,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Key } from 'lucide-react';
+import { Key, Loader2 } from 'lucide-react';
 import AuthLayout from '@/components/auth/AuthLayout';
 import AuthCard from '@/components/auth/AuthCard';
 import AuthError from '@/components/auth/AuthError';
+import { updatePassword } from '@/utils/auth/passwordService';
 
 const formSchema = z.object({
   password: z
@@ -39,7 +40,11 @@ const ResetPasswordPage = () => {
     // If not, the user might have accessed this page directly
     // and we should redirect them
     const hash = window.location.hash;
-    if (!hash || !hash.includes('type=recovery')) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const type = urlParams.get('type');
+    
+    if ((!hash || !hash.includes('type=recovery')) && (!type || type !== 'recovery')) {
       setAuthError('Link de recuperação inválido ou expirado.');
     }
   }, []);
@@ -57,19 +62,9 @@ const ResetPasswordPage = () => {
     setAuthError(null);
     
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: values.password
-      });
+      const result = await updatePassword(values.password);
 
-      if (error) {
-        console.error("Password update error:", error);
-        setAuthError(error.message);
-        toast({
-          variant: "destructive",
-          title: "Erro ao redefinir password",
-          description: error.message,
-        });
-      } else {
+      if (result.success) {
         setResetComplete(true);
         toast({
           title: "Password redefinida",
@@ -193,7 +188,7 @@ const ResetPasswordPage = () => {
               disabled={isSubmitting || !!authError}
             >
               {isSubmitting ? (
-                <>Redefinindo...</>
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Redefinindo...</>
               ) : (
                 <>
                   <Key className="mr-2 h-4 w-4" /> Redefinir Password

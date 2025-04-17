@@ -12,7 +12,7 @@ const isProd = typeof window !== 'undefined' &&
                window.location.hostname.includes('suite.seoaudit.pt'));
 
 // Configure redirect URL based on environment
-const redirectUrl = isProd ? 'https://seoaudit.pt' : window.location.origin;
+const redirectUrl = isProd ? 'https://seoaudit.pt/reset-password' : `${window.location.origin}/reset-password`;
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
@@ -20,6 +20,5 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     autoRefreshToken: true,
     detectSessionInUrl: true,
     flowType: 'pkce',
-    // The redirectTo property is now configured in the signUp and signIn methods directly
   }
 });

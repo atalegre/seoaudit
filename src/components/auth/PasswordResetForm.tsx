@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import { Loader2, Mail } from 'lucide-react';
+import { resetPassword } from '@/utils/auth/passwordService';
 
 type PasswordResetFormProps = {
   setAuthError: (error: string | null) => void;
@@ -21,9 +22,8 @@ const PasswordResetForm = ({ setAuthError }: PasswordResetFormProps) => {
     setAuthError(null);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
+      // Using the passwordService utility to handle reset
+      const { success, error } = await resetPassword(email);
 
       if (error) {
         setAuthError(error.message);
