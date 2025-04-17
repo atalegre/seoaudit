@@ -9,42 +9,14 @@ export const USE_MOCK_DATA_ON_FAILURE = false;
 // Default cache expiration time (30 minutes)
 export const CACHE_TTL = 1000 * 60 * 30;
 
-// Chave de API fixa para o PageSpeed Insights
-// Esta é uma chave pública e pode ser usada sem restrições
-export const PUBLIC_API_KEY = 'AIzaSyA-nwrPN2F1lLrouVS2ll8W4R0dDm7Cbd8';
-
 /**
  * Gets the API key from environment or uses a public default key
  * @returns The PageSpeed API key
  */
 export function getApiKey(): string {
-  // Tentar obter do ambiente Vite primeiro
-  const envApiKey = import.meta.env.VITE_PAGESPEED_API_KEY;
-  
-  if (envApiKey) {
-    console.log(`🔑 Usando chave API personalizada do ambiente (primeiros 4 caracteres): ${envApiKey.substring(0, 4)}...`);
-    return envApiKey;
-  }
-  
-  // Usar a chave pública se não houver chave personalizada
-  console.log(`🔑 Usando chave API pública padrão (primeiros 4 caracteres): ${PUBLIC_API_KEY.substring(0, 4)}...`);
-  console.log('ℹ️ Nota: A API PageSpeed Insights é aberta e esta chave pública pode ser usada sem restrições.');
-  console.log('⚠️ IMPORTANTE: Mesmo usando a chave pública, você precisa ativar a API PageSpeed Insights no console do Google Cloud!');
-  
-  return PUBLIC_API_KEY;
-}
-
-/**
- * Creates the API URL for PageSpeed Insights
- * @param url The URL to analyze
- * @param apiKey API key for Google PageSpeed
- * @param strategy Device strategy (mobile or desktop)
- * @returns Formatted API URL
- */
-export function createApiUrl(url: string, apiKey: string, strategy: 'desktop' | 'mobile'): string {
-  const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&strategy=${strategy}&category=performance&category=accessibility&category=best-practices&category=seo`;
-  console.log(`🔗 URL da API construída (sem a chave): ${apiUrl.replace(apiKey, 'CHAVE-OCULTA')}`);
-  return apiUrl;
+  // API Key is now stored and used only on the server
+  console.log('🔒 A chave API agora está protegida no servidor');
+  return 'PROTECTED';
 }
 
 /**

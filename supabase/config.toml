@@ -7,3 +7,6 @@ import_map = "functions/analyze-website/import_map.json"
 
 [functions.send-email]
 verify_jwt = false
+
+[functions.seo-analysis]
+verify_jwt = false
