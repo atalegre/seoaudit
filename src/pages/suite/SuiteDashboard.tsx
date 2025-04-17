@@ -10,6 +10,7 @@ import SuiteOnboarding from '@/components/suite/dashboard/SuiteOnboarding';
 import { useDashboardState, SampleRecommendation } from '@/hooks/suite/useDashboardState';
 import { toast } from 'sonner';
 import { useSearchParams, useLocation } from 'react-router-dom';
+import { useUrlState } from '@/hooks/suite/dashboard/useUrlState';
 
 const SuiteDashboard = () => {
   const { user } = useUser();
@@ -23,8 +24,9 @@ const SuiteDashboard = () => {
   const urlParam = searchParams.get('url');
   const projectId = searchParams.get('projectId');
   
+  const { url, setUrl } = useUrlState();
+  
   const {
-    url,
     domain,
     lastAnalysisDate,
     isLoading,
@@ -37,8 +39,6 @@ const SuiteDashboard = () => {
     directoryScore,
     keywordScore,
     recommendations,
-    analyzeDomain,
-    setAnalyzeDomain,
     handleRerunAnalysis
   } = useDashboardState();
   
@@ -54,8 +54,8 @@ const SuiteDashboard = () => {
         duration: 3000
       });
       
-      // Set domain for analysis and trigger automatic analysis
-      setAnalyzeDomain(urlParam);
+      // Set URL for analysis
+      setUrl(urlParam);
       setTimeout(() => {
         handleRerunAnalysis();
       }, 500);
@@ -76,8 +76,8 @@ const SuiteDashboard = () => {
         duration: 3000
       });
       
-      // Set domain for analysis and trigger automatic analysis
-      setAnalyzeDomain(pendingUrl);
+      // Set URL for analysis
+      setUrl(pendingUrl);
       setTimeout(() => {
         handleRerunAnalysis();
       }, 500);
@@ -92,7 +92,7 @@ const SuiteDashboard = () => {
     if (!localStorage.getItem('suiteOnboardingCompleted') && url) {
       setShowTour(true);
     }
-  }, [urlParam, user, url, setAnalyzeDomain, handleRerunAnalysis]);
+  }, [urlParam, user, url, setUrl, handleRerunAnalysis]);
   
   const handleViewMoreRecommendations = () => {
     if (!user) {
@@ -119,22 +119,6 @@ const SuiteDashboard = () => {
     localStorage.setItem('suiteOnboardingCompleted', 'true');
   };
   
-  // Render empty state if no URL for analysis
-  if (!url) {
-    return (
-      <SuiteLayout 
-        title="Dashboard" 
-        domain={''} 
-        lastAnalysisDate={''}
-      >
-        <EmptyDashboardState 
-          analyzeDomain={analyzeDomain}
-          setAnalyzeDomain={setAnalyzeDomain}
-        />
-      </SuiteLayout>
-    );
-  }
-  
   return (
     <SuiteLayout 
       title="Dashboard" 
@@ -159,21 +143,7 @@ const SuiteDashboard = () => {
         />
       )}
       
-      <DashboardContent
-        domain={domain}
-        logoUrl={logoUrl}
-        totalScore={totalScore}
-        seoScore={seoScore}
-        aioScore={aioScore}
-        llmScore={llmScore}
-        performanceScore={performanceScore}
-        directoryScore={directoryScore}
-        keywordScore={keywordScore}
-        recommendations={recommendations}
-        isUserLoggedIn={!!user}
-        onViewMoreRecommendations={handleViewMoreRecommendations}
-        lastAnalysisDate={lastAnalysisDate}
-      />
+      <DashboardContent />
     </SuiteLayout>
   );
 };

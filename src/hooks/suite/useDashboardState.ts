@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useUrlState } from './dashboard/useUrlState';
 import { useScoreData } from './dashboard/useScoreData';
 import { useRecommendations, SampleRecommendation } from './dashboard/useRecommendations';
@@ -12,15 +12,15 @@ export type { SampleRecommendation } from './dashboard/useRecommendations';
 /**
  * Main hook that combines all dashboard functionality
  */
-export const useDashboardState = () => {
-  // Get URL and domain state
+export const useDashboardState = (urlParam?: string) => {
   const {
     url,
     domain,
-    lastAnalysisDate,
-    analyzeDomain,
-    setAnalyzeDomain
+    lastAnalysisDate
   } = useUrlState();
+
+  const actualUrl = urlParam || url;
+  const [isEmpty, setIsEmpty] = useState(false);
 
   // Get score-related functionality
   const {
@@ -45,9 +45,9 @@ export const useDashboardState = () => {
 
   // Initialize data when URL changes
   useEffect(() => {
-    if (url) {
+    if (actualUrl) {
       // Fetch logo for the website
-      fetchLogo(url);
+      fetchLogo(actualUrl);
       
       // Calculate scores based on domain
       calculateScores(domain);
@@ -56,14 +56,24 @@ export const useDashboardState = () => {
       setTimeout(() => {
         generateRecommendations(seoScore, aioScore, performanceScore);
       }, 100);
+
+      // Reset empty state
+      setIsEmpty(false);
     }
-  }, [url, domain]);
+  }, [actualUrl, domain]);
 
   /**
    * Handler to re-run analysis
    */
   const handleRerunAnalysis = () => {
-    runAnalysis(url, () => {
+    if (!actualUrl) {
+      toast.error("URL não definida", {
+        description: "Digite um URL para analisar"
+      });
+      return;
+    }
+    
+    runAnalysis(actualUrl, () => {
       // Recalculate scores
       calculateScores(domain);
       
@@ -73,10 +83,11 @@ export const useDashboardState = () => {
   };
 
   return {
-    url,
+    url: actualUrl,
     domain,
     lastAnalysisDate,
     isLoading,
+    isEmpty,
     logoUrl,
     totalScore,
     seoScore,
@@ -86,8 +97,6 @@ export const useDashboardState = () => {
     directoryScore,
     keywordScore,
     recommendations,
-    analyzeDomain,
-    setAnalyzeDomain,
     handleRerunAnalysis
   };
 };

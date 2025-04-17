@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { BarChart2, Brain, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-interface ScoreCardsProps {
+export interface ScoreCardsProps {
   seoScore: number;
   aioScore: number;
   navigateTo: (path: string) => void;

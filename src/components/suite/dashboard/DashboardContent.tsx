@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
@@ -11,17 +12,18 @@ import HistoryTabs from './HistoryTabs';
 import AvailableTools from './AvailableTools';
 import FirstTimeExperience from './FirstTimeExperience';
 import EmptyDashboardState from './EmptyDashboardState';
-import DashboardRecommendations from './DashboardRecommendations';
 import DashboardMetrics from './DashboardMetrics';
 import RecommendationsSection from './RecommendationsSection';
 import { useDashboardState } from '@/hooks/suite/useDashboardState';
 import { useUrlState } from '@/hooks/suite/dashboard/useUrlState';
 import LoginDialog from '@/components/auth/LoginDialog';
+import DashboardRecommendations from './DashboardRecommendations';
+import { useNavigate as useNavigateHook } from 'react-router-dom';
 
 const DashboardContent = () => {
-  const { urlState, setUrlState } = useUrlState();
-  const dashboardState = useDashboardState(urlState.url);
-  const [urlInput, setUrlInput] = useState(urlState.url || '');
+  const { url, setUrl, domain, lastAnalysisDate } = useUrlState();
+  const dashboardState = useDashboardState(url);
+  const [urlInput, setUrlInput] = useState(url || '');
   const { user } = useUser();
   const navigate = useNavigate();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
@@ -53,7 +55,7 @@ const DashboardContent = () => {
       cleanUrl = 'https://' + cleanUrl;
     }
     
-    setUrlState({ url: cleanUrl, isAnalyzing: true });
+    setUrl(cleanUrl);
     toast.info(`Analisando ${cleanUrl}...`);
   };
   
@@ -71,6 +73,21 @@ const DashboardContent = () => {
       inputElement.scrollIntoView({ behavior: 'smooth' });
     }
   };
+
+  const navigateTo = (path: string) => {
+    navigate(path);
+  };
+  
+  const handleViewMoreRecommendations = () => {
+    if (!user) {
+      toast.error("Login necessário", {
+        description: "Faça login para ver todas as recomendações detalhadas."
+      });
+      return;
+    }
+    
+    navigate('/suite/recommendations');
+  };
   
   return (
     <div className="space-y-6">
@@ -85,8 +102,8 @@ const DashboardContent = () => {
             onChange={(e) => setUrlInput(e.target.value)}
             className="flex-1"
           />
-          <Button type="submit" disabled={urlState.isAnalyzing}>
-            {urlState.isAnalyzing ? (
+          <Button type="submit" disabled={dashboardState.isLoading}>
+            {dashboardState.isLoading ? (
               'Analisando...'
             ) : (
               <>
@@ -98,33 +115,50 @@ const DashboardContent = () => {
         </div>
       </form>
       
-      {!urlState.url && !urlState.isAnalyzing && (
+      {!url && !dashboardState.isLoading && (
         // First time / empty state
         user ? <AvailableTools /> : <FirstTimeExperience onStartAnalysis={handleStartAnalysis} />
       )}
       
-      {urlState.url && !dashboardState.loading && (
+      {url && !dashboardState.isLoading && (
         <>
           <DomainHeader 
-            domain={dashboardState.domain}
-            lastAnalysisDate={dashboardState.lastAnalysisDate}
+            domain={domain}
+            logoUrl={dashboardState.logoUrl}
           />
           
-          <HistoryTabs />
+          <HistoryTabs 
+            isUserLoggedIn={!!user}
+          />
           
-          <ScoreCards scores={dashboardState.scores} />
+          <ScoreCards 
+            seoScore={dashboardState.seoScore} 
+            aioScore={dashboardState.aioScore}
+            navigateTo={navigateTo}
+          />
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <DashboardMetrics metrics={dashboardState.metrics} />
-            <DashboardRecommendations />
+            <DashboardMetrics />
+            <DashboardRecommendations 
+              recommendations={dashboardState.recommendations} 
+              isUserLoggedIn={!!user}
+              navigateTo={navigateTo}
+              onViewMoreRecommendations={handleViewMoreRecommendations}
+            />
           </div>
           
-          <RecommendationsSection />
+          <RecommendationsSection 
+            recommendations={dashboardState.recommendations}
+            onViewMore={handleViewMoreRecommendations}
+          />
         </>
       )}
       
-      {urlState.url && !dashboardState.loading && dashboardState.isEmpty && (
-        <EmptyDashboardState onRestart={() => setUrlState({ url: '' })} />
+      {url && !dashboardState.isLoading && dashboardState.isEmpty && (
+        <EmptyDashboardState 
+          analyzeDomain={urlInput}
+          setAnalyzeDomain={setUrl}
+        />
       )}
       
       <LoginDialog 

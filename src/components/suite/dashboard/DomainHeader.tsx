@@ -3,7 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Globe } from 'lucide-react';
 
-interface DomainHeaderProps {
+export interface DomainHeaderProps {
   domain: string;
   logoUrl?: string;
 }

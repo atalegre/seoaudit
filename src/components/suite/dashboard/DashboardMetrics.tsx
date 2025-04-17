@@ -1,180 +1,75 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { BrainCircuit, MapPin, Search, Cpu } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowUpRight } from 'lucide-react';
 
-interface DashboardMetricsProps {
-  performanceScore: number;
-  llmScore: number;
-  directoryScore: number;
-  keywordScore: number;
-  isUserLoggedIn: boolean;
-  navigateTo: (path: string) => void;
-}
-
-const DashboardMetrics: React.FC<DashboardMetricsProps> = ({
-  performanceScore,
-  llmScore,
-  directoryScore,
-  keywordScore,
-  isUserLoggedIn,
-  navigateTo
-}) => {
-  const getProgressGradient = (score: number, colorType: 'blue' | 'green' | 'red' | 'amber') => {
-    const gradients = {
-      blue: "bg-gradient-to-r from-blue-400 to-blue-600",
-      green: "bg-gradient-to-r from-green-400 to-green-600",
-      red: "bg-gradient-to-r from-red-400 to-red-600",
-      amber: "bg-gradient-to-r from-amber-400 to-amber-600"
-    };
-    
-    return gradients[colorType];
-  };
-  
+const DashboardMetrics = () => {
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Métricas Adicionais</h3>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="overflow-hidden rounded-xl shadow-sm bg-gradient-to-br from-blue-50 to-white border-blue-100">
-          <div className="h-1 w-full bg-gradient-to-r from-blue-400 to-blue-600"></div>
-          <CardHeader className="pb-2 pt-4">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <div className="p-1.5 rounded-md bg-blue-100">
-                <Cpu className="h-4 w-4 text-blue-600" />
-              </div>
-              Performance Técnica
-            </CardTitle>
-            <CardDescription>Core Web Vitals e velocidade de carregamento</CardDescription>
-          </CardHeader>
-          <CardContent className="pb-4">
-            <div className="mt-2">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-medium text-blue-700">Score: {performanceScore}%</span>
-              </div>
-              <Progress 
-                value={performanceScore} 
-                className="h-2 bg-blue-100" 
-                indicatorClassName={getProgressGradient(performanceScore, 'blue')} 
-              />
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg font-semibold">Métricas de desempenho</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+            <div className="flex justify-between mb-2">
+              <h3 className="text-sm font-medium">Velocidade de carregamento</h3>
+              <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">Bom</span>
             </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="mt-4 w-full text-blue-700 hover:bg-blue-50 hover:text-blue-800"
-              onClick={() => navigateTo('/suite/seo')}
-            >
-              Ver Detalhes
-            </Button>
-          </CardContent>
-        </Card>
-        
-        <Card className="overflow-hidden rounded-xl shadow-sm bg-gradient-to-br from-green-50 to-white border-green-100">
-          <div className="h-1 w-full bg-gradient-to-r from-green-400 to-green-600"></div>
-          <CardHeader className="pb-2 pt-4">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <div className="p-1.5 rounded-md bg-green-100">
-                <BrainCircuit className="h-4 w-4 text-green-600" />
-              </div>
-              Presença em IA
-            </CardTitle>
-            <CardDescription>Como sua marca aparece em ChatGPT e outros LLMs</CardDescription>
-          </CardHeader>
-          <CardContent className="pb-4">
-            <div className="mt-2">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-medium text-green-700">Score: {llmScore}%</span>
-              </div>
-              <Progress 
-                value={llmScore} 
-                className="h-2 bg-green-100" 
-                indicatorClassName={getProgressGradient(llmScore, 'green')} 
-              />
+            <div className="flex items-end">
+              <span className="text-2xl font-bold">2.8s</span>
+              <span className="text-sm text-gray-500 ml-1 mb-1">Desktop</span>
             </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="mt-4 w-full text-green-700 hover:bg-green-50 hover:text-green-800"
-              onClick={() => navigateTo('/suite/llm')}
-            >
-              Ver Detalhes
-            </Button>
-          </CardContent>
-        </Card>
-        
-        <Card className="overflow-hidden rounded-xl shadow-sm bg-gradient-to-br from-red-50 to-white border-red-100">
-          <div className="h-1 w-full bg-gradient-to-r from-red-400 to-red-600"></div>
-          <CardHeader className="pb-2 pt-4">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <div className="p-1.5 rounded-md bg-red-100">
-                <MapPin className="h-4 w-4 text-red-600" />
-              </div>
-              Diretórios Locais
-            </CardTitle>
-            <CardDescription>Presença em Google Business e outros diretórios</CardDescription>
-          </CardHeader>
-          <CardContent className="pb-4">
-            <div className="mt-2">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-medium text-red-700">Score: {directoryScore}%</span>
-              </div>
-              <Progress 
-                value={directoryScore} 
-                className="h-2 bg-red-100" 
-                indicatorClassName={getProgressGradient(directoryScore, 'red')} 
-              />
+            <div className="mt-2 flex items-end">
+              <span className="text-2xl font-bold">3.9s</span>
+              <span className="text-sm text-gray-500 ml-1 mb-1">Mobile</span>
             </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="mt-4 w-full text-red-700 hover:bg-red-50 hover:text-red-800"
-              onClick={() => navigateTo('/suite/directories')}
-              disabled={!isUserLoggedIn}
-            >
-              Ver Detalhes
-            </Button>
-          </CardContent>
-        </Card>
-        
-        <Card className="overflow-hidden rounded-xl shadow-sm bg-gradient-to-br from-amber-50 to-white border-amber-100">
-          <div className="h-1 w-full bg-gradient-to-r from-amber-400 to-amber-600"></div>
-          <CardHeader className="pb-2 pt-4">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <div className="p-1.5 rounded-md bg-amber-100">
-                <Search className="h-4 w-4 text-amber-600" />
-              </div>
-              Pesquisa de Keywords
-            </CardTitle>
-            <CardDescription>Palavras-chave relevantes para seu negócio</CardDescription>
-          </CardHeader>
-          <CardContent className="pb-4">
-            <div className="mt-2">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-medium text-amber-700">Score: {keywordScore}%</span>
-              </div>
-              <Progress 
-                value={keywordScore} 
-                className="h-2 bg-amber-100" 
-                indicatorClassName={getProgressGradient(keywordScore, 'amber')} 
-              />
+          </div>
+          
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+            <div className="flex justify-between mb-2">
+              <h3 className="text-sm font-medium">Core Web Vitals</h3>
+              <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">A melhorar</span>
             </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="mt-4 w-full text-amber-700 hover:bg-amber-50 hover:text-amber-800"
-              onClick={() => navigateTo('/suite/keywords')}
-              disabled={!isUserLoggedIn}
-            >
-              Ver Detalhes
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <div className="text-sm text-gray-500">LCP</div>
+                <div className="text-xl font-medium">2.5s</div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-500">FID</div>
+                <div className="text-xl font-medium">100ms</div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-500">CLS</div>
+                <div className="text-xl font-medium">0.12</div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+            <div className="flex justify-between mb-2">
+              <h3 className="text-sm font-medium">Visibilidade</h3>
+              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">45 URLs indexadas</span>
+            </div>
+            <div className="mt-1">
+              <div className="flex justify-between text-sm">
+                <span>Mobile-friendly</span>
+                <span className="text-green-600">Sim</span>
+              </div>
+              <div className="flex justify-between text-sm mt-1">
+                <span>HTTPS</span>
+                <span className="text-green-600">Ativo</span>
+              </div>
+              <div className="flex justify-between text-sm mt-1">
+                <span>Schema markup</span>
+                <span className="text-yellow-600">Parcial</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
