@@ -1,20 +1,20 @@
+
 /**
  * Configuration and utility functions for the PageSpeed Insights API
  */
 
-// Removed hardcoded API key
-export const USE_MOCK_DATA_ON_FAILURE = false;
-
 // Default cache expiration time (30 minutes)
 export const CACHE_TTL = 1000 * 60 * 30;
 
+// Option to use mock data as fallback when the API fails
+export const USE_MOCK_DATA_ON_FAILURE = false;
+
 /**
- * Gets the API key from environment or uses a public default key
- * @returns The PageSpeed API key
+ * Gets the API key information for the frontend
+ * @returns Information about the API key configuration
  */
 export function getApiKey(): string {
-  console.log('🔒 A chave API agora está protegida no servidor');
-  return ''; // We no longer expose the API key on the frontend
+  return 'API_KEY_SECURED_ON_SERVER';
 }
 
 /**

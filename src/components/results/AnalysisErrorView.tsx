@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { AlertCircle, Loader2, ExternalLink, Key } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -55,7 +56,6 @@ const AnalysisErrorView: React.FC<AnalysisErrorViewProps> = ({
   const apiKey = getApiKey();
   const apiKeyPrefix = apiKey ? apiKey.substring(0, 4) : 'Não configurada';
   const apiKeySuffix = apiKey ? apiKey.substring(apiKey.length - 4) : '';
-  const isUsingPublicKey = false; // We'll remove this logic since we no longer have a public key
   
   return (
     <div className="max-w-6xl mx-auto">
@@ -90,15 +90,11 @@ const AnalysisErrorView: React.FC<AnalysisErrorViewProps> = ({
               
               {isPageSpeedKeyError && !isApiNotEnabled && (
                 <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-amber-800">
-                  <p className="text-sm font-medium">Problema com a chave da API:</p>
+                  <p className="text-sm font-medium">Servidor: A chave API está configurada, mas ocorreu um erro:</p>
                   <ol className="list-decimal list-inside space-y-1 text-xs mt-1">
-                    <li>Acesse o <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline inline-flex items-center">
-                      Google Cloud Console - Credenciais <ExternalLink className="h-3 w-3 ml-1" />
-                    </a></li>
-                    <li>Crie um projeto ou selecione um existente</li>
-                    <li>Ative a API PageSpeed Insights em "Biblioteca de APIs"</li>
-                    <li>Crie uma chave de API na seção "Credenciais"</li>
-                    <li>Configure a chave como variável de ambiente VITE_PAGESPEED_API_KEY</li>
+                    <li>Verifique se a API PageSpeed Insights está ativada no Google Cloud Console</li>
+                    <li>Certifique-se de que a chave API tem acesso à API PageSpeed Insights</li>
+                    <li>Verifique os logs do servidor para mais detalhes sobre o erro</li>
                   </ol>
                 </div>
               )}
@@ -111,7 +107,6 @@ const AnalysisErrorView: React.FC<AnalysisErrorViewProps> = ({
                     <li>Acesse o <a href="https://console.cloud.google.com/apis/dashboard" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline inline-flex items-center">
                       Google Cloud Console <ExternalLink className="h-3 w-3 ml-1" />
                     </a> para aumentar sua cota</li>
-                    <li>Considere usar uma chave API diferente</li>
                   </ol>
                 </div>
               )}
@@ -139,12 +134,11 @@ const AnalysisErrorView: React.FC<AnalysisErrorViewProps> = ({
           <div className="mt-4">
             <p className="font-semibold">Solução:</p>
             <ul className="list-disc list-inside space-y-1 text-sm">
-              <li className="flex items-center">Status da sua chave API: {apiKey ? 
-                <code className={`${isUsingPublicKey ? 'bg-green-100' : 'bg-gray-100'} px-1 py-0.5 rounded ${isUsingPublicKey ? 'text-green-700' : 'text-gray-700'} ml-1 inline-flex items-center`}>
+              <li className="flex items-center">Status da chave API: 
+                <code className="bg-gray-100 px-1 py-0.5 rounded text-gray-700 ml-1 inline-flex items-center">
                   <Key className="h-3 w-3 mr-1" />
-                  {apiKeyPrefix}...{apiKeySuffix} {isUsingPublicKey && '(chave pública)'}
-                </code> : 
-                <code className="bg-red-100 px-1 py-0.5 rounded text-red-700 ml-1">Não configurada</code>}
+                  Protegida no servidor
+                </code>
               </li>
               <li>Verifique se você <span className="font-medium">ativou a API no console do Google Cloud</span></li>
               <li>Certifique-se de que a URL é válida e acessível publicamente</li>
@@ -156,7 +150,7 @@ const AnalysisErrorView: React.FC<AnalysisErrorViewProps> = ({
             <p className="text-sm font-medium">Informação sobre a chave API:</p>
             
               <p className="text-xs mt-1">
-                Este projeto está usando uma chave API personalizada configurada no ambiente.
+                Este projeto está usando uma chave API configurada no servidor.
               </p>
             
             <p className="text-xs mt-1">

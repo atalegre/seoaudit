@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import { getPageInsightsData, getApiKey } from '@/utils/api/pageInsights';
+import { getPageInsightsData } from '@/utils/api/pageInsights';
 import type { PageInsightsData } from '@/utils/api/pageInsights/types';
 import { toast } from 'sonner';
 
@@ -33,19 +33,6 @@ export function useSeoAnalysis() {
     try {
       setIsAnalyzing(true);
       setError(null);
-      
-      // Verificar se a chave API está configurada
-      const apiKey = getApiKey();
-      if (!apiKey) {
-        toast.error("Chave API não configurada", {
-          description: "Configure a variável de ambiente VITE_PAGESPEED_API_KEY com sua chave Google API."
-        });
-        setError("Chave API PageSpeed não configurada. Configure a variável de ambiente VITE_PAGESPEED_API_KEY.");
-        setIsAnalyzing(false);
-        return;
-      }
-      
-      console.log(`🔑 Chave API configurada (primeiros 4 caracteres): ${apiKey.substring(0, 4)}...`);
       
       // Normalizar URL (adicionar https:// se não especificado)
       let normalizedUrl = urlToAnalyze;
@@ -131,7 +118,7 @@ export function useSeoAnalysis() {
         
         setError(errorMessage);
         toast.error("Erro na análise", {
-          description: "Falha ao obter dados reais. Verifique a configuração de API."
+          description: "Falha ao obter dados reais. Verifique a conexão com a internet."
         });
       }
     } catch (error: any) {
