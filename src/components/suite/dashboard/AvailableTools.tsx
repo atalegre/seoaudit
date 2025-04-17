@@ -73,8 +73,8 @@ const AvailableTools = () => {
           return (
             <BlurredSection 
               key={index} 
-              onClick={() => navigate(tool.path)}
               noBackdrop={true}
+              path={tool.path}
             >
               {ToolCard}
             </BlurredSection>

@@ -1,21 +1,34 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface BlurredSectionProps {
   children: React.ReactNode;
   onClick?: () => void;
   noBackdrop?: boolean;
+  path?: string;
 }
 
 export const BlurredSection: React.FC<BlurredSectionProps> = ({ 
   children, 
   onClick,
-  noBackdrop = false
+  noBackdrop = false,
+  path
 }) => {
+  const navigate = useNavigate();
+  
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+    } else if (path) {
+      navigate(path);
+    }
+  };
+  
   return (
     <div 
       className="relative cursor-pointer transition-all hover:scale-[1.01]"
-      onClick={onClick}
+      onClick={handleClick}
     >
       {children}
       <div 

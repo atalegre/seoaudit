@@ -4,8 +4,6 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, LogIn, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
-import LoginDialog from '@/components/auth/LoginDialog';
-import { useState } from 'react';
 
 interface SuiteHeaderProps {
   title?: string;
@@ -26,7 +24,6 @@ const SuiteHeader = ({
 }: SuiteHeaderProps) => {
   const navigate = useNavigate();
   const { user } = useUser();
-  const [showLoginDialog, setShowLoginDialog] = useState(false);
 
   return (
     <header className="bg-white border-b p-4">
@@ -70,7 +67,7 @@ const SuiteHeader = ({
             <Button 
               variant="outline" 
               size="sm" 
-              onClick={() => setShowLoginDialog(true)}
+              onClick={() => navigate('/signin')}
               className="flex items-center gap-2"
             >
               <LogIn className="h-4 w-4" />
@@ -88,12 +85,6 @@ const SuiteHeader = ({
           )}
         </div>
       </div>
-      
-      <LoginDialog 
-        isOpen={showLoginDialog} 
-        onClose={() => setShowLoginDialog(false)} 
-        returnTo="/suite"
-      />
     </header>
   );
 };
