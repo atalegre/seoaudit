@@ -213,6 +213,36 @@ export type Database = {
         }
         Relationships: []
       }
+      reports: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: string
+          status: string
+          updated_at: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       seo_analysis_requests: {
         Row: {
           created_at: string

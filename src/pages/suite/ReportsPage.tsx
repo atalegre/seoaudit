@@ -3,39 +3,23 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
-import { Download } from 'lucide-react';
+import { Download, Loader2 } from 'lucide-react';
 import SuiteLayout from '@/components/suite/SuiteLayout';
-
-// Mockup data for reports
-const mockReports = [
-  {
-    id: '1',
-    url: 'https://example.com',
-    analysisDate: '2024-04-21T14:30:00Z',
-    downloadUrl: '#'
-  },
-  {
-    id: '2',
-    url: 'https://test.com',
-    analysisDate: '2024-04-20T10:15:00Z',
-    downloadUrl: '#'
-  },
-  {
-    id: '3',
-    url: 'https://demo.com',
-    analysisDate: '2024-04-19T16:45:00Z',
-    downloadUrl: '#'
-  }
-];
+import { useReports } from '@/hooks/useReports';
 
 const ReportsPage = () => {
   const [isGenerating, setIsGenerating] = React.useState(false);
-  const [urlInput, setUrlInput] = React.useState('https://example.com'); // This would be populated from context/state
+  const [urlInput, setUrlInput] = React.useState('https://example.com');
+  const { reports, isLoading, generateReport } = useReports();
 
-  const handleGenerateReport = (e: React.FormEvent) => {
+  const handleGenerateReport = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsGenerating(true);
-    // Logic for report generation will be implemented later
+    try {
+      setIsGenerating(true);
+      await generateReport(urlInput);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -76,35 +60,59 @@ const ReportsPage = () => {
               <TableRow>
                 <TableHead>URL Analisada</TableHead>
                 <TableHead>Data da Análise</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead className="text-right">Download</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockReports.map((report) => (
-                <TableRow key={report.id}>
-                  <TableCell className="font-medium">{report.url}</TableCell>
-                  <TableCell>
-                    {new Date(report.analysisDate).toLocaleDateString('pt-BR', {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0"
-                      onClick={() => window.open(report.downloadUrl, '_blank')}
-                    >
-                      <Download className="h-4 w-4" />
-                      <span className="sr-only">Download report</span>
-                    </Button>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : reports.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                    No reports generated yet
+                  </TableCell>
+                </TableRow>
+              ) : (
+                reports.map((report) => (
+                  <TableRow key={report.id}>
+                    <TableCell className="font-medium">{report.url}</TableCell>
+                    <TableCell>
+                      {new Date(report.created_at).toLocaleDateString('pt-BR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </TableCell>
+                    <TableCell>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        report.status === 'completed' ? 'bg-green-100 text-green-800' :
+                        report.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {report.status}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        disabled={!report.content || report.status !== 'completed'}
+                      >
+                        <Download className="h-4 w-4" />
+                        <span className="sr-only">Download report</span>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </div>
