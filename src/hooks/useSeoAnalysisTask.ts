@@ -73,8 +73,7 @@ export function useSeoAnalysisTask() {
       pollTaskUntilComplete(
         taskId,
         (statusUpdate) => {
-          // Handle API status "failure" by mapping it to our "failed" status
-          if (statusUpdate.status === "failure") {
+          if (statusUpdate.status === 'failed') {
             toast.error("A análise falhou. Por favor, tente novamente mais tarde.", {
               description: statusUpdate.message || "Tente novamente em alguns minutos."
             });
@@ -103,14 +102,6 @@ export function useSeoAnalysisTask() {
             toast.success("Análise concluída", {
               description: "Os resultados da sua análise estão prontos."
             });
-          } else if (statusUpdate.status === 'failed') {
-            toast.error("Falha na análise", {
-              description: statusUpdate.message || "Ocorreu um erro ao analisar o site."
-            });
-            setAnalysisState(prev => ({
-              ...prev,
-              error: statusUpdate.message || "Ocorreu um erro ao analisar o site."
-            }));
           }
           statusRef.current = statusUpdate.status as string;
         }
@@ -124,9 +115,7 @@ export function useSeoAnalysisTask() {
             url: normalizedUrl,
             error: null
           });
-        } 
-        // Handle API "failure" status in the final result
-        else if (finalResult.status === "failure") {
+        } else if (finalResult.status === "failed") {
           setAnalysisState({
             taskId,
             status: 'failed',
@@ -175,8 +164,8 @@ export function useSeoAnalysisTask() {
   const checkTaskStatus = useCallback(async (taskId: string) => {
     try {
       const result = await checkSeoAnalysisTaskStatus(taskId);
-      // Handle API "failure" status by mapping it to our "failed" status
-      if (result.status === "failure") {
+
+      if (result.status === 'failed') {
         setAnalysisState({
           taskId,
           status: 'failed',
@@ -189,6 +178,7 @@ export function useSeoAnalysisTask() {
         });
         return result;
       }
+
       setAnalysisState({
         taskId,
         status: result.status as any,
@@ -221,7 +211,7 @@ export function useSeoAnalysisTask() {
       const statusResult = await checkTaskStatus(taskId);
 
       // If task is already completed or failed, don't attempt to poll further
-      if (statusResult.status === 'success' || statusResult.status === 'failed' || statusResult.status === "failure") {
+      if (statusResult.status === 'success' || statusResult.status === 'failed') {
         return;
       }
 
@@ -229,8 +219,7 @@ export function useSeoAnalysisTask() {
       pollTaskUntilComplete(
         taskId,
         (statusUpdate) => {
-          // Handle API "failure" status in poll updates
-          if (statusUpdate.status === "failure") {
+          if (statusUpdate.status === 'failed') {
             setAnalysisState(prev => ({
               ...prev,
               status: 'failed',
@@ -260,9 +249,7 @@ export function useSeoAnalysisTask() {
             url: finalResult.url,
             error: null
           });
-        } 
-        // Handle API "failure" status in final result
-        else if (finalResult.status === "failure") {
+        } else if (finalResult.status === "failed") {
           setAnalysisState({
             taskId,
             status: 'failed',
@@ -306,3 +293,4 @@ export function useSeoAnalysisTask() {
     isAnalyzing: ['pending', 'in_progress'].includes(analysisState.status)
   };
 }
+
