@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 interface CreateTaskParams {
@@ -20,18 +19,17 @@ interface TaskStatusResponse {
 /**
  * Create a new SEO analysis task
  */
-export async function createSeoAnalysisTask(params: CreateTaskParams): Promise<{ taskId: string }> {
+export async function createSeoAnalysisTask(params: { url: string; userId?: string | null; platform?: string }) : Promise<{ taskId: string }> {
   try {
-    // 'frequency' is stored in requested_values, not as a top-level param anymore
+    // Prepare requested_data ONLY with expected keys
+    const requested_data: any = { url: params.url };
+    if (params.platform) requested_data.platform = params.platform;
+
     const { data, error } = await supabase.functions.invoke('seo-task-manager/create', {
       method: 'POST',
       body: {
         task_name: 'seo_analysis',
-        requested_data: {
-          url: params.url,
-          userId: params.userId,
-          frequency: params.frequency || 'once'
-        }
+        requested_data
       }
     });
 
