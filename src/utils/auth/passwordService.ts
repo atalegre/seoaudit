@@ -6,8 +6,18 @@ import { supabase } from '@/integrations/supabase/client';
  */
 export async function resetPassword(email: string) {
   try {
+    // Determine if in production environment
+    const isProd = typeof window !== 'undefined' && 
+                  (window.location.hostname === 'seoaudit.pt' || 
+                   window.location.hostname.includes('suite.seoaudit.pt'));
+    
+    // Configure redirect URL based on environment
+    const redirectUrl = isProd 
+      ? 'https://seoaudit.pt/reset-password' 
+      : `${window.location.origin}/reset-password`;
+    
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: redirectUrl,
     });
     
     if (error) {

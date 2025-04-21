@@ -10,3 +10,6 @@ verify_jwt = false
 
 [functions.seo-analysis]
 verify_jwt = false
+
+[functions.seo-task-manager]
+verify_jwt = false
