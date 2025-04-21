@@ -127,22 +127,25 @@ const DeviceTabsSection: React.FC<DeviceTabsSectionProps> = ({
             {hasDesktopData && (
               <div className="p-3 md:p-4 space-y-4 md:space-y-6">
                 <DevicePerformancePanel data={desktopData} deviceType="desktop" />
-
-                <div className="grid grid-cols-1 gap-4 md:gap-6">
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                   <CoreWebVitalsPanel 
                     lcp={desktopData.lcp} 
                     cls={desktopData.cls} 
                     fid={desktopData.fid} 
                   />
-                  <TechnicalAuditsPanel 
-                    mobileFriendly={desktopData.mobileFriendly}
-                    security={desktopData.security}
-                    headingsStructure={desktopData.headingsStructure}
-                    metaTags={desktopData.metaTags}
-                  />
+                  <OpportunitiesPanel opportunities={desktopData.recommendations} />
                 </div>
-
-                <OpportunitiesPanel recommendations={desktopData.recommendations} />
+                
+                <TechnicalAuditsPanel data={desktopData} />
+              </div>
+            )}
+            
+            {!hasDesktopData && (
+              <div className="p-4 text-center">
+                <p className="text-muted-foreground">
+                  {isAnalyzing ? "Analisando dados desktop..." : "Dados desktop não disponíveis."}
+                </p>
               </div>
             )}
           </TabsContent>
@@ -151,22 +154,25 @@ const DeviceTabsSection: React.FC<DeviceTabsSectionProps> = ({
             {hasMobileData && (
               <div className="p-3 md:p-4 space-y-4 md:space-y-6">
                 <DevicePerformancePanel data={mobileData} deviceType="mobile" />
-
-                <div className="grid grid-cols-1 gap-4 md:gap-6">
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                   <CoreWebVitalsPanel 
                     lcp={mobileData.lcp} 
                     cls={mobileData.cls} 
                     fid={mobileData.fid} 
                   />
-                  <TechnicalAuditsPanel 
-                    mobileFriendly={mobileData.mobileFriendly}
-                    security={mobileData.security}
-                    headingsStructure={mobileData.headingsStructure}
-                    metaTags={mobileData.metaTags}
-                  />
+                  <OpportunitiesPanel opportunities={mobileData.recommendations} />
                 </div>
-
-                <OpportunitiesPanel recommendations={mobileData.recommendations} />
+                
+                <TechnicalAuditsPanel data={mobileData} />
+              </div>
+            )}
+            
+            {!hasMobileData && (
+              <div className="p-4 text-center">
+                <p className="text-muted-foreground">
+                  {isAnalyzing ? "Analisando dados mobile..." : "Dados mobile não disponíveis."}
+                </p>
               </div>
             )}
           </TabsContent>

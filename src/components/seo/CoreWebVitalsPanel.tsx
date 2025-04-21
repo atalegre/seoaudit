@@ -1,68 +1,104 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Zap } from 'lucide-react';
-import WebVitalsGrid from './web-vitals/WebVitalsGrid';
-import StatusBadge, { StatusType } from './web-vitals/StatusBadge';
-import WebVitalsLegend from './web-vitals/WebVitalsLegend';
-import { MetricStatus } from './MetricCard';
+import { cn } from '@/lib/utils';
 
 interface CoreWebVitalsPanelProps {
-  lcp: number;
-  cls: number;
-  fid: number;
+  lcp?: number;
+  cls?: number;
+  fid?: number;
 }
 
-const CoreWebVitalsPanel: React.FC<CoreWebVitalsPanelProps> = ({ 
-  lcp, 
-  cls, 
-  fid
+const CoreWebVitalsPanel: React.FC<CoreWebVitalsPanelProps> = ({
+  lcp = 0,
+  cls = 0,
+  fid = 0
 }) => {
-  // Analisar o status dos Core Web Vitals
-  const lcpStatus: MetricStatus = lcp <= 2.5 ? "good" : lcp <= 4 ? "needs-improvement" : "poor";
-  const clsStatus: MetricStatus = cls <= 0.1 ? "good" : cls <= 0.25 ? "needs-improvement" : "poor";
-  const fidStatus: MetricStatus = fid <= 100 ? "good" : fid <= 300 ? "needs-improvement" : "poor";
-  
-  // Determinar o status geral dos Core Web Vitals
-  const getOverallStatus = (): { status: StatusType, message: string } => {
-    if (lcpStatus === "good" && clsStatus === "good" && fidStatus === "good") {
-      return { status: "passed", message: "Todos os Core Web Vitals passam nos critérios do Google." };
-    } else if (lcpStatus === "poor" || clsStatus === "poor" || fidStatus === "poor") {
-      return { status: "failed", message: "Um ou mais Core Web Vitals não atendem aos critérios mínimos do Google." };
-    } else {
-      return { status: "needs-improvement", message: "Core Web Vitals precisam de melhorias para atender aos critérios do Google." };
-    }
+  // Helper functions to determine status
+  const getLcpStatus = (seconds: number) => {
+    if (seconds <= 2.5) return 'success';
+    if (seconds <= 4) return 'warning';
+    return 'error';
   };
-
-  const overallStatus = getOverallStatus();
+  
+  const getClsStatus = (value: number) => {
+    if (value <= 0.1) return 'success';
+    if (value <= 0.25) return 'warning';
+    return 'error';
+  };
+  
+  const getFidStatus = (ms: number) => {
+    if (ms <= 100) return 'success';
+    if (ms <= 300) return 'warning';
+    return 'error';
+  };
   
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Zap className="h-5 w-5 text-primary" />
+      <CardHeader className="pb-2">
+        <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+          <Zap className="h-4 w-4 md:h-5 md:w-5 text-primary" />
           Core Web Vitals
         </CardTitle>
-        <CardDescription>
-          Métricas essenciais de experiência do usuário que o Google usa como sinais de ranking
-        </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <StatusBadge 
-          status={overallStatus.status}
-          message={overallStatus.message}
-        />
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="p-4 border rounded-lg">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium">LCP</h3>
+              <span className={cn(
+                "px-2 py-0.5 text-xs rounded-full",
+                getLcpStatus(lcp) === 'success' ? "bg-green-100 text-green-800" :
+                getLcpStatus(lcp) === 'warning' ? "bg-yellow-100 text-yellow-800" :
+                "bg-red-100 text-red-800"
+              )}>
+                {(lcp || 0).toFixed(1)}s
+              </span>
+            </div>
+            <p className="mt-2 text-xs text-gray-500">
+              Largest Contentful Paint: tempo até o maior elemento visível renderizar
+            </p>
+          </div>
+          
+          <div className="p-4 border rounded-lg">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium">CLS</h3>
+              <span className={cn(
+                "px-2 py-0.5 text-xs rounded-full",
+                getClsStatus(cls) === 'success' ? "bg-green-100 text-green-800" :
+                getClsStatus(cls) === 'warning' ? "bg-yellow-100 text-yellow-800" :
+                "bg-red-100 text-red-800"
+              )}>
+                {(cls || 0).toFixed(2)}
+              </span>
+            </div>
+            <p className="mt-2 text-xs text-gray-500">
+              Cumulative Layout Shift: estabilidade visual durante o carregamento
+            </p>
+          </div>
+          
+          <div className="p-4 border rounded-lg">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium">FID</h3>
+              <span className={cn(
+                "px-2 py-0.5 text-xs rounded-full",
+                getFidStatus(fid) === 'success' ? "bg-green-100 text-green-800" :
+                getFidStatus(fid) === 'warning' ? "bg-yellow-100 text-yellow-800" :
+                "bg-red-100 text-red-800"
+              )}>
+                {fid || 0}ms
+              </span>
+            </div>
+            <p className="mt-2 text-xs text-gray-500">
+              First Input Delay: tempo de resposta ao primeiro clique
+            </p>
+          </div>
+        </div>
         
-        <WebVitalsGrid 
-          lcp={lcp}
-          cls={cls}
-          fid={fid}
-          lcpStatus={lcpStatus}
-          clsStatus={clsStatus}
-          fidStatus={fidStatus}
-        />
-        
-        <WebVitalsLegend />
+        <div className="mt-2 text-xs text-gray-500">
+          <p>Os Core Web Vitals são métricas importantes para avaliar a experiência do usuário e são utilizadas pelo Google como fator de ranking.</p>
+        </div>
       </CardContent>
     </Card>
   );

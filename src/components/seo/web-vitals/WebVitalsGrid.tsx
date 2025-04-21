@@ -14,18 +14,18 @@ interface WebVitalsGridProps {
 }
 
 const WebVitalsGrid: React.FC<WebVitalsGridProps> = ({
-  lcp,
-  cls,
-  fid,
-  lcpStatus,
-  clsStatus,
-  fidStatus
+  lcp = 0,
+  cls = 0,
+  fid = 0,
+  lcpStatus = 'neutral',
+  clsStatus = 'neutral',
+  fidStatus = 'neutral'
 }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <MetricCard
         title="LCP"
-        value={`${lcp.toFixed(1)}s`}
+        value={`${(lcp || 0).toFixed(1)}s`}
         icon={<Zap className="h-4 w-4" />}
         description="Largest Contentful Paint: tempo até o maior elemento visível renderizar"
         status={lcpStatus}
@@ -33,7 +33,7 @@ const WebVitalsGrid: React.FC<WebVitalsGridProps> = ({
       
       <MetricCard
         title="CLS"
-        value={cls.toFixed(2)}
+        value={(cls || 0).toFixed(2)}
         icon={<Zap className="h-4 w-4" />}
         description="Cumulative Layout Shift: estabilidade visual durante o carregamento"
         status={clsStatus}
@@ -41,7 +41,7 @@ const WebVitalsGrid: React.FC<WebVitalsGridProps> = ({
       
       <MetricCard
         title="FID"
-        value={`${fid}ms`}
+        value={`${fid || 0}ms`}
         icon={<Zap className="h-4 w-4" />}
         description="First Input Delay: tempo de resposta ao primeiro clique"
         status={fidStatus}
