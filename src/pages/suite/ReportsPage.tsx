@@ -51,6 +51,34 @@ const ReportsPage = () => {
     }
   };
 
+  const handleDownload = (report: any) => {
+    if (!report.content || report.status !== 'completed') {
+      return;
+    }
+
+    try {
+      // Create a blob from the content
+      const blob = new Blob([report.content], { type: 'application/pdf' });
+      
+      // Create a URL for the blob
+      const url = URL.createObjectURL(blob);
+      
+      // Create a link element to trigger the download
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `report-${report.url.replace(/https?:\/\//, '').replace(/[\/:.]/g, '-')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Clean up
+      URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error downloading report:', error);
+      toast.error('Failed to download report');
+    }
+  };
+
   return (
     <SuiteLayout title="Relatórios de Análise">
       <div className="space-y-8">
@@ -142,6 +170,7 @@ const ReportsPage = () => {
                         size="sm"
                         className="h-8 w-8 p-0"
                         disabled={!report.content || report.status !== 'completed'}
+                        onClick={() => handleDownload(report)}
                       >
                         <Download className="h-4 w-4" />
                         <span className="sr-only">Download report</span>

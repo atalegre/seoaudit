@@ -8,7 +8,7 @@ export interface Report {
   url: string;
   created_at: string;
   status: string;
-  content: Uint8Array | null;
+  content: string | null;
   user_id?: string;
 }
 
@@ -25,13 +25,8 @@ export function useReports() {
 
       if (error) throw error;
       
-      // Convert string content to Uint8Array or null
-      const typedReports = data?.map(report => ({
-        ...report,
-        content: report.content ? new Uint8Array(Buffer.from(report.content)) : null
-      })) || [];
-      
-      setReports(typedReports);
+      // Just use the data as-is without trying to convert it
+      setReports(data || []);
     } catch (error: any) {
       console.error('Error fetching reports:', error);
       toast.error('Failed to load reports');
