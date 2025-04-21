@@ -1,19 +1,23 @@
 
-import { useState, useEffect } from 'react';
-import { useToast } from '@/components/ui/use-toast';
-import { getPageInsightsData } from '@/utils/api/pageInsights';
-import type { PageInsightsData } from '@/utils/api/pageInsights/types';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { createSeoAnalysisTask, pollTaskUntilComplete } from '@/utils/api/seoTaskManager';
 import { toast } from 'sonner';
 
+// Only import this type for structure, not for fetching:
+import type { PageInsightsData } from '@/utils/api/pageInsights/types';
+
+// The hook now uses the Seo Analysis Task Manager for all requests
 export function useSeoAnalysis() {
   const [url, setUrl] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [desktopData, setDesktopData] = useState<PageInsightsData | null>(null);
   const [mobileData, setMobileData] = useState<PageInsightsData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const { toast: uiToast } = useToast();
 
-  // Carregar o último URL analisado ao inicializar
+  const lastDesktopTaskIdRef = useRef<string | null>(null);
+  const lastMobileTaskIdRef = useRef<string | null>(null);
+
+  // On mount: if last analyzed URL in localStorage, run analysis
   useEffect(() => {
     const lastUrl = localStorage.getItem('lastAnalyzedUrl');
     if (lastUrl) {
@@ -22,7 +26,12 @@ export function useSeoAnalysis() {
     }
   }, []);
 
-  const analyzeUrl = async (urlToAnalyze = url) => {
+  const analyzeUrl = useCallback(async (urlToAnalyze = url) => {
+    // Reset state
+    setDesktopData(null);
+    setMobileData(null);
+    setError(null);
+
     if (!urlToAnalyze) {
       toast("URL necessário", {
         description: "Por favor, insira uma URL válida para analisar."
@@ -30,133 +39,102 @@ export function useSeoAnalysis() {
       return;
     }
 
+    // Normalize URL
+    let normalizedUrl = urlToAnalyze.trim();
+    if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
+      normalizedUrl = 'https://' + normalizedUrl;
+    }
+    localStorage.setItem('lastAnalyzedUrl', normalizedUrl);
+
+    setIsAnalyzing(true);
+    setError(null);
+
+    toast.info("Análise agendada", {
+      description: "A análise SEO será executada em background via tarefa."
+    });
+
     try {
-      setIsAnalyzing(true);
-      setError(null);
-      
-      // Normalizar URL (adicionar https:// se não especificado)
-      let normalizedUrl = urlToAnalyze;
-      if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
-        normalizedUrl = 'https://' + normalizedUrl;
-      }
-      
-      console.log(`🔍 URL normalizada para análise: ${normalizedUrl}`);
-      
-      // Salvar a URL no localStorage
-      localStorage.setItem('lastAnalyzedUrl', normalizedUrl);
-      
-      // Obter dados para desktop e mobile usando a mesma API com estratégia diferente
-      toast.info("Analisando...", {
-        description: "Obtendo dados reais de SEO, isso pode levar alguns segundos."
+      // -- Desktop analysis task
+      const { taskId: desktopTaskId } = await createSeoAnalysisTask({
+        url: normalizedUrl,
+        frequency: 'once'
       });
-      
-      // Variáveis para rastrear resultados de cada análise
-      let desktopError: Error | null = null;
-      let mobileError: Error | null = null;
-      let desktopResult: PageInsightsData | null = null;
-      let mobileResult: PageInsightsData | null = null;
-      
-      // Analisar desktop
-      try {
-        console.log('🖥️ Iniciando análise desktop...');
-        desktopResult = await getPageInsightsData(normalizedUrl, 'desktop');
-        setDesktopData(desktopResult);
-        console.log("✅ Análise desktop concluída com sucesso");
-      } catch (error: any) {
-        console.error("❌ Erro ao analisar desktop:", error);
-        desktopError = error;
-      }
-      
-      // Analisar mobile
-      try {
-        console.log('📱 Iniciando análise mobile...');
-        mobileResult = await getPageInsightsData(normalizedUrl, 'mobile');
-        setMobileData(mobileResult);
-        console.log("✅ Análise mobile concluída com sucesso");
-      } catch (error: any) {
-        console.error("❌ Erro ao analisar mobile:", error);
-        mobileError = error;
-      }
-      
-      // Verificar resultados e mostrar mensagens apropriadas
-      if (desktopResult || mobileResult) {
-        // Pelo menos um dispositivo foi analisado com sucesso
-        console.log("✅ Análise concluída com pelo menos um dispositivo");
-        
-        // Mostrar toast de sucesso mesmo com dados parciais
-        toast.success("Análise concluída", {
-          description: "Os resultados da análise SEO estão prontos."
-        });
-        
-        // Definir mensagens de erro específicas para análises parciais
-        if (!desktopResult && mobileResult) {
-          console.log("⚠️ Apenas dados mobile disponíveis");
-          setError("A análise desktop falhou, mas os dados mobile estão disponíveis.");
-          toast.warning("Dados parciais", {
-            description: "A análise desktop falhou. Mostrando apenas dados mobile."
-          });
-        } else if (desktopResult && !mobileResult) {
-          console.log("⚠️ Apenas dados desktop disponíveis");
-          setError("A análise mobile falhou, mas os dados desktop estão disponíveis.");
-          toast.warning("Dados parciais", {
-            description: "A análise mobile falhou. Mostrando apenas dados desktop."
-          });
-        }
-      } else {
-        // Ambas as análises falharam
-        console.error("❌ Ambas as análises (desktop e mobile) falharam");
-        let errorMessage = "Não foi possível obter dados reais para desktop ou mobile. ";
-        
-        // Combinar mensagens de erro para fornecer detalhes mais úteis
-        if (desktopError && mobileError) {
-          errorMessage += `Erro desktop: ${desktopError.message}. Erro mobile: ${mobileError.message}`;
-        } else if (desktopError) {
-          errorMessage += `Erro: ${desktopError.message}`;
-        } else if (mobileError) {
-          errorMessage += `Erro: ${mobileError.message}`;
-        }
-        
-        setError(errorMessage);
-        toast.error("Erro na análise", {
-          description: "Falha ao obter dados reais. Verifique a conexão com a internet."
-        });
-      }
-    } catch (error: any) {
-      console.error("❌ Erro geral ao analisar URL:", error);
-      setError(error.message || 'Ocorreu um erro desconhecido');
-      
-      toast.error("Erro na análise", {
-        description: error.message || 'Ocorreu um erro desconhecido'
+      lastDesktopTaskIdRef.current = desktopTaskId;
+      toast.info("Tarefa Desktop agendada", { description: "Aguardando resultados desktop..." });
+
+      // -- Mobile analysis task (trigger with strategy param in requested_values, if desired)
+      const { taskId: mobileTaskId } = await createSeoAnalysisTask({
+        url: normalizedUrl,
+        frequency: 'once'
       });
+      lastMobileTaskIdRef.current = mobileTaskId;
+      toast.info("Tarefa Mobile agendada", { description: "Aguardando resultados mobile..." });
+
+      // Poll Desktop (do not wait, let both run in parallel)
+      pollTaskUntilComplete(
+        desktopTaskId,
+        (res) => {
+          if (res.results) setDesktopData(res.results as PageInsightsData);
+        }
+      ).then((finalRes) => {
+        if (finalRes.status === 'success' && finalRes.results) {
+          setDesktopData(finalRes.results as PageInsightsData);
+          toast.success("Análise desktop concluída");
+        } else if (finalRes.status === 'failed') {
+          setError(err =>
+            (err ? err + " " : "") + (finalRes.message || "Desktop analysis failed.")
+          );
+          toast.error("Falha na análise desktop", { description: finalRes.message });
+        }
+      }).catch((err) => {
+        setError(e => (e ? e + " " : "") + (err?.message || 'Erro na Desktop'));
+        toast.error("Falha no polling Desktop");
+      });
+
+      // Poll Mobile
+      pollTaskUntilComplete(
+        mobileTaskId,
+        (res) => {
+          if (res.results) setMobileData(res.results as PageInsightsData);
+        }
+      ).then((finalRes) => {
+        if (finalRes.status === 'success' && finalRes.results) {
+          setMobileData(finalRes.results as PageInsightsData);
+          toast.success("Análise mobile concluída");
+        } else if (finalRes.status === 'failed') {
+          setError(err =>
+            (err ? err + " " : "") + (finalRes.message || "Mobile analysis failed.")
+          );
+          toast.error("Falha na análise mobile", { description: finalRes.message });
+        }
+      }).catch((err) => {
+        setError(e => (e ? e + " " : "") + (err?.message || 'Erro na Mobile'));
+        toast.error("Falha no polling Mobile");
+      });
+    } catch (err: any) {
+      setError(err.message || "Erro ao agendar análise.");
+      toast.error("Erro ao iniciar análise", { description: err.message });
     } finally {
+      // (Completion is handled by polling, but we mark analyzing as false once both are done or upon error)
       setIsAnalyzing(false);
     }
-  };
+  }, [url]);
 
+  // Handler for URL input changes
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUrl(e.target.value);
   };
 
+  // Handler for "reanalyze" button
   const handleReanalyze = () => {
-    // Limpar o cache do sessionStorage para o URL analisado
+    // Clean cache
     Object.keys(sessionStorage).forEach(key => {
-      if (key.startsWith('psi_')) {
-        console.log('🧹 Limpando cache:', key);
-        sessionStorage.removeItem(key);
-      }
+      if (key.startsWith('psi_')) sessionStorage.removeItem(key);
     });
-    
-    // Limpar também o cache em memória (apiCache)
-    toast.info("Cache limpo, iniciando nova análise", {
-      description: "Tentando obter dados atualizados da API"
-    });
-    
-    // Limpar os dados atuais para forçar uma nova análise completa
     setDesktopData(null);
     setMobileData(null);
     setError(null);
-    
-    // Analisar novamente
+    toast.info("Iniciando nova análise...");
     analyzeUrl();
   };
 
