@@ -1,5 +1,5 @@
 
-import { supabase, corsHeaders } from "../utils.ts";
+import { supabase, corsHeaders, getAuthToken } from "../utils.ts";
 
 export async function createTask(req: Request) {
   let body: any;
@@ -12,12 +12,32 @@ export async function createTask(req: Request) {
     );
   }
 
+  // Get user ID from authorization token if provided
+  let userId = body.userId || null;
+  
+  // Check for auth token in the request - will override userId from body if authenticated
+  const authToken = getAuthToken(req);
+  if (authToken) {
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser(authToken);
+      if (error) {
+        console.error("Error verifying token:", error.message);
+      } else if (user) {
+        // If we have a verified user from the token, use that ID
+        userId = user.id;
+        console.log("User authenticated, setting user_id:", userId);
+      }
+    } catch (error) {
+      console.error("Error processing auth token:", error);
+    }
+  }
+
   // Accepts: { "task_name": string, "requested_data": { any } }
-  const { task_name, requested_data, userId = null } = body;
+  const { task_name, requested_data } = body;
 
   try {
     const insertObj: any = {
-      user_id: userId, // can be null
+      user_id: userId, // can be null or from auth token
       requested_values: requested_data,
       task_name: task_name,
       status: 'pending',

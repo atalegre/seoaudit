@@ -55,6 +55,7 @@ export function useSeoAnalysisTask() {
         description: "A análise pode demorar alguns minutos."
       });
 
+      // Always pass the user ID if available (will be verified server-side)
       const { taskId } = await createSeoAnalysisTask({
         url: normalizedUrl,
         userId: user?.id || null,
@@ -293,4 +294,3 @@ export function useSeoAnalysisTask() {
     isAnalyzing: ['pending', 'in_progress'].includes(analysisState.status)
   };
 }
-
