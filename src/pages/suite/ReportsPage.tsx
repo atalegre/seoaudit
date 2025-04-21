@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 const ReportsPage = () => {
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [urlInput, setUrlInput] = React.useState('https://example.com');
-  const { reports, isLoading, generateReport } = useReports();
+  const { reports, isLoading, generateReport, refreshReports } = useReports();
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
 
   React.useEffect(() => {
@@ -24,6 +24,16 @@ const ReportsPage = () => {
     
     checkAuth();
   }, []);
+
+  // Set up automatic refreshing every 5 seconds
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      refreshReports();
+    }, 5000);
+    
+    // Clean up on unmount
+    return () => clearInterval(interval);
+  }, [refreshReports]);
 
   const handleGenerateReport = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,17 +73,37 @@ const ReportsPage = () => {
     }
 
     try {
-      // Convert base64 string to binary
-      const binaryString = atob(report.content);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
+      // Check if content is already a valid base64 string
+      let base64Content = report.content;
+      
+      // If the content contains non-base64 characters, try to extract the base64 part
+      if (base64Content.includes(',')) {
+        base64Content = base64Content.split(',')[1];
       }
       
-      // Create blob and trigger download
-      const blob = new Blob([bytes], { type: 'application/pdf' });
+      // Remove any whitespace or line breaks that might cause issues
+      base64Content = base64Content.trim();
+      
+      // Create a Blob from the base64 data
+      const byteCharacters = atob(base64Content);
+      const byteArrays = [];
+      
+      for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+        const slice = byteCharacters.slice(offset, offset + 512);
+        
+        const byteNumbers = new Array(slice.length);
+        for (let i = 0; i < slice.length; i++) {
+          byteNumbers[i] = slice.charCodeAt(i);
+        }
+        
+        const byteArray = new Uint8Array(byteNumbers);
+        byteArrays.push(byteArray);
+      }
+      
+      const blob = new Blob(byteArrays, { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       
+      // Create and trigger download
       const a = document.createElement('a');
       a.href = url;
       a.download = `report-${report.url.replace(/https?:\/\//, '').replace(/[\/:.]/g, '-')}.pdf`;

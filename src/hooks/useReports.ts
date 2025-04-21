@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -16,7 +16,7 @@ export function useReports() {
   const [reports, setReports] = useState<Report[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchReports = async () => {
+  const fetchReports = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('reports')
@@ -33,7 +33,7 @@ export function useReports() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   const generateReport = async (url: string) => {
     try {
@@ -70,7 +70,7 @@ export function useReports() {
 
   useEffect(() => {
     fetchReports();
-  }, []);
+  }, [fetchReports]);
 
   return {
     reports,
