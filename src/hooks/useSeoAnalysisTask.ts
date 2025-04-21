@@ -1,5 +1,4 @@
-
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { createSeoAnalysisTask, checkSeoAnalysisTaskStatus, pollTaskUntilComplete } from '@/utils/api/seoTaskManager';
 import { toast } from 'sonner';
@@ -22,8 +21,12 @@ export function useSeoAnalysisTask() {
     error: null
   });
   const [isPolling, setIsPolling] = useState(false);
+  const statusRef = useRef<string>(analysisState.status);
 
-  // Cancel polling on unmount
+  useEffect(() => {
+    statusRef.current = analysisState.status;
+  }, [analysisState.status]);
+
   useEffect(() => {
     return () => {
       setIsPolling(false);
@@ -40,20 +43,17 @@ export function useSeoAnalysisTask() {
         error: null
       });
 
-      // Normalize URL
       let normalizedUrl = url;
       if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
         normalizedUrl = 'https://' + normalizedUrl;
       }
 
-      // Store URL in localStorage for persistence
       localStorage.setItem('lastAnalyzedUrl', normalizedUrl);
 
       toast.info("Iniciando análise", {
         description: "A análise pode demorar alguns minutos."
       });
 
-      // Create task
       const { taskId } = await createSeoAnalysisTask({
         url: normalizedUrl,
         userId: user?.id || null,
@@ -66,20 +66,19 @@ export function useSeoAnalysisTask() {
         status: 'pending'
       }));
 
-      // Start polling
+      statusRef.current = 'pending';
+
       setIsPolling(true);
       pollTaskUntilComplete(
         taskId,
         (statusUpdate) => {
-          // Update state based on status
           setAnalysisState(prev => ({
             ...prev,
             status: statusUpdate.status as any,
             results: statusUpdate.results || null
           }));
 
-          // Show toast notifications for status changes
-          if (statusUpdate.status === 'in_progress' && prev.status !== 'in_progress') {
+          if (statusUpdate.status === 'in_progress' && statusRef.current !== 'in_progress') {
             toast.info("Análise em progresso", {
               description: "Estamos processando os dados do seu site."
             });
@@ -96,6 +95,8 @@ export function useSeoAnalysisTask() {
               error: statusUpdate.message || "Ocorreu um erro ao analisar o site."
             }));
           }
+
+          statusRef.current = statusUpdate.status as string;
         }
       ).then((finalResult) => {
         setIsPolling(false);
@@ -167,7 +168,6 @@ export function useSeoAnalysisTask() {
     }
   }, []);
 
-  // Function to resume analysis from a stored task ID
   const resumeAnalysis = useCallback(async (taskId: string) => {
     try {
       setAnalysisState({
@@ -178,15 +178,12 @@ export function useSeoAnalysisTask() {
         error: null
       });
 
-      // Check current status
       const statusResult = await checkTaskStatus(taskId);
       
-      // If already completed, just update state
       if (statusResult.status === 'success' || statusResult.status === 'failed') {
         return;
       }
       
-      // Otherwise start polling
       setIsPolling(true);
       pollTaskUntilComplete(
         taskId,
