@@ -42,35 +42,45 @@ const ReportsPage = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    if (status === 'completed') {
-      return <Badge variant="success" className="capitalize">{status}</Badge>;
-    } else if (status === 'pending') {
-      return <Badge variant="warning" className="capitalize">{status}</Badge>;
-    } else {
-      return <Badge variant="destructive" className="capitalize">{status}</Badge>;
+    switch (status.toLowerCase()) {
+      case 'success':
+      case 'completed':
+        return <Badge className="bg-green-500 hover:bg-green-500/80 capitalize">{status}</Badge>;
+      case 'pending':
+      case 'processing':
+        return <Badge className="bg-amber-500 hover:bg-amber-500/80 capitalize">{status}</Badge>;
+      case 'error':
+      case 'failed':
+        return <Badge className="bg-destructive hover:bg-destructive/80 capitalize">{status}</Badge>;
+      default:
+        return <Badge variant="secondary" className="capitalize">{status}</Badge>;
     }
   };
 
   const handleDownload = (report: any) => {
-    if (!report.content || report.status !== 'completed') {
+    if (!report.content || report.status.toLowerCase() !== 'success') {
       return;
     }
 
     try {
-      // Create a blob from the content
-      const blob = new Blob([report.content], { type: 'application/pdf' });
+      // Convert base64 string to binary
+      const binaryString = atob(report.content);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
       
-      // Create a URL for the blob
+      // Create blob and trigger download
+      const blob = new Blob([bytes], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       
-      // Create a link element to trigger the download
       const a = document.createElement('a');
       a.href = url;
       a.download = `report-${report.url.replace(/https?:\/\//, '').replace(/[\/:.]/g, '-')}.pdf`;
       document.body.appendChild(a);
       a.click();
       
-      // Clean up
+      // Cleanup
       URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
@@ -169,7 +179,7 @@ const ReportsPage = () => {
                         variant="ghost"
                         size="sm"
                         className="h-8 w-8 p-0"
-                        disabled={!report.content || report.status !== 'completed'}
+                        disabled={!report.content || report.status.toLowerCase() !== 'success'}
                         onClick={() => handleDownload(report)}
                       >
                         <Download className="h-4 w-4" />
