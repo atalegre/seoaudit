@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -70,20 +71,31 @@ const ReportsPage = () => {
     }
 
     try {
+      // Get file path from the report
+      const filePath = report.file_url;
+      
+      // Download the file from Supabase storage
       const { data, error } = await supabase.storage
         .from('report_files')
-        .download(report.file_url);
+        .download(filePath);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error downloading report:', error);
+        toast.error('Failed to download report');
+        return;
+      }
       
+      // Create a blob URL for the downloaded file
       const url = URL.createObjectURL(data);
       
+      // Create a temporary anchor element to trigger the download
       const a = document.createElement('a');
       a.href = url;
       a.download = `report-${report.url.replace(/https?:\/\//, '').replace(/[\/:.]/g, '-')}.pdf`;
       document.body.appendChild(a);
       a.click();
       
+      // Clean up
       URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
@@ -138,7 +150,7 @@ const ReportsPage = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>URL Analisada</TableHead>
-                <TableHead>Data da An��lise</TableHead>
+                <TableHead>Data da Análise</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Download</TableHead>
               </TableRow>
