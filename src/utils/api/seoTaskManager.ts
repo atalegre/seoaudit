@@ -1,9 +1,10 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 interface CreateTaskParams {
   url: string;
   userId?: string | null;
-  frequency?: 'once' | 'daily' | 'weekly' | 'monthly';
+  platform?: string;
 }
 
 interface TaskStatusResponse {
@@ -19,7 +20,7 @@ interface TaskStatusResponse {
 /**
  * Create a new SEO analysis task
  */
-export async function createSeoAnalysisTask(params: { url: string; userId?: string | null; platform?: string }) : Promise<{ taskId: string }> {
+export async function createSeoAnalysisTask(params: CreateTaskParams) : Promise<{ taskId: string }> {
   try {
     // Prepare requested_data ONLY with expected keys
     const requested_data: any = { url: params.url };
@@ -46,8 +47,16 @@ export async function createSeoAnalysisTask(params: { url: string; userId?: stri
  */
 export async function checkSeoAnalysisTaskStatus(taskId: string): Promise<TaskStatusResponse> {
   try {
-    const { data, error } = await supabase.functions.invoke(`seo-task-manager/status?taskId=${taskId}`, {
-      method: 'GET'
+    // For public tasks that don't require authentication, we can use a more direct fetch approach
+    // to avoid sending auth headers for non-authenticated users
+    const { data, error } = await supabase.functions.invoke(`seo-task-manager/status`, {
+      method: 'GET',
+      // Pass parameters as query params
+      query: { taskId },
+      // Don't automatically set auth headers for this request
+      headers: { 
+        'Content-Type': 'application/json'
+      }
     });
 
     if (error) throw error;

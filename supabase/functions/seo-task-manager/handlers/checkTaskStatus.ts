@@ -1,4 +1,3 @@
-
 import { supabase, corsHeaders, getAuthToken } from "../utils.ts";
 
 export async function checkTaskStatus(req: Request, url: URL) {
@@ -28,29 +27,19 @@ export async function checkTaskStatus(req: Request, url: URL) {
     }
 
     const token = getAuthToken(req);
-
-    // Guest (no auth)
-    if (!token) {
-      if (taskData.user_id) {
+    if (taskData.user_id) {
+      if (token) {
+        const { data: authResult, error: authError } = await supabase.auth.getUser(token);
+        if (authError || !authResult?.user || authResult.user.id !== taskData.user_id) {
+          return new Response(
+            JSON.stringify({ error: 'Access denied' }),
+            { status: 403, headers: corsHeaders }
+          );
+        }
+      } else {
         return new Response(
-          JSON.stringify({ error: 'Access denied' }),
-          { status: 403, headers: corsHeaders }
-        );
-      }
-    } else {
-      const { data: authResult, error: authError } = await supabase.auth.getUser(token);
-      if (authError) {
-        console.error('Error authenticating user:', authError);
-        return new Response(
-          JSON.stringify({ error: 'Authentication failed' }),
+          JSON.stringify({ error: 'Authentication required for this task' }),
           { status: 401, headers: corsHeaders }
-        );
-      }
-      const user = authResult?.user;
-      if (taskData.user_id && taskData.user_id !== user?.id) {
-        return new Response(
-          JSON.stringify({ error: 'Access denied' }),
-          { status: 403, headers: corsHeaders }
         );
       }
     }
