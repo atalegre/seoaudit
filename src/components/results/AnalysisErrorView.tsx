@@ -167,7 +167,7 @@ const AnalysisErrorView: React.FC<AnalysisErrorViewProps> = ({
           onClick={onReanalyze}
           className="bg-primary text-white px-6 py-3 rounded-md hover:bg-primary/90 transition-colors"
         >
-          <Loader2 className="h-4 w-4 mr-2 inline animate-spin" />
+          {/* Loader2 removed here as requested */}
           Tentar novamente
         </Button>
       </div>
