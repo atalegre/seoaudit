@@ -16,6 +16,7 @@ export function useSeoAnalysis() {
 
   const lastDesktopTaskIdRef = useRef<string | null>(null);
   const lastMobileTaskIdRef = useRef<string | null>(null);
+  const analysisInProgressRef = useRef(false);
 
   // On mount: if last analyzed URL in localStorage, run analysis
   useEffect(() => {
@@ -27,6 +28,12 @@ export function useSeoAnalysis() {
   }, []);
 
   const analyzeUrl = useCallback(async (urlToAnalyze = url) => {
+    // Prevent multiple concurrent analyses
+    if (analysisInProgressRef.current) {
+      console.log('Analysis already in progress, ignoring duplicate request');
+      return;
+    }
+
     // Reset state
     setDesktopData(null);
     setMobileData(null);
@@ -48,13 +55,14 @@ export function useSeoAnalysis() {
 
     setIsAnalyzing(true);
     setError(null);
+    analysisInProgressRef.current = true;
 
     toast.info("Análise agendada", {
       description: "A análise SEO será executada em background via tarefa."
     });
 
     try {
-      // -- Desktop analysis task
+      // -- Desktop analysis task - create only one task
       const { taskId: desktopTaskId } = await createSeoAnalysisTask({
         url: normalizedUrl,
         frequency: 'once'
@@ -62,13 +70,17 @@ export function useSeoAnalysis() {
       lastDesktopTaskIdRef.current = desktopTaskId;
       toast.info("Tarefa Desktop agendada", { description: "Aguardando resultados desktop..." });
 
-      // -- Mobile analysis task (trigger with strategy param in requested_values, if desired)
+      // -- Mobile analysis task - create only one task
       const { taskId: mobileTaskId } = await createSeoAnalysisTask({
         url: normalizedUrl,
         frequency: 'once'
       });
       lastMobileTaskIdRef.current = mobileTaskId;
       toast.info("Tarefa Mobile agendada", { description: "Aguardando resultados mobile..." });
+
+      // Track completion of both tasks
+      let desktopComplete = false;
+      let mobileComplete = false;
 
       // Poll Desktop (do not wait, let both run in parallel)
       pollTaskUntilComplete(
@@ -77,6 +89,7 @@ export function useSeoAnalysis() {
           if (res.results) setDesktopData(res.results as PageInsightsData);
         }
       ).then((finalRes) => {
+        desktopComplete = true;
         if (finalRes.status === 'success' && finalRes.results) {
           setDesktopData(finalRes.results as PageInsightsData);
           toast.success("Análise desktop concluída");
@@ -86,9 +99,22 @@ export function useSeoAnalysis() {
           );
           toast.error("Falha na análise desktop", { description: finalRes.message });
         }
+        
+        // If both tasks are complete, set analyzing to false
+        if (desktopComplete && mobileComplete) {
+          setIsAnalyzing(false);
+          analysisInProgressRef.current = false;
+        }
       }).catch((err) => {
+        desktopComplete = true;
         setError(e => (e ? e + " " : "") + (err?.message || 'Erro na Desktop'));
         toast.error("Falha no polling Desktop");
+        
+        // If both tasks are complete, set analyzing to false
+        if (desktopComplete && mobileComplete) {
+          setIsAnalyzing(false);
+          analysisInProgressRef.current = false;
+        }
       });
 
       // Poll Mobile
@@ -98,6 +124,7 @@ export function useSeoAnalysis() {
           if (res.results) setMobileData(res.results as PageInsightsData);
         }
       ).then((finalRes) => {
+        mobileComplete = true;
         if (finalRes.status === 'success' && finalRes.results) {
           setMobileData(finalRes.results as PageInsightsData);
           toast.success("Análise mobile concluída");
@@ -107,16 +134,28 @@ export function useSeoAnalysis() {
           );
           toast.error("Falha na análise mobile", { description: finalRes.message });
         }
+        
+        // If both tasks are complete, set analyzing to false
+        if (desktopComplete && mobileComplete) {
+          setIsAnalyzing(false);
+          analysisInProgressRef.current = false;
+        }
       }).catch((err) => {
+        mobileComplete = true;
         setError(e => (e ? e + " " : "") + (err?.message || 'Erro na Mobile'));
         toast.error("Falha no polling Mobile");
+        
+        // If both tasks are complete, set analyzing to false
+        if (desktopComplete && mobileComplete) {
+          setIsAnalyzing(false);
+          analysisInProgressRef.current = false;
+        }
       });
     } catch (err: any) {
       setError(err.message || "Erro ao agendar análise.");
       toast.error("Erro ao iniciar análise", { description: err.message });
-    } finally {
-      // (Completion is handled by polling, but we mark analyzing as false once both are done or upon error)
       setIsAnalyzing(false);
+      analysisInProgressRef.current = false;
     }
   }, [url]);
 
