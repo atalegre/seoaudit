@@ -4,26 +4,30 @@ import { Tag, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { safeGet } from '@/utils/dataChecks';
 
-interface MetaTagsData {
-  metaTags?: {
-    title?: string;
-    description?: string;
-    titleLength?: number;
-    descriptionLength?: number;
-  };
+interface MetaTagsInfo {
+  title?: string;
+  description?: string;
+  titleLength?: number;
+  descriptionLength?: number;
 }
 
 interface MetaTagsSectionProps {
-  data?: MetaTagsData;
+  data?: {
+    metaTags?: MetaTagsInfo;
+  };
+  metaTags?: MetaTagsInfo;
   className?: string;
 }
 
-const MetaTagsSection = ({ data, className }: MetaTagsSectionProps) => {
+const MetaTagsSection = ({ data, metaTags, className }: MetaTagsSectionProps) => {
+  // Support both direct props and data object for backward compatibility
+  const metaTagsData = metaTags || data?.metaTags || {};
+  
   // Safely extract meta tag information with defaults
-  const title = safeGet(data, 'metaTags.title', '');
-  const description = safeGet(data, 'metaTags.description', '');
-  const titleLength = safeGet(data, 'metaTags.titleLength', 0);
-  const descriptionLength = safeGet(data, 'metaTags.descriptionLength', 0);
+  const title = metaTagsData.title || '';
+  const description = metaTagsData.description || '';
+  const titleLength = metaTagsData.titleLength || 0;
+  const descriptionLength = metaTagsData.descriptionLength || 0;
   
   // Calculate scores
   const hasTitle = title.length > 0;

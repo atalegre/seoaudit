@@ -5,23 +5,27 @@ import { Progress } from '@/components/ui/progress';
 import { safeGet } from '@/utils/dataChecks';
 
 interface HeadingsData {
-  headingsStructure?: {
-    hasH1?: boolean;
-    multipleH1?: boolean;
-    headingsOrder?: boolean;
-  };
+  hasH1?: boolean;
+  multipleH1?: boolean;
+  headingsOrder?: boolean;
 }
 
 interface HeadingsStructureSectionProps {
-  data?: HeadingsData;
+  data?: {
+    headingsStructure?: HeadingsData;
+  };
+  headingsStructure?: HeadingsData;
   className?: string;
 }
 
-const HeadingsStructureSection = ({ data, className }: HeadingsStructureSectionProps) => {
+const HeadingsStructureSection = ({ data, headingsStructure, className }: HeadingsStructureSectionProps) => {
+  // Support both direct props and data object for backward compatibility
+  const headingsData = headingsStructure || data?.headingsStructure || {};
+  
   // Default values if data is undefined
-  const hasH1 = safeGet(data, 'headingsStructure.hasH1', false);
-  const multipleH1 = safeGet(data, 'headingsStructure.multipleH1', false);
-  const headingsOrder = safeGet(data, 'headingsStructure.headingsOrder', false);
+  const hasH1 = headingsData.hasH1 ?? false;
+  const multipleH1 = headingsData.multipleH1 ?? false;
+  const headingsOrder = headingsData.headingsOrder ?? false;
   
   // Calculate overall score
   let score = 0;

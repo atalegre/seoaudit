@@ -5,27 +5,29 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { safeGet } from '@/utils/dataChecks';
 
-interface MobileFriendlyResult {
-  mobileFriendly: boolean;
+interface SecurityData {
+  https?: boolean;
+  mixedContent?: boolean;
 }
 
-interface SecurityCheckResult {
+interface MobileSecuritySectionProps {
+  data?: {
+    mobileFriendly?: boolean;
+    security?: SecurityData;
+  };
+  mobileFriendly?: boolean;
   security?: {
     https?: boolean;
     mixedContent?: boolean;
   };
-}
-
-interface MobileSecuritySectionProps {
-  data?: MobileFriendlyResult & SecurityCheckResult;
   className?: string;
 }
 
-const MobileSecuritySection = ({ data, className }: MobileSecuritySectionProps) => {
-  // Default values if data is undefined
-  const isMobileFriendly = data?.mobileFriendly ?? false;
-  const isHttps = safeGet(data, 'security.https', false);
-  const hasMixedContent = safeGet(data, 'security.mixedContent', false);
+const MobileSecuritySection = ({ data, mobileFriendly, security, className }: MobileSecuritySectionProps) => {
+  // Support both direct props and data object for backward compatibility
+  const isMobileFriendly = mobileFriendly ?? data?.mobileFriendly ?? false;
+  const isHttps = security?.https ?? data?.security?.https ?? false;
+  const hasMixedContent = security?.mixedContent ?? data?.security?.mixedContent ?? false;
   
   return (
     <div className={className}>

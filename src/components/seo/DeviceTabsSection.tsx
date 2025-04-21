@@ -10,6 +10,7 @@ import CoreWebVitalsPanel from './CoreWebVitalsPanel';
 import AnalysisErrorView from '@/components/results/AnalysisErrorView';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { safeGet } from '@/utils/dataChecks';
 
 interface DeviceTabsSectionProps {
   activeTab: string;
@@ -130,11 +131,11 @@ const DeviceTabsSection: React.FC<DeviceTabsSectionProps> = ({
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                   <CoreWebVitalsPanel 
-                    lcp={desktopData.lcp} 
-                    cls={desktopData.cls} 
-                    fid={desktopData.fid} 
+                    lcp={safeGet(desktopData, 'lcp', 0)} 
+                    cls={safeGet(desktopData, 'cls', 0)} 
+                    fid={safeGet(desktopData, 'fid', 0)} 
                   />
-                  <OpportunitiesPanel opportunities={desktopData.recommendations} />
+                  <OpportunitiesPanel opportunities={safeGet(desktopData, 'recommendations', [])} />
                 </div>
                 
                 <TechnicalAuditsPanel data={desktopData} />
@@ -157,11 +158,11 @@ const DeviceTabsSection: React.FC<DeviceTabsSectionProps> = ({
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                   <CoreWebVitalsPanel 
-                    lcp={mobileData.lcp} 
-                    cls={mobileData.cls} 
-                    fid={mobileData.fid} 
+                    lcp={safeGet(mobileData, 'lcp', 0)} 
+                    cls={safeGet(mobileData, 'cls', 0)} 
+                    fid={safeGet(mobileData, 'fid', 0)} 
                   />
-                  <OpportunitiesPanel opportunities={mobileData.recommendations} />
+                  <OpportunitiesPanel opportunities={safeGet(mobileData, 'recommendations', [])} />
                 </div>
                 
                 <TechnicalAuditsPanel data={mobileData} />

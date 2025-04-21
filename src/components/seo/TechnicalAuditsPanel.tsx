@@ -7,30 +7,27 @@ import HeadingsStructureSection from './audit-sections/HeadingsStructureSection'
 import MetaTagsSection from './audit-sections/MetaTagsSection';
 
 interface TechnicalAuditsPanelProps {
-  mobileFriendly: boolean;
-  security: {
-    https: boolean;
-    mixedContent: boolean;
-  };
-  headingsStructure: {
-    hasH1: boolean;
-    multipleH1: boolean;
-    headingsOrder: boolean;
-  };
-  metaTags: {
-    title: string;
-    description: string;
-    titleLength: number;
-    descriptionLength: number;
+  data?: {
+    mobileFriendly?: boolean;
+    security?: {
+      https?: boolean;
+      mixedContent?: boolean;
+    };
+    headingsStructure?: {
+      hasH1?: boolean;
+      multipleH1?: boolean;
+      headingsOrder?: boolean;
+    };
+    metaTags?: {
+      title?: string;
+      description?: string;
+      titleLength?: number;
+      descriptionLength?: number;
+    };
   };
 }
 
-const TechnicalAuditsPanel: React.FC<TechnicalAuditsPanelProps> = ({
-  mobileFriendly,
-  security,
-  headingsStructure,
-  metaTags
-}) => {
+const TechnicalAuditsPanel: React.FC<TechnicalAuditsPanelProps> = ({ data = {} }) => {
   return (
     <Card>
       <CardHeader>
@@ -45,19 +42,12 @@ const TechnicalAuditsPanel: React.FC<TechnicalAuditsPanelProps> = ({
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-5">
-            <MobileSecuritySection 
-              mobileFriendly={mobileFriendly} 
-              security={security} 
-            />
+            <MobileSecuritySection data={data} />
             
-            <HeadingsStructureSection 
-              headingsStructure={headingsStructure} 
-            />
+            <HeadingsStructureSection data={data} />
           </div>
           
-          <MetaTagsSection 
-            metaTags={metaTags} 
-          />
+          <MetaTagsSection data={data} />
         </div>
       </CardContent>
     </Card>
