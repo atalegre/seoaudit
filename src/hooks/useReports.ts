@@ -9,6 +9,7 @@ export interface Report {
   created_at: string;
   status: string;
   content: Uint8Array | null;
+  user_id?: string;
 }
 
 export function useReports() {
@@ -23,7 +24,14 @@ export function useReports() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setReports(data || []);
+      
+      // Convert string content to Uint8Array or null
+      const typedReports = data?.map(report => ({
+        ...report,
+        content: report.content ? new Uint8Array(Buffer.from(report.content)) : null
+      })) || [];
+      
+      setReports(typedReports);
     } catch (error: any) {
       console.error('Error fetching reports:', error);
       toast.error('Failed to load reports');
@@ -34,9 +42,22 @@ export function useReports() {
 
   const generateReport = async (url: string) => {
     try {
+      // Get the current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error('You must be logged in to generate reports');
+        throw new Error('User not authenticated');
+      }
+
+      // Insert with user_id from the authenticated user
       const { data, error } = await supabase
         .from('reports')
-        .insert([{ url, status: 'pending' }])
+        .insert({
+          url, 
+          status: 'pending',
+          user_id: user.id
+        })
         .select()
         .single();
 

@@ -6,19 +6,48 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@
 import { Download, Loader2 } from 'lucide-react';
 import SuiteLayout from '@/components/suite/SuiteLayout';
 import { useReports } from '@/hooks/useReports';
+import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const ReportsPage = () => {
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [urlInput, setUrlInput] = React.useState('https://example.com');
   const { reports, isLoading, generateReport } = useReports();
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkAuth = async () => {
+      const { data } = await supabase.auth.getSession();
+      setIsAuthenticated(!!data.session);
+    };
+    
+    checkAuth();
+  }, []);
 
   const handleGenerateReport = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!isAuthenticated) {
+      toast.error('You must be logged in to generate reports');
+      return;
+    }
+    
     try {
       setIsGenerating(true);
       await generateReport(urlInput);
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    if (status === 'completed') {
+      return <Badge variant="success" className="capitalize">{status}</Badge>;
+    } else if (status === 'pending') {
+      return <Badge variant="warning" className="capitalize">{status}</Badge>;
+    } else {
+      return <Badge variant="destructive" className="capitalize">{status}</Badge>;
     }
   };
 
@@ -45,12 +74,24 @@ const ReportsPage = () => {
               onChange={(e) => setUrlInput(e.target.value)}
               placeholder="Digite a URL do site"
               className="flex-1"
-              disabled={isGenerating}
+              disabled={isGenerating || !isAuthenticated}
             />
-            <Button type="submit" disabled={isGenerating}>
-              Gerar Relatório
+            <Button type="submit" disabled={isGenerating || !isAuthenticated}>
+              {isGenerating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Gerando...
+                </>
+              ) : (
+                'Gerar Relatório'
+              )}
             </Button>
           </form>
+          {!isAuthenticated && (
+            <p className="mt-2 text-sm text-amber-600 dark:text-amber-400">
+              Você precisa estar logado para gerar relatórios.
+            </p>
+          )}
         </div>
 
         {/* Reports table */}
@@ -74,7 +115,9 @@ const ReportsPage = () => {
               ) : reports.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                    No reports generated yet
+                    {isAuthenticated 
+                      ? "Nenhum relatório gerado ainda" 
+                      : "Faça login para ver seus relatórios"}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -91,13 +134,7 @@ const ReportsPage = () => {
                       })}
                     </TableCell>
                     <TableCell>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        report.status === 'completed' ? 'bg-green-100 text-green-800' :
-                        report.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
-                        {report.status}
-                      </span>
+                      {getStatusBadge(report.status)}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button
