@@ -31,7 +31,8 @@ export function useSeoAnalysisHistory() {
       
       // If user is logged in, get their requests
       if (user) {
-        query = query.eq('user_id', user.id);
+        // Use as string to fix type issue
+        query = query.eq('user_id', user.id as string);
       }
       
       const { data, error } = await query;
@@ -40,7 +41,15 @@ export function useSeoAnalysisHistory() {
         throw error;
       }
       
-      setHistory(data || []);
+      // Convert data to match SeoAnalysisRequest type
+      const typedData: SeoAnalysisRequest[] = (data || []).map(item => ({
+        id: item.id,
+        url: item.url,
+        created_at: item.created_at,
+        user_id: item.user_id
+      }));
+      
+      setHistory(typedData);
     } catch (err: any) {
       console.error('Error fetching SEO analysis history:', err);
       setError(err.message || 'Failed to load analysis history');

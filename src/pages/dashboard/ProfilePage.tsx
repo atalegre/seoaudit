@@ -34,8 +34,10 @@ const ProfilePage = () => {
           if (error) throw error;
           
           if (data) {
-            setName(data.name || user.user_metadata?.full_name || '');
-            setRole(data.role || 'user');
+            // Type checking and safe access
+            const userData = data as any;
+            setName(userData?.name || user.user_metadata?.full_name || '');
+            setRole(userData?.role || 'user');
           } else {
             // Fallback to user_metadata
             setName(user.user_metadata?.full_name || '');
@@ -73,12 +75,13 @@ const ProfilePage = () => {
       if (metadataError) throw metadataError;
       
       // Also update the profile in the users table
+      // Use explicit property names to avoid type errors
       const { error: profileError } = await supabase
         .from('users')
         .update({
           name: name,
           role: role
-        })
+        } as any)
         .eq('id', user.id);
         
       if (profileError) throw profileError;

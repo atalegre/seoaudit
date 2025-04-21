@@ -11,7 +11,6 @@ export async function getClientsFromDatabase(): Promise<Client[]> {
     console.log('Fetching clients from database...');
     
     // Use type assertion to allow accessing the clients table
-    // @ts-ignore - This is necessary because the auto-generated types don't include the clients table yet
     const { data, error } = await supabase
       .from('clients')
       .select('*');
@@ -89,11 +88,10 @@ export async function saveClientsToDatabase(clients: Client[]): Promise<{success
       lastreport: client.lastReport || '' 
     }));
     
-    // Insere os novos clientes
-    // @ts-ignore - This is necessary because the auto-generated types don't include the clients table yet
+    // Use type assertion to avoid type-checking issues with the clients table
     const { data, error } = await supabase
       .from('clients')
-      .upsert(clientsToSave);
+      .upsert(clientsToSave as any);
     
     if (error) {
       // If the table doesn't exist, handle that case separately
@@ -153,11 +151,11 @@ export async function updateClientInDatabase(client: Client): Promise<void> {
       lastreport: client.lastReport
     };
     
-    // @ts-ignore - This is necessary because the auto-generated types don't include the clients table yet
+    // Use type assertion to avoid type issues
     const { error } = await supabase
       .from('clients')
-      .update(clientToUpdate)
-      .eq('id', client.id);
+      .update(clientToUpdate as any)
+      .eq('id', client.id as any);
     
     if (error) {
       throw error;
@@ -183,11 +181,11 @@ export async function getClientFromDatabase(clientId: number): Promise<Client | 
   try {
     console.log('Fetching client with ID:', clientId);
     
-    // @ts-ignore - This is necessary because the auto-generated types don't include the clients table yet
+    // Use type assertion for the id parameter
     const { data, error } = await supabase
       .from('clients')
       .select('*')
-      .eq('id', clientId)
+      .eq('id', clientId as any)
       .maybeSingle();
     
     if (error) {
