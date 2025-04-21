@@ -61,18 +61,19 @@ async function handleCreateTask(req: Request) {
     );
   }
 
-  const { url, userId = null, frequency = 'once' } = body;
+  const { url, platform, userId = null } = body;
 
-  if (!url) {
+  // Validate required fields
+  if (!url || !platform || (platform !== 'mobile' && platform !== 'desktop')) {
     return new Response(
-      JSON.stringify({ error: 'URL is required' }),
+      JSON.stringify({ error: 'URL and platform ("mobile" or "desktop") are required' }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 
   try {
-    // Insert the task into the "tasks" table: required fields only, plus frequency inside requested_values
-    const requested_values = { url, frequency };
+    // Insert the task into the "tasks" table: required fields only
+    const requested_values = { url, platform, frequency: 'once' };
     const insertObj: any = {
       user_id: userId, // can be null
       requested_values: requested_values,
