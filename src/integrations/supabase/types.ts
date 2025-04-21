@@ -215,8 +215,8 @@ export type Database = {
       }
       reports: {
         Row: {
-          content: string | null
           created_at: string
+          file_url: string | null
           id: string
           status: string
           updated_at: string
@@ -224,8 +224,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          content?: string | null
           created_at?: string
+          file_url?: string | null
           id?: string
           status?: string
           updated_at?: string
@@ -233,8 +233,8 @@ export type Database = {
           user_id: string
         }
         Update: {
-          content?: string | null
           created_at?: string
+          file_url?: string | null
           id?: string
           status?: string
           updated_at?: string

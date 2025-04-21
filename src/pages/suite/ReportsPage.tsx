@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -67,91 +66,28 @@ const ReportsPage = () => {
     }
   };
 
-  const handleDownload = (report: any) => {
-    if (!report.content || report.status.toLowerCase() !== 'success') {
+  const handleDownload = async (report: any) => {
+    if (!report.file_url || report.status.toLowerCase() !== 'success') {
       return;
     }
 
     try {
-      // Check if content starts with \x format (hex)
-      const content = report.content;
-      let hexString = content;
+      const { data, error } = await supabase.storage
+        .from('report_files')
+        .download(report.file_url);
       
-      // If the content starts with \x, it's a hex string from PostgreSQL bytea
-      if (content.startsWith('\\x')) {
-        hexString = content.substring(2); // Remove the \x prefix
-        
-        // Convert hex to binary
-        const byteArray = new Uint8Array(hexString.length / 2);
-        for (let i = 0; i < hexString.length; i += 2) {
-          const byte = parseInt(hexString.substring(i, i + 2), 16);
-          byteArray[i / 2] = byte;
-        }
-        
-        // Create blob from binary data
-        const blob = new Blob([byteArray], { type: 'application/pdf' });
-        const url = URL.createObjectURL(blob);
-        
-        // Create and trigger download
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `report-${report.url.replace(/https?:\/\//, '').replace(/[\/:.]/g, '-')}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        
-        // Cleanup
-        URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-        
-        return;
-      }
+      if (error) throw error;
       
-      // Fallback for base64 content (if the format changes in the future)
-      try {
-        // Attempt to handle as base64
-        let base64Content = content;
-        
-        // If the content contains non-base64 characters, try to extract the base64 part
-        if (base64Content.includes(',')) {
-          base64Content = base64Content.split(',')[1];
-        }
-        
-        // Remove any whitespace or line breaks that might cause issues
-        base64Content = base64Content.trim();
-        
-        // Create a Blob from the base64 data
-        const byteCharacters = atob(base64Content);
-        const byteArrays = [];
-        
-        for (let offset = 0; offset < byteCharacters.length; offset += 512) {
-          const slice = byteCharacters.slice(offset, offset + 512);
-          
-          const byteNumbers = new Array(slice.length);
-          for (let i = 0; i < slice.length; i++) {
-            byteNumbers[i] = slice.charCodeAt(i);
-          }
-          
-          const byteArray = new Uint8Array(byteNumbers);
-          byteArrays.push(byteArray);
-        }
-        
-        const blob = new Blob(byteArrays, { type: 'application/pdf' });
-        const url = URL.createObjectURL(blob);
-        
-        // Create and trigger download
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `report-${report.url.replace(/https?:\/\//, '').replace(/[\/:.]/g, '-')}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        
-        // Cleanup
-        URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      } catch (error) {
-        console.error('Error with base64 decoding:', error);
-        throw error;
-      }
+      const url = URL.createObjectURL(data);
+      
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `report-${report.url.replace(/https?:\/\//, '').replace(/[\/:.]/g, '-')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      
+      URL.revokeObjectURL(url);
+      document.body.removeChild(a);
     } catch (error) {
       console.error('Error downloading report:', error);
       toast.error('Failed to download report');
@@ -161,7 +97,6 @@ const ReportsPage = () => {
   return (
     <SuiteLayout title="Relatórios de Análise">
       <div className="space-y-8">
-        {/* Introduction section */}
         <div className="prose dark:prose-invert">
           <h1 className="text-3xl font-bold tracking-tight">Relatórios de Análise</h1>
           <p className="text-muted-foreground">
@@ -171,7 +106,6 @@ const ReportsPage = () => {
           </p>
         </div>
 
-        {/* Generate report section */}
         <div className="p-6 border rounded-lg bg-card">
           <h2 className="text-lg font-semibold mb-4">Gerar Novo Relatório</h2>
           <form onSubmit={handleGenerateReport} className="flex gap-4">
@@ -201,13 +135,12 @@ const ReportsPage = () => {
           )}
         </div>
 
-        {/* Reports table */}
         <div className="border rounded-lg">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>URL Analisada</TableHead>
-                <TableHead>Data da Análise</TableHead>
+                <TableHead>Data da An��lise</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Download</TableHead>
               </TableRow>
@@ -248,7 +181,7 @@ const ReportsPage = () => {
                         variant="ghost"
                         size="sm"
                         className="h-8 w-8 p-0"
-                        disabled={!report.content || report.status.toLowerCase() !== 'success'}
+                        disabled={!report.file_url || report.status.toLowerCase() !== 'success'}
                         onClick={() => handleDownload(report)}
                       >
                         <Download className="h-4 w-4" />

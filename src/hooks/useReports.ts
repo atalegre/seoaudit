@@ -8,7 +8,7 @@ export interface Report {
   url: string;
   created_at: string;
   status: string;
-  content: string | null;
+  file_url: string | null;
   user_id?: string;
 }
 
@@ -25,7 +25,6 @@ export function useReports() {
 
       if (error) throw error;
       
-      // Just use the data as-is without trying to convert it
       setReports(data || []);
     } catch (error: any) {
       console.error('Error fetching reports:', error);
