@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -48,9 +49,19 @@ serve(async (req) => {
   }
 });
 
-// Function to create a new SEO analysis task (uses new tasks table)
+// Function to create a new SEO analysis task using the "tasks" table
 async function handleCreateTask(req: Request) {
-  const { url, userId, frequency = 'once' } = await req.json();
+  let body: any;
+  try {
+    body = await req.json();
+  } catch (err) {
+    return new Response(
+      JSON.stringify({ error: 'Invalid JSON body' }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  const { url, userId = null, frequency = 'once' } = body;
 
   if (!url) {
     return new Response(
@@ -60,19 +71,27 @@ async function handleCreateTask(req: Request) {
   }
 
   try {
-    // Insert the task into the new tasks table (frequency included in requested_values)
+    // Insert the task into the "tasks" table: required fields only, plus frequency inside requested_values
     const requested_values = { url, frequency };
+    const insertObj: any = {
+      user_id: userId, // can be null
+      requested_values: requested_values,
+      status: 'pending',
+      // response_values: null (let DB default be null)
+      // created_at, updated_at handled by DB defaults
+    };
+
+    // Insert and get back the inserted row
     const { data, error } = await supabase
       .from('tasks')
-      .insert({
-        user_id: userId || null,
-        requested_values,
-        status: 'pending'
-      })
-      .select()
-      .single();
+      .insert([insertObj])
+      .select('id,status,requested_values,user_id,created_at,updated_at')
+      .maybeSingle();
 
     if (error) throw error;
+    if (!data) {
+      throw new Error('Could not create the task (insert returned no data)');
+    }
 
     return new Response(
       JSON.stringify({
@@ -92,7 +111,7 @@ async function handleCreateTask(req: Request) {
   }
 }
 
-// Function to check the status of a SEO analysis task
+// Function to check the status of a SEO analysis task ("tasks" table)
 async function handleCheckStatus(req: Request, url: URL) {
   const taskId = url.searchParams.get('taskId');
 
@@ -104,7 +123,7 @@ async function handleCheckStatus(req: Request, url: URL) {
   }
 
   try {
-    // Get task details first
+    // Get task details from "tasks" table
     const { data: taskData, error: taskError } = await supabase
       .from('tasks')
       .select('*')
@@ -135,15 +154,16 @@ async function handleCheckStatus(req: Request, url: URL) {
       }
     } else {
       // If user is authenticated, verify their identity
-      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-      
+      const { data: authResult, error: authError } = await supabase.auth.getUser(token);
+
       if (authError) {
+        console.error('Error authenticating user:', authError);
         return new Response(
           JSON.stringify({ error: 'Authentication failed' }),
           { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-
+      const user = authResult?.user;
       // Authenticated user can only access their own tasks
       if (taskData.user_id && taskData.user_id !== user?.id) {
         return new Response(
@@ -153,35 +173,24 @@ async function handleCheckStatus(req: Request, url: URL) {
       }
     }
 
-    // If access is granted, return task details
-    if (taskData.status === 'success') {
-      let results = null;
-      try {
-        results = taskData.response_values ?? null;
-      } catch (e) {
-        results = null;
-      }
+    // If access is granted, return task details according to DB schema
+    let responseObj: any = {
+      status: taskData.status,
+      taskId: taskData.id,
+      url: taskData.requested_values?.url ?? undefined,
+      lastRun: taskData.updated_at,
+    };
 
-      return new Response(
-        JSON.stringify({
-          status: taskData.status,
-          taskId: taskData.id,
-          url: taskData.requested_values?.url ?? undefined,
-          lastRun: taskData.updated_at,
-          results: results
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    if (taskData.status === 'success') {
+      responseObj.results = taskData.response_values ?? null;
+    } else if (taskData.status === 'failed') {
+      responseObj.message = taskData.response_values?.error || "Task failed.";
+    } else {
+      responseObj.message = taskData.status === 'pending' ? 'Task is queued' : 'Task is being processed';
     }
 
-    // For pending or in-progress tasks
     return new Response(
-      JSON.stringify({
-        status: taskData.status || 'pending',
-        taskId: taskData.id,
-        url: taskData.requested_values?.url ?? undefined,
-        message: taskData.status === 'pending' ? 'Task is queued' : 'Task is being processed'
-      }),
+      JSON.stringify(responseObj),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
