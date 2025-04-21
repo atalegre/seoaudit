@@ -73,10 +73,10 @@ export function useSeoAnalysisTask() {
       pollTaskUntilComplete(
         taskId,
         (statusUpdate) => {
-          // Handle explicit failure status from API
-          if (statusUpdate.status === 'failure') {
+          // Handle API status "failure" by mapping it to our "failed" status
+          if (statusUpdate.status === "failure") {
             toast.error("A análise falhou. Por favor, tente novamente mais tarde.", {
-              description: statusUpdate.message || "Task is being processed. Tente novamente em alguns minutos."
+              description: statusUpdate.message || "Tente novamente em alguns minutos."
             });
             setAnalysisState(prev => ({
               ...prev,
@@ -124,7 +124,9 @@ export function useSeoAnalysisTask() {
             url: normalizedUrl,
             error: null
           });
-        } else if (finalResult.status === 'failure') {
+        } 
+        // Handle API "failure" status in the final result
+        else if (finalResult.status === "failure") {
           setAnalysisState({
             taskId,
             status: 'failed',
@@ -173,8 +175,8 @@ export function useSeoAnalysisTask() {
   const checkTaskStatus = useCallback(async (taskId: string) => {
     try {
       const result = await checkSeoAnalysisTaskStatus(taskId);
-      // Explicitly check for 'failure' status and show user-friendly error
-      if (result.status === 'failure') {
+      // Handle API "failure" status by mapping it to our "failed" status
+      if (result.status === "failure") {
         setAnalysisState({
           taskId,
           status: 'failed',
@@ -183,7 +185,7 @@ export function useSeoAnalysisTask() {
           error: "A análise falhou. Por favor, tente novamente mais tarde."
         });
         toast.error("A análise falhou. Por favor, tente novamente mais tarde.", {
-          description: result.message || "Task is being processed. Tente novamente em alguns minutos."
+          description: result.message || "Tente novamente em alguns minutos."
         });
         return result;
       }
@@ -218,8 +220,8 @@ export function useSeoAnalysisTask() {
 
       const statusResult = await checkTaskStatus(taskId);
 
-      // If explicit failure, don't attempt to poll further
-      if (statusResult.status === 'success' || statusResult.status === 'failed' || statusResult.status === 'failure') {
+      // If task is already completed or failed, don't attempt to poll further
+      if (statusResult.status === 'success' || statusResult.status === 'failed' || statusResult.status === "failure") {
         return;
       }
 
@@ -227,8 +229,8 @@ export function useSeoAnalysisTask() {
       pollTaskUntilComplete(
         taskId,
         (statusUpdate) => {
-          // Handle failure here as well
-          if (statusUpdate.status === 'failure') {
+          // Handle API "failure" status in poll updates
+          if (statusUpdate.status === "failure") {
             setAnalysisState(prev => ({
               ...prev,
               status: 'failed',
@@ -236,7 +238,7 @@ export function useSeoAnalysisTask() {
               error: "A análise falhou. Por favor, tente novamente mais tarde."
             }));
             toast.error("A análise falhou. Por favor, tente novamente mais tarde.", {
-              description: statusUpdate.message || "Task is being processed. Tente novamente em alguns minutos."
+              description: statusUpdate.message || "Tente novamente em alguns minutos."
             });
             setIsPolling(false);
             return;
@@ -258,7 +260,9 @@ export function useSeoAnalysisTask() {
             url: finalResult.url,
             error: null
           });
-        } else if (finalResult.status === 'failure') {
+        } 
+        // Handle API "failure" status in final result
+        else if (finalResult.status === "failure") {
           setAnalysisState({
             taskId,
             status: 'failed',
