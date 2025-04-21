@@ -47,13 +47,9 @@ export async function createSeoAnalysisTask(params: CreateTaskParams) : Promise<
  */
 export async function checkSeoAnalysisTaskStatus(taskId: string): Promise<TaskStatusResponse> {
   try {
-    // For public tasks that don't require authentication, we need to use a URL parameter
-    // approach that's compatible with the FunctionInvokeOptions type
-    const { data, error } = await supabase.functions.invoke(`seo-task-manager/status`, {
+    // Pass the taskId as a query param in the URL (not in body)
+    const { data, error } = await supabase.functions.invoke(`seo-task-manager/status?taskId=${encodeURIComponent(taskId)}`, {
       method: 'GET',
-      // The correct way to pass parameters to Edge Functions
-      body: { taskId }, // Pass taskId in the body instead of using 'query'
-      // Don't automatically set auth headers for this request
       headers: { 
         'Content-Type': 'application/json'
       }
@@ -132,3 +128,4 @@ export async function pollTaskUntilComplete(
     checkStatus();
   });
 }
+
