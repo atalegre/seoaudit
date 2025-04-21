@@ -213,39 +213,6 @@ export type Database = {
         }
         Relationships: []
       }
-      scheduled_tasks: {
-        Row: {
-          created_at: string | null
-          frequency: string
-          id: string
-          is_active: boolean | null
-          last_run: string | null
-          next_run: string
-          url: string
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          frequency: string
-          id?: string
-          is_active?: boolean | null
-          last_run?: string | null
-          next_run: string
-          url: string
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          frequency?: string
-          id?: string
-          is_active?: boolean | null
-          last_run?: string | null
-          next_run?: string
-          url?: string
-          user_id?: string | null
-        }
-        Relationships: []
-      }
       seo_analysis_requests: {
         Row: {
           created_at: string
@@ -263,6 +230,36 @@ export type Database = {
           created_at?: string
           id?: string
           url?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          created_at: string
+          id: string
+          requested_values: Json
+          response_values: Json | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          requested_values: Json
+          response_values?: Json | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          requested_values?: Json
+          response_values?: Json | null
+          status?: string
+          updated_at?: string
           user_id?: string | null
         }
         Relationships: []

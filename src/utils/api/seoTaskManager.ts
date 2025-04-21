@@ -22,6 +22,7 @@ interface TaskStatusResponse {
  */
 export async function createSeoAnalysisTask(params: CreateTaskParams): Promise<{ taskId: string }> {
   try {
+    // 'frequency' is stored in requested_values, not as a top-level param anymore
     const { data, error } = await supabase.functions.invoke('seo-task-manager/create', {
       method: 'POST',
       body: {
@@ -88,27 +89,27 @@ export async function pollTaskUntilComplete(
 ): Promise<TaskStatusResponse> {
   return new Promise((resolve, reject) => {
     let attempts = 0;
-    
+
     const checkStatus = async () => {
       try {
         if (attempts >= maxAttempts) {
           reject(new Error('Task polling timed out'));
           return;
         }
-        
+
         attempts++;
         const response = await checkSeoAnalysisTaskStatus(taskId);
-        
+
         // Notify about status change
         if (onStatusChange) {
           onStatusChange(response);
         }
-        
+
         if (response.status === 'success' || response.status === 'failed') {
           resolve(response);
           return;
         }
-        
+
         // Continue polling
         setTimeout(checkStatus, interval);
       } catch (error) {
@@ -116,7 +117,7 @@ export async function pollTaskUntilComplete(
         reject(error);
       }
     };
-    
+
     // Start polling
     checkStatus();
   });
