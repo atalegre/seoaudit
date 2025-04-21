@@ -24,13 +24,11 @@ const ReportsPage = () => {
     checkAuth();
   }, []);
 
-  // Set up automatic refreshing every 5 seconds
   React.useEffect(() => {
     const interval = setInterval(() => {
       refreshReports();
     }, 5000);
     
-    // Clean up on unmount
     return () => clearInterval(interval);
   }, [refreshReports]);
 
