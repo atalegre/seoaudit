@@ -12,10 +12,8 @@ export async function createTask(req: Request) {
     );
   }
 
-  // Get user ID from authorization token if provided
-  let userId = body.userId || null;
-  
-  // Check for auth token in the request - will override userId from body if authenticated
+  // Only get user ID from auth token, ignore any user ID from request body
+  let userId = null;
   const authToken = getAuthToken(req);
   if (authToken) {
     try {
@@ -23,7 +21,6 @@ export async function createTask(req: Request) {
       if (error) {
         console.error("Error verifying token:", error.message);
       } else if (user) {
-        // If we have a verified user from the token, use that ID
         userId = user.id;
         console.log("User authenticated, setting user_id:", userId);
       }
@@ -37,7 +34,7 @@ export async function createTask(req: Request) {
 
   try {
     const insertObj: any = {
-      user_id: userId, // can be null or from auth token
+      user_id: userId,
       requested_values: requested_data,
       task_name: task_name,
       status: 'pending',

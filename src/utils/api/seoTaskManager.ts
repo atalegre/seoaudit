@@ -1,9 +1,7 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 interface CreateTaskParams {
   url: string;
-  userId?: string | null;
   platform?: string;
 }
 
@@ -26,14 +24,11 @@ export async function createSeoAnalysisTask(params: CreateTaskParams) : Promise<
     const requested_data: any = { url: params.url };
     if (params.platform) requested_data.platform = params.platform;
 
-    // The userId will be overridden by the server-side auth token validation
-    // but we still pass it from the client for backward compatibility
     const { data, error } = await supabase.functions.invoke('seo-task-manager/create', {
       method: 'POST',
       body: {
         task_name: 'seo_analysis',
-        requested_data,
-        userId: params.userId // This will be used as fallback if no auth token
+        requested_data
       }
     });
 
@@ -131,4 +126,3 @@ export async function pollTaskUntilComplete(
     checkStatus();
   });
 }
-

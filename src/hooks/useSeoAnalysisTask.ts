@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { createSeoAnalysisTask, checkSeoAnalysisTaskStatus, pollTaskUntilComplete } from '@/utils/api/seoTaskManager';
@@ -55,11 +54,9 @@ export function useSeoAnalysisTask() {
         description: "A análise pode demorar alguns minutos."
       });
 
-      // Always pass the user ID if available (will be verified server-side)
       const { taskId } = await createSeoAnalysisTask({
         url: normalizedUrl,
-        userId: user?.id || null,
-        platform: 'desktop' // Specify platform for the analysis
+        platform: 'desktop'
       });
 
       setAnalysisState(prev => ({
@@ -211,7 +208,6 @@ export function useSeoAnalysisTask() {
 
       const statusResult = await checkTaskStatus(taskId);
 
-      // If task is already completed or failed, don't attempt to poll further
       if (statusResult.status === 'success' || statusResult.status === 'failed') {
         return;
       }
