@@ -60,8 +60,8 @@ export function useSeoAnalysisTask() {
         frequency
       });
 
-      setAnalysisState(prevState => ({
-        ...prevState,
+      setAnalysisState(prev => ({
+        ...prev,
         taskId,
         status: 'pending'
       }));
@@ -72,14 +72,14 @@ export function useSeoAnalysisTask() {
         taskId,
         (statusUpdate) => {
           // Update state based on status
-          setAnalysisState(prevState => ({
-            ...prevState,
+          setAnalysisState(prev => ({
+            ...prev,
             status: statusUpdate.status as any,
             results: statusUpdate.results || null
           }));
 
           // Show toast notifications for status changes
-          if (statusUpdate.status === 'in_progress' && prevState.status !== 'in_progress') {
+          if (statusUpdate.status === 'in_progress' && prev.status !== 'in_progress') {
             toast.info("Análise em progresso", {
               description: "Estamos processando os dados do seu site."
             });
@@ -91,8 +91,8 @@ export function useSeoAnalysisTask() {
             toast.error("Falha na análise", {
               description: statusUpdate.message || "Ocorreu um erro ao analisar o site."
             });
-            setAnalysisState(prevState => ({
-              ...prevState,
+            setAnalysisState(prev => ({
+              ...prev,
               error: statusUpdate.message || "Ocorreu um erro ao analisar o site."
             }));
           }
