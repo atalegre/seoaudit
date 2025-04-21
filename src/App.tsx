@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -52,6 +51,8 @@ import ProfilePage from "./pages/dashboard/ProfilePage";
 import UserProfilePage from "./pages/suite/UserProfilePage";
 import UserSettingsPage from "./pages/suite/UserSettingsPage";
 import UserChangePasswordPage from "./pages/suite/UserChangePasswordPage";
+
+import ReportsPage from "./pages/suite/ReportsPage";
 
 const queryClient = new QueryClient();
 
@@ -131,7 +132,7 @@ function App() {
                 } />
                 <Route path="/suite/reports" element={
                   <ProtectedRoute>
-                    <SuiteDashboard />
+                    <ReportsPage />
                   </ProtectedRoute>
                 } />
                 
