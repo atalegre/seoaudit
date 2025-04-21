@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -61,32 +60,24 @@ async function handleCreateTask(req: Request) {
     );
   }
 
-  const { url, platform, userId = null } = body;
+  // Accepts: { "task_name": string, "requested_data": { any } }
+  const { task_name, requested_data, userId = null } = body;
 
-  // Validate required fields
-  if (!url || !platform || (platform !== 'mobile' && platform !== 'desktop')) {
-    return new Response(
-      JSON.stringify({ error: 'URL and platform ("mobile" or "desktop") are required' }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-  }
-
+  // Insert in DB: task_name and requested_values=requested_data (no validation)
   try {
-    // Insert the task into the "tasks" table: required fields only
-    const requested_values = { url, platform, frequency: 'once' };
     const insertObj: any = {
       user_id: userId, // can be null
-      requested_values: requested_values,
+      requested_values: requested_data,
+      task_name: task_name,
       status: 'pending',
-      // response_values: null (let DB default be null)
-      // created_at, updated_at handled by DB defaults
+      // response_values: let DB default
     };
 
     // Insert and get back the inserted row
     const { data, error } = await supabase
       .from('tasks')
       .insert([insertObj])
-      .select('id,status,requested_values,user_id,created_at,updated_at')
+      .select('id,status,requested_values,task_name,user_id,created_at,updated_at')
       .maybeSingle();
 
     if (error) throw error;

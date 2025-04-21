@@ -241,6 +241,7 @@ export type Database = {
           requested_values: Json
           response_values: Json | null
           status: string
+          task_name: string | null
           updated_at: string
           user_id: string | null
         }
@@ -250,6 +251,7 @@ export type Database = {
           requested_values: Json
           response_values?: Json | null
           status?: string
+          task_name?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -259,6 +261,7 @@ export type Database = {
           requested_values?: Json
           response_values?: Json | null
           status?: string
+          task_name?: string | null
           updated_at?: string
           user_id?: string | null
         }
