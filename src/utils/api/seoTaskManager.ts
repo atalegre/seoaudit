@@ -26,9 +26,12 @@ export async function createSeoAnalysisTask(params: CreateTaskParams): Promise<{
     const { data, error } = await supabase.functions.invoke('seo-task-manager/create', {
       method: 'POST',
       body: {
-        url: params.url,
-        userId: params.userId,
-        frequency: params.frequency || 'once'
+        task_name: 'seo_analysis',
+        requested_data: {
+          url: params.url,
+          userId: params.userId,
+          frequency: params.frequency || 'once'
+        }
       }
     });
 
