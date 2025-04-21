@@ -73,46 +73,85 @@ const ReportsPage = () => {
     }
 
     try {
-      // Check if content is already a valid base64 string
-      let base64Content = report.content;
+      // Check if content starts with \x format (hex)
+      const content = report.content;
+      let hexString = content;
       
-      // If the content contains non-base64 characters, try to extract the base64 part
-      if (base64Content.includes(',')) {
-        base64Content = base64Content.split(',')[1];
-      }
-      
-      // Remove any whitespace or line breaks that might cause issues
-      base64Content = base64Content.trim();
-      
-      // Create a Blob from the base64 data
-      const byteCharacters = atob(base64Content);
-      const byteArrays = [];
-      
-      for (let offset = 0; offset < byteCharacters.length; offset += 512) {
-        const slice = byteCharacters.slice(offset, offset + 512);
+      // If the content starts with \x, it's a hex string from PostgreSQL bytea
+      if (content.startsWith('\\x')) {
+        hexString = content.substring(2); // Remove the \x prefix
         
-        const byteNumbers = new Array(slice.length);
-        for (let i = 0; i < slice.length; i++) {
-          byteNumbers[i] = slice.charCodeAt(i);
+        // Convert hex to binary
+        const byteArray = new Uint8Array(hexString.length / 2);
+        for (let i = 0; i < hexString.length; i += 2) {
+          const byte = parseInt(hexString.substring(i, i + 2), 16);
+          byteArray[i / 2] = byte;
         }
         
-        const byteArray = new Uint8Array(byteNumbers);
-        byteArrays.push(byteArray);
+        // Create blob from binary data
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        
+        // Create and trigger download
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `report-${report.url.replace(/https?:\/\//, '').replace(/[\/:.]/g, '-')}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        
+        // Cleanup
+        URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        return;
       }
       
-      const blob = new Blob(byteArrays, { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-      
-      // Create and trigger download
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `report-${report.url.replace(/https?:\/\//, '').replace(/[\/:.]/g, '-')}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      
-      // Cleanup
-      URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      // Fallback for base64 content (if the format changes in the future)
+      try {
+        // Attempt to handle as base64
+        let base64Content = content;
+        
+        // If the content contains non-base64 characters, try to extract the base64 part
+        if (base64Content.includes(',')) {
+          base64Content = base64Content.split(',')[1];
+        }
+        
+        // Remove any whitespace or line breaks that might cause issues
+        base64Content = base64Content.trim();
+        
+        // Create a Blob from the base64 data
+        const byteCharacters = atob(base64Content);
+        const byteArrays = [];
+        
+        for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+          const slice = byteCharacters.slice(offset, offset + 512);
+          
+          const byteNumbers = new Array(slice.length);
+          for (let i = 0; i < slice.length; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+          }
+          
+          const byteArray = new Uint8Array(byteNumbers);
+          byteArrays.push(byteArray);
+        }
+        
+        const blob = new Blob(byteArrays, { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        
+        // Create and trigger download
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `report-${report.url.replace(/https?:\/\//, '').replace(/[\/:.]/g, '-')}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        
+        // Cleanup
+        URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } catch (error) {
+        console.error('Error with base64 decoding:', error);
+        throw error;
+      }
     } catch (error) {
       console.error('Error downloading report:', error);
       toast.error('Failed to download report');
