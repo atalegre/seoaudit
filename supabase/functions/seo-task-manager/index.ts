@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -105,44 +104,7 @@ async function handleCheckStatus(req: Request, url: URL) {
   }
 
   try {
-    // Get the auth token from request headers to check user identity (if available)
-    const authHeader = req.headers.get('Authorization');
-    const token = authHeader?.split(' ')[1];
-
-    // If token exists, validate user access to this task
-    if (token) {
-      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-      if (authError) {
-        return new Response(
-          JSON.stringify({ error: 'Authentication failed' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      // Check if task belongs to this user
-      const { data: taskData, error: taskError } = await supabase
-        .from('tasks')
-        .select('*')
-        .eq('id', taskId)
-        .maybeSingle();
-
-      if (taskError) throw taskError;
-
-      if (!taskData) {
-        return new Response(
-          JSON.stringify({ error: 'Task not found' }),
-          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      if (taskData.user_id && taskData.user_id !== user?.id) {
-        return new Response(
-          JSON.stringify({ error: 'Access denied' }),
-          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-    }
-
-    // Get the task status and latest response values if available
+    // Get task details first
     const { data: taskData, error: taskError } = await supabase
       .from('tasks')
       .select('*')
@@ -158,9 +120,41 @@ async function handleCheckStatus(req: Request, url: URL) {
       );
     }
 
-    // If task completed and response_values present, include details
+    // Get the auth token from request headers to check user identity
+    const authHeader = req.headers.get('Authorization');
+    const token = authHeader?.split(' ')[1];
+
+    // If user is not authenticated (guest)
+    if (!token) {
+      // Guest can only access tasks not associated with a user
+      if (taskData.user_id) {
+        return new Response(
+          JSON.stringify({ error: 'Access denied' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    } else {
+      // If user is authenticated, verify their identity
+      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+      
+      if (authError) {
+        return new Response(
+          JSON.stringify({ error: 'Authentication failed' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Authenticated user can only access their own tasks
+      if (taskData.user_id && taskData.user_id !== user?.id) {
+        return new Response(
+          JSON.stringify({ error: 'Access denied' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    // If access is granted, return task details
     if (taskData.status === 'success') {
-      // Parsing for demo: results in response_values.seo_data and aio_data
       let results = null;
       try {
         results = taskData.response_values ?? null;
@@ -190,6 +184,7 @@ async function handleCheckStatus(req: Request, url: URL) {
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
+
   } catch (error) {
     console.error('Error checking task status:', error);
     return new Response(
