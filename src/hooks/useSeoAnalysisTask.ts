@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { createSeoAnalysisTask, checkSeoAnalysisTaskStatus, pollTaskUntilComplete } from '@/utils/api/seoTaskManager';
@@ -57,7 +58,7 @@ export function useSeoAnalysisTask() {
       const { taskId } = await createSeoAnalysisTask({
         url: normalizedUrl,
         userId: user?.id || null,
-        frequency
+        platform: 'desktop' // Specify platform for the analysis
       });
 
       setAnalysisState(prev => ({

@@ -65,7 +65,7 @@ export function useSeoAnalysis() {
       // -- Desktop analysis task - create only one task
       const { taskId: desktopTaskId } = await createSeoAnalysisTask({
         url: normalizedUrl,
-        frequency: 'once'
+        platform: 'desktop'
       });
       lastDesktopTaskIdRef.current = desktopTaskId;
       toast.info("Tarefa Desktop agendada", { description: "Aguardando resultados desktop..." });
@@ -73,7 +73,7 @@ export function useSeoAnalysis() {
       // -- Mobile analysis task - create only one task
       const { taskId: mobileTaskId } = await createSeoAnalysisTask({
         url: normalizedUrl,
-        frequency: 'once'
+        platform: 'mobile'
       });
       lastMobileTaskIdRef.current = mobileTaskId;
       toast.info("Tarefa Mobile agendada", { description: "Aguardando resultados mobile..." });
