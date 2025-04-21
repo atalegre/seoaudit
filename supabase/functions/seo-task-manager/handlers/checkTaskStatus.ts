@@ -1,7 +1,20 @@
+
 import { supabase, corsHeaders, getAuthToken } from "../utils.ts";
 
 export async function checkTaskStatus(req: Request, url: URL) {
-  const taskId = url.searchParams.get('taskId');
+  // We're now expecting taskId to be either in URL params or in the body
+  let taskId = url.searchParams.get('taskId');
+  
+  // If not in URL params, try to get from body for POST requests
+  if (!taskId && req.method === 'POST') {
+    try {
+      const body = await req.json();
+      taskId = body.taskId;
+    } catch (e) {
+      // If JSON parsing fails, handle gracefully
+      console.error("Failed to parse request body:", e);
+    }
+  }
 
   if (!taskId) {
     return new Response(
