@@ -1,185 +1,125 @@
 
-import React, { useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Monitor, Smartphone, AlertTriangle } from 'lucide-react';
-import DevicePerformancePanel from './DevicePerformancePanel';
-import OpportunitiesPanel from './OpportunitiesPanel';
-import TechnicalAuditsPanel from './TechnicalAuditsPanel';
+import React from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Smartphone, Monitor, Loader2 } from 'lucide-react';
 import CoreWebVitalsPanel from './CoreWebVitalsPanel';
-import AnalysisErrorView from '@/components/results/AnalysisErrorView';
-import { toast } from 'sonner';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { safeGet } from '@/utils/dataChecks';
+import TechnicalAuditsPanel from './TechnicalAuditsPanel';
+import OpportunitiesPanel from './OpportunitiesPanel';
 
 interface DeviceTabsSectionProps {
   activeTab: string;
-  setActiveTab: (value: string) => void;
+  setActiveTab: (tab: string) => void;
   desktopData: any;
   mobileData: any;
   isAnalyzing: boolean;
   error: string | null;
 }
 
-const DeviceTabsSection: React.FC<DeviceTabsSectionProps> = ({
+const DeviceTabsSection = ({
   activeTab,
   setActiveTab,
   desktopData,
   mobileData,
   isAnalyzing,
   error
-}) => {
-  const isMobile = useIsMobile();
+}: DeviceTabsSectionProps) => {
+  // Log data for debugging
+  console.log('DeviceTabsSection - desktopData:', desktopData);
+  console.log('DeviceTabsSection - mobileData:', mobileData);
   
-  // Automatically switch to mobile tab if desktop isn't available
-  useEffect(() => {
-    if (!desktopData && mobileData && activeTab === 'desktop') {
-      setActiveTab('mobile');
-      toast.info("Mostrando dados mobile", {
-        description: "A análise desktop falhou, mostrando resultados mobile."
-      });
-    }
-  }, [desktopData, mobileData, activeTab, setActiveTab]);
-
-  const handleRetry = () => {
-    // Limpar cache do sessionStorage
-    Object.keys(sessionStorage).forEach(key => {
-      if (key.startsWith('psi_')) {
-        sessionStorage.removeItem(key);
-      }
-    });
-    
-    toast.info("Limpando cache e reiniciando análise", {
-      description: "Tentando obter dados atualizados da API"
-    });
-    
-    // Recarregar a página para forçar uma nova análise
-    window.location.reload();
-  };
-
-  // Check if we have any valid data
-  const hasDesktopData = desktopData && !isAnalyzing;
-  const hasMobileData = mobileData && !isAnalyzing;
-  const hasAnyData = hasDesktopData || hasMobileData;
-  
-  if (error && !hasAnyData) {
-    // Se temos um erro e nenhum dado válido, mostrar a tela de erro
-    return (
-      <AnalysisErrorView 
-        seoError={error}
-        aioError={null}
-        onReanalyze={handleRetry}
-      />
-    );
-  }
+  // Get current data based on active tab
+  const currentData = activeTab === 'desktop' ? desktopData : mobileData;
   
   return (
-    <Card>
-      <CardContent className="p-0">
-        <Tabs 
-          value={activeTab} 
-          onValueChange={setActiveTab}
-          className="w-full"
-        >
-          <div className="border-b px-2 md:px-4">
-            <TabsList className="bg-transparent h-12 md:h-14 w-full">
-              <TabsTrigger 
-                value="desktop" 
-                className="data-[state=active]:bg-muted flex items-center gap-1 md:gap-2 px-2 md:px-4 text-xs md:text-sm"
-                disabled={isAnalyzing || !hasDesktopData}
-              >
-                <Monitor className="h-3 w-3 md:h-4 md:w-4" />
-                <span>Desktop</span>
-                {!hasDesktopData && hasMobileData && (
-                  <span className="ml-1 text-xs text-red-500">(Falha)</span>
-                )}
-              </TabsTrigger>
-              <TabsTrigger 
-                value="mobile" 
-                className="data-[state=active]:bg-muted flex items-center gap-1 md:gap-2 px-2 md:px-4 text-xs md:text-sm"
-                disabled={isAnalyzing || !hasMobileData}
-              >
-                <Smartphone className="h-3 w-3 md:h-4 md:w-4" />
-                <span>Mobile</span>
-                {!hasMobileData && hasDesktopData && (
-                  <span className="ml-1 text-xs text-red-500">(Falha)</span>
-                )}
-              </TabsTrigger>
-            </TabsList>
-          </div>
-          
-          {error && hasAnyData && (
-            <div className="p-3 md:p-4 bg-amber-50 text-amber-800 border-b border-amber-200 flex items-start gap-2">
-              <AlertTriangle className="h-4 w-4 md:h-5 md:w-5 text-amber-500 mt-0.5 flex-shrink-0" />
-              <div className="text-xs md:text-sm">
-                <p className="font-medium">Aviso: Dados parciais disponíveis</p>
-                <p className="text-xs">{error}</p>
-                <button 
-                  onClick={handleRetry}
-                  className="text-xs mt-1 text-blue-600 hover:text-blue-800 underline"
-                >
-                  Tentar novamente
-                </button>
-              </div>
+    <div className="bg-white rounded-lg border shadow-sm">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <div className="flex items-center justify-between border-b p-4">
+          <h3 className="text-lg font-medium">Resultados da Análise</h3>
+          <TabsList className="grid grid-cols-2 w-auto">
+            <TabsTrigger value="desktop" className="flex items-center gap-2 px-3">
+              <Monitor className="h-4 w-4" />
+              <span className="hidden sm:inline">Desktop</span>
+            </TabsTrigger>
+            <TabsTrigger value="mobile" className="flex items-center gap-2 px-3">
+              <Smartphone className="h-4 w-4" />
+              <span className="hidden sm:inline">Mobile</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
+        
+        <TabsContent value="desktop" className="m-0">
+          {isAnalyzing && !desktopData && (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+              <p className="text-muted-foreground">Analisando em Desktop...</p>
             </div>
           )}
           
-          <TabsContent value="desktop" className="m-0">
-            {hasDesktopData && (
-              <div className="p-3 md:p-4 space-y-4 md:space-y-6">
-                <DevicePerformancePanel data={desktopData} deviceType="desktop" />
-                
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-                  <CoreWebVitalsPanel 
-                    lcp={safeGet(desktopData, 'lcp', 0)} 
-                    cls={safeGet(desktopData, 'cls', 0)} 
-                    fid={safeGet(desktopData, 'fid', 0)} 
-                  />
-                  <OpportunitiesPanel opportunities={safeGet(desktopData, 'recommendations', [])} />
-                </div>
-                
-                <TechnicalAuditsPanel data={desktopData} />
-              </div>
-            )}
-            
-            {!hasDesktopData && (
-              <div className="p-4 text-center">
-                <p className="text-muted-foreground">
-                  {isAnalyzing ? "Analisando dados desktop..." : "Dados desktop não disponíveis."}
-                </p>
-              </div>
-            )}
-          </TabsContent>
+          {!isAnalyzing && error && !desktopData && (
+            <div className="p-4 text-center">
+              <p className="text-destructive">Erro na análise Desktop: {error}</p>
+            </div>
+          )}
           
-          <TabsContent value="mobile" className="m-0">
-            {hasMobileData && (
-              <div className="p-3 md:p-4 space-y-4 md:space-y-6">
-                <DevicePerformancePanel data={mobileData} deviceType="mobile" />
-                
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-                  <CoreWebVitalsPanel 
-                    lcp={safeGet(mobileData, 'lcp', 0)} 
-                    cls={safeGet(mobileData, 'cls', 0)} 
-                    fid={safeGet(mobileData, 'fid', 0)} 
-                  />
-                  <OpportunitiesPanel opportunities={safeGet(mobileData, 'recommendations', [])} />
-                </div>
-                
-                <TechnicalAuditsPanel data={mobileData} />
-              </div>
-            )}
-            
-            {!hasMobileData && (
-              <div className="p-4 text-center">
-                <p className="text-muted-foreground">
-                  {isAnalyzing ? "Analisando dados mobile..." : "Dados mobile não disponíveis."}
-                </p>
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+          {desktopData && (
+            <div className="p-6 space-y-6">
+              <CoreWebVitalsPanel 
+                lcp={desktopData.lcp || 0}
+                cls={desktopData.cls || 0}
+                fid={desktopData.fid || 0}
+              />
+              
+              <TechnicalAuditsPanel
+                mobileFriendly={desktopData.mobileFriendly || false}
+                security={desktopData.security?.https || false}
+                metaTags={desktopData.metaTags || {}}
+                headings={desktopData.headingsStructure || {}}
+              />
+              
+              <OpportunitiesPanel
+                recommendations={desktopData.recommendations || []}
+              />
+            </div>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="mobile" className="m-0">
+          {isAnalyzing && !mobileData && (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+              <p className="text-muted-foreground">Analisando em Mobile...</p>
+            </div>
+          )}
+          
+          {!isAnalyzing && error && !mobileData && (
+            <div className="p-4 text-center">
+              <p className="text-destructive">Erro na análise Mobile: {error}</p>
+            </div>
+          )}
+          
+          {mobileData && (
+            <div className="p-6 space-y-6">
+              <CoreWebVitalsPanel 
+                lcp={mobileData.lcp || 0}
+                cls={mobileData.cls || 0}
+                fid={mobileData.fid || 0}
+              />
+              
+              <TechnicalAuditsPanel
+                mobileFriendly={mobileData.mobileFriendly || false}
+                security={mobileData.security?.https || false}
+                metaTags={mobileData.metaTags || {}}
+                headings={mobileData.headingsStructure || {}}
+              />
+              
+              <OpportunitiesPanel
+                recommendations={mobileData.recommendations || []}
+              />
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };
 

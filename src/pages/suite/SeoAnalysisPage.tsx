@@ -27,6 +27,12 @@ const SeoAnalysisPage = () => {
     analyzeUrl();
   };
 
+  // Debug logging
+  console.log('SeoAnalysisPage - desktopData:', desktopData);
+  console.log('SeoAnalysisPage - mobileData:', mobileData);
+  console.log('SeoAnalysisPage - isAnalyzing:', isAnalyzing);
+  console.log('SeoAnalysisPage - error:', error);
+
   return (
     <SuiteLayout 
       title="Análise SEO Technical"

@@ -191,7 +191,8 @@ export function useSeoAnalysis() {
       // -- Desktop analysis task - create only one task
       const { taskId: desktopTaskId } = await createSeoAnalysisTask({
         url: normalizedUrl,
-        platform: 'desktop'
+        platform: 'desktop',
+        task_name: 'seo_analysis'
       });
       lastDesktopTaskIdRef.current = desktopTaskId;
       sessionStorage.setItem('seo_desktop_task_id', desktopTaskId);
@@ -200,7 +201,8 @@ export function useSeoAnalysis() {
       // -- Mobile analysis task - create only one task
       const { taskId: mobileTaskId } = await createSeoAnalysisTask({
         url: normalizedUrl,
-        platform: 'mobile'
+        platform: 'mobile',
+        task_name: 'seo_analysis'
       });
       lastMobileTaskIdRef.current = mobileTaskId;
       sessionStorage.setItem('seo_mobile_task_id', mobileTaskId);
@@ -215,6 +217,7 @@ export function useSeoAnalysis() {
         desktopTaskId,
         (res) => {
           if (res.results) {
+            console.log('Desktop task interim results:', res.results);
             const results = res.results as PageInsightsData;
             setDesktopData(results);
             sessionStorage.setItem('seo_desktop_results', JSON.stringify(results));
@@ -223,6 +226,7 @@ export function useSeoAnalysis() {
       ).then((finalRes) => {
         desktopComplete = true;
         if (finalRes.status === 'success' && finalRes.results) {
+          console.log('Desktop task final results:', finalRes.results);
           const results = finalRes.results as PageInsightsData;
           setDesktopData(results);
           sessionStorage.setItem('seo_desktop_results', JSON.stringify(results));
@@ -258,6 +262,7 @@ export function useSeoAnalysis() {
         mobileTaskId,
         (res) => {
           if (res.results) {
+            console.log('Mobile task interim results:', res.results);
             const results = res.results as PageInsightsData;
             setMobileData(results);
             sessionStorage.setItem('seo_mobile_results', JSON.stringify(results));
@@ -266,6 +271,7 @@ export function useSeoAnalysis() {
       ).then((finalRes) => {
         mobileComplete = true;
         if (finalRes.status === 'success' && finalRes.results) {
+          console.log('Mobile task final results:', finalRes.results);
           const results = finalRes.results as PageInsightsData;
           setMobileData(results);
           sessionStorage.setItem('seo_mobile_results', JSON.stringify(results));

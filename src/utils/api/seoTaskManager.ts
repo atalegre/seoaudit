@@ -84,6 +84,7 @@ export async function processSeoAnalysisTask(taskId: string): Promise<{ success:
 /**
  * Poll for task status until it's completed or failed
  * @param taskId The ID of the task to poll
+ * @param onStatusChange Callback for status changes
  * @param maxAttempts Maximum number of polling attempts
  * @param interval Interval between polling attempts in milliseconds
  */
@@ -105,6 +106,17 @@ export async function pollTaskUntilComplete(
 
         attempts++;
         const response = await checkSeoAnalysisTaskStatus(taskId);
+        
+        // Validate and log the response
+        console.log(`Poll attempt ${attempts} for task ${taskId} - Status: ${response.status}`);
+        
+        if (response.results) {
+          console.log(`Poll received results for task ${taskId}:`, 
+            typeof response.results === 'object' ? 
+              `Object with keys: ${Object.keys(response.results).join(', ')}` : 
+              `${typeof response.results}`
+          );
+        }
 
         // Notify about status change
         if (onStatusChange) {
@@ -112,6 +124,11 @@ export async function pollTaskUntilComplete(
         }
 
         if (response.status === 'success' || response.status === 'failed') {
+          // Final validation check for success case
+          if (response.status === 'success' && (!response.results || typeof response.results !== 'object')) {
+            console.warn(`Task ${taskId} reported success but has invalid results:`, response.results);
+            // Still resolve with what we have
+          }
           resolve(response);
           return;
         }
