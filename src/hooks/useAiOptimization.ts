@@ -77,7 +77,7 @@ export function useAiOptimization() {
       // Create the AI optimization task
       const { taskId } = await createSeoAnalysisTask({
         url: normalizedUrl,
-        task_name: 'ai_optimization'
+        task_name: 'ai_optimization' // Now this is correctly typed
       });
       lastTaskIdRef.current = taskId;
       toast.info("Tarefa de otimização para IA agendada", { description: "Aguardando resultados..." });

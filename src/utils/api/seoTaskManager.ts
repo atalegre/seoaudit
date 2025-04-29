@@ -1,8 +1,10 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 interface CreateTaskParams {
   url: string;
   platform?: string;
+  task_name?: string; // Added task_name parameter
 }
 
 interface TaskStatusResponse {
@@ -27,7 +29,7 @@ export async function createSeoAnalysisTask(params: CreateTaskParams) : Promise<
     const { data, error } = await supabase.functions.invoke('seo-task-manager/create', {
       method: 'POST',
       body: {
-        task_name: 'seo_analysis',
+        task_name: params.task_name || 'seo_analysis', // Use provided task_name or default to 'seo_analysis'
         requested_data
       }
     });
