@@ -69,15 +69,20 @@ const DeviceTabsSection = ({
                 fid={desktopData.fid || 0}
               />
               
-              <TechnicalAuditsPanel
-                mobileFriendly={desktopData.mobileFriendly || false}
-                security={desktopData.security?.https || false}
-                metaTags={desktopData.metaTags || {}}
-                headings={desktopData.headingsStructure || {}}
+              <TechnicalAuditsPanel 
+                data={{
+                  mobileFriendly: desktopData.mobileFriendly || false,
+                  security: {
+                    https: desktopData.security?.https || false,
+                    mixedContent: desktopData.security?.mixedContent || false
+                  },
+                  headingsStructure: desktopData.headingsStructure || {},
+                  metaTags: desktopData.metaTags || {}
+                }}
               />
               
-              <OpportunitiesPanel
-                recommendations={desktopData.recommendations || []}
+              <OpportunitiesPanel 
+                opportunities={desktopData.recommendations || []}
               />
             </div>
           )}
@@ -105,15 +110,20 @@ const DeviceTabsSection = ({
                 fid={mobileData.fid || 0}
               />
               
-              <TechnicalAuditsPanel
-                mobileFriendly={mobileData.mobileFriendly || false}
-                security={mobileData.security?.https || false}
-                metaTags={mobileData.metaTags || {}}
-                headings={mobileData.headingsStructure || {}}
+              <TechnicalAuditsPanel 
+                data={{
+                  mobileFriendly: mobileData.mobileFriendly || false,
+                  security: {
+                    https: mobileData.security?.https || false,
+                    mixedContent: mobileData.security?.mixedContent || false
+                  },
+                  headingsStructure: mobileData.headingsStructure || {},
+                  metaTags: mobileData.metaTags || {}
+                }}
               />
               
-              <OpportunitiesPanel
-                recommendations={mobileData.recommendations || []}
+              <OpportunitiesPanel 
+                opportunities={mobileData.recommendations || []}
               />
             </div>
           )}
