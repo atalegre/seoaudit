@@ -31,12 +31,69 @@ export function useAiOptimization() {
   const lastTaskIdRef = useRef<string | null>(null);
   const analysisInProgressRef = useRef(false);
 
-  // On mount: if last analyzed URL in localStorage, run analysis
+  // On mount: check for stored results and URL in sessionStorage
   useEffect(() => {
     const lastUrl = localStorage.getItem('lastAnalyzedUrl');
+    const storedResults = sessionStorage.getItem('aio_optimization_results');
+    const storedTaskId = sessionStorage.getItem('aio_task_id');
+    const storedAnalyzingState = sessionStorage.getItem('aio_analyzing_state');
+    
+    // Set URL from localStorage (for form value)
     if (lastUrl) {
       setUrl(lastUrl);
-      analyzeUrl(lastUrl);
+    }
+    
+    // Restore previous results if available
+    if (storedResults) {
+      try {
+        setOptimizationData(JSON.parse(storedResults));
+      } catch (err) {
+        console.error('Failed to parse stored AIO results:', err);
+      }
+    }
+    
+    // Restore task ID if available
+    if (storedTaskId) {
+      lastTaskIdRef.current = storedTaskId;
+    }
+    
+    // Check if we were in the middle of analyzing
+    if (storedAnalyzingState === 'true' && storedTaskId) {
+      // Resume polling for in-progress task
+      setIsAnalyzing(true);
+      analysisInProgressRef.current = true;
+      
+      pollTaskUntilComplete(
+        storedTaskId,
+        (res) => {
+          if (res.results) {
+            const results = res.results as AiOptimizationData;
+            setOptimizationData(results);
+            sessionStorage.setItem('aio_optimization_results', JSON.stringify(results));
+          }
+        }
+      ).then((finalRes) => {
+        if (finalRes.status === 'success' && finalRes.results) {
+          const results = finalRes.results as AiOptimizationData;
+          setOptimizationData(results);
+          sessionStorage.setItem('aio_optimization_results', JSON.stringify(results));
+          toast.success("Análise de otimização para IA concluída");
+        } else if (finalRes.status === 'failed') {
+          setError(finalRes.message || "AI optimization analysis failed.");
+          toast.error("Falha na análise de otimização para IA", { description: finalRes.message });
+        }
+        
+        setIsAnalyzing(false);
+        analysisInProgressRef.current = false;
+        sessionStorage.setItem('aio_analyzing_state', 'false');
+      }).catch((err) => {
+        setError(err?.message || 'Erro na análise de otimização para IA');
+        toast.error("Falha no polling da análise");
+        
+        setIsAnalyzing(false);
+        analysisInProgressRef.current = false;
+        sessionStorage.setItem('aio_analyzing_state', 'false');
+      });
     }
   }, []);
 
@@ -68,6 +125,7 @@ export function useAiOptimization() {
     setIsAnalyzing(true);
     setError(null);
     analysisInProgressRef.current = true;
+    sessionStorage.setItem('aio_analyzing_state', 'true');
 
     toast.info("Análise agendada", {
       description: "A análise de otimização para IA será executada em background via tarefa."
@@ -80,17 +138,25 @@ export function useAiOptimization() {
         task_name: 'ai_optimization' // Now this is correctly typed
       });
       lastTaskIdRef.current = taskId;
+      sessionStorage.setItem('aio_task_id', taskId);
       toast.info("Tarefa de otimização para IA agendada", { description: "Aguardando resultados..." });
 
       // Poll for task completion
       pollTaskUntilComplete(
         taskId,
         (res) => {
-          if (res.results) setOptimizationData(res.results as AiOptimizationData);
+          if (res.results) {
+            const results = res.results as AiOptimizationData;
+            setOptimizationData(results);
+            // Store results in sessionStorage for persistence across navigation
+            sessionStorage.setItem('aio_optimization_results', JSON.stringify(results));
+          }
         }
       ).then((finalRes) => {
         if (finalRes.status === 'success' && finalRes.results) {
-          setOptimizationData(finalRes.results as AiOptimizationData);
+          const results = finalRes.results as AiOptimizationData;
+          setOptimizationData(results);
+          sessionStorage.setItem('aio_optimization_results', JSON.stringify(results));
           toast.success("Análise de otimização para IA concluída");
         } else if (finalRes.status === 'failed') {
           setError(finalRes.message || "AI optimization analysis failed.");
@@ -99,18 +165,21 @@ export function useAiOptimization() {
         
         setIsAnalyzing(false);
         analysisInProgressRef.current = false;
+        sessionStorage.setItem('aio_analyzing_state', 'false');
       }).catch((err) => {
         setError(err?.message || 'Erro na análise de otimização para IA');
         toast.error("Falha no polling da análise");
         
         setIsAnalyzing(false);
         analysisInProgressRef.current = false;
+        sessionStorage.setItem('aio_analyzing_state', 'false');
       });
     } catch (err: any) {
       setError(err.message || "Erro ao agendar análise de otimização para IA.");
       toast.error("Erro ao iniciar análise", { description: err.message });
       setIsAnalyzing(false);
       analysisInProgressRef.current = false;
+      sessionStorage.setItem('aio_analyzing_state', 'false');
     }
   }, [url]);
 
@@ -142,6 +211,7 @@ export function useAiOptimization() {
     error,
     handleUrlChange,
     handleReanalyze,
-    extractDomain
+    extractDomain,
+    analyzeUrl
   };
 }

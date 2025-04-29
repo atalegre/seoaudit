@@ -16,8 +16,14 @@ const AioOptimizationPage = () => {
     error,
     handleUrlChange, 
     handleReanalyze, 
-    extractDomain 
+    extractDomain,
+    analyzeUrl
   } = useAiOptimization();
+
+  // Handler for analyze button (separate from reanalyze)
+  const handleAnalyze = () => {
+    analyzeUrl();
+  };
 
   return (
     <SuiteLayout 
@@ -45,7 +51,7 @@ const AioOptimizationPage = () => {
               disabled={isAnalyzing}
             />
             <Button 
-              onClick={handleReanalyze} 
+              onClick={handleAnalyze} 
               disabled={isAnalyzing}
               className="gap-2"
             >
@@ -91,6 +97,19 @@ const AioOptimizationPage = () => {
             <p className="text-muted-foreground">
               Insira a URL do site que deseja analisar para receber recomendações de otimização para IA.
             </p>
+          </div>
+        )}
+
+        {!isAnalyzing && !error && !optimizationData && url && (
+          <div className="text-center py-12">
+            <h3 className="text-xl font-medium mb-2">Pronto para analisar</h3>
+            <p className="text-muted-foreground mb-6">
+              Clique em "Analisar" para iniciar a análise de otimização para IA.
+            </p>
+            <Button onClick={handleAnalyze} className="gap-2">
+              <Zap className="h-4 w-4" />
+              Iniciar Análise
+            </Button>
           </div>
         )}
 
