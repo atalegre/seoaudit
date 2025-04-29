@@ -1,149 +1,104 @@
 
 import React from 'react';
 import SuiteLayout from '@/components/suite/SuiteLayout';
-import { Bot, BookOpen, Brain } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-import AioAnalysisPanel from '@/components/AioAnalysisPanel';
+import { useAiOptimization } from '@/hooks/useAiOptimization';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Loader2, Zap } from 'lucide-react';
+import AnalysisResults from '@/components/aio/AnalysisResults';
 
 const AioOptimizationPage = () => {
-  // Sample data - in a real app, this would come from an API
-  const aioScore = 65;
-  const naturalReadingScore = 72;
-  const interpretationScore = 81;
-  
-  // Sample recommendations
-  const recommendations = [
-    {
-      type: 'warning',
-      title: 'Utilize linguagem mais natural',
-      description: 'O conteúdo é demasiado técnico para ser bem interpretado por IA.'
-    },
-    {
-      type: 'info',
-      title: 'Adicione perguntas frequentes',
-      description: 'FAQs ajudam os modelos de IA a entender melhor o conteúdo.'
-    },
-    {
-      type: 'error',
-      title: 'Evite jargões',
-      description: 'Termos muito específicos dificultam a leitura por modelos como o ChatGPT.'
-    }
-  ];
-  
-  // Mock data for the AioAnalysisPanel component
-  const mockAioData = {
-    aioScore: aioScore,
-    contentClarity: 60,
-    logicalStructure: 70,
-    naturalLanguage: 65,
-    topicsDetected: ['SEO', 'Marketing Digital', 'Análise de Website', 'Otimização'],
-    confusingParts: [
-      'O texto utiliza jargões técnicos sem explicá-los adequadamente',
-      'Estrutura confusa na seção sobre métricas de desempenho'
-    ]
-  };
-  
+  const { 
+    url, 
+    isAnalyzing, 
+    optimizationData, 
+    error,
+    handleUrlChange, 
+    handleReanalyze, 
+    extractDomain 
+  } = useAiOptimization();
+
   return (
-    <SuiteLayout title="AI Optimization" domain="example.com">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">Pontuação AIO</h1>
-        <p className="text-muted-foreground">
-          Avaliação da otimização do conteúdo para IA e modelos de linguagem.
-        </p>
-      </div>
-      
-      {/* Score Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
-        <ScoreCard 
-          title="AIO Score" 
-          score={aioScore} 
-          icon={<Bot />} 
-          colorClass="bg-purple-600" 
-        />
-        
-        <ScoreCard 
-          title="Leitura Natural" 
-          score={naturalReadingScore} 
-          icon={<BookOpen />} 
-          colorClass="bg-indigo-600" 
-        />
-        
-        <ScoreCard 
-          title="Facilidade de Interpretação" 
-          score={interpretationScore} 
-          icon={<Brain />} 
-          colorClass="bg-green-600" 
-        />
-      </div>
-      
-      {/* Recommendations */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">Recomendações de Otimização</h2>
-        <ul className="space-y-3">
-          {recommendations.map((recommendation, index) => (
-            <RecommendationItem 
-              key={index}
-              type={recommendation.type} 
-              title={recommendation.title} 
-              description={recommendation.description}
+    <SuiteLayout 
+      title="Otimização para IA"
+      domain={url ? extractDomain(url) : undefined}
+      onRerunAnalysis={handleReanalyze}
+      isAnalyzing={isAnalyzing}
+    >
+      <div className="space-y-6">
+        {/* URL Input Section */}
+        <Card className="mb-6 p-4">
+          <div className="mb-4">
+            <h2 className="text-xl font-bold mb-2">Análise de Otimização para IA</h2>
+            <p className="text-muted-foreground">
+              Descubra como modelos de IA interpretam seu conteúdo e como melhorá-lo.
+            </p>
+          </div>
+          
+          <div className="flex gap-2">
+            <Input
+              placeholder="exemplo.com"
+              value={url}
+              onChange={handleUrlChange}
+              className="flex-1"
+              disabled={isAnalyzing}
             />
-          ))}
-        </ul>
+            <Button 
+              onClick={handleReanalyze} 
+              disabled={isAnalyzing}
+              className="gap-2"
+            >
+              {isAnalyzing ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Analisando...
+                </>
+              ) : (
+                <>
+                  <Zap className="h-4 w-4" />
+                  Analisar
+                </>
+              )}
+            </Button>
+          </div>
+        </Card>
+
+        {/* Analysis States */}
+        {isAnalyzing && (
+          <div className="flex flex-col items-center justify-center py-12">
+            <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+            <h3 className="text-xl font-medium mb-1">Analisando o conteúdo</h3>
+            <p className="text-muted-foreground">
+              Nosso sistema está avaliando como modelos de IA interpretam seu conteúdo...
+            </p>
+          </div>
+        )}
+
+        {!isAnalyzing && error && (
+          <div className="bg-destructive/10 border border-destructive rounded-lg p-4">
+            <h3 className="text-lg font-medium text-destructive mb-1">Erro na análise</h3>
+            <p className="text-sm">{error}</p>
+            <Button variant="destructive" onClick={handleReanalyze} className="mt-4">
+              Tentar novamente
+            </Button>
+          </div>
+        )}
+
+        {!isAnalyzing && !error && !optimizationData && !url && (
+          <div className="text-center py-12">
+            <h3 className="text-xl font-medium mb-2">Digite uma URL para analisar</h3>
+            <p className="text-muted-foreground">
+              Insira a URL do site que deseja analisar para receber recomendações de otimização para IA.
+            </p>
+          </div>
+        )}
+
+        {!isAnalyzing && !error && optimizationData && (
+          <AnalysisResults data={optimizationData} />
+        )}
       </div>
-      
-      {/* Detailed AIO Analysis Panel */}
-      <AioAnalysisPanel 
-        aioScore={mockAioData.aioScore}
-        contentClarity={mockAioData.contentClarity}
-        logicalStructure={mockAioData.logicalStructure}
-        naturalLanguage={mockAioData.naturalLanguage}
-        topicsDetected={mockAioData.topicsDetected}
-        confusingParts={mockAioData.confusingParts}
-      />
     </SuiteLayout>
-  );
-};
-
-// Helper component for score cards
-const ScoreCard = ({ title, score, icon, colorClass }) => {
-  return (
-    <Card className="p-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium">{title}</h3>
-        <div className={`p-2 rounded-full bg-opacity-20 ${colorClass.replace('bg-', 'bg-opacity-20 text-')}`}>
-          {React.cloneElement(icon, { className: `w-5 h-5 ${colorClass.replace('bg-', 'text-')}` })}
-        </div>
-      </div>
-      <div className="mt-4 text-3xl font-bold">{score}</div>
-      <div className="mt-2 h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-        <div 
-          className={`h-full ${colorClass}`} 
-          style={{ width: `${score}%` }}
-        />
-      </div>
-    </Card>
-  );
-};
-
-// Helper component for recommendation items
-const RecommendationItem = ({ type, title, description }) => {
-  const getTypeStyles = () => {
-    switch (type) {
-      case 'warning':
-        return 'bg-yellow-100 border-yellow-500';
-      case 'info':
-        return 'bg-blue-100 border-blue-500';
-      case 'error':
-        return 'bg-red-100 border-red-500';
-      default:
-        return 'bg-gray-100 border-gray-500';
-    }
-  };
-  
-  return (
-    <li className={`p-4 rounded-md border-l-4 ${getTypeStyles()}`}>
-      <strong>{title}:</strong> {description}
-    </li>
   );
 };
 
