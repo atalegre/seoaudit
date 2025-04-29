@@ -35,17 +35,23 @@ export function useSeoAnalysis() {
     // Restore previous results if available
     if (storedDesktopResults) {
       try {
-        setDesktopData(JSON.parse(storedDesktopResults));
+        const parsedData = JSON.parse(storedDesktopResults);
+        console.log('Restoring desktop results from session storage:', parsedData);
+        setDesktopData(parsedData);
       } catch (err) {
         console.error('Failed to parse stored desktop results:', err);
+        sessionStorage.removeItem('seo_desktop_results');
       }
     }
     
     if (storedMobileResults) {
       try {
-        setMobileData(JSON.parse(storedMobileResults));
+        const parsedData = JSON.parse(storedMobileResults);
+        console.log('Restoring mobile results from session storage:', parsedData);
+        setMobileData(parsedData);
       } catch (err) {
         console.error('Failed to parse stored mobile results:', err);
+        sessionStorage.removeItem('seo_mobile_results');
       }
     }
     
@@ -70,6 +76,7 @@ export function useSeoAnalysis() {
           storedDesktopTaskId,
           (res) => {
             if (res.results) {
+              console.log('Desktop task interim results:', res.results);
               const results = res.results as PageInsightsData;
               setDesktopData(results);
               sessionStorage.setItem('seo_desktop_results', JSON.stringify(results));
@@ -78,6 +85,7 @@ export function useSeoAnalysis() {
         ).then((finalRes) => {
           if (finalRes.status === 'success' && finalRes.results) {
             const results = finalRes.results as PageInsightsData;
+            console.log('Desktop task final results:', results);
             setDesktopData(results);
             sessionStorage.setItem('seo_desktop_results', JSON.stringify(results));
             toast.success("Análise desktop concluída");
@@ -113,6 +121,7 @@ export function useSeoAnalysis() {
           storedMobileTaskId,
           (res) => {
             if (res.results) {
+              console.log('Mobile task interim results:', res.results);
               const results = res.results as PageInsightsData;
               setMobileData(results);
               sessionStorage.setItem('seo_mobile_results', JSON.stringify(results));
@@ -121,6 +130,7 @@ export function useSeoAnalysis() {
         ).then((finalRes) => {
           if (finalRes.status === 'success' && finalRes.results) {
             const results = finalRes.results as PageInsightsData;
+            console.log('Mobile task final results:', results);
             setMobileData(results);
             sessionStorage.setItem('seo_mobile_results', JSON.stringify(results));
             toast.success("Análise mobile concluída");
@@ -194,6 +204,7 @@ export function useSeoAnalysis() {
         platform: 'desktop',
         task_name: 'seo_analysis'
       });
+      console.log('Created desktop task:', desktopTaskId);
       lastDesktopTaskIdRef.current = desktopTaskId;
       sessionStorage.setItem('seo_desktop_task_id', desktopTaskId);
       toast.info("Tarefa Desktop agendada", { description: "Aguardando resultados desktop..." });
@@ -204,6 +215,7 @@ export function useSeoAnalysis() {
         platform: 'mobile',
         task_name: 'seo_analysis'
       });
+      console.log('Created mobile task:', mobileTaskId);
       lastMobileTaskIdRef.current = mobileTaskId;
       sessionStorage.setItem('seo_mobile_task_id', mobileTaskId);
       toast.info("Tarefa Mobile agendada", { description: "Aguardando resultados mobile..." });

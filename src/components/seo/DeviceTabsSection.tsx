@@ -23,7 +23,7 @@ const DeviceTabsSection = ({
   isAnalyzing,
   error
 }: DeviceTabsSectionProps) => {
-  // Log data for debugging
+  // Enhanced logging for debugging
   console.log('DeviceTabsSection - desktopData:', desktopData);
   console.log('DeviceTabsSection - mobileData:', mobileData);
   
