@@ -18,12 +18,137 @@ export function useSeoAnalysis() {
   const lastMobileTaskIdRef = useRef<string | null>(null);
   const analysisInProgressRef = useRef(false);
 
-  // On mount: if last analyzed URL in localStorage, run analysis
+  // On mount: check for stored results and URL in sessionStorage
   useEffect(() => {
     const lastUrl = localStorage.getItem('lastAnalyzedUrl');
+    const storedDesktopResults = sessionStorage.getItem('seo_desktop_results');
+    const storedMobileResults = sessionStorage.getItem('seo_mobile_results');
+    const storedDesktopTaskId = sessionStorage.getItem('seo_desktop_task_id');
+    const storedMobileTaskId = sessionStorage.getItem('seo_mobile_task_id');
+    const storedAnalyzingState = sessionStorage.getItem('seo_analyzing_state');
+    
+    // Set URL from localStorage (for form value)
     if (lastUrl) {
       setUrl(lastUrl);
-      analyzeUrl(lastUrl);
+    }
+    
+    // Restore previous results if available
+    if (storedDesktopResults) {
+      try {
+        setDesktopData(JSON.parse(storedDesktopResults));
+      } catch (err) {
+        console.error('Failed to parse stored desktop results:', err);
+      }
+    }
+    
+    if (storedMobileResults) {
+      try {
+        setMobileData(JSON.parse(storedMobileResults));
+      } catch (err) {
+        console.error('Failed to parse stored mobile results:', err);
+      }
+    }
+    
+    // Restore task IDs if available
+    if (storedDesktopTaskId) {
+      lastDesktopTaskIdRef.current = storedDesktopTaskId;
+    }
+    
+    if (storedMobileTaskId) {
+      lastMobileTaskIdRef.current = storedMobileTaskId;
+    }
+    
+    // Check if we were in the middle of analyzing
+    if (storedAnalyzingState === 'true' && (storedDesktopTaskId || storedMobileTaskId)) {
+      // Resume polling for in-progress tasks
+      setIsAnalyzing(true);
+      analysisInProgressRef.current = true;
+      
+      // Resume desktop polling if needed
+      if (storedDesktopTaskId) {
+        pollTaskUntilComplete(
+          storedDesktopTaskId,
+          (res) => {
+            if (res.results) {
+              const results = res.results as PageInsightsData;
+              setDesktopData(results);
+              sessionStorage.setItem('seo_desktop_results', JSON.stringify(results));
+            }
+          }
+        ).then((finalRes) => {
+          if (finalRes.status === 'success' && finalRes.results) {
+            const results = finalRes.results as PageInsightsData;
+            setDesktopData(results);
+            sessionStorage.setItem('seo_desktop_results', JSON.stringify(results));
+            toast.success("Análise desktop concluída");
+          } else if (finalRes.status === 'failed') {
+            setError(err =>
+              (err ? err + " " : "") + (finalRes.message || "Desktop analysis failed.")
+            );
+            toast.error("Falha na análise desktop", { description: finalRes.message });
+          }
+          
+          // Only set analyzing to false if both tasks are complete
+          if (!lastMobileTaskIdRef.current) {
+            setIsAnalyzing(false);
+            analysisInProgressRef.current = false;
+            sessionStorage.setItem('seo_analyzing_state', 'false');
+          }
+        }).catch((err) => {
+          setError(e => (e ? e + " " : "") + (err?.message || 'Erro na Desktop'));
+          toast.error("Falha no polling Desktop");
+          
+          // Only set analyzing to false if both tasks are complete
+          if (!lastMobileTaskIdRef.current) {
+            setIsAnalyzing(false);
+            analysisInProgressRef.current = false;
+            sessionStorage.setItem('seo_analyzing_state', 'false');
+          }
+        });
+      }
+      
+      // Resume mobile polling if needed
+      if (storedMobileTaskId) {
+        pollTaskUntilComplete(
+          storedMobileTaskId,
+          (res) => {
+            if (res.results) {
+              const results = res.results as PageInsightsData;
+              setMobileData(results);
+              sessionStorage.setItem('seo_mobile_results', JSON.stringify(results));
+            }
+          }
+        ).then((finalRes) => {
+          if (finalRes.status === 'success' && finalRes.results) {
+            const results = finalRes.results as PageInsightsData;
+            setMobileData(results);
+            sessionStorage.setItem('seo_mobile_results', JSON.stringify(results));
+            toast.success("Análise mobile concluída");
+          } else if (finalRes.status === 'failed') {
+            setError(err =>
+              (err ? err + " " : "") + (finalRes.message || "Mobile analysis failed.")
+            );
+            toast.error("Falha na análise mobile", { description: finalRes.message });
+          }
+          
+          // Only set analyzing to false if both tasks are complete
+          if (!lastDesktopTaskIdRef.current) {
+            setIsAnalyzing(false);
+            analysisInProgressRef.current = false;
+            sessionStorage.setItem('seo_analyzing_state', 'false');
+          }
+        }).catch((err) => {
+          setError(e => (e ? e + " " : "") + (err?.message || 'Erro na Mobile'));
+          toast.error("Falha no polling Mobile");
+          
+          // Only set analyzing to false if both tasks are complete
+          if (!lastDesktopTaskIdRef.current) {
+            setIsAnalyzing(false);
+            analysisInProgressRef.current = false;
+            sessionStorage.setItem('seo_analyzing_state', 'false');
+          }
+        });
+      }
     }
   }, []);
 
@@ -56,6 +181,7 @@ export function useSeoAnalysis() {
     setIsAnalyzing(true);
     setError(null);
     analysisInProgressRef.current = true;
+    sessionStorage.setItem('seo_analyzing_state', 'true');
 
     toast.info("Análise agendada", {
       description: "A análise SEO será executada em background via tarefa."
@@ -68,6 +194,7 @@ export function useSeoAnalysis() {
         platform: 'desktop'
       });
       lastDesktopTaskIdRef.current = desktopTaskId;
+      sessionStorage.setItem('seo_desktop_task_id', desktopTaskId);
       toast.info("Tarefa Desktop agendada", { description: "Aguardando resultados desktop..." });
 
       // -- Mobile analysis task - create only one task
@@ -76,6 +203,7 @@ export function useSeoAnalysis() {
         platform: 'mobile'
       });
       lastMobileTaskIdRef.current = mobileTaskId;
+      sessionStorage.setItem('seo_mobile_task_id', mobileTaskId);
       toast.info("Tarefa Mobile agendada", { description: "Aguardando resultados mobile..." });
 
       // Track completion of both tasks
@@ -86,12 +214,18 @@ export function useSeoAnalysis() {
       pollTaskUntilComplete(
         desktopTaskId,
         (res) => {
-          if (res.results) setDesktopData(res.results as PageInsightsData);
+          if (res.results) {
+            const results = res.results as PageInsightsData;
+            setDesktopData(results);
+            sessionStorage.setItem('seo_desktop_results', JSON.stringify(results));
+          }
         }
       ).then((finalRes) => {
         desktopComplete = true;
         if (finalRes.status === 'success' && finalRes.results) {
-          setDesktopData(finalRes.results as PageInsightsData);
+          const results = finalRes.results as PageInsightsData;
+          setDesktopData(results);
+          sessionStorage.setItem('seo_desktop_results', JSON.stringify(results));
           toast.success("Análise desktop concluída");
         } else if (finalRes.status === 'failed') {
           setError(err =>
@@ -104,6 +238,7 @@ export function useSeoAnalysis() {
         if (desktopComplete && mobileComplete) {
           setIsAnalyzing(false);
           analysisInProgressRef.current = false;
+          sessionStorage.setItem('seo_analyzing_state', 'false');
         }
       }).catch((err) => {
         desktopComplete = true;
@@ -114,6 +249,7 @@ export function useSeoAnalysis() {
         if (desktopComplete && mobileComplete) {
           setIsAnalyzing(false);
           analysisInProgressRef.current = false;
+          sessionStorage.setItem('seo_analyzing_state', 'false');
         }
       });
 
@@ -121,12 +257,18 @@ export function useSeoAnalysis() {
       pollTaskUntilComplete(
         mobileTaskId,
         (res) => {
-          if (res.results) setMobileData(res.results as PageInsightsData);
+          if (res.results) {
+            const results = res.results as PageInsightsData;
+            setMobileData(results);
+            sessionStorage.setItem('seo_mobile_results', JSON.stringify(results));
+          }
         }
       ).then((finalRes) => {
         mobileComplete = true;
         if (finalRes.status === 'success' && finalRes.results) {
-          setMobileData(finalRes.results as PageInsightsData);
+          const results = finalRes.results as PageInsightsData;
+          setMobileData(results);
+          sessionStorage.setItem('seo_mobile_results', JSON.stringify(results));
           toast.success("Análise mobile concluída");
         } else if (finalRes.status === 'failed') {
           setError(err =>
@@ -139,6 +281,7 @@ export function useSeoAnalysis() {
         if (desktopComplete && mobileComplete) {
           setIsAnalyzing(false);
           analysisInProgressRef.current = false;
+          sessionStorage.setItem('seo_analyzing_state', 'false');
         }
       }).catch((err) => {
         mobileComplete = true;
@@ -149,6 +292,7 @@ export function useSeoAnalysis() {
         if (desktopComplete && mobileComplete) {
           setIsAnalyzing(false);
           analysisInProgressRef.current = false;
+          sessionStorage.setItem('seo_analyzing_state', 'false');
         }
       });
     } catch (err: any) {
@@ -156,6 +300,7 @@ export function useSeoAnalysis() {
       toast.error("Erro ao iniciar análise", { description: err.message });
       setIsAnalyzing(false);
       analysisInProgressRef.current = false;
+      sessionStorage.setItem('seo_analyzing_state', 'false');
     }
   }, [url]);
 
@@ -168,7 +313,7 @@ export function useSeoAnalysis() {
   const handleReanalyze = () => {
     // Clean cache
     Object.keys(sessionStorage).forEach(key => {
-      if (key.startsWith('psi_')) sessionStorage.removeItem(key);
+      if (key.startsWith('psi_') || key.startsWith('seo_')) sessionStorage.removeItem(key);
     });
     setDesktopData(null);
     setMobileData(null);
@@ -193,6 +338,7 @@ export function useSeoAnalysis() {
     error,
     handleUrlChange,
     handleReanalyze,
-    extractDomain
+    extractDomain,
+    analyzeUrl
   };
 }
