@@ -17,8 +17,8 @@ export type UserContextType = {
 export const UserContext = createContext<UserContextType>({
   user: null,
   userProfile: null,
-  role: 'admin', // Default role to admin for non-authenticated users
-  loading: false,
+  role: 'user', // Default role to user for non-authenticated users
+  loading: true,
   setRole: () => {},
 });
 
@@ -28,7 +28,7 @@ export const useUser = () => useContext(UserContext);
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [role, setRole] = useState<string>('admin'); // Default to admin role for easier testing
+  const [role, setRole] = useState<string>('user'); // Default to user role
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -47,22 +47,21 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
             setRole(userProfileData.role);
           } else {
             // Default if role is not found
-            setRole('admin'); // Set to admin for testing
+            setRole('user'); 
           }
         } else {
-          // If no profile exists yet but we have a user, default to admin role
-          // unless it's not the admin email
+          // If no profile exists yet but we have a user, default to user role
+          // unless it's the admin email
           const { data: authUser } = await supabase.auth.getUser();
           if (authUser?.user?.email === 'atalegre@me.com') {
             setRole('admin');
           } else {
-            // Set to admin for testing
-            setRole('admin');
+            setRole('user');
           }
         }
       } catch (error) {
         console.error('Error loading user profile:', error);
-        setRole('admin'); // Default to admin for testing
+        setRole('user'); 
       } finally {
         setLoading(false);
       }
@@ -90,7 +89,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
           loadUserProfile(session.user.id);
         } else {
           setUserProfile(null);
-          setRole('admin');  // Default to admin when logged out for testing
+          setRole('user');  // Default to user when logged out
           setLoading(false);
         }
       }

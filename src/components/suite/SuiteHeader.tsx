@@ -61,7 +61,7 @@ const SuiteHeader = ({
               className="flex items-center gap-2"
             >
               <User className="h-4 w-4" />
-              <span className="hidden md:inline">{user.email}</span>
+              <span className="hidden md:inline">{user?.email || 'Usuário'}</span>
             </Button>
           ) : (
             <Button 

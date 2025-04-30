@@ -42,7 +42,9 @@ import PdfReportPage from './pages/suite/PdfReportPage';
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
-  const isLoggedIn = true; // For simplicity, always allow access in this demo
+  // For this demo, we're setting isLoggedIn to true to allow access to all pages
+  // In a real app, this would check if the user is authenticated
+  const isLoggedIn = true; // Always allow access in this demo
 
   useEffect(() => {
     if (!isLoggedIn) {
