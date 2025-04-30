@@ -74,37 +74,33 @@ const SuiteHeader = ({
         </div>
         
         <div className="flex items-center gap-3">
-          {/* Authentication status display with improved handling */}
-          {!loading && (
-            <>
-              {user ? (
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded">
-                    <User className="h-4 w-4 text-gray-600" />
-                    <span className="text-sm">{user.email}</span>
-                  </div>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={handleLogout}
-                    className="flex items-center"
-                  >
-                    <LogOut className="h-4 w-4 mr-1" />
-                    <span>{t('sign-out') || "Sair"}</span>
-                  </Button>
-                </div>
-              ) : (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => navigate('/signin')}
-                  className="flex items-center"
-                >
-                  <LogIn className="h-4 w-4 mr-1" />
-                  <span>{t('sign-in') || "Entrar"}</span>
-                </Button>
-              )}
-            </>
+          {/* Authentication status display */}
+          {user ? (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded">
+                <User className="h-4 w-4 text-gray-600" />
+                <span className="text-sm">{user.email}</span>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleLogout}
+                className="flex items-center"
+              >
+                <LogOut className="h-4 w-4 mr-1" />
+                <span>{t('sign-out') || "Sair"}</span>
+              </Button>
+            </div>
+          ) : (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => navigate('/signin')}
+              className="flex items-center"
+            >
+              <LogIn className="h-4 w-4 mr-1" />
+              <span>{t('sign-in') || "Entrar"}</span>
+            </Button>
           )}
           
           {onRerunAnalysis && (

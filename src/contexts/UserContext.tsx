@@ -32,8 +32,11 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
+    console.log("UserProvider - Initializing auth state");
+    
     async function loadUserProfile(userId: string) {
       try {
+        console.log("Loading user profile for:", userId);
         const profile = await getUserProfile(userId);
         
         // Check if profile is an error or valid profile data
@@ -67,11 +70,24 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       }
     }
 
-    // Set up auth state listener first
+    // First check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("UserProvider - Initial session check:", session?.user?.email);
+      setUser(session?.user || null);
+      
+      if (session?.user) {
+        loadUserProfile(session.user.id);
+      } else {
+        setLoading(false);
+      }
+    });
+    
+    // Then set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
+        console.log("UserProvider - Auth state changed:", event, session?.user?.email);
         
+        // Update user state immediately
         setUser(session?.user || null);
         
         if (session?.user) {
@@ -83,18 +99,6 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }
     );
-
-    // Then check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Getting session:', session?.user?.email);
-      setUser(session?.user || null);
-      
-      if (session?.user) {
-        loadUserProfile(session.user.id);
-      } else {
-        setLoading(false);
-      }
-    });
 
     return () => subscription.unsubscribe();
   }, []);
