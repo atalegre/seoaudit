@@ -115,7 +115,7 @@ const ReportsPage = () => {
                       }
                       className="font-medium text-xs"
                     >
-                      {report.status === 'completed' ? 'Concluído' : 
+                      {report.status === 'completed' ? 'Sucesso' : 
                        report.status === 'pending' ? 'Processando' :
                        report.status === 'failed' ? 'Falhou' : 
                        report.status}
