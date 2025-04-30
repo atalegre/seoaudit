@@ -14,8 +14,8 @@ export const useLogout = () => {
       
       if (error) throw error;
       
-      toast({
-        title: "Logout bem-sucedido",
+      // Using the correct sonner toast API
+      toast.success("Logout bem-sucedido", {
         description: "Você foi desconectado com sucesso."
       });
       
@@ -23,9 +23,8 @@ export const useLogout = () => {
       navigate('/signin', { replace: true });
     } catch (error: any) {
       console.error('Error signing out:', error);
-      toast({
-        variant: "destructive",
-        title: "Erro ao fazer logout",
+      // Using the correct sonner toast API for errors
+      toast.error("Erro ao fazer logout", {
         description: error.message,
       });
     }
