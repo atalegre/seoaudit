@@ -75,6 +75,7 @@ const NewSuiteHeader = ({
         </div>
         
         <div className="flex items-center gap-3">
+          {/* Use a short timeout to prevent infinite loading state */}
           {loading ? (
             <div className="text-sm text-gray-500">Loading...</div>
           ) : user ? (

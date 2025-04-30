@@ -33,6 +33,14 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     console.log("UserProvider - Initializing auth state");
+
+    // Add a safety timeout to prevent infinite loading state
+    const safetyTimeout = setTimeout(() => {
+      if (loading) {
+        console.log("UserProvider - Safety timeout triggered, setting loading to false");
+        setLoading(false);
+      }
+    }, 3000);
     
     // First check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -74,6 +82,9 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       } else {
         setLoading(false);
       }
+    }).catch(err => {
+      console.error('Error checking session:', err);
+      setLoading(false);
     });
     
     // Then set up auth state listener
@@ -109,18 +120,24 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
                 setRole('user');
               }
             }
+            setLoading(false);
           }).catch(error => {
             console.error('Error loading user profile:', error);
             setRole('user');
+            setLoading(false);
           });
         } else {
           setUserProfile(null);
           setRole('user');  // Default to user when logged out
+          setLoading(false);
         }
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(safetyTimeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   // Create a setter function for role that we can expose to components
