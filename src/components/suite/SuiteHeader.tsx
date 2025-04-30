@@ -69,36 +69,30 @@ const SuiteHeader = ({
         
         <div className="flex items-center gap-3">
           {/* Authentication status display */}
-          {loading ? (
-            <div className="text-sm text-gray-500">Loading...</div>
+          {user ? (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded">
+                <User className="h-4 w-4 text-gray-600" />
+                <span className="text-sm">{user.email}</span>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleLogout}
+              >
+                <LogOut className="h-4 w-4 mr-1" />
+                <span>{t('sign-out')}</span>
+              </Button>
+            </div>
           ) : (
-            <>
-              {user ? (
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded">
-                    <User className="h-4 w-4 text-gray-600" />
-                    <span className="text-sm">{user.email}</span>
-                  </div>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={handleLogout}
-                  >
-                    <LogOut className="h-4 w-4 mr-1" />
-                    <span>{t('sign-out')}</span>
-                  </Button>
-                </div>
-              ) : (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => navigate('/signin')}
-                >
-                  <LogIn className="h-4 w-4 mr-1" />
-                  <span>{t('sign-in')}</span>
-                </Button>
-              )}
-            </>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => navigate('/signin')}
+            >
+              <LogIn className="h-4 w-4 mr-1" />
+              <span>{t('sign-in')}</span>
+            </Button>
           )}
           
           {onRerunAnalysis && (
