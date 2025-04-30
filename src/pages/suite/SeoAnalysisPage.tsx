@@ -44,8 +44,6 @@ const SeoAnalysisPage = () => {
     <SuiteLayout 
       title="Análise SEO Technical"
       domain={url ? extractDomain(url) : undefined}
-      onRerunAnalysis={handleReanalyze}
-      isAnalyzing={isAnalyzing}
     >
       <div className="space-y-6">
         {/* URL Input Section */}

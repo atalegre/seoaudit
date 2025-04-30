@@ -13,17 +13,13 @@ interface SuiteHeaderProps {
   domain?: string;
   lastAnalysisDate?: string;
   showBackButton?: boolean;
-  onRerunAnalysis?: () => void;
-  isAnalyzing?: boolean;
 }
 
 const SuiteHeader = ({ 
   title, 
   domain, 
   lastAnalysisDate, 
-  showBackButton = false,
-  onRerunAnalysis,
-  isAnalyzing = false
+  showBackButton = false
 }: SuiteHeaderProps) => {
   const navigate = useNavigate();
   const { user, loading } = useUser();
@@ -100,16 +96,6 @@ const SuiteHeader = ({
             >
               <LogIn className="h-4 w-4 mr-1" />
               <span>{t('sign-in') || "Entrar"}</span>
-            </Button>
-          )}
-          
-          {onRerunAnalysis && (
-            <Button 
-              onClick={onRerunAnalysis} 
-              disabled={isAnalyzing}
-              className="ml-2"
-            >
-              {isAnalyzing ? t('analyzing') || 'Analisando...' : t('analyze-again') || 'Analisar Novamente'}
             </Button>
           )}
         </div>
