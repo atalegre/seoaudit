@@ -1,9 +1,9 @@
 
 export interface BlogPost {
   id?: string;
-  title: {
-    pt: string;
-    en: string;
+  title?: {
+    pt?: string;
+    en?: string;
   };
   slug: string;
   excerpt?: {
@@ -19,7 +19,7 @@ export interface BlogPost {
     en?: string;
   };
   category?: string;
-  tags: string[];
+  tags?: string[];
   imageSrc?: string;
   popularity?: number;
   date?: string;

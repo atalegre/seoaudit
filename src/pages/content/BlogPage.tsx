@@ -8,6 +8,7 @@ import SearchInput from '@/components/blog/SearchInput';
 import CategoryTabs from '@/components/blog/CategoryTabs';
 import CTACard from '@/components/blog/CTACard';
 import ContentLayout from '@/components/content/ContentLayout';
+import BlogGrid from '@/components/blog/BlogGrid';
 
 const BlogPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -46,19 +47,25 @@ const BlogPage = () => {
   const filteredPosts = blogPosts.filter(post => {
     const matchesCategory = activeCategory === 'all' || post.category === activeCategory;
     
-    const postTitle = language === 'en' ? post.title.en : post.title.pt;
+    const postTitle = language === 'en' 
+      ? post.title?.en || post.title?.pt || '' 
+      : post.title?.pt || post.title?.en || '';
+      
     const postExcerpt = language === 'en' 
-      ? post.excerpt?.en || '' 
-      : post.excerpt?.pt || '';
+      ? post.excerpt?.en || post.excerpt?.pt || '' 
+      : post.excerpt?.pt || post.excerpt?.en || '';
     
-    const matchesSearch = postTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         postExcerpt.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = searchQuery === '' || 
+      postTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      postExcerpt.toLowerCase().includes(searchQuery.toLowerCase());
     
     return matchesCategory && matchesSearch;
   });
 
   const getCategoryColor = (category: string) => {
-    switch (category?.toLowerCase()) {
+    if (!category) return 'bg-slate-500 text-white';
+    
+    switch (category.toLowerCase()) {
       case 'seo': return 'bg-seo text-primary-foreground';
       case 'aio': return 'bg-aio text-primary-foreground';
       case 'technical-seo': case 'seo técnico': return 'bg-slate-700 text-white';
@@ -86,27 +93,22 @@ const BlogPage = () => {
   return (
     <ContentLayout>
       <div className="space-y-8">
-        <div>
-          <BlogHeader 
-            title="Blog SEO+AI"
-            description="Artigos, tutoriais e insights sobre SEO e Otimização para Inteligência Artificial"
-          />
-        </div>
+        <BlogHeader 
+          title="Blog SEO+AI"
+          description="Artigos, tutoriais e insights sobre SEO e Otimização para Inteligência Artificial"
+        />
 
         <SearchInput 
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
         />
 
-        <CategoryTabs 
-          activeCategory={activeCategory}
-          setActiveCategory={setActiveCategory}
+        <BlogGrid 
           loading={loading}
           error={error}
           filteredPosts={filteredPosts}
           getCategoryColor={getCategoryColor}
           handleImageError={handleImageError}
-          categories={categories}
         />
 
         <CTACard 

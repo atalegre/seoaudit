@@ -17,11 +17,14 @@ interface BlogCardProps {
 const BlogCard: React.FC<BlogCardProps> = ({ post, getCategoryColor, handleImageError }) => {
   const { language } = useLanguage();
   
-  // Get content based on current language
-  const title = language === 'en' ? post.title.en : post.title.pt;
+  // Get content based on current language with proper fallbacks
+  const title = language === 'en' 
+    ? post.title?.en || post.title?.pt || 'Untitled' 
+    : post.title?.pt || post.title?.en || 'Sem título';
+    
   const excerpt = language === 'en' 
-    ? post.excerpt?.en || post.excerpt?.pt
-    : post.excerpt?.pt || post.excerpt?.en;
+    ? post.excerpt?.en || post.excerpt?.pt || 'No excerpt available'
+    : post.excerpt?.pt || post.excerpt?.en || 'Sem descrição disponível';
 
   return (
     <Link to={`/blog/${post.slug}`} className="group">
