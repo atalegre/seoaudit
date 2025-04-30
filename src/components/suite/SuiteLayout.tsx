@@ -11,7 +11,8 @@ interface SuiteLayoutProps {
   lastAnalysisDate?: string;
   onRerunAnalysis?: () => void;
   isAnalyzing?: boolean;
-  showBackButton?: boolean;  // Added this property to fix the type error
+  showBackButton?: boolean;
+  hideSidebar?: boolean;  // Added this property to hide the sidebar
 }
 
 const SuiteLayout = ({ 
@@ -19,7 +20,8 @@ const SuiteLayout = ({
   title, 
   domain, 
   lastAnalysisDate,
-  showBackButton
+  showBackButton,
+  hideSidebar = false  // Default to false
 }: SuiteLayoutProps) => {
   const location = useLocation();
   // Use the prop if provided, otherwise determine based on location
@@ -36,13 +38,15 @@ const SuiteLayout = ({
       />
       
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar - width adjusted */}
-        <aside className="w-14 border-r bg-white hidden md:block">
-          <SidebarContent />
-        </aside>
+        {/* Sidebar - width adjusted and conditionally rendered */}
+        {!hideSidebar && (
+          <aside className="w-14 border-r bg-white hidden md:block">
+            <SidebarContent />
+          </aside>
+        )}
         
         {/* Main content area */}
-        <main className="flex-1 overflow-auto bg-gray-50">
+        <main className={`flex-1 overflow-auto bg-gray-50 ${hideSidebar ? 'w-full' : ''}`}>
           <div className="p-4 md:p-6">
             {children}
           </div>

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   BarChart3,
@@ -17,11 +17,13 @@ const SidebarContentItems = () => {
   const { user } = useUser();
   
   // Debug the auth state
-  console.log("SidebarContent - Auth state:", { 
-    user, 
-    isAuthenticated: !!user,
-    userEmail: user?.email || 'no email' 
-  });
+  useEffect(() => {
+    console.log("SidebarContent - Auth state:", { 
+      user, 
+      isAuthenticated: !!user,
+      userEmail: user?.email || 'no email' 
+    });
+  }, [user]);
   
   // Array of links for the sidebar - removed LLM, Keywords, Content Recommender, Content Writer
   const links = [
