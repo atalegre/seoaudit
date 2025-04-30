@@ -1,4 +1,3 @@
-
 import React from 'react';
 import SuiteLayout from '@/components/suite/SuiteLayout';
 import { Card } from '@/components/ui/card';

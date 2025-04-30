@@ -23,8 +23,9 @@ const AuthRequiredRoute: React.FC<AuthRequiredRouteProps> = ({ children }) => {
   }
   
   // If user is not authenticated, show the page content blurred with login dialog on top
+  // Important: The entire layout (top and side bars) remains visible and clickable
   return (
-    <div className="relative">
+    <div className="relative h-full">
       {/* Render the page content but apply blur */}
       <div className="filter blur-sm pointer-events-none">
         {children}
@@ -32,7 +33,7 @@ const AuthRequiredRoute: React.FC<AuthRequiredRouteProps> = ({ children }) => {
       
       {/* Overlay with login dialog */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="p-6 bg-white/95 rounded-lg shadow-md pointer-events-auto w-full max-w-md">
+        <div className="p-6 bg-white/95 rounded-lg shadow-md pointer-events-auto w-full max-w-md z-50">
           <h3 className="text-xl font-semibold mb-2 text-center">Acesso restrito</h3>
           <p className="text-gray-600 mb-4 text-center">
             Esta funcionalidade é exclusiva para usuários autenticados.
