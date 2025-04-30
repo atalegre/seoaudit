@@ -51,17 +51,9 @@ export const useAnalyzerRedirect = () => {
     const domain = formattedUrl.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
     const projectId = `${domain}-${Date.now()}`.replace(/[^a-zA-Z0-9]/g, '-');
     
-    // Check if we're in development or production environment
-    const isDevelopment = window.location.hostname === 'localhost' || 
-                      window.location.hostname.includes('lovable');
-    
-    if (isDevelopment) {
-      // For development environment - redirect to local route
-      navigate(`/suite?url=${encodeURIComponent(formattedUrl)}&projectId=${projectId}`);
-    } else {
-      // For production - direct to the suite subdomain
-      window.location.href = `https://suite.seoaudit.pt/projeto/${projectId}?url=${encodeURIComponent(formattedUrl)}`;
-    }
+    // FIXED: Always redirect to local route - we'll handle subdomain distinction in the app
+    // This ensures consistent routing behavior regardless of environment
+    navigate(`/suite?url=${encodeURIComponent(formattedUrl)}&projectId=${projectId}`);
     
     // Mark that user has visited dashboard
     localStorage.setItem('hasVisitedDashboard', 'true');

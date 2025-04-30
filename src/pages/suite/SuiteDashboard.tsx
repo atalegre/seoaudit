@@ -3,11 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/hooks/use-toast';
 import SuiteLayout from '@/components/suite/SuiteLayout';
-import EmptyDashboardState from '@/components/suite/dashboard/EmptyDashboardState';
 import DashboardContent from '@/components/suite/dashboard/DashboardContent';
 import UserOnboarding from '@/components/suite/dashboard/UserOnboarding';
 import SuiteOnboarding from '@/components/suite/dashboard/SuiteOnboarding';
-import { useDashboardState, SampleRecommendation } from '@/hooks/suite/useDashboardState';
+import { useDashboardState } from '@/hooks/suite/useDashboardState';
 import { toast } from 'sonner';
 import { useSearchParams, useLocation } from 'react-router-dom';
 import { useUrlState } from '@/hooks/suite/dashboard/useUrlState';
@@ -30,21 +29,14 @@ const SuiteDashboard = () => {
     domain,
     lastAnalysisDate,
     isLoading,
-    logoUrl,
-    totalScore,
-    seoScore,
-    aioScore,
-    llmScore,
-    performanceScore,
-    directoryScore,
-    keywordScore,
-    recommendations,
     handleRerunAnalysis
   } = useDashboardState();
   
   // Check parameters and initiate analysis when loading the page
   useEffect(() => {
     if (urlParam && (!url || urlParam !== url)) {
+      console.log("SuiteDashboard: URL parameter detected:", urlParam);
+      
       // Save to localStorage
       localStorage.setItem('lastAnalyzedUrl', urlParam);
       
@@ -56,7 +48,10 @@ const SuiteDashboard = () => {
       
       // Set URL for analysis
       setUrl(urlParam);
+      
+      // Trigger the analysis with a slight delay
       setTimeout(() => {
+        console.log("SuiteDashboard: Triggering analysis for URL:", urlParam);
         handleRerunAnalysis();
       }, 500);
     }
@@ -64,6 +59,8 @@ const SuiteDashboard = () => {
     // Check for pending URL in sessionStorage (from login flow)
     const pendingUrl = sessionStorage.getItem('pendingAnalysisUrl');
     if (pendingUrl && (!url || pendingUrl !== url)) {
+      console.log("SuiteDashboard: Pending URL detected:", pendingUrl);
+      
       // Save to localStorage
       localStorage.setItem('lastAnalyzedUrl', pendingUrl);
       
@@ -78,6 +75,8 @@ const SuiteDashboard = () => {
       
       // Set URL for analysis
       setUrl(pendingUrl);
+      
+      // Trigger analysis
       setTimeout(() => {
         handleRerunAnalysis();
       }, 500);
@@ -93,21 +92,6 @@ const SuiteDashboard = () => {
       setShowTour(true);
     }
   }, [urlParam, user, url, setUrl, handleRerunAnalysis]);
-  
-  const handleViewMoreRecommendations = () => {
-    if (!user) {
-      hookToast({
-        title: "Login necessário",
-        description: "Faça login para ver todas as recomendações detalhadas.",
-      });
-      return;
-    }
-    
-    // Navigate to recommendations page
-    toast.info("Funcionalidade em desenvolvimento", {
-      description: "A página de recomendações detalhadas estará disponível em breve."
-    });
-  };
   
   const handleDismissOnboarding = () => {
     setShowOnboarding(false);

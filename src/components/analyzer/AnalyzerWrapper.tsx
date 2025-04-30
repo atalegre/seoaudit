@@ -19,8 +19,12 @@ const AnalyzerWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) 
         // Store the URL in localStorage
         localStorage.setItem('lastAnalyzedUrl', url);
         
-        // Redirect to the suite with this URL
-        navigate(`/suite?url=${encodeURIComponent(url)}`);
+        // Extract domain for project ID creation
+        const domain = url.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+        const projectId = `${domain}-${Date.now()}`.replace(/[^a-zA-Z0-9]/g, '-');
+        
+        // Redirect to the suite with this URL - always use local routing
+        navigate(`/suite?url=${encodeURIComponent(url)}&projectId=${projectId}`);
         
         // Show a notification
         toast.success("Análise iniciada", {
