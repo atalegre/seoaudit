@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, User, LogIn, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useUser } from '@/contexts/UserContext';
-import { useLogout } from '@/hooks/useLogout';
+import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 
@@ -23,7 +23,6 @@ const NewSuiteHeader = ({
 }: NewSuiteHeaderProps) => {
   const navigate = useNavigate();
   const { user, loading } = useUser();
-  const { handleSignOut } = useLogout();
   const { t } = useLanguage();
   const [localLoading, setLocalLoading] = useState(true);
 
@@ -53,9 +52,16 @@ const NewSuiteHeader = ({
 
   const handleLogout = async () => {
     try {
-      await handleSignOut();
+      console.log("Attempting to sign out user");
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error("Error during signOut:", error);
+        throw error;
+      }
+      
       toast.success(t('logout-success') || "Logout realizado com sucesso");
-      navigate('/signin');
+      navigate('/signin', { replace: true });
     } catch (error) {
       console.error("Logout error:", error);
       toast.error(t('logout-error') || "Erro ao fazer logout");
