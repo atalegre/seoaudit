@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
 import { useLogout } from '@/hooks/useLogout';
 import { toast } from 'sonner';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface SuiteHeaderProps {
   title?: string;
@@ -27,11 +28,14 @@ const SuiteHeader = ({
   const navigate = useNavigate();
   const { user, loading } = useUser();
   const { handleSignOut } = useLogout();
+  const { t } = useLanguage();
 
   const handleLogout = async () => {
     await handleSignOut();
     toast.success("Logout realizado com sucesso");
   };
+
+  console.log("SuiteHeader - User state:", { user, loading });
 
   return (
     <header className="bg-white border-b p-4">
@@ -45,7 +49,7 @@ const SuiteHeader = ({
               className="mr-2"
             >
               <ChevronLeft className="h-4 w-4 mr-1" />
-              Voltar
+              {t('back')}
             </Button>
           )}
           
@@ -54,7 +58,7 @@ const SuiteHeader = ({
             {domain && <p className="text-sm text-gray-500">{domain}</p>}
             {lastAnalysisDate && (
               <p className="text-xs text-gray-400">
-                Última análise: {lastAnalysisDate}
+                {t('last-analysis')}: {lastAnalysisDate}
               </p>
             )}
           </div>
@@ -81,7 +85,7 @@ const SuiteHeader = ({
                     className="flex items-center gap-2"
                   >
                     <LogOut className="h-4 w-4" />
-                    <span className="hidden md:inline">Sair</span>
+                    <span className="hidden md:inline">{t('sign-out')}</span>
                   </Button>
                 </div>
               ) : (
@@ -92,7 +96,7 @@ const SuiteHeader = ({
                   className="flex items-center gap-2"
                 >
                   <LogIn className="h-4 w-4" />
-                  <span>Entrar</span>
+                  <span>{t('sign-in')}</span>
                 </Button>
               )}
             </>
