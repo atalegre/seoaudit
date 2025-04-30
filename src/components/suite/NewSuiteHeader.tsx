@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, User, LogIn, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,7 @@ const NewSuiteHeader = ({
   const { user, loading } = useUser();
   const { handleSignOut } = useLogout();
   const { t } = useLanguage();
+  const [localLoading, setLocalLoading] = useState(true);
 
   // Debug auth state on mount and whenever user changes
   useEffect(() => {
@@ -34,7 +35,21 @@ const NewSuiteHeader = ({
       isAuthenticated: !!user,
       userEmail: user?.email || 'no email' 
     });
+    
+    // Ensure loading state resolves locally after a short delay
+    const localTimer = setTimeout(() => {
+      setLocalLoading(false);
+    }, 500);
+    
+    return () => clearTimeout(localTimer);
   }, [user, loading]);
+  
+  // When context loading changes, update local loading
+  useEffect(() => {
+    if (!loading) {
+      setLocalLoading(false);
+    }
+  }, [loading]);
 
   const handleLogout = async () => {
     try {
@@ -75,9 +90,8 @@ const NewSuiteHeader = ({
         </div>
         
         <div className="flex items-center gap-3">
-          {/* Use a short timeout to prevent infinite loading state */}
-          {loading ? (
-            <div className="text-sm text-gray-500">Loading...</div>
+          {localLoading ? (
+            <div className="text-sm text-gray-500 animate-pulse">Loading...</div>
           ) : user ? (
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded">

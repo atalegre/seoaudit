@@ -33,71 +33,38 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     console.log("UserProvider - Initializing auth state");
-
-    // Add a safety timeout to prevent infinite loading state
+    
+    // CRITICAL: Add a shorter safety timeout (1 second) to prevent infinite loading state
     const safetyTimeout = setTimeout(() => {
       if (loading) {
-        console.log("UserProvider - Safety timeout triggered, setting loading to false");
+        console.log("UserProvider - Safety timeout triggered after 1s, setting loading to false");
         setLoading(false);
       }
-    }, 3000);
+    }, 1000);
     
-    // First check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("UserProvider - Initial session check:", session?.user?.email);
-      
-      if (session?.user) {
-        setUser(session.user);
+    // Initialize auth state immediately with a synchronous update
+    const initAuth = async () => {
+      try {
+        // Check for existing session
+        const { data, error } = await supabase.auth.getSession();
         
-        // Load user profile
-        getUserProfile(session.user.id).then((profile) => {
-          // Check if profile is an error or valid profile data
-          if (profile && typeof profile === 'object' && !('error' in profile)) {
-            // Use type assertion to ensure TypeScript knows this is a UserProfile
-            const userProfileData = profile as UserProfile;
-            setUserProfile(userProfileData);
-            
-            // Safely access the role property with nullish check
-            if (userProfileData && userProfileData.role) {
-              setRole(userProfileData.role);
-            } else {
-              // Default if role is not found
-              setRole('user'); 
-            }
-          } else {
-            // If no profile exists yet but we have a user, default to user role
-            // unless it's the admin email
-            if (session.user.email === 'atalegre@me.com') {
-              setRole('admin');
-            } else {
-              setRole('user');
-            }
-          }
+        if (error) {
+          console.error("Error getting session:", error);
           setLoading(false);
-        }).catch(error => {
-          console.error('Error loading user profile:', error);
-          setRole('user'); 
-          setLoading(false);
-        });
-      } else {
-        setLoading(false);
-      }
-    }).catch(err => {
-      console.error('Error checking session:', err);
-      setLoading(false);
-    });
-    
-    // Then set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.log("UserProvider - Auth state changed:", event, session?.user?.email);
+          return;
+        }
         
-        // Update user state immediately
+        const session = data?.session;
+        console.log("UserProvider - Initial session check:", session?.user?.email || "No session");
+        
+        // Update state
         setUser(session?.user || null);
         
         if (session?.user) {
-          // Load user profile
-          getUserProfile(session.user.id).then((profile) => {
+          try {
+            // Load user profile
+            const profile = await getUserProfile(session.user.id);
+            
             // Check if profile is an error or valid profile data
             if (profile && typeof profile === 'object' && !('error' in profile)) {
               // Use type assertion to ensure TypeScript knows this is a UserProfile
@@ -120,17 +87,66 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
                 setRole('user');
               }
             }
-            setLoading(false);
-          }).catch(error => {
+          } catch (profileError) {
+            console.error('Error loading user profile:', profileError);
+            setRole('user');
+          }
+        }
+      } catch (e) {
+        console.error("Fatal error initializing auth:", e);
+      } finally {
+        // Always ensure loading is set to false
+        setLoading(false);
+      }
+    };
+    
+    // Execute initialization
+    initAuth();
+    
+    // Set up auth state listener for changes after initial load
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        console.log("UserProvider - Auth state changed:", event, session?.user?.email);
+        
+        // Update user state immediately
+        setUser(session?.user || null);
+        
+        if (!session?.user) {
+          setUserProfile(null);
+          setRole('user');
+          return;
+        }
+        
+        // Load user profile asynchronously - don't block UI
+        getUserProfile(session.user.id)
+          .then((profile) => {
+            // Check if profile is an error or valid profile data
+            if (profile && typeof profile === 'object' && !('error' in profile)) {
+              // Use type assertion to ensure TypeScript knows this is a UserProfile
+              const userProfileData = profile as UserProfile;
+              setUserProfile(userProfileData);
+              
+              // Safely access the role property with nullish check
+              if (userProfileData && userProfileData.role) {
+                setRole(userProfileData.role);
+              } else {
+                // Default if role is not found
+                setRole('user'); 
+              }
+            } else {
+              // If no profile exists yet but we have a user, default to user role
+              // unless it's the admin email
+              if (session.user.email === 'atalegre@me.com') {
+                setRole('admin');
+              } else {
+                setRole('user');
+              }
+            }
+          })
+          .catch(error => {
             console.error('Error loading user profile:', error);
             setRole('user');
-            setLoading(false);
           });
-        } else {
-          setUserProfile(null);
-          setRole('user');  // Default to user when logged out
-          setLoading(false);
-        }
       }
     );
 
