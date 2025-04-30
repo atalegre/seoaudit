@@ -50,6 +50,9 @@ import ScrollToTop from './components/ScrollToTop';
 // Import the new PdfReportPage
 import PdfReportPage from './pages/suite/PdfReportPage';
 
+// Auth Provider
+import { UserProvider } from './contexts/UserContext';
+
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
@@ -81,57 +84,59 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <ScrollToTop />
-      <Toaster richColors closeButton />
-      <Routes>
-        {/* Main landing page */}
-        <Route path="/" element={<Index />} />
-        
-        {/* Main navigation routes */}
-        <Route path="/how-it-works" element={<HowItWorksPage />} />
-        <Route path="/como-funciona" element={<HowItWorksPage />} /> {/* PT version */}
-        <Route path="/faq" element={<FAQPage />} />
-        <Route path="/contact" element={<ContactPage />} />
-        <Route path="/contacto" element={<ContactPage />} /> {/* PT version */}
-        
-        {/* Content pages */}
-        <Route path="/blog" element={<BlogPage />} />
-        <Route path="/guides" element={<GuidesPage />} />
-        <Route path="/guias" element={<GuidesPage />} /> {/* PT version */}
-        <Route path="/glossary" element={<GlossaryPage />} />
-        <Route path="/glossario" element={<GlossaryPage />} /> {/* PT version */}
-        <Route path="/guides/seo-aio-checklist" element={<SeoAioChecklistPage />} />
-        <Route path="/guias/seo-aio-checklist" element={<SeoAioChecklistPage />} /> {/* PT version */}
-        
-        {/* Auth routes */}
-        <Route path="/signin" element={<SignInPage />} />
-        <Route path="/signup" element={<SignUpPage />} />
-        <Route path="/recuperar-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
-
-        {/* Suite Pages */}
-        <Route path="/suite" element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
-          <Route index element={<SuiteDashboard />} />
-          <Route path="dashboard" element={<SuiteDashboard />} />
-          <Route path="keywords" element={<KeywordsPage />} />
-          <Route path="directories" element={<DirectoriesPage />} />
-          <Route path="seo" element={<SeoAnalysisPage />} />
-          <Route path="aio" element={<AioOptimizationPage />} />
-          <Route path="llm" element={<LLMPresencePage />} />
-          <Route path="content-recommender" element={<ContentRecommenderPage />} />
-          <Route path="content-writer" element={<ContentWriterPage />} />
-          <Route path="reports" element={<ReportsPage />} />
-          <Route path="profile" element={<UserProfilePage />} />
-          <Route path="settings" element={<UserSettingsPage />} />
-          <Route path="change-password" element={<UserChangePasswordPage />} />
+      <UserProvider>
+        <ScrollToTop />
+        <Toaster richColors closeButton />
+        <Routes>
+          {/* Main landing page */}
+          <Route path="/" element={<Index />} />
           
-          {/* PDF Report route */}
-          <Route path="pdf-report" element={<PdfReportPage />} />
-        </Route>
+          {/* Main navigation routes */}
+          <Route path="/how-it-works" element={<HowItWorksPage />} />
+          <Route path="/como-funciona" element={<HowItWorksPage />} /> {/* PT version */}
+          <Route path="/faq" element={<FAQPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/contacto" element={<ContactPage />} /> {/* PT version */}
+          
+          {/* Content pages */}
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/guides" element={<GuidesPage />} />
+          <Route path="/guias" element={<GuidesPage />} /> {/* PT version */}
+          <Route path="/glossary" element={<GlossaryPage />} />
+          <Route path="/glossario" element={<GlossaryPage />} /> {/* PT version */}
+          <Route path="/guides/seo-aio-checklist" element={<SeoAioChecklistPage />} />
+          <Route path="/guias/seo-aio-checklist" element={<SeoAioChecklistPage />} /> {/* PT version */}
+          
+          {/* Auth routes */}
+          <Route path="/signin" element={<SignInPage />} />
+          <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/recuperar-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-        {/* Catch-all route for 404 Not Found */}
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
+          {/* Suite Pages */}
+          <Route path="/suite" element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
+            <Route index element={<SuiteDashboard />} />
+            <Route path="dashboard" element={<SuiteDashboard />} />
+            <Route path="keywords" element={<KeywordsPage />} />
+            <Route path="directories" element={<DirectoriesPage />} />
+            <Route path="seo" element={<SeoAnalysisPage />} />
+            <Route path="aio" element={<AioOptimizationPage />} />
+            <Route path="llm" element={<LLMPresencePage />} />
+            <Route path="content-recommender" element={<ContentRecommenderPage />} />
+            <Route path="content-writer" element={<ContentWriterPage />} />
+            <Route path="reports" element={<ReportsPage />} />
+            <Route path="profile" element={<UserProfilePage />} />
+            <Route path="settings" element={<UserSettingsPage />} />
+            <Route path="change-password" element={<UserChangePasswordPage />} />
+            
+            {/* PDF Report route */}
+            <Route path="pdf-report" element={<PdfReportPage />} />
+          </Route>
+
+          {/* Catch-all route for 404 Not Found */}
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </UserProvider>
     </Router>
   );
 };

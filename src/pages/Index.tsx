@@ -11,6 +11,8 @@ import ClientLogos from '@/components/home/ClientLogos';
 import WhyChooseUs from '@/components/home/WhyChooseUs';
 import FeatureHighlights from '@/components/home/FeatureHighlights';
 import FeaturesSection from '@/components/home/FeaturesSection';
+import MainAnalyzer from '@/components/analyzer/MainAnalyzer';
+import AnalyzerWrapper from '@/components/analyzer/AnalyzerWrapper';
 
 const Index = () => {
   return (
@@ -26,6 +28,9 @@ const Index = () => {
         <WhyChooseUs />
         <TestimonialsSection />
         <CTASection />
+        <AnalyzerWrapper>
+          <MainAnalyzer />
+        </AnalyzerWrapper>
       </main>
       <Footer />
     </div>
