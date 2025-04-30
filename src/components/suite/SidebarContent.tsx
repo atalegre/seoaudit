@@ -16,6 +16,13 @@ const SidebarContentItems = () => {
   const navigate = useNavigate();
   const { user } = useUser();
   
+  // Debug the auth state
+  console.log("SidebarContent - Auth state:", { 
+    user, 
+    isAuthenticated: !!user,
+    userEmail: user?.email || 'no email' 
+  });
+  
   // Array of links for the sidebar - removed LLM, Keywords, Content Recommender, Content Writer
   const links = [
     {

@@ -11,6 +11,12 @@ const AvailableTools = () => {
   const navigate = useNavigate();
   const { user } = useUser();
   
+  console.log("AvailableTools - Auth state:", { 
+    user, 
+    isAuthenticated: !!user,
+    userEmail: user?.email || 'no email' 
+  });
+  
   // Remove all tools that we want to hide
   const tools = [
     {
