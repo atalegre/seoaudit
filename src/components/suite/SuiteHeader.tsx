@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, LogIn, User, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -35,7 +35,10 @@ const SuiteHeader = ({
     toast.success("Logout realizado com sucesso");
   };
 
-  console.log("SuiteHeader - User state:", { user, loading });
+  // Simple auth status debugging
+  useEffect(() => {
+    console.log("SuiteHeader - User state updated:", { user, loading });
+  }, [user, loading]);
 
   return (
     <header className="bg-white border-b p-4">
@@ -65,27 +68,24 @@ const SuiteHeader = ({
         </div>
         
         <div className="flex items-center gap-3">
-          {!loading && (
+          {/* Authentication status display */}
+          {loading ? (
+            <div className="text-sm text-gray-500">Loading...</div>
+          ) : (
             <>
               {user ? (
                 <div className="flex items-center gap-3">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => navigate('/suite/profile')}
-                    className="flex items-center gap-2"
-                  >
-                    <User className="h-4 w-4" />
-                    <span className="hidden md:inline">{user.email || 'Usuário'}</span>
-                  </Button>
+                  <div className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded">
+                    <User className="h-4 w-4 text-gray-600" />
+                    <span className="text-sm">{user.email}</span>
+                  </div>
                   <Button 
                     variant="ghost" 
                     size="sm" 
                     onClick={handleLogout}
-                    className="flex items-center gap-2"
                   >
-                    <LogOut className="h-4 w-4" />
-                    <span className="hidden md:inline">{t('sign-out')}</span>
+                    <LogOut className="h-4 w-4 mr-1" />
+                    <span>{t('sign-out')}</span>
                   </Button>
                 </div>
               ) : (
@@ -93,9 +93,8 @@ const SuiteHeader = ({
                   variant="outline" 
                   size="sm" 
                   onClick={() => navigate('/signin')}
-                  className="flex items-center gap-2"
                 >
-                  <LogIn className="h-4 w-4" />
+                  <LogIn className="h-4 w-4 mr-1" />
                   <span>{t('sign-in')}</span>
                 </Button>
               )}
@@ -106,8 +105,9 @@ const SuiteHeader = ({
             <Button 
               onClick={onRerunAnalysis} 
               disabled={isAnalyzing}
+              className="ml-2"
             >
-              {isAnalyzing ? 'Analisando...' : 'Analisar Novamente'}
+              {isAnalyzing ? t('analyzing') || 'Analisando...' : t('analyze-again') || 'Analisar Novamente'}
             </Button>
           )}
         </div>
