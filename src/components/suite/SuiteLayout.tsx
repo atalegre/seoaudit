@@ -29,7 +29,7 @@ const SuiteLayout = ({
   
   return (
     <div className="h-screen flex flex-col">
-      {/* New Header component */}
+      {/* Header always remains visible and clickable */}
       <NewSuiteHeader 
         title={title} 
         domain={domain} 
@@ -38,14 +38,14 @@ const SuiteLayout = ({
       />
       
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar - conditionally rendered */}
+        {/* Sidebar always remains visible and clickable when present */}
         {!hideSidebar && (
           <aside className="w-14 border-r bg-white hidden md:block">
             <NewSidebarContent />
           </aside>
         )}
         
-        {/* Main content area */}
+        {/* Main content area - this is what gets wrapped by AuthRequiredRoute */}
         <main className={`flex-1 overflow-auto bg-gray-50 ${hideSidebar ? 'w-full' : ''}`}>
           <div className="p-4 md:p-6">
             {children}

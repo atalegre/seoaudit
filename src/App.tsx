@@ -120,21 +120,15 @@ const App: React.FC = () => {
             <Route path="keywords" element={<KeywordsPage />} />
             <Route path="seo" element={<SeoAnalysisPage />} />
             
-            {/* Protected Routes */}
+            {/* Protected Routes - Now the AuthRequiredRoute only wraps the content, not the layout */}
             <Route path="directories" element={
-              <AuthRequiredRoute>
-                <DirectoriesPage />
-              </AuthRequiredRoute>
+              <DirectoriesPage />
             } />
             <Route path="aio" element={
-              <AuthRequiredRoute>
-                <AioOptimizationPage />
-              </AuthRequiredRoute>
+              <AioOptimizationPage />
             } />
             <Route path="reports" element={
-              <AuthRequiredRoute>
-                <ReportsPage />
-              </AuthRequiredRoute>
+              <ReportsPage />
             } />
             
             {/* Other suite routes */}
