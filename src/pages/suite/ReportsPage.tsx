@@ -17,6 +17,7 @@ import {
   TableRow
 } from '@/components/ui/table';
 import { Card } from '@/components/ui/card';
+import { toast } from 'sonner';
 
 const ReportsPage = () => {
   const [url, setUrl] = useState('');
@@ -63,6 +64,18 @@ const ReportsPage = () => {
     if (!url) return;
     generateReport(url);
     setUrl('');
+  };
+
+  // New function to handle downloading reports
+  const handleDownloadReport = (report) => {
+    if (report.status !== 'success' || !report.file_url) {
+      toast.error('Este relatório não está disponível para download');
+      return;
+    }
+    
+    // Open file URL in new tab if it's an external URL
+    // or trigger download if it's a direct file link
+    window.open(report.file_url, '_blank');
   };
 
   // Content that requires authentication
@@ -150,6 +163,7 @@ const ReportsPage = () => {
                       variant="outline" 
                       size="sm"
                       disabled={report.status !== 'success' || !report.file_url}
+                      onClick={() => handleDownloadReport(report)}
                     >
                       <Download className="mr-1 h-3 w-3" /> 
                       Download
