@@ -13,6 +13,11 @@ import { Toaster } from 'sonner';
 
 // Import pages
 import NotFoundPage from './pages/NotFoundPage';
+import Index from './pages/Index';
+import SignInPage from './pages/SignInPage';
+import SignUpPage from './pages/SignUpPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 // Suite Pages
 import SuiteDashboard from './pages/suite/SuiteDashboard';
@@ -46,7 +51,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }, [isLoggedIn, location]);
 
   if (!isLoggedIn) {
-    return <Navigate to="/login" replace state={{ from: location }} />;
+    return <Navigate to="/signin" replace state={{ from: location }} />;
   }
 
   return children;
@@ -66,6 +71,15 @@ const App: React.FC = () => {
       <ScrollToTop />
       <Toaster richColors closeButton />
       <Routes>
+        {/* Main landing page */}
+        <Route path="/" element={<Index />} />
+        
+        {/* Auth routes */}
+        <Route path="/signin" element={<SignInPage />} />
+        <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/recuperar-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+
         {/* Suite Pages */}
         <Route path="/suite" element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
           <Route index element={<SuiteDashboard />} />
