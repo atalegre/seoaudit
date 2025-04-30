@@ -8,46 +8,40 @@ import { Card } from '@/components/ui/card';
 import { Download, FileText } from 'lucide-react';
 
 const ReportsPage = () => {
-  const { reports, loading, error } = useReports();
+  const { reports, isLoading, generateReport, refreshReports } = useReports();
   
   // Content that requires authentication
   const pageContent = (
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Relatórios</h1>
-        <Button>
+        <Button onClick={() => generateReport(window.location.origin)}>
           <FileText className="mr-2 h-4 w-4" />
           Gerar Novo Relatório
         </Button>
       </div>
       
-      {loading && (
+      {isLoading && (
         <p className="text-center py-12 text-muted-foreground">Carregando relatórios...</p>
       )}
       
-      {error && (
-        <div className="bg-destructive/10 border border-destructive rounded-lg p-4">
-          <p className="text-destructive">Erro ao carregar relatórios: {error}</p>
-        </div>
-      )}
-      
-      {!loading && !error && reports?.length === 0 && (
+      {!isLoading && reports?.length === 0 && (
         <Card className="p-6 text-center">
           <p className="text-muted-foreground mb-4">
             Nenhum relatório disponível. Gere seu primeiro relatório para análise completa.
           </p>
-          <Button>
+          <Button onClick={() => generateReport(window.location.origin)}>
             <FileText className="mr-2 h-4 w-4" />
             Gerar Primeiro Relatório
           </Button>
         </Card>
       )}
       
-      {!loading && !error && reports?.length > 0 && (
+      {!isLoading && reports?.length > 0 && (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {reports.map((report) => (
             <Card key={report.id} className="p-4">
-              <h3 className="font-medium mb-1">{report.title}</h3>
+              <h3 className="font-medium mb-1">{report.url}</h3>
               <p className="text-sm text-muted-foreground mb-3">
                 {new Date(report.created_at).toLocaleDateString()}
               </p>
