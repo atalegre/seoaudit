@@ -56,6 +56,15 @@ export async function checkSeoAnalysisTaskStatus(taskId: string): Promise<TaskSt
     });
 
     if (error) throw error;
+    
+    // Log the raw data structure from the API to better understand the format
+    console.log(`Raw API response for task ${taskId}:`, data);
+    
+    // Ensure we have the expected data structure
+    if (data && data.results && typeof data.results === 'object') {
+      console.log(`Task ${taskId} result keys:`, Object.keys(data.results));
+    }
+    
     return data;
   } catch (error) {
     console.error('Error checking SEO analysis task status:', error);

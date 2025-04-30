@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, BarChart } from 'lucide-react';
 import DeviceTabsSection from '@/components/seo/DeviceTabsSection';
 import { useSeoAnalysis } from '@/hooks/useSeoAnalysis';
+import { toast } from 'sonner';
 
 const SeoAnalysisPage = () => {
   const [activeTab, setActiveTab] = useState('desktop');
@@ -24,6 +25,12 @@ const SeoAnalysisPage = () => {
 
   // Handler for analyze button
   const handleAnalyze = () => {
+    if (!url) {
+      toast.error("URL necessária", {
+        description: "Por favor, digite uma URL para analisar."
+      });
+      return;
+    }
     analyzeUrl();
   };
 
