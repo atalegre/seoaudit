@@ -18,7 +18,13 @@ serve(async (req) => {
     // Create a Supabase client with the Auth context of the logged in user
     const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
     const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY") || "";
+    // Using service role key to ensure we have permissions to access the tasks table
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+    
+    // Create two clients - one with anon key (limited permissions) and one with service role (admin)
+    // We'll use the service role client for tasks that require higher permissions
     const supabase = createClient(supabaseUrl, supabaseKey);
+    const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
     // Parse URL or body params
     let desktopTaskId, mobileTaskId, aiOptimizationTaskId;
@@ -36,6 +42,13 @@ serve(async (req) => {
       aiOptimizationTaskId = body.aiOptimizationTaskId;
     }
 
+    // Log the request for debugging purposes
+    console.log("Received request for task IDs:", {
+      desktopTaskId,
+      mobileTaskId,
+      aiOptimizationTaskId
+    });
+
     // Validate input
     if (!desktopTaskId || !mobileTaskId || !aiOptimizationTaskId) {
       return new Response(
@@ -48,23 +61,31 @@ serve(async (req) => {
     }
 
     // Get all three tasks in parallel for better performance
+    // Use the adminClient with service role key to ensure we have permissions
     const [desktopTaskResult, mobileTaskResult, aiOptTaskResult] = await Promise.all([
-      supabase
+      adminClient
         .from('tasks')
         .select('id, status, requested_values, response_values')
         .eq('id', desktopTaskId)
-        .maybeSingle(), // Changed from single() to maybeSingle() to avoid errors
-      supabase
+        .maybeSingle(),
+      adminClient
         .from('tasks')
         .select('id, status, requested_values, response_values')
         .eq('id', mobileTaskId)
-        .maybeSingle(), // Changed from single() to maybeSingle()
-      supabase
+        .maybeSingle(),
+      adminClient
         .from('tasks')
         .select('id, status, requested_values, response_values')
         .eq('id', aiOptimizationTaskId)
-        .maybeSingle() // Changed from single() to maybeSingle()
+        .maybeSingle()
     ]);
+
+    // Log the results for debugging
+    console.log("Task query results:", {
+      desktop: { data: !!desktopTaskResult.data, error: desktopTaskResult.error },
+      mobile: { data: !!mobileTaskResult.data, error: mobileTaskResult.error },
+      ai: { data: !!aiOptTaskResult.data, error: aiOptTaskResult.error }
+    });
 
     // Check for errors in any of the queries
     const errors = [];

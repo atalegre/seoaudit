@@ -35,6 +35,12 @@ export function useReportData(
       setError(null);
 
       try {
+        console.log('Fetching report data with task IDs:', {
+          desktopTaskId,
+          mobileTaskId,
+          aiOptimizationTaskId
+        });
+
         // Use body property for POST requests with parameters
         const { data: reportData, error: fetchError } = await supabase.functions.invoke(
           'get-report-data',
