@@ -35,11 +35,12 @@ export function useReportData(
       setError(null);
 
       try {
+        // Use params property instead of queryParams for compatibility with Supabase SDK
         const { data: reportData, error: fetchError } = await supabase.functions.invoke(
           'get-report-data',
           {
             method: 'GET',
-            queryParams: {
+            params: {
               desktopTaskId,
               mobileTaskId,
               aiOptimizationTaskId

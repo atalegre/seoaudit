@@ -9,6 +9,7 @@ const LanguageContext = createContext<LanguageContextType>({
   language: 'pt',
   setLanguage: () => {},
   t: (key: string) => key,
+  initializeLanguage: () => {},
 });
 
 // Custom hook for using the language context
@@ -31,8 +32,17 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
     return translations[language][key] || key;
   };
   
+  const initializeLanguage = () => {
+    const storedLanguage = localStorage.getItem('language') as Language;
+    if (storedLanguage) {
+      setLanguageState(storedLanguage);
+    } else {
+      setLanguageState(initialLanguage);
+    }
+  };
+  
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage, t, initializeLanguage }}>
       {children}
     </LanguageContext.Provider>
   );

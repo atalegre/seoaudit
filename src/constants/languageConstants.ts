@@ -1,10 +1,9 @@
 
-// Define available languages
-export type Language = 'pt' | 'en';
+export type Language = 'en' | 'pt';
 
-// Define the context type
-export type LanguageContextType = {
+export interface LanguageContextType {
   language: Language;
-  setLanguage: (lang: Language) => void;
+  setLanguage: (language: Language) => void;
   t: (key: string) => string;
-};
+  initializeLanguage?: () => void;
+}

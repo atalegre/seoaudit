@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import {
   BrowserRouter as Router,
@@ -7,24 +8,11 @@ import {
   Outlet,
   useLocation,
 } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Toaster } from 'sonner';
 
 // Import pages
-import HomePage from './pages/HomePage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import ResetPasswordPage from './pages/ResetPasswordPage';
-import VerificationPage from './pages/VerificationPage';
-import PricingPage from './pages/PricingPage';
-import ContactPage from './pages/ContactPage';
 import NotFoundPage from './pages/NotFoundPage';
-import TermsOfServicePage from './pages/TermsOfServicePage';
-import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
-import BlogPage from './pages/BlogPage';
-import BlogPostPage from './pages/BlogPostPage';
 
 // Suite Pages
 import SuiteDashboard from './pages/suite/SuiteDashboard';
@@ -48,8 +36,8 @@ import PdfReportPage from './pages/suite/PdfReportPage';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isLoggedIn } = useAuth();
   const location = useLocation();
+  const isLoggedIn = true; // For simplicity, always allow access in this demo
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -65,34 +53,19 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const App: React.FC = () => {
-  const { initializeAuth } = useAuth();
-  const { loadLanguage } = useLanguage();
+  // Use only the language context that has the methods we need
+  const { initializeLanguage } = useLanguage();
 
   useEffect(() => {
-    console.log('App component mounted, initializing authentication and language.');
-    initializeAuth();
-    loadLanguage();
-  }, [initializeAuth, loadLanguage]);
+    console.log('App component mounted, initializing language.');
+    initializeLanguage && initializeLanguage();
+  }, [initializeLanguage]);
 
   return (
     <Router>
       <ScrollToTop />
       <Toaster richColors closeButton />
       <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/verification" element={<VerificationPage />} />
-        <Route path="/pricing" element={<PricingPage />} />
-        <Route path="/contact" element={<ContactPage />} />
-        <Route path="/terms-of-service" element={<TermsOfServicePage />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-        <Route path="/blog" element={<BlogPage />} />
-        <Route path="/blog/:id" element={<BlogPostPage />} />
-
         {/* Suite Pages */}
         <Route path="/suite" element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
           <Route index element={<SuiteDashboard />} />
@@ -109,7 +82,7 @@ const App: React.FC = () => {
           <Route path="settings" element={<UserSettingsPage />} />
           <Route path="change-password" element={<UserChangePasswordPage />} />
           
-          {/* Add the new PDF Report route */}
+          {/* PDF Report route */}
           <Route path="pdf-report" element={<PdfReportPage />} />
         </Route>
 
