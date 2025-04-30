@@ -7,7 +7,7 @@ export interface Report {
   id: string;
   url: string;
   created_at: string;
-  status: string;
+  status: string; // Using 'string' to allow for 'success', 'pending', 'failed'
   file_url: string | null;
   user_id?: string;
 }

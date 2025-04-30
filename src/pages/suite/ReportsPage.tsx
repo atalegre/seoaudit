@@ -108,14 +108,14 @@ const ReportsPage = () => {
                   <TableCell>
                     <Badge 
                       variant={
-                        report.status === 'completed' ? 'success' : 
+                        report.status === 'success' ? 'success' : 
                         report.status === 'pending' ? 'warning' : 
                         report.status === 'failed' ? 'destructive' : 
                         'outline'
                       }
                       className="font-medium text-xs"
                     >
-                      {report.status === 'completed' ? 'Sucesso' : 
+                      {report.status === 'success' ? 'Sucesso' : 
                        report.status === 'pending' ? 'Processando' :
                        report.status === 'failed' ? 'Falhou' : 
                        report.status}
@@ -125,7 +125,7 @@ const ReportsPage = () => {
                     <Button 
                       variant="outline" 
                       size="sm"
-                      disabled={report.status !== 'completed' || !report.file_url}
+                      disabled={report.status !== 'success' || !report.file_url}
                     >
                       <Download className="mr-1 h-3 w-3" /> 
                       Download
