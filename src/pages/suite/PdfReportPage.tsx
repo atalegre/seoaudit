@@ -2,6 +2,7 @@
 import React, { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useReportData } from '@/hooks/useReportData';
+import SuiteLayout from '@/components/suite/SuiteLayout';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, ExternalLink, FileText, BarChart3, BrainCircuit } from 'lucide-react';
@@ -172,227 +173,241 @@ const PdfReportPage: React.FC = () => {
     return data?.siteUrl ? extractDomain(data.siteUrl) : 'Unknown Site';
   }, [data?.siteUrl]);
   
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-8 flex flex-col items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-        <h2 className="text-xl font-medium mb-2">Generating Report</h2>
-        <p className="text-muted-foreground">
-          Loading analysis data for PDF generation...
-        </p>
-      </div>
-    );
-  }
-  
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-8">
-        <div className="max-w-4xl mx-auto bg-red-50 border border-red-200 rounded-lg p-6">
-          <h2 className="text-xl font-bold text-red-600 mb-4 flex items-center gap-2">
-            <ExternalLink className="h-5 w-5" />
-            Error Loading Report
-          </h2>
-          <p className="mb-4">{error}</p>
-          <p className="text-sm text-muted-foreground">
-            Make sure all three task IDs are correctly provided in the URL and that all tasks have completed successfully.
+  // Render the content inside the SuiteLayout
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="min-h-screen bg-gray-50 p-8 flex flex-col items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+          <h2 className="text-xl font-medium mb-2">Generating Report</h2>
+          <p className="text-muted-foreground">
+            Loading analysis data for PDF generation...
           </p>
-          <pre className="mt-4 p-3 bg-white border rounded-md overflow-auto text-xs">
-            <code className="text-muted-foreground">
-              {`desktopTaskId: ${desktopTaskId}\nmobileTaskId: ${mobileTaskId}\naiOptimizationTaskId: ${aiOptimizationTaskId}`}
-            </code>
-          </pre>
+        </div>
+      );
+    }
+    
+    if (error) {
+      return (
+        <div className="min-h-screen bg-gray-50 p-8">
+          <div className="max-w-4xl mx-auto bg-red-50 border border-red-200 rounded-lg p-6">
+            <h2 className="text-xl font-bold text-red-600 mb-4 flex items-center gap-2">
+              <ExternalLink className="h-5 w-5" />
+              Error Loading Report
+            </h2>
+            <p className="mb-4">{error}</p>
+            <p className="text-sm text-muted-foreground">
+              Make sure all three task IDs are correctly provided in the URL and that all tasks have completed successfully.
+            </p>
+            <pre className="mt-4 p-3 bg-white border rounded-md overflow-auto text-xs">
+              <code className="text-muted-foreground">
+                {`desktopTaskId: ${desktopTaskId}\nmobileTaskId: ${mobileTaskId}\naiOptimizationTaskId: ${aiOptimizationTaskId}`}
+              </code>
+            </pre>
+          </div>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="bg-gray-50 p-6 md:p-8">
+        <div className="max-w-5xl mx-auto space-y-8">
+          {/* Report Header */}
+          <div className="bg-white rounded-lg border shadow-sm p-6">
+            <div className="flex flex-col md:flex-row items-center md:justify-between gap-4">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold">{domain}</h1>
+                <p className="text-muted-foreground">
+                  Technical SEO & AI Content Analysis Report
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Generated on {new Date().toLocaleDateString()}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <FileText className="h-10 w-10 text-primary" />
+                <span className="text-lg font-semibold">PDF Report</span>
+              </div>
+            </div>
+            
+            {data?.siteUrl && (
+              <div className="mt-4 flex items-center gap-2 text-sm">
+                <span className="font-medium">Analyzed URL:</span>
+                <a 
+                  href={data.siteUrl.startsWith('http') ? data.siteUrl : `https://${data.siteUrl}`}
+                  className="text-blue-600 hover:underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {data.siteUrl}
+                </a>
+              </div>
+            )}
+          </div>
+          
+          {/* Desktop Analysis Section */}
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              <BarChart3 className="h-5 w-5 text-blue-500" />
+              <h2 className="text-xl font-bold">Desktop SEO Analysis</h2>
+            </div>
+            
+            {processedDesktopData ? (
+              <div className="space-y-6">
+                <DevicePerformancePanel 
+                  data={processedDesktopData}
+                  deviceType="desktop"
+                />
+                
+                <CoreWebVitalsPanel 
+                  lcp={processedDesktopData.lcp || 0}
+                  cls={processedDesktopData.cls || 0}
+                  fid={processedDesktopData.fid || 0}
+                />
+                
+                <TechnicalAuditsPanel 
+                  data={{
+                    mobileFriendly: processedDesktopData.mobileFriendly || false,
+                    security: processedDesktopData.security || {
+                      https: false,
+                      mixedContent: false
+                    },
+                    headingsStructure: processedDesktopData.headingsStructure || {
+                      hasH1: false,
+                      multipleH1: false,
+                      headingsOrder: false
+                    },
+                    metaTags: processedDesktopData.metaTags || {
+                      title: '',
+                      description: '',
+                      titleLength: 0,
+                      descriptionLength: 0
+                    }
+                  }}
+                />
+                
+                <OpportunitiesPanel 
+                  opportunities={processedDesktopData.recommendations || []}
+                />
+              </div>
+            ) : (
+              <Card className="p-8 text-center">
+                <p className="text-muted-foreground">No desktop analysis data available</p>
+              </Card>
+            )}
+          </section>
+          
+          {/* Mobile Analysis Section */}
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              <BarChart3 className="h-5 w-5 text-green-500" />
+              <h2 className="text-xl font-bold">Mobile SEO Analysis</h2>
+            </div>
+            
+            {processedMobileData ? (
+              <div className="space-y-6">
+                <DevicePerformancePanel 
+                  data={processedMobileData}
+                  deviceType="mobile"
+                />
+                
+                <CoreWebVitalsPanel 
+                  lcp={processedMobileData.lcp || 0}
+                  cls={processedMobileData.cls || 0}
+                  fid={processedMobileData.fid || 0}
+                />
+                
+                <TechnicalAuditsPanel 
+                  data={{
+                    mobileFriendly: processedMobileData.mobileFriendly || false,
+                    security: processedMobileData.security || {
+                      https: false,
+                      mixedContent: false
+                    },
+                    headingsStructure: processedMobileData.headingsStructure || {
+                      hasH1: false,
+                      multipleH1: false,
+                      headingsOrder: false
+                    },
+                    metaTags: processedMobileData.metaTags || {
+                      title: '',
+                      description: '',
+                      titleLength: 0,
+                      descriptionLength: 0
+                    }
+                  }}
+                />
+                
+                <OpportunitiesPanel 
+                  opportunities={processedMobileData.recommendations || []}
+                />
+              </div>
+            ) : (
+              <Card className="p-8 text-center">
+                <p className="text-muted-foreground">No mobile analysis data available</p>
+              </Card>
+            )}
+          </section>
+          
+          {/* AI Optimization Section */}
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              <BrainCircuit className="h-5 w-5 text-purple-500" />
+              <h2 className="text-xl font-bold">AI Content Optimization</h2>
+            </div>
+            
+            {aiData ? (
+              <div className="space-y-6">
+                <AioAnalysisPanel
+                  aioScore={aiData.score}
+                  contentClarity={aiData.contentClarity}
+                  logicalStructure={aiData.logicalStructure}
+                  naturalLanguage={aiData.naturalLanguage}
+                  topicsDetected={aiData.topicsDetected}
+                  confusingParts={aiData.confusingParts}
+                />
+                
+                {/* Optional: Add more AI-specific panels here if needed */}
+                {data?.aiOptimization?.data?.recommendations && (
+                  <Card className="p-6">
+                    <h3 className="text-lg font-medium mb-4">AI Recommendations</h3>
+                    <div className="space-y-3">
+                      {data.aiOptimization.data.recommendations.map((rec: any, idx: number) => (
+                        <div key={idx} className="p-3 border rounded-md bg-purple-50">
+                          <h4 className="font-medium">{rec.title}</h4>
+                          <p className="text-sm text-gray-600 mt-1">{rec.explanation}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                )}
+              </div>
+            ) : (
+              <Card className="p-8 text-center">
+                <p className="text-muted-foreground">No AI optimization data available</p>
+              </Card>
+            )}
+          </section>
+          
+          {/* Footer */}
+          <footer className="text-center text-sm text-muted-foreground pt-6 border-t border-gray-200 mt-12">
+            <p>© {new Date().getFullYear()} SEO Technical Audit Platform</p>
+            <p className="mt-1">This report was generated automatically and should be reviewed by a professional SEO specialist</p>
+          </footer>
         </div>
       </div>
     );
-  }
+  };
   
   return (
-    <div className="bg-gray-50 p-6 md:p-8">
-      <div className="max-w-5xl mx-auto space-y-8">
-        {/* Report Header */}
-        <div className="bg-white rounded-lg border shadow-sm p-6">
-          <div className="flex flex-col md:flex-row items-center md:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold">{domain}</h1>
-              <p className="text-muted-foreground">
-                Technical SEO & AI Content Analysis Report
-              </p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Generated on {new Date().toLocaleDateString()}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <FileText className="h-10 w-10 text-primary" />
-              <span className="text-lg font-semibold">PDF Report</span>
-            </div>
-          </div>
-          
-          {data?.siteUrl && (
-            <div className="mt-4 flex items-center gap-2 text-sm">
-              <span className="font-medium">Analyzed URL:</span>
-              <a 
-                href={data.siteUrl.startsWith('http') ? data.siteUrl : `https://${data.siteUrl}`}
-                className="text-blue-600 hover:underline"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {data.siteUrl}
-              </a>
-            </div>
-          )}
-        </div>
-        
-        {/* Desktop Analysis Section */}
-        <section>
-          <div className="flex items-center gap-2 mb-4">
-            <BarChart3 className="h-5 w-5 text-blue-500" />
-            <h2 className="text-xl font-bold">Desktop SEO Analysis</h2>
-          </div>
-          
-          {processedDesktopData ? (
-            <div className="space-y-6">
-              <DevicePerformancePanel 
-                data={processedDesktopData}
-                deviceType="desktop"
-              />
-              
-              <CoreWebVitalsPanel 
-                lcp={processedDesktopData.lcp || 0}
-                cls={processedDesktopData.cls || 0}
-                fid={processedDesktopData.fid || 0}
-              />
-              
-              <TechnicalAuditsPanel 
-                data={{
-                  mobileFriendly: processedDesktopData.mobileFriendly || false,
-                  security: processedDesktopData.security || {
-                    https: false,
-                    mixedContent: false
-                  },
-                  headingsStructure: processedDesktopData.headingsStructure || {
-                    hasH1: false,
-                    multipleH1: false,
-                    headingsOrder: false
-                  },
-                  metaTags: processedDesktopData.metaTags || {
-                    title: '',
-                    description: '',
-                    titleLength: 0,
-                    descriptionLength: 0
-                  }
-                }}
-              />
-              
-              <OpportunitiesPanel 
-                opportunities={processedDesktopData.recommendations || []}
-              />
-            </div>
-          ) : (
-            <Card className="p-8 text-center">
-              <p className="text-muted-foreground">No desktop analysis data available</p>
-            </Card>
-          )}
-        </section>
-        
-        {/* Mobile Analysis Section */}
-        <section>
-          <div className="flex items-center gap-2 mb-4">
-            <BarChart3 className="h-5 w-5 text-green-500" />
-            <h2 className="text-xl font-bold">Mobile SEO Analysis</h2>
-          </div>
-          
-          {processedMobileData ? (
-            <div className="space-y-6">
-              <DevicePerformancePanel 
-                data={processedMobileData}
-                deviceType="mobile"
-              />
-              
-              <CoreWebVitalsPanel 
-                lcp={processedMobileData.lcp || 0}
-                cls={processedMobileData.cls || 0}
-                fid={processedMobileData.fid || 0}
-              />
-              
-              <TechnicalAuditsPanel 
-                data={{
-                  mobileFriendly: processedMobileData.mobileFriendly || false,
-                  security: processedMobileData.security || {
-                    https: false,
-                    mixedContent: false
-                  },
-                  headingsStructure: processedMobileData.headingsStructure || {
-                    hasH1: false,
-                    multipleH1: false,
-                    headingsOrder: false
-                  },
-                  metaTags: processedMobileData.metaTags || {
-                    title: '',
-                    description: '',
-                    titleLength: 0,
-                    descriptionLength: 0
-                  }
-                }}
-              />
-              
-              <OpportunitiesPanel 
-                opportunities={processedMobileData.recommendations || []}
-              />
-            </div>
-          ) : (
-            <Card className="p-8 text-center">
-              <p className="text-muted-foreground">No mobile analysis data available</p>
-            </Card>
-          )}
-        </section>
-        
-        {/* AI Optimization Section */}
-        <section>
-          <div className="flex items-center gap-2 mb-4">
-            <BrainCircuit className="h-5 w-5 text-purple-500" />
-            <h2 className="text-xl font-bold">AI Content Optimization</h2>
-          </div>
-          
-          {aiData ? (
-            <div className="space-y-6">
-              <AioAnalysisPanel
-                aioScore={aiData.score}
-                contentClarity={aiData.contentClarity}
-                logicalStructure={aiData.logicalStructure}
-                naturalLanguage={aiData.naturalLanguage}
-                topicsDetected={aiData.topicsDetected}
-                confusingParts={aiData.confusingParts}
-              />
-              
-              {/* Optional: Add more AI-specific panels here if needed */}
-              {data?.aiOptimization?.data?.recommendations && (
-                <Card className="p-6">
-                  <h3 className="text-lg font-medium mb-4">AI Recommendations</h3>
-                  <div className="space-y-3">
-                    {data.aiOptimization.data.recommendations.map((rec: any, idx: number) => (
-                      <div key={idx} className="p-3 border rounded-md bg-purple-50">
-                        <h4 className="font-medium">{rec.title}</h4>
-                        <p className="text-sm text-gray-600 mt-1">{rec.explanation}</p>
-                      </div>
-                    ))}
-                  </div>
-                </Card>
-              )}
-            </div>
-          ) : (
-            <Card className="p-8 text-center">
-              <p className="text-muted-foreground">No AI optimization data available</p>
-            </Card>
-          )}
-        </section>
-        
-        {/* Footer */}
-        <footer className="text-center text-sm text-muted-foreground pt-6 border-t border-gray-200 mt-12">
-          <p>© {new Date().getFullYear()} SEO Technical Audit Platform</p>
-          <p className="mt-1">This report was generated automatically and should be reviewed by a professional SEO specialist</p>
-        </footer>
-      </div>
-    </div>
+    <SuiteLayout 
+      title="Technical SEO Report"
+      domain={domain}
+      lastAnalysisDate={new Date().toLocaleDateString()}
+      showBackButton={true}
+    >
+      {renderContent()}
+    </SuiteLayout>
   );
 };
 
