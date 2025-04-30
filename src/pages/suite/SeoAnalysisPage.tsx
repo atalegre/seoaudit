@@ -4,9 +4,10 @@ import SuiteLayout from '@/components/suite/SuiteLayout';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader2, BarChart } from 'lucide-react';
+import { Loader2, BarChart, Mail } from 'lucide-react';
 import DeviceTabsSection from '@/components/seo/DeviceTabsSection';
 import { useSeoAnalysis } from '@/hooks/useSeoAnalysis';
+import { useUser } from '@/contexts/UserContext';
 import { toast } from 'sonner';
 
 const SeoAnalysisPage = () => {
@@ -22,6 +23,8 @@ const SeoAnalysisPage = () => {
     extractDomain,
     analyzeUrl
   } = useSeoAnalysis();
+  
+  const { user } = useUser();
 
   // Handler for analyze button
   const handleAnalyze = () => {
@@ -75,6 +78,14 @@ const SeoAnalysisPage = () => {
               )}
             </Button>
           </div>
+          
+          {/* User email display */}
+          {user && (
+            <div className="mt-3 flex items-center text-sm text-gray-500">
+              <Mail className="h-3.5 w-3.5 mr-1.5" />
+              <span>Usuário logado: <strong>{user.email}</strong></span>
+            </div>
+          )}
         </Card>
 
         {/* Analysis States */}
