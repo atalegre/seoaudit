@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import {
   BrowserRouter as Router,
@@ -46,6 +45,7 @@ import SeoAioChecklistPage from './pages/content/SeoAioChecklistPage';
 
 // Components
 import ScrollToTop from './components/ScrollToTop';
+import AuthRequiredRoute from './components/auth/AuthRequiredRoute';
 
 // Import the new PdfReportPage
 import PdfReportPage from './pages/suite/PdfReportPage';
@@ -114,17 +114,33 @@ const App: React.FC = () => {
           <Route path="/reset-password" element={<ResetPasswordPage />} />
 
           {/* Suite Pages */}
-          <Route path="/suite" element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
+          <Route path="/suite" element={<Outlet />}>
             <Route index element={<SuiteDashboard />} />
             <Route path="dashboard" element={<SuiteDashboard />} />
             <Route path="keywords" element={<KeywordsPage />} />
-            <Route path="directories" element={<DirectoriesPage />} />
             <Route path="seo" element={<SeoAnalysisPage />} />
-            <Route path="aio" element={<AioOptimizationPage />} />
+            
+            {/* Protected Routes */}
+            <Route path="directories" element={
+              <AuthRequiredRoute>
+                <DirectoriesPage />
+              </AuthRequiredRoute>
+            } />
+            <Route path="aio" element={
+              <AuthRequiredRoute>
+                <AioOptimizationPage />
+              </AuthRequiredRoute>
+            } />
+            <Route path="reports" element={
+              <AuthRequiredRoute>
+                <ReportsPage />
+              </AuthRequiredRoute>
+            } />
+            
+            {/* Other suite routes */}
             <Route path="llm" element={<LLMPresencePage />} />
             <Route path="content-recommender" element={<ContentRecommenderPage />} />
             <Route path="content-writer" element={<ContentWriterPage />} />
-            <Route path="reports" element={<ReportsPage />} />
             <Route path="profile" element={<UserProfilePage />} />
             <Route path="settings" element={<UserSettingsPage />} />
             <Route path="change-password" element={<UserChangePasswordPage />} />
