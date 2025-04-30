@@ -1,11 +1,12 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import SuiteLayout from '@/components/suite/SuiteLayout';
 import AuthRequiredRoute from '@/components/auth/AuthRequiredRoute';
 import { useReports } from '@/hooks/useReports';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Download, RefreshCw } from 'lucide-react';
+import { FileText, Download } from 'lucide-react';
 import { formatDate } from '@/utils/formatUtils';
 import {
   Table,
@@ -18,6 +19,8 @@ import {
 import { Card } from '@/components/ui/card';
 
 const ReportsPage = () => {
+  const [url, setUrl] = useState('');
+  
   // Use autoRefresh=true to enable 5-second polling when page is visible
   const { 
     reports, 
@@ -56,19 +59,30 @@ const ReportsPage = () => {
     };
   }, [startAutoRefresh, stopAutoRefresh, refreshReports]);
 
+  const handleGenerateReport = () => {
+    if (!url) return;
+    generateReport(url);
+    setUrl('');
+  };
+
   // Content that requires authentication
   const pageContent = (
     <div className="space-y-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Relatórios</h1>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold mb-4">Relatórios</h1>
+        
         <div className="flex gap-2">
-          <Button variant="outline" onClick={refreshReports} size="sm">
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Atualizar
-          </Button>
-          <Button onClick={() => generateReport(window.location.origin)}>
+          <div className="flex-1">
+            <Input
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="Digite a URL do site para gerar relatório"
+              className="w-full"
+            />
+          </div>
+          <Button onClick={handleGenerateReport}>
             <FileText className="mr-2 h-4 w-4" />
-            Gerar Novo Relatório
+            Gerar Relatório
           </Button>
         </div>
       </div>
@@ -82,10 +96,20 @@ const ReportsPage = () => {
           <p className="text-muted-foreground mb-4">
             Nenhum relatório disponível. Gere seu primeiro relatório para análise completa.
           </p>
-          <Button onClick={() => generateReport(window.location.origin)}>
-            <FileText className="mr-2 h-4 w-4" />
-            Gerar Primeiro Relatório
-          </Button>
+          <div className="flex gap-2 justify-center">
+            <div className="flex-1 max-w-md">
+              <Input
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="Digite a URL do site para gerar relatório"
+                className="w-full"
+              />
+            </div>
+            <Button onClick={handleGenerateReport}>
+              <FileText className="mr-2 h-4 w-4" />
+              Gerar Relatório
+            </Button>
+          </div>
         </Card>
       )}
       
