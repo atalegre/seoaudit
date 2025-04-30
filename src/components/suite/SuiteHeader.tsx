@@ -1,9 +1,11 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, LogIn, User } from 'lucide-react';
+import { ChevronLeft, LogIn, User, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
+import { useLogout } from '@/hooks/useLogout';
+import { toast } from 'sonner';
 
 interface SuiteHeaderProps {
   title?: string;
@@ -23,7 +25,13 @@ const SuiteHeader = ({
   isAnalyzing = false
 }: SuiteHeaderProps) => {
   const navigate = useNavigate();
-  const { user } = useUser();
+  const { user, loading } = useUser();
+  const { handleSignOut } = useLogout();
+
+  const handleLogout = async () => {
+    await handleSignOut();
+    toast.success("Logout realizado com sucesso");
+  };
 
   return (
     <header className="bg-white border-b p-4">
@@ -53,16 +61,27 @@ const SuiteHeader = ({
         </div>
         
         <div className="flex items-center gap-3">
-          {user ? (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => navigate('/suite/profile')}
-              className="flex items-center gap-2"
-            >
-              <User className="h-4 w-4" />
-              <span className="hidden md:inline">{user?.email || 'Usuário'}</span>
-            </Button>
+          {!loading && (user ? (
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => navigate('/suite/profile')}
+                className="flex items-center gap-2"
+              >
+                <User className="h-4 w-4" />
+                <span className="hidden md:inline">{user.email || 'Usuário'}</span>
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleLogout}
+                className="flex items-center gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                <span className="hidden md:inline">Sair</span>
+              </Button>
+            </div>
           ) : (
             <Button 
               variant="outline" 
@@ -73,7 +92,7 @@ const SuiteHeader = ({
               <LogIn className="h-4 w-4" />
               <span>Entrar</span>
             </Button>
-          )}
+          ))}
           
           {onRerunAnalysis && (
             <Button 
