@@ -53,9 +53,15 @@ export function useReportData(
         }
 
         if (!reportData || reportData.error) {
+          const errorDetails = reportData?.details ? 
+            Array.isArray(reportData.details) ? 
+              reportData.details.join(', ') : 
+              reportData.details : 
+            'Unknown error';
+              
           throw new Error(
             reportData?.error || 
-            reportData?.details?.join(', ') || 
+            errorDetails || 
             'Failed to retrieve report data'
           );
         }

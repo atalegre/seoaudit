@@ -53,17 +53,17 @@ serve(async (req) => {
         .from('tasks')
         .select('id, status, requested_values, response_values')
         .eq('id', desktopTaskId)
-        .single(),
+        .maybeSingle(), // Changed from single() to maybeSingle() to avoid errors
       supabase
         .from('tasks')
         .select('id, status, requested_values, response_values')
         .eq('id', mobileTaskId)
-        .single(),
+        .maybeSingle(), // Changed from single() to maybeSingle()
       supabase
         .from('tasks')
         .select('id, status, requested_values, response_values')
         .eq('id', aiOptimizationTaskId)
-        .single()
+        .maybeSingle() // Changed from single() to maybeSingle()
     ]);
 
     // Check for errors in any of the queries
@@ -71,6 +71,11 @@ serve(async (req) => {
     if (desktopTaskResult.error) errors.push(`Desktop task error: ${desktopTaskResult.error.message}`);
     if (mobileTaskResult.error) errors.push(`Mobile task error: ${mobileTaskResult.error.message}`);
     if (aiOptTaskResult.error) errors.push(`AI optimization task error: ${aiOptTaskResult.error.message}`);
+
+    // Check if any tasks are missing
+    if (!desktopTaskResult.data) errors.push(`Desktop task not found: ${desktopTaskId}`);
+    if (!mobileTaskResult.data) errors.push(`Mobile task not found: ${mobileTaskId}`);
+    if (!aiOptTaskResult.data) errors.push(`AI optimization task not found: ${aiOptimizationTaskId}`);
 
     if (errors.length > 0) {
       return new Response(
