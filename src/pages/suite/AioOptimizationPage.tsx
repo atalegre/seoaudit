@@ -29,8 +29,6 @@ const AioOptimizationPage = () => {
     <SuiteLayout 
       title="Otimização para IA"
       domain={url ? extractDomain(url) : undefined}
-      onRerunAnalysis={handleReanalyze}
-      isAnalyzing={isAnalyzing}
     >
       <div className="space-y-6">
         {/* URL Input Section */}

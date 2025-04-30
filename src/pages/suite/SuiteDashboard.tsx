@@ -124,8 +124,6 @@ const SuiteDashboard = () => {
       title="Dashboard" 
       domain={domain} 
       lastAnalysisDate={lastAnalysisDate}
-      onRerunAnalysis={handleRerunAnalysis}
-      isAnalyzing={isLoading}
     >
       {/* Tour for new users */}
       {showTour && (

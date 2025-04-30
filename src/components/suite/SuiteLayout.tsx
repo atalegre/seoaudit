@@ -9,6 +9,9 @@ interface SuiteLayoutProps {
   title?: string;
   domain?: string;
   lastAnalysisDate?: string;
+  // These were missing from the interface:
+  onRerunAnalysis?: () => void;
+  isAnalyzing?: boolean;
 }
 
 const SuiteLayout = ({ 
