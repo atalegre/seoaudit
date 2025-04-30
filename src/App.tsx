@@ -33,6 +33,17 @@ import UserProfilePage from './pages/suite/UserProfilePage';
 import UserSettingsPage from './pages/suite/UserSettingsPage';
 import UserChangePasswordPage from './pages/suite/UserChangePasswordPage';
 
+// Import pages for main navigation routes
+import HowItWorksPage from './pages/HowItWorksPage';
+import FAQPage from './pages/FAQPage';
+import ContactPage from './pages/ContactPage';
+
+// Import content pages
+import BlogPage from './pages/content/BlogPage';
+import GuidesPage from './pages/content/GuidesPage';
+import GlossaryPage from './pages/content/GlossaryPage';
+import SeoAioChecklistPage from './pages/content/SeoAioChecklistPage';
+
 // Components
 import ScrollToTop from './components/ScrollToTop';
 
@@ -75,6 +86,22 @@ const App: React.FC = () => {
       <Routes>
         {/* Main landing page */}
         <Route path="/" element={<Index />} />
+        
+        {/* Main navigation routes */}
+        <Route path="/how-it-works" element={<HowItWorksPage />} />
+        <Route path="/como-funciona" element={<HowItWorksPage />} /> {/* PT version */}
+        <Route path="/faq" element={<FAQPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/contacto" element={<ContactPage />} /> {/* PT version */}
+        
+        {/* Content pages */}
+        <Route path="/blog" element={<BlogPage />} />
+        <Route path="/guides" element={<GuidesPage />} />
+        <Route path="/guias" element={<GuidesPage />} /> {/* PT version */}
+        <Route path="/glossary" element={<GlossaryPage />} />
+        <Route path="/glossario" element={<GlossaryPage />} /> {/* PT version */}
+        <Route path="/guides/seo-aio-checklist" element={<SeoAioChecklistPage />} />
+        <Route path="/guias/seo-aio-checklist" element={<SeoAioChecklistPage />} /> {/* PT version */}
         
         {/* Auth routes */}
         <Route path="/signin" element={<SignInPage />} />
