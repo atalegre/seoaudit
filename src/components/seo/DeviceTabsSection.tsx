@@ -25,21 +25,26 @@ const DeviceTabsSection = ({
   error
 }: DeviceTabsSectionProps) => {
   // Enhanced logging for debugging
-  console.log('DeviceTabsSection - desktopData:', desktopData);
-  console.log('DeviceTabsSection - mobileData:', mobileData);
-  
-  // Get current data based on active tab
-  const currentData = activeTab === 'desktop' ? desktopData : mobileData;
+  console.log('DeviceTabsSection - Raw desktopData:', desktopData);
+  console.log('DeviceTabsSection - Raw mobileData:', mobileData);
   
   // Process the data from PageSpeed API to our internal format
   const processPageSpeedData = (rawData: any) => {
-    if (!rawData || !rawData.lighthouseResult) {
-      console.warn('Missing or invalid PageSpeed data', rawData);
+    if (!rawData) {
+      console.warn('Missing PageSpeed data');
       return null;
     }
     
     try {
+      // Extract the lighthouse result from PageSpeed's API response structure
+      // which includes keys: id, kind, captchaResult, lighthouseResult, etc.
       const lighthouse = rawData.lighthouseResult;
+      
+      if (!lighthouse) {
+        console.warn('Missing lighthouse result in PageSpeed data', rawData);
+        return null;
+      }
+      
       const audits = lighthouse.audits || {};
       
       // Extract performance metrics
@@ -116,11 +121,14 @@ const DeviceTabsSection = ({
   };
   
   // Process the data for both desktop and mobile
-  const processedDesktopData = desktopData ? processPageSpeedData(desktopData) : null;
-  const processedMobileData = mobileData ? processPageSpeedData(mobileData) : null;
+  const processedDesktopData = processPageSpeedData(desktopData);
+  const processedMobileData = processPageSpeedData(mobileData);
   
   console.log('Processed desktop data:', processedDesktopData);
   console.log('Processed mobile data:', processedMobileData);
+  
+  // Get current data based on active tab
+  const currentProcessedData = activeTab === 'desktop' ? processedDesktopData : processedMobileData;
   
   return (
     <div className="bg-white rounded-lg border shadow-sm">
@@ -192,6 +200,13 @@ const DeviceTabsSection = ({
               />
             </div>
           )}
+          
+          {!isAnalyzing && desktopData && !processedDesktopData && (
+            <div className="p-6 text-center">
+              <p className="text-amber-500">Dados recebidos, mas não foi possível processá-los corretamente.</p>
+              <p className="text-muted-foreground mt-2">Formato de dados não reconhecido.</p>
+            </div>
+          )}
         </TabsContent>
         
         <TabsContent value="mobile" className="m-0">
@@ -245,6 +260,13 @@ const DeviceTabsSection = ({
               <OpportunitiesPanel 
                 opportunities={processedMobileData.recommendations || []}
               />
+            </div>
+          )}
+          
+          {!isAnalyzing && mobileData && !processedMobileData && (
+            <div className="p-6 text-center">
+              <p className="text-amber-500">Dados recebidos, mas não foi possível processá-los corretamente.</p>
+              <p className="text-muted-foreground mt-2">Formato de dados não reconhecido.</p>
             </div>
           )}
         </TabsContent>

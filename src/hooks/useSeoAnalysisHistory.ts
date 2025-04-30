@@ -51,12 +51,19 @@ export function useSeoAnalysisHistory() {
       // Convert data to match SeoAnalysisRequest type
       const typedData: SeoAnalysisRequest[] = data
         .filter(item => item && item.requested_values && typeof item.requested_values === 'object')
-        .map(item => ({
-          id: item.id,
-          url: item.requested_values?.url || '',
-          created_at: item.created_at,
-          user_id: item.user_id
-        }));
+        .map(item => {
+          // Handle potential JSON type mismatch
+          const requestedValues = typeof item.requested_values === 'string' 
+            ? JSON.parse(item.requested_values) 
+            : item.requested_values;
+            
+          return {
+            id: item.id,
+            url: requestedValues?.url || '',
+            created_at: item.created_at,
+            user_id: item.user_id
+          };
+        });
       
       setHistory(typedData);
     } catch (err: any) {

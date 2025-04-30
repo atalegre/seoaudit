@@ -35,8 +35,8 @@ const SeoAnalysisPage = () => {
   };
 
   // Debug logging
-  console.log('SeoAnalysisPage - desktopData:', desktopData);
-  console.log('SeoAnalysisPage - mobileData:', mobileData);
+  console.log('SeoAnalysisPage - desktopData keys:', desktopData ? Object.keys(desktopData) : 'null');
+  console.log('SeoAnalysisPage - mobileData keys:', mobileData ? Object.keys(mobileData) : 'null');
   console.log('SeoAnalysisPage - isAnalyzing:', isAnalyzing);
   console.log('SeoAnalysisPage - error:', error);
 
