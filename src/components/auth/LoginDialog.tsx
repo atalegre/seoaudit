@@ -26,14 +26,7 @@ const LoginDialog = ({ isOpen, onClose, returnTo }: LoginDialogProps) => {
   if (!isOpen) return null;
 
   return (
-    <div className="w-full max-w-md">
-      <div>
-        <h3 className="text-center text-xl font-bold">Acesso Necessário</h3>
-        <p className="text-center text-gray-600 mb-4">
-          Inicie sessão ou registe-se para aceder a todas as recomendações
-        </p>
-      </div>
-      
+    <div className="w-full">
       <Tabs defaultValue="signin" className="w-full">
         <TabsList className="grid grid-cols-2 w-full mb-6">
           <TabsTrigger value="signin">{t('sign-in')}</TabsTrigger>
