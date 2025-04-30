@@ -61,38 +61,42 @@ const SuiteHeader = ({
         </div>
         
         <div className="flex items-center gap-3">
-          {!loading && (user ? (
-            <div className="flex items-center gap-3">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => navigate('/suite/profile')}
-                className="flex items-center gap-2"
-              >
-                <User className="h-4 w-4" />
-                <span className="hidden md:inline">{user.email || 'Usuário'}</span>
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={handleLogout}
-                className="flex items-center gap-2"
-              >
-                <LogOut className="h-4 w-4" />
-                <span className="hidden md:inline">Sair</span>
-              </Button>
-            </div>
-          ) : (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => navigate('/signin')}
-              className="flex items-center gap-2"
-            >
-              <LogIn className="h-4 w-4" />
-              <span>Entrar</span>
-            </Button>
-          ))}
+          {!loading && (
+            <>
+              {user ? (
+                <div className="flex items-center gap-3">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => navigate('/suite/profile')}
+                    className="flex items-center gap-2"
+                  >
+                    <User className="h-4 w-4" />
+                    <span className="hidden md:inline">{user.email || 'Usuário'}</span>
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={handleLogout}
+                    className="flex items-center gap-2"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span className="hidden md:inline">Sair</span>
+                  </Button>
+                </div>
+              ) : (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => navigate('/signin')}
+                  className="flex items-center gap-2"
+                >
+                  <LogIn className="h-4 w-4" />
+                  <span>Entrar</span>
+                </Button>
+              )}
+            </>
+          )}
           
           {onRerunAnalysis && (
             <Button 
