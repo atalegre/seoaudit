@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -12,9 +12,10 @@ export interface Report {
   user_id?: string;
 }
 
-export function useReports() {
+export function useReports(autoRefresh = false, refreshInterval = 5000) {
   const [reports, setReports] = useState<Report[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const refreshTimerRef = useRef<number | null>(null);
 
   const fetchReports = useCallback(async () => {
     try {
@@ -26,11 +27,40 @@ export function useReports() {
       if (error) throw error;
       
       setReports(data || []);
+      return data;
     } catch (error: any) {
       console.error('Error fetching reports:', error);
       toast.error('Failed to load reports');
     } finally {
       setIsLoading(false);
+    }
+  }, []);
+
+  const startAutoRefresh = useCallback(() => {
+    if (!autoRefresh) return;
+    
+    // Clear any existing timer
+    if (refreshTimerRef.current) {
+      window.clearInterval(refreshTimerRef.current);
+    }
+    
+    // Set up new timer
+    refreshTimerRef.current = window.setInterval(() => {
+      fetchReports();
+    }, refreshInterval);
+    
+    return () => {
+      if (refreshTimerRef.current) {
+        window.clearInterval(refreshTimerRef.current);
+        refreshTimerRef.current = null;
+      }
+    };
+  }, [autoRefresh, refreshInterval, fetchReports]);
+
+  const stopAutoRefresh = useCallback(() => {
+    if (refreshTimerRef.current) {
+      window.clearInterval(refreshTimerRef.current);
+      refreshTimerRef.current = null;
     }
   }, []);
 
@@ -71,10 +101,19 @@ export function useReports() {
     fetchReports();
   }, [fetchReports]);
 
+  useEffect(() => {
+    if (autoRefresh) {
+      const cleanup = startAutoRefresh();
+      return cleanup;
+    }
+  }, [autoRefresh, startAutoRefresh]);
+
   return {
     reports,
     isLoading,
     generateReport,
-    refreshReports: fetchReports
+    refreshReports: fetchReports,
+    startAutoRefresh,
+    stopAutoRefresh
   };
 }

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import SuiteLayout from '@/components/suite/SuiteLayout';
 import AuthRequiredRoute from '@/components/auth/AuthRequiredRoute';
 import { useReports } from '@/hooks/useReports';
@@ -18,8 +18,44 @@ import {
 import { Card } from '@/components/ui/card';
 
 const ReportsPage = () => {
-  const { reports, isLoading, generateReport, refreshReports } = useReports();
+  // Use autoRefresh=true to enable 5-second polling when page is visible
+  const { 
+    reports, 
+    isLoading, 
+    generateReport, 
+    refreshReports,
+    startAutoRefresh,
+    stopAutoRefresh 
+  } = useReports(true, 5000);
   
+  // Handle visibility change to start/stop polling when tab is active/inactive
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('Page is visible, starting auto refresh');
+        refreshReports(); // Fetch immediately when becoming visible
+        startAutoRefresh();
+      } else {
+        console.log('Page is hidden, stopping auto refresh');
+        stopAutoRefresh();
+      }
+    };
+
+    // Initial setup based on current visibility
+    if (document.visibilityState === 'visible') {
+      startAutoRefresh();
+    }
+    
+    // Add event listener for visibility changes
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    // Clean up
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      stopAutoRefresh();
+    };
+  }, [startAutoRefresh, stopAutoRefresh, refreshReports]);
+
   // Content that requires authentication
   const pageContent = (
     <div className="space-y-4">
