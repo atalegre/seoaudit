@@ -9,19 +9,21 @@ interface SuiteLayoutProps {
   title?: string;
   domain?: string;
   lastAnalysisDate?: string;
-  // These were missing from the interface:
   onRerunAnalysis?: () => void;
   isAnalyzing?: boolean;
+  showBackButton?: boolean;  // Added this property to fix the type error
 }
 
 const SuiteLayout = ({ 
   children, 
   title, 
   domain, 
-  lastAnalysisDate
+  lastAnalysisDate,
+  showBackButton
 }: SuiteLayoutProps) => {
   const location = useLocation();
-  const showBackButton = location.pathname !== '/suite';
+  // Use the prop if provided, otherwise determine based on location
+  const shouldShowBackButton = showBackButton !== undefined ? showBackButton : location.pathname !== '/suite';
   
   return (
     <div className="h-screen flex flex-col">
@@ -30,7 +32,7 @@ const SuiteLayout = ({
         title={title} 
         domain={domain} 
         lastAnalysisDate={lastAnalysisDate} 
-        showBackButton={showBackButton}
+        showBackButton={shouldShowBackButton}
       />
       
       <div className="flex flex-1 overflow-hidden">
