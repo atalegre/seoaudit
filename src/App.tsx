@@ -1,174 +1,123 @@
-import React, { useEffect } from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
-import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
-import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import React, { useEffect } from 'react';
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+  Outlet,
+  useLocation,
+} from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { Toaster } from 'sonner';
 
-import Index from "./pages/Index";
-import ResultsPage from "./pages/ResultsPage";
-import NotFoundPage from "./pages/NotFoundPage";
-import HowItWorksPage from "./pages/HowItWorksPage";
-import FAQPage from "./pages/FAQPage";
-import ContactPage from "./pages/ContactPage";
-import DashboardPage from "./pages/dashboard/DashboardPage";
-import SignInPage from "./pages/SignInPage";
-import SignUpPage from "./pages/SignUpPage";
-import ForgotPasswordPage from "./pages/ForgotPasswordPage";
-import ResetPasswordPage from "./pages/ResetPasswordPage";
-import ClientsPage from "./pages/dashboard/ClientsPage";
-import SettingsPage from "./pages/dashboard/SettingsPage";
-import BulkImportPage from "./pages/dashboard/BulkImportPage";
-import BlogPostsPage from "./pages/dashboard/BlogPostsPage";
-import { supabase } from "./integrations/supabase/client";
-import BlogPage from "./pages/content/BlogPage";
-import BlogPostPage from "./pages/content/BlogPostPage";
-import GlossaryPage from "./pages/content/GlossaryPage";
-import GlossaryTermPage from "./pages/content/GlossaryTermPage";
-import GuidesPage from "./pages/content/GuidesPage";
-import SeoAioChecklistPage from "./pages/content/SeoAioChecklistPage";
-import VerificationPage from "./pages/VerificationPage";
-import { createDefaultUsers } from "./utils/auth/createDefaultUsers";
-import { UserProvider } from "./contexts/UserContext";
-import { LanguageProvider } from "./contexts/LanguageContext";
-import CookieConsent from "./components/CookieConsent";
-import ScrollToTop from "./components/ScrollToTop";
-import SuiteDashboard from "./pages/suite/SuiteDashboard";
-import DashboardLayout from "./components/dashboard/DashboardLayout";
-import SeoAnalysisPage from "./pages/suite/SeoAnalysisPage";
-import AioOptimizationPage from "./pages/suite/AioOptimizationPage";
-import ContentWriterPage from "./pages/suite/ContentWriterPage";
-import ContentRecommenderPage from "./pages/suite/ContentRecommenderPage";
-import LLMPresencePage from "./pages/suite/LLMPresencePage";
-import KeywordsPage from "./pages/suite/KeywordsPage";
-import DirectoriesPage from "./pages/suite/DirectoriesPage";
-import ChangePasswordPage from "./pages/dashboard/ChangePasswordPage";
-import DetailsPage from "./pages/DetailsPage";
-import ProfilePage from "./pages/dashboard/ProfilePage";
+// Import pages
+import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
+import VerificationPage from './pages/VerificationPage';
+import PricingPage from './pages/PricingPage';
+import ContactPage from './pages/ContactPage';
+import NotFoundPage from './pages/NotFoundPage';
+import TermsOfServicePage from './pages/TermsOfServicePage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import BlogPage from './pages/BlogPage';
+import BlogPostPage from './pages/BlogPostPage';
 
-import UserProfilePage from "./pages/suite/UserProfilePage";
-import UserSettingsPage from "./pages/suite/UserSettingsPage";
-import UserChangePasswordPage from "./pages/suite/UserChangePasswordPage";
+// Suite Pages
+import SuiteDashboard from './pages/suite/SuiteDashboard';
+import KeywordsPage from './pages/suite/KeywordsPage';
+import DirectoriesPage from './pages/suite/DirectoriesPage';
+import SeoAnalysisPage from './pages/suite/SeoAnalysisPage';
+import AioOptimizationPage from './pages/suite/AioOptimizationPage';
+import LLMPresencePage from './pages/suite/LLMPresencePage';
+import ContentRecommenderPage from './pages/suite/ContentRecommenderPage';
+import ContentWriterPage from './pages/suite/ContentWriterPage';
+import ReportsPage from './pages/suite/ReportsPage';
+import UserProfilePage from './pages/suite/UserProfilePage';
+import UserSettingsPage from './pages/suite/UserSettingsPage';
+import UserChangePasswordPage from './pages/suite/UserChangePasswordPage';
 
-import ReportsPage from "./pages/suite/ReportsPage";
+// Components
+import ScrollToTop from './components/ScrollToTop';
 
-const queryClient = new QueryClient();
+// Import the new PdfReportPage
+import PdfReportPage from './pages/suite/PdfReportPage';
 
-function App() {
+// Protected Route Component
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isLoggedIn } = useAuth();
+  const location = useLocation();
+
   useEffect(() => {
-    const setupDefaultUsers = async () => {
-      try {
-        console.log("Setting up default users on app load...");
-        await createDefaultUsers();
-        console.log("Default users setup complete");
-      } catch (error) {
-        console.error("Error setting up default users:", error);
-      }
-    };
+    if (!isLoggedIn) {
+      console.log('User is not logged in, redirecting to login page.');
+    }
+  }, [isLoggedIn, location]);
 
-    setupDefaultUsers();
-  }, []);
+  if (!isLoggedIn) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+
+  return children;
+};
+
+const App: React.FC = () => {
+  const { initializeAuth } = useAuth();
+  const { loadLanguage } = useLanguage();
+
+  useEffect(() => {
+    console.log('App component mounted, initializing authentication and language.');
+    initializeAuth();
+    loadLanguage();
+  }, [initializeAuth, loadLanguage]);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <UserProvider>
-        <LanguageProvider>
-          <BrowserRouter>
-            <GoogleAnalytics />
-            <ScrollToTop />
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <CookieConsent />
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/results" element={<ResultsPage />} />
-                <Route path="/details" element={<DetailsPage />} />
-                
-                <Route path="/como-funciona" element={<HowItWorksPage />} />
-                <Route path="/how-it-works" element={<HowItWorksPage />} />
-                
-                <Route path="/faq" element={<FAQPage />} />
-                
-                <Route path="/contacto" element={<ContactPage />} />
-                <Route path="/contact" element={<ContactPage />} />
-                
-                <Route path="/signin" element={<SignInPage />} />
-                <Route path="/signup" element={<SignUpPage />} />
-                
-                <Route path="/recuperar-password" element={<ForgotPasswordPage />} />
-                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                
-                <Route path="/reset-password" element={<ResetPasswordPage />} />
-                <Route path="/verification" element={<VerificationPage />} />
-                <Route path="/auth/callback" element={<Navigate to="/dashboard" />} />
-                
-                {/* Dashboard routes with a single DashboardLayout wrapper */}
-                <Route path="/dashboard" element={<DashboardLayout><Outlet /></DashboardLayout>}>
-                  <Route index element={<DashboardPage />} />
-                  <Route path="clients" element={<ClientsPage />} />
-                  <Route path="bulk-import" element={<BulkImportPage />} />
-                  <Route path="settings" element={<SettingsPage />} />
-                  <Route path="blog-posts" element={<BlogPostsPage />} />
-                  <Route path="change-password" element={<ChangePasswordPage />} />
-                  <Route path="profile" element={<ProfilePage />} />
-                </Route>
-                
-                <Route path="/suite" element={<SuiteDashboard />} />
-                <Route path="/suite/seo" element={<SeoAnalysisPage />} />
-                
-                {/* Protected routes that require authentication */}
-                <Route path="/suite/aio" element={
-                  <ProtectedRoute>
-                    <AioOptimizationPage />
-                  </ProtectedRoute>
-                } />
-                <Route path="/suite/directories" element={
-                  <ProtectedRoute>
-                    <DirectoriesPage />
-                  </ProtectedRoute>
-                } />
-                <Route path="/suite/reports" element={
-                  <ProtectedRoute>
-                    <ReportsPage />
-                  </ProtectedRoute>
-                } />
-                
-                {/* Hidden routes - still accessible if accessed directly, but not shown in navigation */}
-                <Route path="/suite/llm" element={<LLMPresencePage />} />
-                <Route path="/suite/keywords" element={<KeywordsPage />} />
-                <Route path="/suite/recommender" element={<ContentRecommenderPage />} />
-                <Route path="/suite/writer" element={<ContentWriterPage />} />
-                
-                <Route path="/suite/profile" element={<UserProfilePage />} />
-                <Route path="/suite/settings" element={<UserSettingsPage />} />
-                <Route path="/suite/change-password" element={<UserChangePasswordPage />} />
-                
-                <Route path="/blog" element={<BlogPage />} />
-                <Route path="/blog/:slug" element={<BlogPostPage />} />
-                
-                <Route path="/glossario" element={<GlossaryPage />} />
-                <Route path="/glossary" element={<GlossaryPage />} />
-                
-                <Route path="/glossario/:slug" element={<GlossaryTermPage />} />
-                <Route path="/glossary/:slug" element={<GlossaryTermPage />} />
-                
-                <Route path="/guias" element={<GuidesPage />} />
-                <Route path="/guides" element={<GuidesPage />} />
-                
-                <Route path="/guias/seo-aio-checklist" element={<SeoAioChecklistPage />} />
-                <Route path="/guides/seo-aio-checklist" element={<SeoAioChecklistPage />} />
-                
-                <Route path="*" element={<NotFoundPage />} />
-              </Routes>
-            </TooltipProvider>
-          </BrowserRouter>
-        </LanguageProvider>
-      </UserProvider>
-    </QueryClientProvider>
+    <Router>
+      <ScrollToTop />
+      <Toaster richColors closeButton />
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/verification" element={<VerificationPage />} />
+        <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+        <Route path="/blog" element={<BlogPage />} />
+        <Route path="/blog/:id" element={<BlogPostPage />} />
+
+        {/* Suite Pages */}
+        <Route path="/suite" element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
+          <Route index element={<SuiteDashboard />} />
+          <Route path="dashboard" element={<SuiteDashboard />} />
+          <Route path="keywords" element={<KeywordsPage />} />
+          <Route path="directories" element={<DirectoriesPage />} />
+          <Route path="seo" element={<SeoAnalysisPage />} />
+          <Route path="aio" element={<AioOptimizationPage />} />
+          <Route path="llm" element={<LLMPresencePage />} />
+          <Route path="content-recommender" element={<ContentRecommenderPage />} />
+          <Route path="content-writer" element={<ContentWriterPage />} />
+          <Route path="reports" element={<ReportsPage />} />
+          <Route path="profile" element={<UserProfilePage />} />
+          <Route path="settings" element={<UserSettingsPage />} />
+          <Route path="change-password" element={<UserChangePasswordPage />} />
+          
+          {/* Add the new PDF Report route */}
+          <Route path="pdf-report" element={<PdfReportPage />} />
+        </Route>
+
+        {/* Catch-all route for 404 Not Found */}
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </Router>
   );
-}
+};
 
 export default App;
