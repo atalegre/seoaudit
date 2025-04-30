@@ -6,7 +6,8 @@ import {
   Sparkles,
   MapPin,
   BarChart2,
-  Home
+  Home,
+  Ban
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/contexts/UserContext';
@@ -36,21 +37,21 @@ const SidebarContentItems = () => {
       icon: <Sparkles className="h-5 w-5" />,
       label: 'AI Optimization',
       color: 'text-purple-600',
-      protected: false
+      protected: true
     },
     {
       to: '/suite/directories',
       icon: <MapPin className="h-5 w-5" />,
       label: 'Local Directories',
       color: 'text-red-600',
-      protected: false
+      protected: true
     },
     {
       to: '/suite/reports',
       icon: <BarChart3 className="h-5 w-5" />,
       label: 'Reports',
       color: 'text-gray-600',
-      protected: false
+      protected: true
     }
   ];
 
@@ -79,9 +80,20 @@ const SidebarContentItems = () => {
                 "relative"
               )}>
                 {link.icon}
+                {link.protected && !user && (
+                  <Ban 
+                    className="absolute -top-1 -right-1 h-3.5 w-3.5 text-gray-500 bg-white rounded-full" 
+                    strokeWidth={3}
+                  />
+                )}
               </div>
               <div className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity whitespace-nowrap z-50">
                 {link.label}
+                {link.protected && !user && (
+                  <span className="block text-xs text-gray-300 font-light">
+                    Login required
+                  </span>
+                )}
               </div>
             </>
           )}
