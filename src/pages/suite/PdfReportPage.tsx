@@ -144,13 +144,22 @@ const PdfReportPage: React.FC = () => {
     if (!data?.aiOptimization?.data) return null;
     try {
       const aiData = data.aiOptimization.data;
+      
+      // Map the AI data from the format we received to the format expected by AioAnalysisPanel
       return {
-        score: aiData.score || 0,
-        contentClarity: aiData.contentClarity || 0,
-        logicalStructure: aiData.logicalStructure || 0, 
-        naturalLanguage: aiData.naturalLanguage || 0,
-        topicsDetected: aiData.topicsDetected || [],
-        confusingParts: aiData.confusingParts || []
+        // Map scores.overall to score
+        score: aiData.scores?.overall || 0,
+        // Map scores.human_readability to contentClarity 
+        contentClarity: aiData.scores?.human_readability || 0,
+        // Map scores.llm_interpretability to naturalLanguage
+        naturalLanguage: aiData.scores?.llm_interpretability || 0,
+        // Derive logicalStructure as an average if not explicitly provided
+        logicalStructure: aiData.scores?.logical_structure || 
+          Math.round((aiData.scores?.overall + aiData.scores?.human_readability) / 2) || 0,
+        // Extract topics from strengths (or empty array)
+        topicsDetected: aiData.strengths?.map((item: any) => item.title) || [],
+        // Extract confusing parts from weaknesses (or empty array)
+        confusingParts: aiData.weaknesses?.map((item: any) => item.explanation) || []
       };
     } catch (err) {
       console.error('Error processing AI optimization data:', err);
@@ -354,6 +363,21 @@ const PdfReportPage: React.FC = () => {
                 topicsDetected={aiData.topicsDetected}
                 confusingParts={aiData.confusingParts}
               />
+              
+              {/* Optional: Add more AI-specific panels here if needed */}
+              {data?.aiOptimization?.data?.recommendations && (
+                <Card className="p-6">
+                  <h3 className="text-lg font-medium mb-4">AI Recommendations</h3>
+                  <div className="space-y-3">
+                    {data.aiOptimization.data.recommendations.map((rec: any, idx: number) => (
+                      <div key={idx} className="p-3 border rounded-md bg-purple-50">
+                        <h4 className="font-medium">{rec.title}</h4>
+                        <p className="text-sm text-gray-600 mt-1">{rec.explanation}</p>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              )}
             </div>
           ) : (
             <Card className="p-8 text-center">
