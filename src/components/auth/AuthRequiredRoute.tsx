@@ -32,9 +32,9 @@ const AuthRequiredRoute: React.FC<AuthRequiredRouteProps> = ({ children }) => {
           {children}
         </div>
         
-        {/* Overlay with login dialog - properly centered */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="p-6 bg-white/95 rounded-lg shadow-md w-full max-w-md z-50">
+        {/* Overlay with login dialog - fixed positioning for consistent centering */}
+        <div className="absolute inset-0 overflow-auto flex items-center justify-center py-12">
+          <div className="p-6 bg-white/95 rounded-lg shadow-md w-full max-w-md z-50 mx-auto my-auto">
             <h3 className="text-xl font-semibold mb-2 text-center">Acesso restrito</h3>
             <p className="text-gray-600 mb-4 text-center">
               Esta funcionalidade é exclusiva para usuários autenticados.
