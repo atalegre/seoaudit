@@ -4,6 +4,7 @@ import SuiteLayout from '@/components/suite/SuiteLayout';
 import AuthRequiredRoute from '@/components/auth/AuthRequiredRoute';
 import { useReports } from '@/hooks/useReports';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { FileText, Download, RefreshCw } from 'lucide-react';
 import { formatDate } from '@/utils/formatUtils';
 import {
@@ -69,15 +70,20 @@ const ReportsPage = () => {
                   <TableCell className="font-medium">{report.url}</TableCell>
                   <TableCell>{formatDate(report.created_at)}</TableCell>
                   <TableCell>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      report.status === 'completed' ? 'bg-green-100 text-green-800' : 
-                      report.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                      'bg-gray-100 text-gray-800'
-                    }`}>
+                    <Badge 
+                      variant={
+                        report.status === 'completed' ? 'success' : 
+                        report.status === 'pending' ? 'warning' : 
+                        report.status === 'failed' ? 'destructive' : 
+                        'outline'
+                      }
+                      className="font-medium text-xs"
+                    >
                       {report.status === 'completed' ? 'Concluído' : 
-                       report.status === 'pending' ? 'Processando' : 
+                       report.status === 'pending' ? 'Processando' :
+                       report.status === 'failed' ? 'Falhou' : 
                        report.status}
-                    </span>
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     <Button 
