@@ -22,7 +22,7 @@ interface TaskStatusResponse {
  */
 export async function createSeoAnalysisTask(params: CreateTaskParams) : Promise<{ taskId: string }> {
   try {
-    // Prepare requested_data ONLY with expected keys
+    // Prepare requested_data with expected keys
     const requested_data: any = { url: params.url };
     if (params.platform) requested_data.platform = params.platform;
 

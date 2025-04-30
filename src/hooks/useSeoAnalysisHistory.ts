@@ -23,31 +23,40 @@ export function useSeoAnalysisHistory() {
       // Get the current user
       const { data: { user } } = await supabase.auth.getUser();
       
+      // Use 'tasks' table which is available in the database schema
+      // and filter for tasks with task_name = 'seo_analysis'
       let query = supabase
-        .from('seo_analysis_requests')
-        .select('id, url, created_at, user_id')
+        .from('tasks')
+        .select('id, created_at, requested_values, user_id')
+        .eq('task_name', 'seo_analysis')
         .order('created_at', { ascending: false })
         .limit(20);
       
       // If user is logged in, get their requests
       if (user) {
-        // Use as string to fix type issue
-        query = query.eq('user_id', user.id as string);
+        query = query.eq('user_id', user.id);
       }
       
-      const { data, error } = await query;
+      const { data, error: fetchError } = await query;
       
-      if (error) {
-        throw error;
+      if (fetchError) {
+        throw fetchError;
+      }
+      
+      if (!data) {
+        setHistory([]);
+        return;
       }
       
       // Convert data to match SeoAnalysisRequest type
-      const typedData: SeoAnalysisRequest[] = (data || []).map(item => ({
-        id: item.id,
-        url: item.url,
-        created_at: item.created_at,
-        user_id: item.user_id
-      }));
+      const typedData: SeoAnalysisRequest[] = data
+        .filter(item => item && item.requested_values && typeof item.requested_values === 'object')
+        .map(item => ({
+          id: item.id,
+          url: item.requested_values?.url || '',
+          created_at: item.created_at,
+          user_id: item.user_id
+        }));
       
       setHistory(typedData);
     } catch (err: any) {
