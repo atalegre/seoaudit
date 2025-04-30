@@ -179,7 +179,7 @@ const PdfReportPage: React.FC = () => {
     navigate('/suite/reports');
   };
   
-  // Main content
+  // Main content - completely standalone layout without SuiteLayout wrapper
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Simple header with back button */}

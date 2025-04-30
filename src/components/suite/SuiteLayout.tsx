@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import SuiteHeader from './SuiteHeader';
-import SidebarContent from './SidebarContent';
+import NewSuiteHeader from './NewSuiteHeader';
+import NewSidebarContent from './NewSidebarContent';
 
 interface SuiteLayoutProps {
   children: React.ReactNode;
@@ -12,7 +12,7 @@ interface SuiteLayoutProps {
   onRerunAnalysis?: () => void;
   isAnalyzing?: boolean;
   showBackButton?: boolean;
-  hideSidebar?: boolean;  // Added this property to hide the sidebar
+  hideSidebar?: boolean;  // Property to hide the sidebar
 }
 
 const SuiteLayout = ({ 
@@ -29,8 +29,8 @@ const SuiteLayout = ({
   
   return (
     <div className="h-screen flex flex-col">
-      {/* Header and top section */}
-      <SuiteHeader 
+      {/* New Header component */}
+      <NewSuiteHeader 
         title={title} 
         domain={domain} 
         lastAnalysisDate={lastAnalysisDate} 
@@ -38,10 +38,10 @@ const SuiteLayout = ({
       />
       
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar - width adjusted and conditionally rendered */}
+        {/* Sidebar - conditionally rendered */}
         {!hideSidebar && (
           <aside className="w-14 border-r bg-white hidden md:block">
-            <SidebarContent />
+            <NewSidebarContent />
           </aside>
         )}
         
