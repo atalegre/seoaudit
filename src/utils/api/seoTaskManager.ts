@@ -2,15 +2,20 @@
 import { supabase } from '@/integrations/supabase/client';
 
 interface CreateTaskParams {
-  url: string;
+  url?: string;
+  businessName?: string;
+  address?: string;
+  postalCode?: string;
+  city?: string;
+  phoneNumber?: string;
   platform?: string;
-  task_name?: string; // Added task_name parameter
+  task_name?: string;
 }
 
 interface TaskStatusResponse {
   status: 'pending' | 'in_progress' | 'success' | 'failed';
   taskId: string;
-  url: string;
+  url?: string;
   results?: any;
   nextRun?: string;
   lastRun?: string;
@@ -22,9 +27,9 @@ interface TaskStatusResponse {
  */
 export async function createSeoAnalysisTask(params: CreateTaskParams) : Promise<{ taskId: string }> {
   try {
-    // Prepare requested_data with expected keys
-    const requested_data: any = { url: params.url };
-    if (params.platform) requested_data.platform = params.platform;
+    // Prepare requested_data with all params (not just url and platform)
+    const requested_data: any = { ...params };
+    delete requested_data.task_name; // Remove task_name as it's handled separately
 
     const { data, error } = await supabase.functions.invoke('seo-task-manager/create', {
       method: 'POST',

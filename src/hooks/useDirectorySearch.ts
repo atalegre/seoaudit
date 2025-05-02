@@ -139,7 +139,7 @@ export function useDirectorySearch() {
     });
 
     try {
-      // Create the directory search task
+      // Create the directory search task - now passing all the form data directly
       const { taskId } = await createSeoAnalysisTask({
         ...data,
         task_name: 'directory_search' 
