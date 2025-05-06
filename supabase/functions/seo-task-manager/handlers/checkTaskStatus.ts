@@ -1,83 +1,70 @@
 
-import { supabase, corsHeaders, getAuthToken } from "../utils.ts";
+import { corsHeaders, supabase } from "../utils.ts";
 
-export async function checkTaskStatus(req: Request, url: URL) {
-  // We're now expecting taskId to be either in URL params or in the body
-  let taskId = url.searchParams.get('taskId');
-  
-  // If not in URL params, try to get from body for POST requests
-  if (!taskId && req.method === 'POST') {
-    try {
-      const body = await req.json();
-      taskId = body.taskId;
-    } catch (e) {
-      // If JSON parsing fails, handle gracefully
-      console.error("Failed to parse request body:", e);
-    }
-  }
-
-  if (!taskId) {
-    return new Response(
-      JSON.stringify({ error: 'Task ID is required' }),
-      { status: 400, headers: corsHeaders }
-    );
-  }
-
+export const checkTaskStatus = async (req: Request, url: URL) => {
   try {
-    const { data: taskData, error: taskError } = await supabase
+    // Get task ID from query parameters
+    const taskId = url.searchParams.get('taskId');
+
+    if (!taskId) {
+      return new Response(
+        JSON.stringify({ error: "Missing taskId parameter" }),
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    // Check task status in the database
+    const { data, error } = await supabase
       .from('tasks')
-      .select('*')
+      .select('id, status, requested_values, response_values, updated_at')
       .eq('id', taskId)
       .maybeSingle();
 
-    if (taskError) throw taskError;
-
-    if (!taskData) {
+    if (error) {
+      console.error('Error fetching task:', error);
       return new Response(
-        JSON.stringify({ error: 'Task not found' }),
+        JSON.stringify({ error: error.message }),
+        { status: 500, headers: corsHeaders }
+      );
+    }
+
+    if (!data) {
+      return new Response(
+        JSON.stringify({ error: "Task not found" }),
         { status: 404, headers: corsHeaders }
       );
     }
 
-    const token = getAuthToken(req);
-    if (taskData.user_id) {
-      if (token) {
-        const { data: authResult, error: authError } = await supabase.auth.getUser(token);
-        if (authError || !authResult?.user || authResult.user.id !== taskData.user_id) {
-          return new Response(
-            JSON.stringify({ error: 'Access denied' }),
-            { status: 403, headers: corsHeaders }
-          );
-        }
-      } else {
-        return new Response(
-          JSON.stringify({ error: 'Authentication required for this task' }),
-          { status: 401, headers: corsHeaders }
-        );
-      }
+    // Extract URL from requested_values if available
+    let url = '';
+    try {
+      const requestedValues = typeof data.requested_values === 'object' 
+        ? data.requested_values 
+        : JSON.parse(data.requested_values as string);
+      
+      url = requestedValues?.url || '';
+    } catch (err) {
+      console.error('Error parsing requested values:', err);
     }
 
-    let responseObj: any = {
-      status: taskData.status,
-      taskId: taskData.id,
-      url: taskData.requested_values?.url ?? undefined,
-      lastRun: taskData.updated_at,
+    const response = {
+      status: data.status,
+      taskId: data.id,
+      url,
+      results: data.response_values,
+      lastRun: data.updated_at,
+      message: data.status === 'failed' ? 'Task processing failed' : undefined
     };
 
-    if (taskData.status === 'success') {
-      responseObj.results = taskData.response_values ?? null;
-    } else if (taskData.status === 'failed') {
-      responseObj.message = taskData.response_values?.error || "Task failed.";
-    } else {
-      responseObj.message = taskData.status === 'pending' ? 'Task is queued' : 'Task is being processed';
-    }
-
-    return new Response(JSON.stringify(responseObj), { headers: corsHeaders });
-  } catch (error) {
-    console.error('Error checking task status:', error);
     return new Response(
-      JSON.stringify({ error: error.message || 'Failed to check task status' }),
+      JSON.stringify(response),
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error) {
+    console.error('Error in checkTaskStatus function:', error);
+    return new Response(
+      JSON.stringify({ error: error.message || "Internal server error" }),
       { status: 500, headers: corsHeaders }
     );
   }
-}
+};

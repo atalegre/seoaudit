@@ -1,70 +1,50 @@
 
-import { supabase, corsHeaders, getAuthToken } from "../utils.ts";
+import { corsHeaders, supabase } from "../utils.ts";
 
-export async function createTask(req: Request) {
-  let body: any;
+export const createTask = async (req: Request) => {
   try {
-    body = await req.json();
-  } catch (err) {
-    return new Response(
-      JSON.stringify({ error: 'Invalid JSON body' }),
-      { status: 400, headers: corsHeaders }
-    );
-  }
+    const { task_name, requested_data } = await req.json();
 
-  // Only get user ID from auth token, ignore any user ID from request body
-  let userId = null;
-  const authToken = getAuthToken(req);
-  if (authToken) {
-    try {
-      const { data: { user }, error } = await supabase.auth.getUser(authToken);
-      if (error) {
-        console.error("Error verifying token:", error.message);
-      } else if (user) {
-        userId = user.id;
-        console.log("User authenticated, setting user_id:", userId);
-      }
-    } catch (error) {
-      console.error("Error processing auth token:", error);
+    if (!task_name || !requested_data) {
+      return new Response(
+        JSON.stringify({ error: "Missing required fields" }),
+        { status: 400, headers: corsHeaders }
+      );
     }
-  }
 
-  // Accepts: { "task_name": string, "requested_data": { any } }
-  const { task_name, requested_data } = body;
-
-  try {
-    const insertObj: any = {
-      user_id: userId,
-      requested_values: requested_data,
-      task_name: task_name,
-      status: 'pending',
-    };
-
+    // Create a new task in the database
     const { data, error } = await supabase
       .from('tasks')
-      .insert([insertObj])
-      .select('id,status,requested_values,task_name,user_id,created_at,updated_at')
-      .maybeSingle();
+      .insert([
+        {
+          task_name,
+          requested_values: requested_data,
+          status: 'pending',
+          response_values: null,
+          // user_id is optional in the tasks table
+          user_id: null
+        }
+      ])
+      .select('id')
+      .single();
 
-    if (error) throw error;
-    if (!data) {
-      throw new Error('Could not create the task (insert returned no data)');
+    if (error) {
+      console.error('Error creating task:', error);
+      return new Response(
+        JSON.stringify({ error: error.message }),
+        { status: 500, headers: corsHeaders }
+      );
     }
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        message: 'Task scheduled successfully',
-        taskId: data.id,
-        status: data.status
-      }),
-      { headers: corsHeaders }
+      JSON.stringify({ taskId: data.id }),
+      { status: 201, headers: corsHeaders }
     );
   } catch (error) {
-    console.error('Error creating task:', error);
+    console.error('Error in createTask function:', error);
     return new Response(
-      JSON.stringify({ error: error.message || 'Failed to schedule task' }),
+      JSON.stringify({ error: error.message || "Internal server error" }),
       { status: 500, headers: corsHeaders }
     );
   }
-}
+};

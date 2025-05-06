@@ -5,6 +5,7 @@ import { createTask } from "./handlers/createTask.ts";
 import { checkTaskStatus } from "./handlers/checkTaskStatus.ts";
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }

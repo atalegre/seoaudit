@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { pollTaskUntilComplete } from '@/utils/api/seoTaskManager';
 import { toast } from 'sonner';
-import { DirectorySearchFormData, DirectorySearchResult } from './types';
+import { DirectorySearchFormData, DirectorySearchResult, DirectorySearchState } from './types';
 import { useDirectorySearchActions } from './useDirectorySearchActions';
 import { 
   loadFormData,
@@ -106,4 +106,4 @@ export function useDirectorySearch() {
   };
 }
 
-export type { DirectorySearchFormData, DirectorySearchResult };
+export type { DirectorySearchFormData, DirectorySearchResult, DirectorySearchState };

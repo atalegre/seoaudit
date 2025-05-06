@@ -61,8 +61,12 @@ export function useDirectorySearchActions(
     try {
       // Create the directory search task - now passing all the form data directly
       const { taskId } = await createSeoAnalysisTask({
-        ...data,
-        task_name: 'directory_search' 
+        businessName: data.businessName,
+        address: data.address,
+        postalCode: data.postalCode,
+        city: data.city,
+        phoneNumber: data.phoneNumber,
+        task_name: 'directory_search'
       });
       
       lastTaskIdRef.current = taskId;

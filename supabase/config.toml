@@ -3,3 +3,6 @@ project_id = "vwtracpgzdqrowvjmizi"
 
 [functions.get-report-data]
 verify_jwt = false
+
+[functions.seo-task-manager]
+verify_jwt = false

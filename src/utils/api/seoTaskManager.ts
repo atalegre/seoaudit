@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
-interface CreateTaskParams {
+export interface CreateTaskParams {
   url?: string;
   businessName?: string;
   address?: string;

@@ -6,6 +6,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Content-Type': 'application/json'
 };
 
 serve(async (req) => {
@@ -56,7 +57,7 @@ serve(async (req) => {
           error: "Missing task IDs",
           details: "All three task IDs are required: desktopTaskId, mobileTaskId, aiOptimizationTaskId" 
         }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -101,7 +102,7 @@ serve(async (req) => {
     if (errors.length > 0) {
       return new Response(
         JSON.stringify({ error: "Failed to fetch tasks", details: errors }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 404, headers: corsHeaders }
       );
     }
 
@@ -118,7 +119,7 @@ serve(async (req) => {
     if (notSuccessful.length > 0) {
       return new Response(
         JSON.stringify({ error: "Not all tasks are successful", details: notSuccessful }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -152,14 +153,14 @@ serve(async (req) => {
           data: aiOptTask.response_values
         }
       }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 200, headers: corsHeaders }
     );
 
   } catch (error) {
     console.error('Error in get-report-data function:', error);
     return new Response(
       JSON.stringify({ error: error.message || "Internal server error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: corsHeaders }
     );
   }
 });
