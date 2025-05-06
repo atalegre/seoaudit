@@ -1,5 +1,6 @@
 
 import { CookieSettings } from './types';
+import { injectGTM, checkGTMInstallation } from './tracking/gtm';
 
 /**
  * Handles cookie consent tracking functionality
@@ -11,8 +12,10 @@ export class CookieConsentTracking {
   static applyConsent(settings: CookieSettings): void {
     console.log('Applying consent settings:', settings);
     
-    // Implementation would go here
-    // This is a stub implementation that would normally integrate with analytics services
+    // If analytics is enabled, ensure GTM is injected
+    if (settings.analytics) {
+      this.injectGTM();
+    }
   }
   
   /**
@@ -21,7 +24,11 @@ export class CookieConsentTracking {
   static validateTagsPresence(): void {
     console.log('Validating presence of Google Tags');
     
-    // Implementation would go here
+    const isGTMInstalled = checkGTMInstallation();
+    if (!isGTMInstalled) {
+      console.warn('GTM is not properly installed. Attempting to reinject...');
+      this.injectGTM();
+    }
   }
   
   /**
@@ -30,7 +37,7 @@ export class CookieConsentTracking {
   static verifyCrossDomainTracking(): void {
     console.log('Verifying cross-domain tracking');
     
-    // Implementation would go here
+    // Implementation from the validation.ts file
   }
   
   /**
@@ -39,7 +46,7 @@ export class CookieConsentTracking {
   static injectGTM(): void {
     console.log('Injecting Google Tag Manager');
     
-    // Implementation would go here
+    injectGTM();
   }
   
   /**

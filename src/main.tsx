@@ -12,6 +12,10 @@ if (!rootElement) {
   throw new Error('Root element not found');
 }
 
+// Inicialize GTM imediatamente para melhorar o rastreamento
+// Isso deve acontecer o mais cedo possível para rastrear toda a atividade do usuário
+CookieConsentTracking.injectGTM();
+
 // Create a root and render the app
 const root = createRoot(rootElement);
 root.render(
@@ -19,9 +23,6 @@ root.render(
     <App />
   </React.StrictMode>
 );
-
-// Inicialize GTM imediatamente para melhorar o rastreamento
-CookieConsentTracking.injectGTM();
 
 // Monitor LCP for performance diagnostics
 if ('PerformanceObserver' in window) {
